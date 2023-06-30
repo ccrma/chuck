@@ -135,114 +135,115 @@ typedef struct Chuck_VM_Code * t_CKVMCODE;
 //------------------------------------------------------------------------------
 // functions
 //------------------------------------------------------------------------------
-a_Program new_program( a_Section section, int pos );
-a_Program append_program( a_Program program, a_Section section, int pos );
-a_Section new_section_stmt( a_Stmt_List stmt_list, int pos );
-a_Section new_section_func_def( a_Func_Def func_def, int pos );
-a_Section new_section_class_def( a_Class_Def class_def, int pos );
-a_Stmt_List new_stmt_list( a_Stmt stmt, int pos );
-a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, int pos );
-a_Stmt new_stmt_from_expression( a_Exp exp, int pos );
-a_Stmt new_stmt_from_code( a_Stmt_List code, int pos );
-a_Stmt new_stmt_from_while( a_Exp cond, a_Stmt body, int pos );
-a_Stmt new_stmt_from_do_while( a_Exp cond, a_Stmt body, int pos );
-a_Stmt new_stmt_from_until( a_Exp cond, a_Stmt body, int pos );
-a_Stmt new_stmt_from_do_until( a_Exp cond, a_Stmt body, int pos );
-a_Stmt new_stmt_from_for( a_Stmt c1, a_Stmt c2, a_Exp c3, a_Stmt body, int pos );
-a_Stmt new_stmt_from_loop( a_Exp cond, a_Stmt body, int pos );
-a_Stmt new_stmt_from_if( a_Exp cond, a_Stmt if_body, a_Stmt else_body, int pos );
-a_Stmt new_stmt_from_switch( a_Exp exp, int pos );
-a_Stmt new_stmt_from_break( int pos );
-a_Stmt new_stmt_from_continue( int pos );
-a_Stmt new_stmt_from_return( a_Exp exp, int pos );
-a_Stmt new_stmt_from_label( c_str xid, int pos );
-a_Stmt new_stmt_from_case( a_Exp exp, int pos );
-a_Exp append_expression( a_Exp list, a_Exp exp, int pos );
-a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, int pos );
-a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, int pos );
-a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, a_Array_Sub array, int pos );
-a_Exp new_exp_from_unary3( ae_Operator oper, a_Stmt code, int pos );
-a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos, int castPos );
-a_Exp new_exp_from_array( a_Exp base, a_Array_Sub indices, int pos );
-a_Exp new_exp_from_array_lit( a_Array_Sub exp_list, int pos );
-a_Exp new_exp_from_func_call( a_Exp base, a_Exp args, int pos );
-a_Exp new_exp_from_member_dot( a_Exp base, c_str member, int pos, int memberPos );
-a_Exp new_exp_from_postfix( a_Exp base, ae_Operator op, int pos );
-a_Exp new_exp_from_dur( a_Exp base, a_Exp unit, int pos );
-a_Exp new_exp_from_id( c_str xid, int pos );
-a_Exp new_exp_from_int( long num, int pos );
-a_Exp new_exp_from_uint( unsigned long num, int pos );
-a_Exp new_exp_from_float( double num, int pos );
-a_Exp new_exp_from_str( c_str str, int pos );
-a_Exp new_exp_from_char( c_str chr, int pos );
-a_Exp new_exp_from_if( a_Exp cond, a_Exp lhs, a_Exp rhs, int pos );
-a_Exp new_exp_from_complex( a_Complex, int pos );
-a_Exp new_exp_from_polar( a_Polar, int pos );
-a_Exp new_exp_from_vec( a_Vec, int pos ); // ge: added 1.3.5.3
-a_Exp new_exp_decl_external( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, int pos );
-a_Exp new_exp_decl_global( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, int pos );
-a_Exp new_exp_decl( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, int pos );
-a_Exp new_exp_from_hack( a_Exp exp, int pos );
-a_Exp new_exp_from_nil( int pos );
-a_Var_Decl_List new_var_decl_list( a_Var_Decl var_decl, int pos );
-a_Var_Decl_List prepend_var_decl_list( a_Var_Decl var_decl, a_Var_Decl_List list, int pos );
-a_Var_Decl new_var_decl( c_constr xid, a_Array_Sub array, int pos );
-a_Type_Decl new_type_decl( a_Id_List xid, int ref, int pos );
-a_Type_Decl add_type_decl_array( a_Type_Decl type_decl, a_Array_Sub array, int pos );
-a_Arg_List new_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, int pos );
-a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, a_Arg_List arg_list, int pos );
-a_Array_Sub new_array_sub( a_Exp exp, int pos );
-a_Array_Sub prepend_array_sub( a_Array_Sub array, a_Exp exp, int pos );
-a_Complex new_complex( a_Exp re, int pos );
-a_Polar new_polar( a_Exp mod, int pos ); // ge: added 1.3.5.3
-a_Vec new_vec( a_Exp e, int pos );
+a_Program new_program( a_Section section, uint32_t line, uint32_t where );
+a_Program append_program( a_Program program, a_Section section, uint32_t line, uint32_t where );
+a_Section new_section_stmt( a_Stmt_List stmt_list, uint32_t line, uint32_t where );
+a_Section new_section_func_def( a_Func_Def func_def, uint32_t line, uint32_t where );
+a_Section new_section_class_def( a_Class_Def class_def, uint32_t line, uint32_t where );
+a_Stmt_List new_stmt_list( a_Stmt stmt, uint32_t line, uint32_t where );
+a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_expression( a_Exp exp, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_code( a_Stmt_List code, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_while( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_do_while( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_until( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_do_until( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_for( a_Stmt c1, a_Stmt c2, a_Exp c3, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_loop( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_if( a_Exp cond, a_Stmt if_body, a_Stmt else_body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_switch( a_Exp exp, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_break( uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_continue( uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_return( a_Exp exp, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_label( c_str xid, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_case( a_Exp exp, uint32_t line, uint32_t where );
+a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t line, uint32_t where );
+a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, uint32_t line, uint32_t where );
+a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, uint32_t line, uint32_t where );
+a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, a_Array_Sub array, uint32_t line, uint32_t where );
+a_Exp new_exp_from_unary3( ae_Operator oper, a_Stmt code, uint32_t line, uint32_t where );
+a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, uint32_t line, uint32_t where, uint32_t castPos );
+a_Exp new_exp_from_array( a_Exp base, a_Array_Sub indices, uint32_t line, uint32_t where );
+a_Exp new_exp_from_array_lit( a_Array_Sub exp_list, uint32_t line, uint32_t where );
+a_Exp new_exp_from_func_call( a_Exp base, a_Exp args, uint32_t line, uint32_t where );
+a_Exp new_exp_from_member_dot( a_Exp base, c_str member, uint32_t line, uint32_t where, uint32_t memberPos );
+a_Exp new_exp_from_postfix( a_Exp base, ae_Operator op, uint32_t line, uint32_t where );
+a_Exp new_exp_from_dur( a_Exp base, a_Exp unit, uint32_t line, uint32_t where );
+a_Exp new_exp_from_id( c_str xid, uint32_t line, uint32_t where );
+a_Exp new_exp_from_int( long num, uint32_t line, uint32_t where );
+a_Exp new_exp_from_uint( unsigned long num, uint32_t line, uint32_t where );
+a_Exp new_exp_from_float( double num, uint32_t line, uint32_t where );
+a_Exp new_exp_from_str( c_str str, uint32_t line, uint32_t where );
+a_Exp new_exp_from_char( c_str chr, uint32_t line, uint32_t where );
+a_Exp new_exp_from_if( a_Exp cond, a_Exp lhs, a_Exp rhs, uint32_t line, uint32_t where );
+a_Exp new_exp_from_complex( a_Complex, uint32_t line, uint32_t where );
+a_Exp new_exp_from_polar( a_Polar, uint32_t line, uint32_t where );
+a_Exp new_exp_from_vec( a_Vec, uint32_t line, uint32_t where ); // ge: added 1.3.5.3
+a_Exp new_exp_decl_external( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, uint32_t line, uint32_t where );
+a_Exp new_exp_decl_global( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, uint32_t line, uint32_t where );
+a_Exp new_exp_decl( a_Type_Decl type_decl, a_Var_Decl_List var_decl_list, int is_static, uint32_t line, uint32_t where );
+a_Exp new_exp_from_hack( a_Exp exp, uint32_t line, uint32_t where );
+a_Exp new_exp_from_nil( uint32_t line, uint32_t where );
+a_Var_Decl_List new_var_decl_list( a_Var_Decl var_decl, uint32_t line, uint32_t where );
+a_Var_Decl_List prepend_var_decl_list( a_Var_Decl var_decl, a_Var_Decl_List list, uint32_t line, uint32_t where );
+a_Var_Decl new_var_decl( c_constr xid, a_Array_Sub array, uint32_t line, uint32_t where );
+a_Type_Decl new_type_decl( a_Id_List xid, int ref, uint32_t line, uint32_t where );
+a_Type_Decl add_type_decl_array( a_Type_Decl type_decl, a_Array_Sub array, uint32_t line, uint32_t where );
+a_Arg_List new_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, uint32_t line, uint32_t where );
+a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, a_Arg_List arg_list, uint32_t line, uint32_t where );
+a_Array_Sub new_array_sub( a_Exp exp, uint32_t line, uint32_t where );
+a_Array_Sub prepend_array_sub( a_Array_Sub array, a_Exp exp, uint32_t line, uint32_t where );
+a_Complex new_complex( a_Exp re, uint32_t line, uint32_t where );
+a_Polar new_polar( a_Exp mod, uint32_t line, uint32_t where ); // ge: added 1.3.5.3
+a_Vec new_vec( a_Exp e, uint32_t line, uint32_t where );
 
-a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, int pos );
-a_Class_Body new_class_body( a_Section section, int pos );
-a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, int pos );
-a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, int pos );
-a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, int pos );
-a_Id_List new_id_list( c_constr xid, int pos /*, YYLTYPE * loc*/ );
-a_Id_List prepend_id_list( c_constr xid, a_Id_List list, int pos /*, YYLTYPE * loc*/ );
+a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
+a_Class_Body new_class_body( a_Section section, uint32_t line, uint32_t where );
+a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, uint32_t line, uint32_t where );
+a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, uint32_t line, uint32_t where );
+a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
+a_Id_List new_id_list( c_constr xid, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
+a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 void clean_exp( a_Exp exp );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
-                         a_Arg_List arg_list, a_Stmt code, int pos );
+                         a_Arg_List arg_list, a_Stmt code, uint32_t line, uint32_t where );
 
 void delete_id_list( a_Id_List x );
 
 
 
 
+
 //------------------------------------------------------------------------------
-// structs
+// abstract syntax tree | structs
 //------------------------------------------------------------------------------
-struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; int linepos; a_Exp self; };
-struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; int linepos; a_Exp self; };
+struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; a_Array_Sub array;
-                      a_Stmt code; int linepos; a_Exp self; };
-struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; int linepos; a_Exp self; };
-struct a_Exp_Dur_ { a_Exp base; a_Exp unit; int linepos; a_Exp self; };
-struct a_Exp_Array_ { a_Exp base; a_Array_Sub indices; int linepos; a_Exp self; };
+                      a_Stmt code; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Dur_ { a_Exp base; a_Exp unit; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Array_ { a_Exp base; a_Array_Sub indices; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Func_Call_ { a_Exp func; a_Exp args; t_CKTYPE ret_type;
-                          t_CKFUNC ck_func; t_CKVMCODE ck_vm_code; int linepos; a_Exp self; };
-struct a_Exp_Dot_Member_ { a_Exp base; t_CKTYPE t_base; S_Symbol xid; int linepos; a_Exp self; };
-struct a_Exp_If_ { a_Exp cond; a_Exp if_exp; a_Exp else_exp; int linepos; a_Exp self; };
+                          t_CKFUNC ck_func; t_CKVMCODE ck_vm_code; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Dot_Member_ { a_Exp base; t_CKTYPE t_base; S_Symbol xid; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_If_ { a_Exp cond; a_Exp if_exp; a_Exp else_exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_var_decls; int is_static; int is_global;
-                     t_CKTYPE ck_type; int linepos; a_Exp self; };
-struct a_Exp_Hack_ { a_Exp exp; int linepos; a_Exp self; };
-struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; int linepos; a_Exp self; };
+                     t_CKTYPE ck_type; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
 struct a_Var_Decl_ { S_Symbol xid; a_Var_Decl var_decl; a_Array_Sub array; t_CKVALUE value;
-                     void * addr; t_CKTYPE ck_type; int ref; int linepos; a_Exp self; };
-struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; int linepos; /*a_Exp self;*/ };
-struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; int linepos; a_Exp self;
+                     void * addr; t_CKTYPE ck_type; int ref; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
+struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;
                       int err_num; int err_pos; };
 struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
-                     a_Arg_List next; int linepos; a_Exp self; };
-struct a_Complex_ { a_Exp re; a_Exp im; int linepos; a_Exp self; };
-struct a_Polar_ { a_Exp mod; a_Exp phase; int linepos; a_Exp self; };
-struct a_Vec_ { a_Exp args; int numdims; int linepos; a_Exp self; }; // ge: added 1.3.5.3
+                     a_Arg_List next; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Complex_ { a_Exp re; a_Exp im; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Polar_ { a_Exp mod; a_Exp phase; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Vec_ { a_Exp args; int numdims; uint32_t line; uint32_t where; a_Exp self; }; // ge: added 1.3.5.3
 
 // enum primary exp type
 typedef enum { ae_primary_var, ae_primary_num, ae_primary_float,
@@ -270,7 +271,7 @@ struct a_Exp_Primary_
         a_Vec vec; // ge: added 1.3.5.3
     };
 
-    int linepos;
+    uint32_t line; uint32_t where;
     a_Exp self;
 };
 
@@ -309,21 +310,21 @@ struct a_Exp_
         struct a_Exp_Decl_ decl;
     };
 
-    int linepos;
+    uint32_t line; uint32_t where;
 };
 
-struct a_Stmt_While_ { int is_do; a_Exp cond; a_Stmt body; int linepos; a_Stmt self; };
-struct a_Stmt_Until_ { int is_do; a_Exp cond; a_Stmt body; int linepos; a_Stmt self; };
-struct a_Stmt_For_ { a_Stmt c1; a_Stmt c2; a_Exp c3; a_Stmt body; int linepos; a_Stmt self; };
-struct a_Stmt_Loop_ { a_Exp cond; a_Stmt body; int linepos; a_Stmt self; };
-struct a_Stmt_Code_ { a_Stmt_List stmt_list; int linepos; a_Stmt self; };
-struct a_Stmt_If_ { a_Exp cond; a_Stmt if_body; a_Stmt else_body; int linepos; a_Stmt self; };
-struct a_Stmt_Switch_ { a_Exp val; int linepos; a_Stmt self; };
-struct a_Stmt_Break_ { int linepos; a_Stmt self; };
-struct a_Stmt_Continue_ { int linepos; a_Stmt self; };
-struct a_Stmt_Return_ { a_Exp val; int linepos; a_Stmt self; };
-struct a_Stmt_Case_ { a_Exp exp; int linepos; a_Stmt self; };
-struct a_Stmt_GotoLabel_ { S_Symbol name; int linepos; a_Stmt self; };
+struct a_Stmt_While_ { int is_do; a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Until_ { int is_do; a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_For_ { a_Stmt c1; a_Stmt c2; a_Exp c3; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Loop_ { a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Code_ { a_Stmt_List stmt_list; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_If_ { a_Exp cond; a_Stmt if_body; a_Stmt else_body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Switch_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Break_ { uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Continue_ { uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Return_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Case_ { a_Exp exp; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_GotoLabel_ { S_Symbol name; uint32_t line; uint32_t where; a_Stmt self; };
 
 // enum values for stmt type
 typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_loop,
@@ -353,21 +354,21 @@ struct a_Stmt_
         struct a_Stmt_GotoLabel_ stmt_gotolabel;
     };
 
-    int linepos;
+    uint32_t line; uint32_t where;
 };
 
-struct a_Stmt_List_ { a_Stmt stmt; a_Stmt_List next; int linepos; };
+struct a_Stmt_List_ { a_Stmt stmt; a_Stmt_List next; uint32_t line; uint32_t where; };
 struct a_Class_Def_ { ae_Keyword decl; a_Id_List name; a_Class_Ext ext;
                       a_Class_Body body; t_CKTYPE type; int iface; t_CKNSPC home;
-                      int linepos; };
-struct a_Class_Ext_ { a_Id_List extend_id; a_Id_List impl_list; int linepos; };
-struct a_Class_Body_ { a_Section section; a_Class_Body next; int linepos; };
-struct a_Id_List_ { S_Symbol xid; a_Id_List next; int linepos; };
+                      uint32_t line; uint32_t where; };
+struct a_Class_Ext_ { a_Id_List extend_id; a_Id_List impl_list; uint32_t line; uint32_t where; };
+struct a_Class_Body_ { a_Section section; a_Class_Body next; uint32_t line; uint32_t where; };
+struct a_Id_List_ { S_Symbol xid; a_Id_List next; uint32_t line; uint32_t where; };
 
 typedef enum { ae_func_user, ae_func_builtin } ae_Func_Type;
-// struct t_Func_User_ { int linepos; };
+// struct t_Func_User_ { uint32_t line; uint32_t where; };
 // typedef unsigned int (* builtin_func_ptr)( unsigned int arg );
-// struct t_Func_BuiltIn_ { builtin_func_ptr func_ptr; int linepos; };
+// struct t_Func_BuiltIn_ { builtin_func_ptr func_ptr; uint32_t line; uint32_t where; };
 struct a_Func_Def_ {
     ae_Keyword func_decl;
     ae_Keyword static_decl;
@@ -381,7 +382,7 @@ struct a_Func_Def_ {
     unsigned int s_type;
     unsigned int stack_depth;
     void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
-    int linepos;
+    uint32_t line; uint32_t where;
 };
 
 // enum values for section types
@@ -399,10 +400,10 @@ struct a_Section_
         a_Func_Def func_def;
     };
 
-    int linepos;
+    uint32_t line; uint32_t where;
 };
 
-struct a_Program_ { a_Section section; a_Program next; int linepos; };
+struct a_Program_ { a_Section section; a_Program next; uint32_t line; uint32_t where; };
 
 
 #if defined(_cplusplus) || defined(__cplusplus)

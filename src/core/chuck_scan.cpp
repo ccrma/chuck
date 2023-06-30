@@ -168,7 +168,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
                 // make sure the context has no public class
                 if( env->context->public_class_def != NULL )
                 {
-                    EM_error2( prog->section->class_def->linepos,
+                    EM_error2( prog->section->class_def->where,
                         "more than one 'public' class defined..." );
                     ret = FALSE;
                     continue;
@@ -184,7 +184,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             break;
 
         default:
-            EM_error2( prog->linepos,
+            EM_error2( prog->where,
                 "internal error: unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
@@ -236,16 +236,16 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // make sure class not already in namespace
     if( env->curr->lookup_type( class_def->name->xid, FALSE ) )
     {
-        EM_error2( class_def->name->linepos,
+        EM_error2( class_def->name->where,
             "class/type '%s' is already defined in namespace '%s'",
             S_name(class_def->name->xid), env->curr->name.c_str() );
         ret = FALSE; goto done;
     }
 
     // check if reserved
-    if( type_engine_check_reserved( env, class_def->name->xid, class_def->name->linepos ) )
+    if( type_engine_check_reserved( env, class_def->name->xid, class_def->name->where ) )
     {
-        EM_error2( class_def->name->linepos, "...in class definition '%s'",
+        EM_error2( class_def->name->where, "...in class definition '%s'",
             S_name(class_def->name->xid) );
         ret = FALSE; goto done;
     }
@@ -415,7 +415,7 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
             break;
 
         default:
-            EM_error2( prog->linepos,
+            EM_error2( prog->where,
                 "internal error: unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
@@ -548,7 +548,7 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             break;
 
         default:
-            EM_error2( stmt->linepos,
+            EM_error2( stmt->where,
                 "internal compiler error (pre-scan) - no stmt type '%i'!", stmt->s_type );
             ret = FALSE;
             break;
@@ -690,7 +690,7 @@ t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 t_CKBOOL type_engine_scan1_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 {
     // TODO: implement this
-    EM_error2( stmt->linepos, "switch not implemented..." );
+    EM_error2( stmt->where, "switch not implemented..." );
 
     return FALSE;
 }
@@ -826,7 +826,7 @@ t_CKBOOL type_engine_scan1_exp( Chuck_Env * env, a_Exp exp )
         break;
 
         default:
-            EM_error2( curr->linepos,
+            EM_error2( curr->where,
                 "internal compiler error - no expression type '%i'...",
                 curr->s_type );
             return FALSE;
@@ -1037,7 +1037,7 @@ t_CKBOOL type_engine_scan1_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
             // assignable?
             if( postfix->exp->s_meta != ae_meta_var )
             {
-                EM_error2( postfix->exp->linepos,
+                EM_error2( postfix->exp->where,
                     "postfix operator '%s' cannot be used on non-mutable data-type...",
                     op2str( postfix->op ) );
                 return FALSE;
@@ -1050,7 +1050,7 @@ t_CKBOOL type_engine_scan1_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
 
         default:
             // no match
-            EM_error2( postfix->linepos,
+            EM_error2( postfix->where,
                 "internal compiler error (pre-scan): unrecognized postfix '%i'", postfix->op );
             return FALSE;
     }
@@ -1110,7 +1110,7 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     if( !t )
     {
         // resolve
-        EM_error2( decl->linepos, "... in declaration ..." );
+        EM_error2( decl->where, "... in declaration ..." );
         return FALSE;
     }
 
@@ -1192,7 +1192,7 @@ t_CKBOOL type_engine_scan1_exp_func_call( Chuck_Env * env, a_Exp_Func_Call func_
 {
     // type check it
     return type_engine_scan1_exp_func_call( env, func_call->func, func_call->args,
-                                           func_call->ck_func, func_call->linepos );
+                                           func_call->ck_func, func_call->where );
 }
 
 
@@ -1319,9 +1319,9 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     // if( f->s_type != ae_func_builtin )  // TODO: fix this
 
     // check if reserved
-    if( type_engine_check_reserved( env, f->name, f->linepos ) )
+    if( type_engine_check_reserved( env, f->name, f->where ) )
     {
-        EM_error2( f->linepos, "...in function definition '%s'",
+        EM_error2( f->where, "...in function definition '%s'",
             S_name(f->name) );
         return FALSE;
     }
@@ -1332,7 +1332,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     if( !f->ret_type )
     {
         // TODO: try to resolve
-        EM_error2( f->linepos, "... in return type of function '%s' ...", S_name(f->name) );
+        EM_error2( f->where, "... in return type of function '%s' ...", S_name(f->name) );
         goto error;
     }
     // check if array
@@ -1347,8 +1347,8 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         // should be partial and empty []
         if( f->type_decl->array->exp_list )
         {
-            EM_error2( f->type_decl->array->linepos, "function '%s':", S_name(f->name) );
-            EM_error2( f->type_decl->array->linepos, "return array type must be defined with empty []'s" );
+            EM_error2( f->type_decl->array->where, "function '%s':", S_name(f->name) );
+            EM_error2( f->type_decl->array->where, "return array type must be defined with empty []'s" );
             return FALSE;
         }
 
@@ -1381,8 +1381,8 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         if( !arg_list->type )
         {
             // TODO: try to resolve
-            // EM_error2( arg_list->linepos, "in function '%s':", S_name(f->name) );
-            EM_error2( arg_list->linepos,
+            // EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
+            EM_error2( arg_list->where,
                 "... in argument %i '%s' of function '%s(.)' ...",
                 count, S_name(arg_list->var_decl->xid), S_name(f->name) );
             goto error;
@@ -1459,7 +1459,7 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
             break;
 
         default:
-            EM_error2( prog->linepos,
+            EM_error2( prog->where,
                 "internal error: unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
@@ -1592,7 +1592,7 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
             break;
 
         default:
-            EM_error2( stmt->linepos,
+            EM_error2( stmt->where,
                 "internal compiler error (pre-scan) - no stmt type '%i'!", stmt->s_type );
             ret = FALSE;
             break;
@@ -1734,7 +1734,7 @@ t_CKBOOL type_engine_scan2_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 t_CKBOOL type_engine_scan2_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 {
     // TODO: implement this
-    EM_error2( stmt->linepos, "switch not implemented..." );
+    EM_error2( stmt->where, "switch not implemented..." );
 
     return FALSE;
 }
@@ -1870,7 +1870,7 @@ t_CKBOOL type_engine_scan2_exp( Chuck_Env * env, a_Exp exp )
         break;
 
         default:
-            EM_error2( curr->linepos,
+            EM_error2( curr->where,
                 "internal compiler error - no expression type '%i'...",
                 curr->s_type );
             return FALSE;
@@ -2081,7 +2081,7 @@ t_CKBOOL type_engine_scan2_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
             // assignable?
             if( postfix->exp->s_meta != ae_meta_var )
             {
-                EM_error2( postfix->exp->linepos,
+                EM_error2( postfix->exp->where,
                     "postfix operator '%s' cannot be used on non-mutable data-type...",
                     op2str( postfix->op ) );
                 return FALSE;
@@ -2094,7 +2094,7 @@ t_CKBOOL type_engine_scan2_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
 
         default:
             // no match
-            EM_error2( postfix->linepos,
+            EM_error2( postfix->where,
                 "internal compiler error (pre-scan): unrecognized postfix '%i'", postfix->op );
             return FALSE;
     }
@@ -2158,7 +2158,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     // check to see type is not void
     if( type->size == 0 )
     {
-        EM_error( decl->linepos,
+        EM_error( decl->where,
             "cannot declare variables of size '0' (i.e. 'void')..." );
         return FALSE;
     }
@@ -2172,7 +2172,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // check to see if class inside itself
         if( env->class_def && equals( type, env->class_def ) && env->class_scope == 0 )
         {
-            EM_error2( decl->linepos,
+            EM_error2( decl->where,
                 "...(note: object of type '%s' declared inside itself)",
                 type->c_name() );
             return FALSE;
@@ -2182,10 +2182,10 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     // primitive
     if( (isprim( env, type ) || isa( type, env->t_string )) && decl->type->ref )  // TODO: string
     {
-        EM_error2( decl->linepos,
+        EM_error2( decl->where,
             "cannot declare references (@) of primitive type '%s'...",
             type->c_name() );
-        EM_error2( decl->linepos,
+        EM_error2( decl->where,
             "...(primitive types: 'int', 'float', 'time', 'dur')" );
         return FALSE;
     }
@@ -2205,9 +2205,9 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         var_decl->ref = decl->type->ref;
 
         // check if reserved
-        if( type_engine_check_reserved( env, var_decl->xid, var_decl->linepos ) )
+        if( type_engine_check_reserved( env, var_decl->xid, var_decl->where ) )
         {
-            EM_error2( var_decl->linepos,
+            EM_error2( var_decl->where,
                 "...in variable declaration", S_name(var_decl->xid) );
             return FALSE;
         }
@@ -2215,7 +2215,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // check if locally defined
         if( env->curr->lookup_value( var_decl->xid, FALSE ) )
         {
-            EM_error2( var_decl->linepos,
+            EM_error2( var_decl->where,
                 "'%s' has already been defined in the same scope...",
                 S_name(var_decl->xid) );
             return FALSE;
@@ -2338,7 +2338,7 @@ t_CKBOOL type_engine_scan2_exp_func_call( Chuck_Env * env, a_Exp_Func_Call func_
 {
     // type check it
     return type_engine_scan2_exp_func_call( env, func_call->func, func_call->args,
-                                           func_call->ck_func, func_call->linepos );
+                                           func_call->ck_func, func_call->where );
 }
 
 
@@ -2480,7 +2480,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // see if we are already in a function definition
     if( env->func != NULL )
     {
-        EM_error2( f->linepos,
+        EM_error2( f->where,
             "nested function definitions are not (yet) allowed" );
         return FALSE;
     }
@@ -2495,7 +2495,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // if value
         if( !isa( overload->type, env->t_function ) )
         {
-            EM_error2( f->linepos,
+            EM_error2( f->where,
                 "function name '%s' is already used by another value", S_name(f->name) );
             return FALSE;
         }
@@ -2505,7 +2505,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             if( !overload->func_ref )
             {
                 // error
-                EM_error2( f->linepos,
+                EM_error2( f->where,
                     "internal error: missing function '%s'",
                     overload->name.c_str() );
                 return FALSE;
@@ -2596,10 +2596,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( (isprim( env, f->ret_type ) /*|| isa( f->ret_type, &t_string )*/)
         && f->type_decl->ref )  // TODO: string
     {
-        EM_error2( f->type_decl->linepos,
+        EM_error2( f->type_decl->where,
             "cannot declare references (@) of primitive type '%s'...",
             f->ret_type->c_name() );
-        EM_error2( f->type_decl->linepos,
+        EM_error2( f->type_decl->where,
             "...(primitive types: 'int', 'float', 'time', 'dur')" );
         goto error;
     }
@@ -2629,23 +2629,23 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // make sure it's not void
         if( arg_list->type->size == 0 )
         {
-            EM_error2( arg_list->linepos,
+            EM_error2( arg_list->where,
                 "cannot declare variables of size '0' (i.e. 'void')..." );
             goto error;
         }
 
         // check if reserved
-        if( type_engine_check_reserved( env, arg_list->var_decl->xid, arg_list->linepos ) )
+        if( type_engine_check_reserved( env, arg_list->var_decl->xid, arg_list->where ) )
         {
-            EM_error2( arg_list->linepos, "in function '%s'", S_name(f->name) );
+            EM_error2( arg_list->where, "in function '%s'", S_name(f->name) );
             goto error;
         }
 
         // look up in scope: later
         //if( env->curr->lookup_value( arg_list->var_decl->xid, FALSE ) )
         //{
-        //    EM_error2( arg_list->linepos, "in function '%s':", S_name(f->name) );
-        //    EM_error2( arg_list->linepos, "argument %i '%s' is already defined in this scope",
+        //    EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
+        //    EM_error2( arg_list->where, "argument %i '%s' is already defined in this scope",
         //        count, S_name(arg_list->var_decl->xid) );
         //    goto error;
         //}
@@ -2654,10 +2654,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         if( (isprim( env, arg_list->type ) /*|| isa( arg_list->type, &t_string )*/)
             && arg_list->type_decl->ref )  // TODO: string
         {
-            EM_error2( arg_list->type_decl->linepos,
+            EM_error2( arg_list->type_decl->where,
                 "cannot declare references (@) of primitive type '%s'...",
                 arg_list->type->c_name() );
-            EM_error2( arg_list->type_decl->linepos,
+            EM_error2( arg_list->type_decl->where,
                 "...(primitive types: 'int', 'float', 'time', 'dur')" );
             goto error;
         }
@@ -2674,8 +2674,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // should be partial and empty []
             if( arg_list->var_decl->array->exp_list )
             {
-                EM_error2( arg_list->linepos, "in function '%s':", S_name(f->name) );
-                EM_error2( arg_list->linepos, "argument %i '%s' must be defined with empty []'s",
+                EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
+                EM_error2( arg_list->where, "argument %i '%s' must be defined with empty []'s",
                     count, S_name(arg_list->var_decl->xid) );
                 return FALSE;
             }
@@ -2730,7 +2730,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // -----------------------
         if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )
         {
-            EM_error2( f->linepos, "overloaded functions require matching return types..." );
+            EM_error2( f->where, "overloaded functions require matching return types..." );
             // check if in class definition
             if( env->class_def )
             {
@@ -2766,7 +2766,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                 // check
                 if( same_arg_lists(lhs, rhs) )
                 {
-                    EM_error2( f->linepos, "cannot overload functions with identical arguments..." );
+                    EM_error2( f->where, "cannot overload functions with identical arguments..." );
                     if( env->class_def )
                     {
                         EM_error3( "    |- '%s %s.%s( %s )' already defined elsewhere",

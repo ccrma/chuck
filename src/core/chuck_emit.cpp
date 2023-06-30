@@ -75,7 +75,8 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
 t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur );
 t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, Chuck_Func * func,
-                                         Chuck_Type * type, int linepos, t_CKBOOL spork = FALSE );
+                                         Chuck_Type * type, t_CKUINT line, t_CKUINT where,
+                                         t_CKBOOL spork = FALSE );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, a_Exp_Func_Call func_call,
                                          t_CKBOOL spork = FALSE );
 t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit, a_Exp_Func_Call func_call );
@@ -97,7 +98,8 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from );
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
-                                  Chuck_Value * v, t_CKBOOL emit_var, int linepos );
+                                  Chuck_Value * v, t_CKBOOL emit_var,
+                                  t_CKUINT line, t_CKUINT where );
 // disabled until further notice (added 1.3.0.0)
 // t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 
@@ -461,7 +463,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                         emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC4/sz_WORD) );
                     else
                     {
-                        EM_error2( exp->linepos,
+                        EM_error2( exp->where,
                                    "(emit): internal error: %i byte stack item unhandled...",
                                    exp->type->size );
                         return FALSE;
@@ -537,7 +539,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
             break;
 
         default:  // bad
-            EM_error2( stmt->linepos,
+            EM_error2( stmt->where,
                  "(emit): internal error: unhandled statement type '%i'...",
                  stmt->s_type );
             break;
@@ -592,7 +594,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
             break;
         }
 
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in if condition",
             stmt->cond->type->name.c_str() );
         return FALSE;
@@ -701,7 +703,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
                 break;
             }
 
-            EM_error2( stmt->c2->stmt_exp->linepos,
+            EM_error2( stmt->c2->stmt_exp->where,
                 "(emit): internal error: unhandled type '%s' in for conditional",
                 stmt->c2->stmt_exp->type->name.c_str() );
             return FALSE;
@@ -745,7 +747,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
                 num_words += sz_COMPLEX / sz_WORD; // changed to compute number of words; 1.3.1.0
             else if( e->type->size != 0 )
             {
-                EM_error2( e->linepos,
+                EM_error2( e->where,
                     "(emit): internal error: non-void type size %i unhandled...",
                     e->type->size );
                 return FALSE;
@@ -844,7 +846,7 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
             break;
         }
 
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in while conditional",
             stmt->cond->type->name.c_str() );
         return FALSE;
@@ -957,7 +959,7 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
             break;
         }
 
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in do/while conditional",
             stmt->cond->type->c_name() );
         return FALSE;
@@ -1046,7 +1048,7 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
             break;
         }
 
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in until conditional",
             stmt->cond->type->name.c_str() );
         return FALSE;
@@ -1149,7 +1151,7 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
         break;
 
     default:
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
              "(emit): internal error: unhandled type '%s' in do/until conditional",
              stmt->cond->type->name.c_str() );
         return FALSE;
@@ -1219,7 +1221,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 
     // push the value of the loop counter
     emit->append( instr = new Chuck_Instr_Reg_Push_Loop_Counter_Deref() );
-    instr->set_linepos( stmt->linepos );
+    instr->set_linepos( stmt->line );
 
     // get the type, taking cast into account
     Chuck_Type * type = stmt->cond->cast_to ? stmt->cond->cast_to : stmt->cond->type;
@@ -1234,7 +1236,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
         break;
 
     default:
-        EM_error2( stmt->cond->linepos,
+        EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in while conditional",
             type->name.c_str() );
 
@@ -1246,7 +1248,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 
     // decrement the counter
     emit->append( instr = new Chuck_Instr_Dec_Loop_Counter() );
-    instr->set_linepos( stmt->linepos );
+    instr->set_linepos( stmt->line );
 
     // added 1.3.1.1: new scope just for loop body
     emit->push_scope();
@@ -1456,7 +1458,7 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
         //    break;
 
         default:
-            EM_error2( exp->linepos,
+            EM_error2( exp->where,
                  "(emit): internal error: unhandled expression type '%i'...",
                  exp->s_type );
             return FALSE;
@@ -1618,7 +1620,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
         // left: string
         else if( isa( t_left, emit->env->t_string ) )
@@ -1627,16 +1629,16 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_right, emit->env->t_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_int );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             else if( isa( t_right, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_float );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             else
             {
-                EM_error2( lhs->linepos,
+                EM_error2( lhs->where,
                     "(emit): internal error: unhandled op '%s' %s '%s'",
                     t_left->c_name(), op2str( op ), t_right->c_name() );
                 return FALSE;
@@ -1649,16 +1651,16 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_left, emit->env->t_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             else if( isa( t_left, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             else
             {
-                EM_error2( lhs->linepos,
+                EM_error2( lhs->where,
                     "(emit): internal error: unhandled op '%s' %s '%s'",
                     t_left->c_name(), op2str( op ), t_right->c_name() );
                 return FALSE;
@@ -1702,7 +1704,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( new Chuck_Instr_Add_double );
             // advance time (TODO: verify having two instr is OK)
             emit->append( instr = new Chuck_Instr_Time_Advance );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
         // time + dur
         else if( ( left == te_dur && right == te_time ) ||
@@ -1715,7 +1717,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string_Assign );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
         // right: string
         else if( isa( t_right, emit->env->t_string ) )
@@ -1725,16 +1727,16 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string_Assign );
                 // null exceptions will occur from string: use rhs, not lhs
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             else if( isa( t_left, emit->env->t_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string_Assign );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             else
             {
-                EM_error2( lhs->linepos,
+                EM_error2( lhs->where,
                     "(emit): internal error: unhandled op '%s' %s '%s'",
                     t_left->c_name(), op2str( op ), t_right->c_name() );
                 return FALSE;
@@ -1933,7 +1935,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             {
             case te_int:
                 emit->append( instr = new Chuck_Instr_Divide_int );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
                 break;
             case te_float:
             case te_dur:
@@ -1970,7 +1972,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             {
             case te_int:
                 emit->append( instr = new Chuck_Instr_Divide_int_Assign );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
                 break;
             case te_float:
                 emit->append( instr = new Chuck_Instr_Divide_double_Assign );
@@ -2041,7 +2043,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         case te_array:
             // check size (1.3.1.0: changed to getkindof)
             emit->append( instr = new Chuck_Instr_Array_Append( getkindof( emit->env, t_left->array_type ) ) );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
             break;
 
         default: break;
@@ -2238,7 +2240,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             && !isa( t_left, emit->env->t_null ) && !isa( t_right, emit->env->t_null ) ) // !null
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
         else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
             emit->append( instr = new Chuck_Instr_Eq_int );
@@ -2276,7 +2278,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             // added 1.3.2.0 (spencer)
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
         else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
             emit->append( instr = new Chuck_Instr_Neq_int );
@@ -2324,7 +2326,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             break;
         }
@@ -2346,7 +2348,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             else if( isa( t_left, emit->env->t_io ) )
             {
@@ -2354,17 +2356,17 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
                 if( isa( t_right, emit->env->t_int ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_int );
-                    instr->set_linepos( rhs->linepos );
+                    instr->set_linepos( rhs->line );
                 }
                 else if( isa( t_right, emit->env->t_float ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_float );
-                    instr->set_linepos( rhs->linepos );
+                    instr->set_linepos( rhs->line );
                 }
                 else if( isa( t_right, emit->env->t_string ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_string );
-                    instr->set_linepos( rhs->linepos );
+                    instr->set_linepos( rhs->line );
                 }
             }
             break;
@@ -2387,7 +2389,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             break;
         }
@@ -2409,7 +2411,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             break;
         }
@@ -2443,17 +2445,17 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
         case te_int:
             emit->append( instr = new Chuck_Instr_IO_out_int );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             break;
         case te_float:
             emit->append( instr = new Chuck_Instr_IO_out_float );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             break;
         default:
             if( isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_out_string );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             break;
         }
@@ -2464,17 +2466,17 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
         case te_int:
             emit->append( instr = new Chuck_Instr_IO_in_int );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             break;
         case te_float:
             emit->append( instr = new Chuck_Instr_IO_in_float );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             break;
         default:
             if( isa( t_right, emit->env->t_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_in_string );
-                instr->set_linepos( rhs->linepos );
+                instr->set_linepos( rhs->line );
             }
             break;
         }
@@ -2482,7 +2484,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
         //---------------------------- (error) --------------------------------
     default:
-        EM_error2( lhs->linepos,
+        EM_error2( lhs->where,
             "(emit): internal error: unhandled op '%s' %s '%s'",
             t_left->c_name(), op2str( op ), t_right->c_name() );
         return FALSE;
@@ -2491,7 +2493,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
     // make sure emit
     if( !instr )
     {
-        EM_error2( lhs->linepos,
+        EM_error2( lhs->where,
             "(emit): internal error: unhandled op '%s' %s '%s'",
             t_left->c_name(), op2str( op ), t_right->c_name() );
         return FALSE;
@@ -2521,7 +2523,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     {
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Link( FALSE ) );
-        instr->set_linepos( lhs->linepos );
+        instr->set_linepos( lhs->line );
         // done
         return TRUE;
     }
@@ -2532,7 +2534,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     {
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->t_array ), isa( right, emit->env->t_array ) ) );
-        instr->set_linepos( lhs->linepos );
+        instr->set_linepos( lhs->line );
         // done
         return TRUE;
     }
@@ -2548,7 +2550,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         {
             // advance time
             emit->append( instr = new Chuck_Instr_Time_Advance );
-            instr->set_linepos( lhs->linepos );
+            instr->set_linepos( lhs->line );
         }
 
         return TRUE;
@@ -2561,7 +2563,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         // pop now
         emit->append( new Chuck_Instr_Reg_Pop_Word2 );
         emit->append( instr = new Chuck_Instr_Event_Wait );
-        instr->set_linepos( lhs->linepos );
+        instr->set_linepos( lhs->line );
 
         return TRUE;
     }
@@ -2573,21 +2575,21 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             return TRUE;
         }
         else if( isa( right, emit->env->t_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             return TRUE;
         }
         else if( isa( right, emit->env->t_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
-            instr->set_linepos( rhs->linepos );
+            instr->set_linepos( rhs->line );
             return TRUE;
         }
     }
@@ -2598,7 +2600,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         assert( binary->ck_func != NULL );
 
         // emit
-        return emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->self->type, binary->linepos );
+        return emit_engine_emit_exp_func_call( emit, binary->ck_func, binary->self->type, binary->line, binary->where );
     }
 
     // assignment or something else
@@ -2616,7 +2618,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     // TODO: deal with const
 
     // no match
-    EM_error2( lhs->linepos,
+    EM_error2( lhs->where,
         "(emit): internal error: unhandled '=>' on types '%s' and '%s'...",
         left->c_name(), right->c_name() );
 
@@ -2644,7 +2646,7 @@ t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
     }
     else
     {
-        EM_error2( lhs->linepos,
+        EM_error2( lhs->where,
             "(emit): internal error: unhandled '=<' on types '%s' and '%s'",
             left->c_name(), right->c_name() );
         return FALSE;
@@ -2672,11 +2674,11 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
         // connect; flag it as unchuck
         Chuck_Instr * instr = NULL;
         emit->append( instr = new Chuck_Instr_UGen_Link( TRUE ) );
-        instr->set_linepos( lhs->linepos );
+        instr->set_linepos( lhs->line );
     }
     else
     {
-        EM_error2( lhs->linepos,
+        EM_error2( lhs->where,
             "(emit): internal error: unhandled '=^' on types '%s' and '%s'",
             left->c_name(), right->c_name() );
         return FALSE;
@@ -2707,7 +2709,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
             // assigment?
             if( rhs->s_meta != ae_meta_var )
             {
-                EM_error2( lhs->linepos,
+                EM_error2( lhs->where,
                     "(emit): internal error: assignment to non-variable..." );
                 return FALSE;
             }
@@ -2720,7 +2722,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                 // advance time
                 Chuck_Instr * instr = NULL;
                 emit->append( instr = new Chuck_Instr_Time_Advance );
-                instr->set_linepos( lhs->linepos );
+                instr->set_linepos( lhs->line );
             }
             else if( isa( left, emit->env->t_string ) ) // string
             {
@@ -2743,7 +2745,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                     emit->append( new Chuck_Instr_Assign_PrimitiveVec4 );
                 else
                 {
-                    EM_error2( rhs->linepos,
+                    EM_error2( rhs->where,
                         "(emit): internal error: assignment to type of size %i...",
                         right->size );
                 }
@@ -2764,7 +2766,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
     // TODO: deal with const
 
     // no match
-    EM_error2( lhs->linepos,
+    EM_error2( lhs->where,
         "(emit): internal error: unhandled '@=>' on types '%s' and '%s'...",
         left->c_name(), right->c_name() );
 
@@ -2794,7 +2796,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         // make sure assignment is legal
         if( unary->self->s_meta != ae_meta_var )  // TODO: const
         {
-            EM_error2( unary->self->linepos,
+            EM_error2( unary->self->where,
                 "(emit): target for '++' not mutable..." );
             return FALSE;
         }
@@ -2804,7 +2806,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_PreInc_int );
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for pre '++'' operator",
                 unary->exp->type->c_name() );
             return FALSE;
@@ -2815,7 +2817,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         // make sure assignment is legal
         if( unary->self->s_meta != ae_meta_var )  // TODO: const
         {
-            EM_error2( unary->self->linepos,
+            EM_error2( unary->self->where,
                 "(emit): target for '--' not mutable..." );
             return FALSE;
         }
@@ -2825,7 +2827,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_PreDec_int );
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for pre '--' operator",
                 unary->exp->type->c_name() );
             return FALSE;
@@ -2838,7 +2840,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_Complement_int );
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for '~' operator",
                 unary->exp->type->c_name() );
             return FALSE;
@@ -2851,7 +2853,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_Not_int );
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for '!' operator",
                 unary->exp->type->c_name() );
             return FALSE;
@@ -2866,7 +2868,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_Negate_double );
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for unary '-' operator",
                 unary->exp->type->c_name() );
             return FALSE;
@@ -2888,7 +2890,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         // }
         else
         {
-            EM_error2( unary->linepos,
+            EM_error2( unary->where,
                 "(emit): internal error: sporking non-function call..." );
             return FALSE;
         }
@@ -2907,7 +2909,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         break;
 
     default:
-        EM_error2( unary->linepos,
+        EM_error2( unary->where,
             "(emit): internal error: unhandled unary op '%s",
             op2str( unary->op ) );
         return FALSE;
@@ -2979,7 +2981,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
                 Chuck_Instr_Reg_Push_Global * instr =
                     new Chuck_Instr_Reg_Push_Global(
                         emit->dac_replacement, te_globalUGen );
-                instr->set_linepos( exp->linepos );
+                instr->set_linepos( exp->line );
                 emit->append( instr );
             }
             else
@@ -3016,7 +3018,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         {
             // emit the symbol
             return emit_engine_emit_symbol(
-                emit, exp->var, exp->value, exp->self->emit_var, exp->linepos );
+                emit, exp->var, exp->value, exp->self->emit_var, exp->line, exp->where );
         }
         break;
 
@@ -3049,7 +3051,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         break;
 
     case ae_primary_char:
-        emit->append( new Chuck_Instr_Reg_Push_Imm( str2char(exp->chr, exp->linepos ) ) );
+        emit->append( new Chuck_Instr_Reg_Push_Imm( str2char(exp->chr, exp->where ) ) );
         break;
 
     case ae_primary_array:
@@ -3131,7 +3133,7 @@ t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
     // construct array dynamically
     Chuck_Instr * instr = NULL;
     emit->append( instr = new Chuck_Instr_Array_Init( emit->env, type, count ) );
-    instr->set_linepos( array->linepos );
+    instr->set_linepos( array->line );
 
     return TRUE;
 }
@@ -3293,7 +3295,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
             emit->append( new Chuck_Instr_PostInc_int );
         else
         {
-            EM_error2( postfix->linepos,
+            EM_error2( postfix->where,
                 "(emit): internal error: unhandled type '%s' for post '++' operator",
                 postfix->exp->type->c_name() );
             return FALSE;
@@ -3305,7 +3307,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
             emit->append( new Chuck_Instr_PostDec_int );
         else
         {
-            EM_error2( postfix->linepos,
+            EM_error2( postfix->where,
                 "(emit): internal error: unhandled type '%s' for post '--' operator",
                 postfix->exp->type->c_name() );
             return FALSE;
@@ -3313,7 +3315,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     break;
 
     default:
-        EM_error2( postfix->linepos,
+        EM_error2( postfix->where,
             "(emit): internal error: unhandled postfix operator '%s'",
             op2str( postfix->op ) );
         return FALSE;
@@ -3376,7 +3378,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     // make sure
     if( depth == 0 )
     {
-        EM_error2( array->linepos,
+        EM_error2( array->where,
             "(emit): internal error: array with 0 depth..." );
         return FALSE;
     }
@@ -3384,7 +3386,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     sub = array->indices;
     if( !sub )
     {
-        EM_error2( array->linepos,
+        EM_error2( array->where,
             "(emit): internal error: NULL array sub..." );
         return FALSE;
     }
@@ -3392,7 +3394,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     exp = sub->exp_list;
     if( !exp )
     {
-        EM_error2( array->linepos,
+        EM_error2( array->where,
             "(emit): internal error: NULL array exp..." );
         return FALSE;
     }
@@ -3414,7 +3416,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
     if( type->size != sz_INT && type->size != sz_FLOAT && type->size != sz_COMPLEX &&
         type->size != sz_VEC3 && type->size != sz_VEC4 )
     {
-        EM_error2( array->linepos,
+        EM_error2( array->where,
             "(emit): internal error: array with datasize of %i...", type->size );
         return FALSE;
     }
@@ -3429,7 +3431,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
             emit->append( instr = new Chuck_Instr_Array_Map_Access( getkindof(emit->env, type), is_var ) );
         else
             emit->append( instr = new Chuck_Instr_Array_Access( getkindof(emit->env, type), is_var ) );
-        instr->set_linepos( array->linepos );
+        instr->set_linepos( array->line );
     }
     else
     {
@@ -3437,7 +3439,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         Chuck_Instr_Array_Access_Multi * aam = NULL;
         // emit the multi array access (1.3.1.0: use getkindof instead of type->size)
         emit->append( aam = new Chuck_Instr_Array_Access_Multi( depth, getkindof(emit->env, type), is_var ) );
-        aam->set_linepos( array->linepos );
+        aam->set_linepos( array->line );
         // add type info (1.3.1.0) -- to support mixed string & int indexing (thanks Robin Haberkorn)
         a_Exp e = exp;
         while( e )
@@ -3464,7 +3466,8 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                                          Chuck_Func * func,
                                          Chuck_Type * type,
-                                         int linepos,
+                                         t_CKUINT line,
+                                         t_CKUINT where,
                                          t_CKBOOL spork )
 {
     // is a member?
@@ -3497,7 +3500,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         }
         else
         {
-            EM_error2( linepos,
+            EM_error2( where,
                        "(emit): internal error: %i func call not handled",
                        size );
             return FALSE;
@@ -3508,7 +3511,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         emit->append( instr = new Chuck_Instr_Func_Call );
     }
     // set line position
-    instr->set_linepos(linepos);
+    instr->set_linepos(line);
 
     return TRUE;
 }
@@ -3526,7 +3529,7 @@ t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit,
     // emit the args (TRUE for doAddRef added 1.3.0.0)
     if( !emit_engine_emit_exp( emit, func_call->args, TRUE ) )
     {
-        EM_error2( func_call->linepos,
+        EM_error2( func_call->where,
                    "(emit): internal error in emitting function call arguments..." );
         return FALSE;
     }
@@ -3558,14 +3561,15 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // emit func
     if( !emit_engine_emit_exp( emit, func_call->func ) )
     {
-        EM_error2( func_call->linepos,
+        EM_error2( func_call->where,
                    "(emit): internal error in evaluating function call..." );
         return FALSE;
     }
 
     // the rest
     return emit_engine_emit_exp_func_call( emit, func_call->ck_func,
-                                           func_call->ret_type, func_call->linepos, spork );
+                                           func_call->ret_type,
+                                           func_call->line, func_call->where, spork );
 }
 
 
@@ -3589,7 +3593,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             member->base->emit_var = TRUE;
         else if( emit_addr )
         {
-            EM_error2( member->base->linepos,
+            EM_error2( member->base->where,
                       "(emit): cannot assign value to literal 'complex' value..." );
             return FALSE;
         }
@@ -3617,7 +3621,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             member->base->emit_var = TRUE;
         else if( emit_addr )
         {
-            EM_error2( member->base->linepos,
+            EM_error2( member->base->where,
                       "(emit): cannot assign value to literal 'polar' value..." );
             return FALSE;
         }
@@ -3645,7 +3649,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
             member->base->emit_var = TRUE;
         else if( emit_addr )
         {
-            EM_error2( member->base->linepos,
+            EM_error2( member->base->where,
                       "(emit): cannot assign value to literal '%s' value...",
                       member->t_base->c_name() );
             return FALSE;
@@ -3673,7 +3677,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
     }
 
     // should not get here
-    EM_error2( member->base->linepos,
+    EM_error2( member->base->where,
               "(emit): internal error in lit_special()..." );
 
     return FALSE;
@@ -3699,7 +3703,7 @@ check_func:
     if( base_static )
     {
         // should not get here
-        EM_error2( member->base->linepos,
+        EM_error2( member->base->where,
                   "(emit): internal error in lit_special(): base static" );
         // done
         return FALSE;
@@ -3708,7 +3712,7 @@ check_func:
     if( !isfunc( emit->env, member->self->type ) )
     {
         // should not get here
-        EM_error2( member->base->linepos,
+        EM_error2( member->base->where,
                   "(emit): internal error in lit_special(): not member func" );
         // done
         return FALSE;
@@ -3814,7 +3818,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 offset = func->vt_index;
                 // emit the function
                 emit->append( instr = new Chuck_Instr_Dot_Member_Func( offset ) );
-                instr->set_linepos( member->linepos );
+                instr->set_linepos( member->line );
             }
             else
             {
@@ -3843,7 +3847,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 // lookup the member (1.3.1.0: changed to use getkindof instead of type size)
                 emit->append( instr = new Chuck_Instr_Dot_Member_Data(
                     offset, getkindof(emit->env, member->self->type), emit_addr ) );
-                instr->set_linepos( member->linepos );
+                instr->set_linepos( member->line );
             }
             else
             {
@@ -3953,7 +3957,7 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
         break;
 
     default:
-        EM_error2( exp_if->cond->linepos,
+        EM_error2( exp_if->cond->where,
             "(emit): internal error: unhandled type '%s' in if condition",
             exp_if->cond->type->name.c_str() );
         return FALSE;
@@ -4069,7 +4073,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
                                                                type->array_depth, type->array_type,
                                                                emit->code->frame->curr_offset,
                                                                is_ref, type ) );
-            instr->set_linepos( array->linepos );
+            instr->set_linepos( array->line );
 
             // handle constructor; possible to have an instanced array of references
             // Object @ foo[10], for example
@@ -4154,8 +4158,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         else
         {
             // fail if type unsupported
-            EM_error2( decl->linepos, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
-            EM_error2( decl->linepos, "... (supported types: int, float, string, Event, UGen, Object)" );
+            EM_error2( decl->where, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
+            EM_error2( decl->where, "... (supported types: int, float, string, Event, UGen, Object)" );
             return FALSE;
         }
     }
@@ -4228,7 +4232,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Reg_Push_Imm4( 0.0, 0.0 ) );
             else
             {
-                EM_error2( decl->linepos,
+                EM_error2( decl->where,
                     "(emit): unhandle decl size of '%i'...",
                     type->size );
                 return FALSE;
@@ -4256,7 +4260,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Alloc_Member_Vec4( value->offset) );
             else
             {
-                EM_error2( decl->linepos,
+                EM_error2( decl->where,
                     "(emit): internal error: unhandled decl size of '%i'...",
                     type->size );
                 return FALSE;
@@ -4273,7 +4277,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     is_ref, is_obj, decl->is_global );
                 if( !local )
                 {
-                    EM_error2( decl->linepos,
+                    EM_error2( decl->where,
                         "(emit): internal error: cannot allocate local '%s'...",
                         value->name.c_str() );
                     return FALSE;
@@ -4288,7 +4292,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     Chuck_Instr_Alloc_Word_Global * instr = new Chuck_Instr_Alloc_Word_Global();
                     instr->m_name = value->name;
                     instr->m_type = globalType;
-                    instr->set_linepos( decl->linepos );
+                    instr->set_linepos( decl->line );
                     instr->m_is_array = is_array;
 
                     // extra fields for objects that need their ctors called
@@ -4306,7 +4310,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         if( !emit->env->vm()->globals_manager()->init_global_event( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
-                            EM_error2( decl->linepos,
+                            EM_error2( decl->where,
                                 "global Event '%s' has different type '%s' than already existing global Event of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
@@ -4319,7 +4323,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         if( !emit->env->vm()->globals_manager()->init_global_ugen( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different kinds of UGen), then fail.
-                            EM_error2( decl->linepos,
+                            EM_error2( decl->where,
                                 "global UGen '%s' has different type '%s' than already existing global UGen of the same name",
                                 value->name.c_str(), t->name.c_str() );
                             return FALSE;
@@ -4332,7 +4336,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                         if( !emit->env->vm()->globals_manager()->init_global_object( value->name, t ) )
                         {
                             // if the type doesn't exactly match (different types), then fail.
-                            EM_error2( decl->linepos,
+                            EM_error2( decl->where,
                                       "global Object '%s' has different type '%s' than already existing global Object of the same name",
                                       value->name.c_str(), t->name.c_str() );
                             return FALSE;
@@ -4351,13 +4355,13 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 {
                     // (added 1.3.0.0 -- is_obj)
                     Chuck_Instr_Alloc_Word * instr = new Chuck_Instr_Alloc_Word( local->offset, is_obj );
-                    instr->set_linepos( decl->linepos );
+                    instr->set_linepos( decl->line );
                     emit->append( instr );
                 }
                 else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
                     Chuck_Instr_Alloc_Word2 * instr = new Chuck_Instr_Alloc_Word2( local->offset );
-                    instr->set_linepos( decl->linepos );
+                    instr->set_linepos( decl->line );
                     emit->append( instr );
                 }
                 else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -4374,7 +4378,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 }
                 else
                 {
-                    EM_error2( decl->linepos,
+                    EM_error2( decl->where,
                         "(emit): internal error: unhandled decl size of '%i'...",
                         type->size );
                     return FALSE;
@@ -4499,7 +4503,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     //Chuck_Func * func2 = emit->env->context->nspc.lookup_func( func_def->name, FALSE );
     //if( func != func2 )
     //{
-    //    EM_error2( func_def->linepos,
+    //    EM_error2( func_def->where,
     //        "(emit): ambiguous function resolution for %s...",
     //        S_name(func_def->name) );
     //    return FALSE;
@@ -4508,7 +4512,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // make sure the code is empty
     if( func->code != NULL )
     {
-        EM_error2( func_def->linepos,
+        EM_error2( func_def->where,
             "(emit): function '%s' already emitted...",
             S_name(func_def->name) );
         return FALSE;
@@ -4517,7 +4521,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // make sure we are not in a function already
     if( emit->env->func != NULL )
     {
-        EM_error2( func_def->linepos,
+        EM_error2( func_def->where,
             "(emit): internal error: nested function definition..." );
         return FALSE;
     }
@@ -4564,7 +4568,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         // ge: added FALSE to the 'is_obj' argument, 2012 april (added 1.3.0.0)
         if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, FALSE, FALSE ) )
         {
-            EM_error2( a->linepos,
+            EM_error2( a->where,
                 "(emit): internal error: cannot allocate local 'this'..." );
             return FALSE;
         }
@@ -4577,7 +4581,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         // create local
         if( !emit->alloc_local( sizeof(t_CKUINT), "@type", TRUE, FALSE, FALSE ) )
         {
-            EM_error2( a->linepos,
+            EM_error2( a->where,
                       "(emit): internal error: cannot allocate local '@type'..." );
             return FALSE;
         }
@@ -4604,7 +4608,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         local = emit->alloc_local( type->size, value->name, is_ref, is_obj, FALSE );
         if( !local )
         {
-            EM_error2( a->linepos,
+            EM_error2( a->where,
                 "(emit): internal error: cannot allocate local '%s'...",
                 value->name.c_str() );
             return FALSE;
@@ -4693,7 +4697,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // make sure the code is empty
     if( type->info->pre_ctor != NULL && type->info->pre_ctor->instr != NULL )
     {
-        EM_error2( class_def->linepos,
+        EM_error2( class_def->where,
             "(emit): class '%s' already emitted...",
             type->name.c_str() );
         return FALSE;
@@ -4702,7 +4706,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // make sure we are not in a class already
     //if( emit->env->class_def != NULL )
     //{
-    //    EM_error2( class_def->linepos,
+    //    EM_error2( class_def->where,
     //        "(emit): internal error: nested class definition..." );
     //    return FALSE;
     //}
@@ -4730,7 +4734,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // TODO: verify this is right, and not over-ref counted / cleaned up?
     if( !emit->alloc_local( sizeof(t_CKUINT), "this", TRUE, TRUE, FALSE ) )
     {
-        EM_error2( class_def->linepos,
+        EM_error2( class_def->where,
             "(emit): internal error: cannot allocate local 'this'..." );
         return FALSE;
     }
@@ -4751,7 +4755,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
 
         case ae_section_class:
             ret = emit_engine_emit_class_def( emit, body->section->class_def );
-            //EM_error2( body->section->class_def->linepos,
+            //EM_error2( body->section->class_def->where,
             //    "nested class definitions are not yet supported..." );
             //ret = FALSE;
             break;
@@ -4832,7 +4836,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // emit func pointer on sporker shred
     if( !emit_engine_emit_exp( emit, exp->func ) )
     {
-        EM_error2( exp->linepos,
+        EM_error2( exp->where,
                   "(emit): internal error in evaluating function call..." );
         return FALSE;
     }
@@ -4849,7 +4853,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     std::ostringstream name;
     name << "spork~"
          << exp->ck_func->name.substr( 0, exp->ck_func->name.find( "@" ))
-         << " [line " << exp->linepos << "]";
+         << " [line " << exp->line << "]";
     emit->code->name = name.str();
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
@@ -4862,7 +4866,8 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     if( !emit_engine_emit_exp_func_call( emit,
                                          exp->ck_func,
                                          exp->ret_type,
-                                         exp->linepos,
+                                         exp->line,
+                                         exp->where,
                                          TRUE ) ) return FALSE;
 
     // 1.5.0.0 (ge) | added to pop/release the returned value, which could be an object
@@ -4973,7 +4978,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
-                                  int linepos )
+                                  t_CKUINT line, t_CKUINT where )
 {
     // look up the value
     // Chuck_Value * v = emit->env->curr->lookup_value( symbol, TRUE );
@@ -4981,7 +4986,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     if( !v )
     {
         // internal error
-        EM_error2( linepos,
+        EM_error2( where,
             "(emit): internal error: undefined symbol '%s'...",
             S_name(symbol) );
         return FALSE;
@@ -5023,7 +5028,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         else
         {
             // internal error
-            EM_error2( linepos,
+            EM_error2( where,
                 "(emit): internal error: unknown global type '%s'...",
                 v->type->name.c_str() );
             return FALSE;
@@ -5042,8 +5047,8 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
         // emit as this.v
         // BUG: passing "this" below might be bad if the exp is freed and string with it
-        a_Exp base = new_exp_from_id( (char *)"this", linepos );
-        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), linepos, linepos );
+        a_Exp base = new_exp_from_id( (char *)"this", line, where );
+        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), line, where, where ); // TODO: 1.5.0.5 check this last memberPos
         base->type = v->owner_class;
         dot->type = v->type;
         dot->dot_member.t_base = v->owner_class;
@@ -5052,7 +5057,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         if( !emit_engine_emit_exp_dot_member( emit, &dot->dot_member ) )
         {
             // internal error
-            EM_error2( linepos,
+            EM_error2( where,
                 "(emit): internal error: symbol transformation failed..." );
             return FALSE;
         }
@@ -5092,7 +5097,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         {
             Chuck_Instr_Reg_Push_Global * instr =
                 new Chuck_Instr_Reg_Push_Global( v->name, global_type );
-            instr->set_linepos( linepos );
+            instr->set_linepos( line );
             emit->append( instr );
         }
         // check size
@@ -5110,7 +5115,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         else
         {
             // internal error
-            EM_error2( linepos,
+            EM_error2( where,
                 "(emit): internal error: symbol '%s' has size '%i'...",
                 S_name(symbol), v->type->size );
             return FALSE;
