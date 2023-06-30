@@ -672,7 +672,7 @@ void probeMidiIn()
 
     // get num
     t_CKUINT num = min->getPortCount();
-    EM_error2b( 0, "------( MIDI inputs: %i )------", num );
+    EM_print2orange( "------( %i MIDI input%s  )------", num, num > 1 ? "s" : "" );
     EM_reset_msg();
 
     std::string s;
@@ -707,7 +707,7 @@ void probeMidiOut()
 
     // get num
     t_CKUINT num = mout->getPortCount();
-    EM_error2b( 0, "------( MIDI outputs: %i )-----", num );
+    EM_print2orange( "------( %i MIDI output%s )-----", num, num > 1 ? "s" : "" );
     std::string s;
     for( t_CKUINT i = 0; i < num; i++ )
     {

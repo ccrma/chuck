@@ -35,15 +35,18 @@
 #include "chuck_errmsg.h"
 
 #ifdef __PLATFORM_WIN32__
-#ifndef __CHUNREAL_ENGINE__
-#include <windows.h> // for win32_tmpfile()
-#else
-  // 1.5.0.0 (ge) | #chunreal
-  // unreal engine on windows disallows including windows.h
-#include "Windows/MinWindows.h"
-#endif // #ifndef __CHUNREAL_ENGINE__
+  #ifndef __CHUNREAL_ENGINE__
+    #include <windows.h> // for win32_tmpfile()
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    // unreal engine on windows disallows including windows.h
+    #include "Windows/MinWindows.h"
+  #endif // #ifndef __CHUNREAL_ENGINE__
+#else // not windows
+  #include <unistd.h>
 #endif // #ifdef __PLATFORM_WIN32__
 
+#include <stdio.h>
 #include <sys/stat.h>
 
 
@@ -130,6 +133,63 @@ FILE * win32_tmpfile()
 
 
 //-----------------------------------------------------------------------------
+// name: ck_configANSI_ESCcodes() | 1.5.0.5 (ge) added
+// desc: do any platform-specific setup to enable ANSI escape codes
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_configANSI_ESCcodes()
+{
+#ifndef __PLATFORM_WIN32__
+#else
+    // get stderr handle; do this first as chuck tends to write to stderr
+    HANDLE winStderr = GetStdHandle( STD_ERROR_HANDLE );
+    // check handle
+    if( winStderr == NULL || winStderr == INVALID_HANDLE_VALUE ) return FALSE;
+    // set windows console mode to process escape sequences + enable color terminal output
+    SetConsoleMode( winStderr, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+
+    // get stdout handle
+    HANDLE winStdout = GetStdHandle( STD_OUTPUT_HANDLE );
+    // check handle
+    if( winStdout == NULL || winStdout == INVALID_HANDLE_VALUE ) return FALSE;
+    // set windows console mode to process escape sequences + enable color terminal output
+    SetConsoleMode( winStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+#endif
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_isatty() | 1.5.0.5 (ge) added
+// desc: are we output to a TTY (teletype, character by character)
+//       (vs say a file stream; helpful for determining if we should
+//       suppress printing ANSI escapes codes, e.g., color codes
+//       to the output stream
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_isatty( int fd )
+{
+#ifndef __PLATFORM_WIN32__
+    return isatty( fd ) != 0;
+#else
+    // windows, until we can figure this out
+    return TRUE;
+#endif
+}
+//-----------------------------------------------------------------------------
+// get a general sense if current outputting to tty
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_isatty()
+{
+    // use 2 for stderr
+    return ck_isatty( 2 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: android_tmpfile()
 // desc: replacement for broken tmpfile() on Android
 //-----------------------------------------------------------------------------
@@ -176,6 +236,98 @@ t_CKBOOL ck_isdir( const std::string & path )
     return (stat( path.c_str(), &fs )==0 && fs.st_mode & S_IFDIR);
 }
 
+
+
+
+#ifdef __PLATFORM_WIN32__
+//-----------------------------------------------------------------------------
+// name: win32_getline()
+// desc: C getline using a FILE descriptor
+// thanks be to random people on the internet
+// https://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface/735472#735472
+// using version from Song "from Malaysia": "Better Answer with no Bug Here:"
+//-----------------------------------------------------------------------------
+size_t win32_getline( char ** lineptr, size_t * n, FILE * stream )
+{
+    char * bufptr = NULL;
+    char * p = bufptr;
+    size_t size;
+    int c;
+
+    if( lineptr == NULL )
+    {
+        return -1;
+    }
+    if( stream == NULL )
+    {
+        return -1;
+    }
+    if( n == NULL )
+    {
+        return -1;
+    }
+    bufptr = *lineptr;
+    size = *n;
+
+    c = fgetc( stream );
+    if( c == EOF )
+    {
+        return -1;
+    }
+    if( bufptr == NULL )
+    {
+        bufptr = (char *)malloc( 128 );
+        if( bufptr == NULL )
+        {
+            return -1;
+        }
+        size = 128;
+    }
+    p = bufptr;
+    while( c != EOF )
+    {
+        if( (p - bufptr) > (size - 1) )
+        {
+            size = size + 128;
+            bufptr = (char *)realloc( bufptr, size );
+            if( bufptr == NULL )
+            {
+                return -1;
+            }
+            p = bufptr + (size - 128);
+        }
+        *p++ = c;
+        if( c == '\n' )
+        {
+            break;
+        }
+        c = fgetc( stream );
+    }
+
+    *p++ = '\0';
+    *lineptr = bufptr;
+    *n = size;
+
+    return p - bufptr - 1;
+}
+#endif // __PLATFORM_WIN32
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_getline()
+// desc: redirect for c edition of getline
+//-----------------------------------------------------------------------------
+size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
+{
+#ifndef __PLATFORM_WIN32__
+    return getline( lineptr, n, stream );
+#else
+    return win32_getline( lineptr, n, stream );
+#endif
+}
 
 
 

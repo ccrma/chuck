@@ -540,13 +540,17 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
     {
         if( !type_engine_add_class_from_dl( query->env(), query->curr_class ) )
         {
-            EM_log(CK_LOG_SEVERE, "error importing class '%s' into type engine",
-                   query->curr_class->name.c_str());
+            // should already be message
+            //EM_log(CK_LOG_SEVERE, "error importing class '%s' into type engine",
+            // query->curr_class->name.c_str());
 
             // pop
             assert( query->stack.size() );
             query->curr_class = query->stack.back();
             query->stack.pop_back();
+
+            // flag the query with error
+            query->errorEncountered = TRUE;
 
             return FALSE;
         }
@@ -791,7 +795,7 @@ const Chuck_DL_Query * Chuck_DLL::query()
 
     // do the query
     m_query.clear();
-    if( !m_query_func( &m_query ) )
+    if( !m_query_func( &m_query ) || m_query.errorEncountered )
     {
         m_last_error = string("unsuccessful query in dll '") + m_filename
                        + string("'");
@@ -959,6 +963,18 @@ const char * Chuck_DLL::name() const
 
 
 //-----------------------------------------------------------------------------
+// name: filepath()
+// desc: return the file path
+//-----------------------------------------------------------------------------
+const char * Chuck_DLL::filepath() const
+{
+    return m_filename.c_str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: versionMajor()
 // desc: get version major
 //-----------------------------------------------------------------------------
@@ -1058,6 +1074,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     }
 
     linepos = 0;
+    errorEncountered = FALSE;
 }
 
 

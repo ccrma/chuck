@@ -72,22 +72,24 @@
 #define CHUCK_VERSION_STRING                "1.5.0.5-dev (chai)"
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
-#define CHUCK_PARAM_SAMPLE_RATE             "SAMPLE_RATE"
-#define CHUCK_PARAM_INPUT_CHANNELS          "INPUT_CHANNELS"
-#define CHUCK_PARAM_OUTPUT_CHANNELS         "OUTPUT_CHANNELS"
-#define CHUCK_PARAM_VM_ADAPTIVE             "VM_ADAPTIVE"
-#define CHUCK_PARAM_VM_HALT                 "VM_HALT"
-#define CHUCK_PARAM_OTF_ENABLE              "OTF_ENABLE"
-#define CHUCK_PARAM_OTF_PORT                "OTF_PORT"
-#define CHUCK_PARAM_DUMP_INSTRUCTIONS       "DUMP_INSTRUCTIONS"
-#define CHUCK_PARAM_AUTO_DEPEND             "AUTO_DEPEND"
-#define CHUCK_PARAM_DEPRECATE_LEVEL         "DEPRECATE_LEVEL"
-#define CHUCK_PARAM_WORKING_DIRECTORY       "WORKING_DIRECTORY"
-#define CHUCK_PARAM_CHUGIN_ENABLE           "CHUGIN_ENABLE"
-#define CHUCK_PARAM_CHUGIN_DIRECTORY        "CHUGIN_DIRECTORY"
-#define CHUCK_PARAM_USER_CHUGINS            "USER_CHUGINS"
-#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES "USER_CHUGIN_DIRECTORIES"
-#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO  "HINT_IS_REALTIME_AUDIO"
+#define CHUCK_PARAM_SAMPLE_RATE                 "SAMPLE_RATE"
+#define CHUCK_PARAM_INPUT_CHANNELS              "INPUT_CHANNELS"
+#define CHUCK_PARAM_OUTPUT_CHANNELS             "OUTPUT_CHANNELS"
+#define CHUCK_PARAM_VM_ADAPTIVE                 "VM_ADAPTIVE"
+#define CHUCK_PARAM_VM_HALT                     "VM_HALT"
+#define CHUCK_PARAM_OTF_ENABLE                  "OTF_ENABLE"
+#define CHUCK_PARAM_OTF_PORT                    "OTF_PORT"
+#define CHUCK_PARAM_DUMP_INSTRUCTIONS           "DUMP_INSTRUCTIONS"
+#define CHUCK_PARAM_AUTO_DEPEND                 "AUTO_DEPEND"
+#define CHUCK_PARAM_DEPRECATE_LEVEL             "DEPRECATE_LEVEL"
+#define CHUCK_PARAM_WORKING_DIRECTORY           "WORKING_DIRECTORY"
+#define CHUCK_PARAM_CHUGIN_ENABLE               "CHUGIN_ENABLE"
+#define CHUCK_PARAM_CHUGIN_DIRECTORY            "CHUGIN_DIRECTORY"
+#define CHUCK_PARAM_USER_CHUGINS                "USER_CHUGINS"
+#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES     "USER_CHUGIN_DIRECTORIES"
+#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO      "HINT_IS_REALTIME_AUDIO"
+#define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR "COMPILER_HIGHLIGHT_ON_ERROR"
+#define CHUCK_PARAM_COLOR_TERMINAL_OUTPUT       "COLOR_TERMINAL_OUTPUT"
 
 
 
@@ -215,6 +217,11 @@ protected:
 public:
     // probe chugins (print info on all chugins as seen under current config)
     void probeChugins(); // 1.5.0.4 (ge) added
+
+public:
+    // set whether chuck will generate color output for its messages
+    // this will set the corresponding parameter as well
+    void toggleGlobalColorTextoutput( t_CKBOOL onOff );
 
 protected:
     // core elements: compiler, VM, etc.

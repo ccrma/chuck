@@ -51,6 +51,7 @@
 extern "C" int yyparse( void );
 extern "C" void yyrestart( FILE * );
 extern "C" void yyinitial( void );
+extern "C" void yyflush( void );
 
 struct yy_buffer_state;
 typedef yy_buffer_state * YY_BUFFER_STATE;

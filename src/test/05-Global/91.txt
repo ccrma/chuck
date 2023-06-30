@@ -1,1 +1,1 @@
-[91.ck]:line(6): [..., ...] is invalid subscript syntax.
+[91.ck]:line(6): error: [..., ...] is invalid subscript syntax.

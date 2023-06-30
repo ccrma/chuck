@@ -411,6 +411,9 @@ public:
     // stack
     std::vector<Chuck_DL_Class * >stack;
 
+    // flag any error encountered during the query | 1.5.0.5 (ge) added
+    t_CKBOOL errorEncountered;
+
     // constructor
     Chuck_DL_Query( Chuck_Carrier * carrier );
     // desctructor
@@ -613,6 +616,8 @@ public:
     t_CKBOOL good() const;
     // name
     const char * name() const;
+    // full path
+    const char * filepath() const;
     // get version major
     t_CKUINT versionMajor();
     // get version minor

@@ -50,6 +50,8 @@ static std::string g_filename;
 static FILE * g_fd2parse = NULL;
 // whether to auto close
 static t_CKBOOL g_fd2autoClose = FALSE;
+// separate file to close
+static FILE * g_fd2close = NULL;
 // clean up function
 static void fd2parse_cleanup();
 
@@ -74,6 +76,8 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
     FILE * fd = g_fd2parse;
     // our own lexer/parser buffer
     YY_BUFFER_STATE yyCodeBuffer = NULL;
+    // where the code is coming from
+    CompileFileSource source;
 
     // check for conflict
     if( fd && codeLiteral != "" )
@@ -94,6 +98,8 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
         yyCodeBuffer = yy_scan_string( codeLiteral.c_str() );
         // if could load
         if( !yyCodeBuffer ) goto cleanup;
+        // set source
+        source.setCode( codeLiteral.c_str() );
     }
     else
     {
@@ -106,7 +112,7 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
             if( !fd ) // if couldn't open
             { g_filename = fname; } // revert filename
             else if( ck_isdir(g_filename) ) // check for directory; if so, clean up
-            { EM_error2( 0, "cannot parse file: '%s' is a directory", mini(fname.c_str()) ); goto cleanup; }
+            { EM_error2( 0, "cannot parse file: '%s' is a directory", mini(g_filename.c_str()) ); goto cleanup; }
         }
 
         // if still none
@@ -117,14 +123,19 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
         // reset yyin to fd
         yyrestart( fd );
         // set to initial condition | 1.5.0.5 (ge) added
-        yyinitial();
+        // yyinitial();
 
         // check
         if( yyin == NULL ) goto cleanup;
+
+        // set source
+        source.setFile( fd );
     }
 
-    // reset
-    if( EM_reset( g_filename.c_str() ) == FALSE ) goto cleanup;
+    // start error message for new filename
+    EM_start_filename( g_filename.c_str() );
+    // set current input source
+    EM_setCurrentFileSource( source );
 
     // TODO: clean g_program
     g_program = NULL;
@@ -137,12 +148,12 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
 
 cleanup:
 
-    // clean up the file descriptor
-    if( fd ) {
-        // check fd2parse
-        if( g_fd2parse ) { fd2parse_cleanup(); fd = NULL; }
-        else { fclose( fd ); fd = NULL; }
-    }
+    // defer some clean up to reset_parse(), since later passes
+    // could use current file source / file descriptor; copy
+    g_fd2close = fd;
+
+    // flush
+    // yyflush();
 
     // set to NULL | 1.5.0.5 (ge) added to reset yyin
     yyin = NULL;
@@ -165,7 +176,11 @@ void fd2parse_cleanup()
 {
     // check
     if( g_fd2parse && g_fd2autoClose )
-    { fclose( g_fd2parse ); }
+    {
+        // log
+        EM_log( CK_LOG_FINEST, "fd2parse_clean() closing FILE descriptor [0x%x]...", (t_CKUINT)g_fd2parse );
+        fclose( g_fd2parse );
+    }
 
     // reset
     g_fd2parse = NULL;
@@ -203,12 +218,25 @@ void fd2parse_set( FILE * fd, t_CKBOOL autoClose )
 
 //------------------------------------------------------------------------------
 // name: reset_parse()
-// desc: ...
+// desc: reset parse after a parse
 //------------------------------------------------------------------------------
 void reset_parse( )
 {
+    // reset the current input source
+    EM_cleanupCurrentFileSource();
+
+    // clean up the file descriptor
+    if( g_fd2close )
+    {
+        // check fd2parse (could be the same)
+        if( g_fd2parse ) { fd2parse_cleanup(); }
+        else { fclose( g_fd2close ); }
+        // zero out either way
+        g_fd2close = NULL;
+    }
+
     // empty file name
-    EM_change_file( NULL );
+    EM_reset_filename();
 }
 
 

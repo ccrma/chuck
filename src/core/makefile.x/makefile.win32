@@ -36,12 +36,11 @@ CXXSRCS+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	chuck_compile.cpp chuck_dl.cpp chuck_oo.cpp chuck_lang.cpp chuck_ugen.cpp \
 	chuck_otf.cpp chuck_stats.cpp chuck_shell.cpp \
 	chuck_io.cpp chuck_carrier.cpp chuck.cpp \
-    hidio_sdl.cpp \
-	midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp ugen_filter.cpp \
-	ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp ulib_math.cpp ulib_std.cpp \
-	ulib_opsc.cpp util_buffers.cpp util_console.cpp \
-	util_string.cpp util_thread.cpp util_opsc.cpp util_serial.cpp \
-	util_hid.cpp uana_xform.cpp uana_extract.cpp
+	hidio_sdl.cpp midiio_rtmidi.cpp rtmidi.cpp ugen_osc.cpp \
+	ugen_filter.cpp ugen_stk.cpp ugen_xxx.cpp ulib_machine.cpp \
+	ulib_math.cpp ulib_std.cpp ulib_opsc.cpp util_buffers.cpp \
+	util_console.cpp util_string.cpp util_thread.cpp util_opsc.cpp \
+	util_serial.cpp util_hid.cpp uana_xform.cpp uana_extract.cpp
 CXXINC_HOST+= -I${RTAUDIODIR} -I${RTAUDIODIR}/include
 CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp ../${RTAUDIODIR}/RtAudio.cpp
 LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \

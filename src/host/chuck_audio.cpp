@@ -267,7 +267,7 @@ void print( const RtAudio::DeviceInfo & info )
 static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorText)
 {
     // problem finding audio devices, most likely
-    EM_error2b( 0, "%s", errorText.c_str() );
+    EM_error2( 0, "%s", errorText.c_str() );
 }
 
 
@@ -299,7 +299,7 @@ void ChuckAudio::probe( const char * driver )
     // get count
     int devices = audio->getDeviceCount();
     EM_error2b( 0, "[%s] driver found %d audio device(s)...", dnm, devices );
-    EM_error2( 0, "" );
+    EM_error2b( 0, "" );
 
     // reset -- what does this do
     EM_reset_msg();
@@ -309,16 +309,16 @@ void ChuckAudio::probe( const char * driver )
     {
         info = audio->getDeviceInfo(i);
         if (!info.probed) { // errorHandle reports issues above
-            EM_error2(0, "");
+            EM_error2b(0, "");
             EM_reset_msg();
             continue;
         }
         
         // print
-        EM_error2b( 0, "------( audio device: %d )---------------", i+1 );
+        EM_print2orange( "------( audio device: %d )------", i+1 );
         print( info );
         // skip
-        if( i < devices ) EM_error2( 0, "" );
+        if( i < devices ) EM_error2b( 0, "" );
         
         // reset
         EM_reset_msg();

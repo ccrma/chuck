@@ -753,8 +753,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         Chuck_VM_Shred * out = m_shreduler->lookup( msg->param );
         if( !out )
         {
-            EM_error3( "[chuck](VM): error replacing shred: no shred with id %i...",
-                       msg->param );
+            EM_print2orange( "(VM) replacing shred: no shred with id %i...", msg->param );
             retval = 0;
             goto done;
         }
@@ -786,8 +785,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         // replace
         if( m_shreduler->remove( out ) && m_shreduler->shredule( shred ) )
         {
-            EM_error3( "[chuck](VM): replacing shred %i (%s) with %i (%s)...",
-                       out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
+            EM_print2green( 0, "(VM) replacing shred %i (%s) with %i (%s)...",
+                            out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
             this->free( out, TRUE, FALSE );
             retval = shred->xid;
 
@@ -798,8 +797,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         else
         {
-            EM_error3( "[chuck](VM): shreduler ERROR replacing shred %i...",
-                       out->xid );
+            EM_print2green( 0, "(VM) shreduler replacing shred %i...", out->xid );
             shred->release();
             retval = 0;
             goto done;
@@ -811,7 +809,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         {
             if( !this->m_num_shreds)
             {
-                EM_error3( "[chuck](VM): no shreds to remove..." );
+                EM_print2orange( "(VM) no shreds to remove..." );
                 retval = 0;
                 goto done;
             }
@@ -822,14 +820,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                 xid--;
             if( xid >= 0 )
             {
-                EM_error3( "[chuck](VM): removing recent shred: %i (%s)...",
-                           xid, mini(shred->name.c_str()) );
+                EM_print2green( "(VM) removing recent shred: %i (%s)...",
+                                xid, mini(shred->name.c_str()) );
                 this->free( shred, TRUE );
                 retval = xid;
             }
             else
             {
-                EM_error3( "[chuck](VM): no shreds removed..." );
+                EM_print2orange( "(VM) no shreds removed..." );
                 retval = 0;
                 goto done;
             }
@@ -839,20 +837,17 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
             Chuck_VM_Shred * shred = m_shreduler->lookup( msg->param );
             if( !shred )
             {
-                EM_error3( "[chuck](VM): cannot remove: no shred with id %i...",
-                           msg->param );
+                EM_print2orange( "(VM) cannot remove: no shred with id %i...", msg->param );
                 retval = 0;
                 goto done;
             }
             if( shred != m_shreduler->m_current_shred && !m_shreduler->remove( shred ) )  // was lookup
             {
-                EM_error3( "[chuck](VM): shreduler: cannot remove shred %i...",
-                           msg->param );
+                EM_print2orange( "(VM) shreduler: cannot remove shred %i...", msg->param );
                 retval = 0;
                 goto done;
             }
-            EM_error3( "[chuck](VM): removing shred: %i (%s)...",
-                       msg->param, mini(shred->name.c_str()) );
+            EM_print2green( "(VM) removing shred: %i (%s)...", msg->param, mini(shred->name.c_str()) );
             this->free( shred, TRUE );
             retval = msg->param;
         }
@@ -860,14 +855,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_REMOVEALL )
     {
         // print
-        EM_error3( "[chuck](VM): removing all (%i) shreds...", m_num_shreds );
+        EM_print2green( "(VM) removing all (%i) shreds...", m_num_shreds );
         // remove all shreds
         this->removeAll();
     }
     else if( msg->type == MSG_CLEARVM ) // added 1.3.2.0
     {
         // print
-        EM_error3( "[chuck](VM): removing all shreds and resetting type system" );
+        EM_print2green( "(VM) removing all shreds and resetting type system" );
         // first, remove all shreds
         this->removeAll();
         // next, clear user type system
@@ -890,13 +885,13 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         if( msg->args ) shred->args = *(msg->args);
 
         const char * s = ( msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str() );
-        EM_error3( "[chuck](VM): sporking incoming shred: %i (%s)...", xid, mini(s) );
+        EM_print2green( "(VM) sporking incoming shred: %i (%s)...", xid, mini(s) );
         retval = xid;
         goto done;
     }
     else if( msg->type == MSG_EXIT )
     {
-        EM_error3( "[chuck](VM): EXIT received...." );
+        EM_print2green( "(VM) EXIT received...." );
         // close file handles and clean up
         // REFACTOR-2017: TODO all_detach function
         // all_detach();
@@ -925,19 +920,19 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_TIME )
     {
         float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        CK_FPRINTF_STDOUT( "[chuck](VM): earth time: %s\n", timestamp_formatted().c_str() );
-        CK_FPRINTF_STDERR( "[chuck](VM): chuck time: %.0f::samp (now)\n", m_shreduler->now_system );
-        CK_FPRINTF_STDERR( "%22.6f::second since VM start\n", m_shreduler->now_system / srate );
-        CK_FPRINTF_STDERR( "%22.6f::minute\n", m_shreduler->now_system / srate / 60.0f );
-        CK_FPRINTF_STDERR( "%22.6f::hour\n", m_shreduler->now_system / srate / 60.0f / 60.0f );
-        CK_FPRINTF_STDERR( "%22.6f::day\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
-        CK_FPRINTF_STDERR( "%22.6f::week\n", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
+        EM_print2green  ( "(VM) earth time: %s", timestamp_formatted().c_str() );
+        EM_print2green  ( "(VM) chuck time: %.0f::samp (now)", m_shreduler->now_system );
+        EM_print2vanilla( "%22.6f::second since VM start", m_shreduler->now_system / srate );
+        EM_print2vanilla( "%22.6f::minute", m_shreduler->now_system / srate / 60.0f );
+        EM_print2vanilla( "%22.6f::hour", m_shreduler->now_system / srate / 60.0f / 60.0f );
+        EM_print2vanilla( "%22.6f::day", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
+        EM_print2vanilla( "%22.6f::week", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
     else if( msg->type == MSG_RESET_ID )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        CK_FPRINTF_STDERR( "[chuck](VM): -- resetting shred id to %lu...\n", m_shred_id + 1 );
+        EM_print2green( "(VM) -- resetting shred id to %lu...", m_shred_id + 1 );
     }
 
 done:
@@ -1343,8 +1338,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    CK_FPRINTF_STDERR(
-        "[chuck](VM): OutOfMemory: while allocating stack\n" );
+    EM_error2( 0, "(VM) OutOfMemory: while allocating stack" );
 
     // return FALSE
     return FALSE;
@@ -1913,8 +1907,8 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
     {
         // something is really wrong here - no shred can be
         // shreduled more than once
-        EM_error3( "[chuck](VM): internal sanity check failed in shredule()" );
-        EM_error3( "[chuck](VM): (shred shreduled while shreduled)" );
+        EM_error2( 0, "(VM) internal consistency check failed in shredule()" );
+        EM_error2( 0, "(VM)  |- (shred shreduled while shreduled)" );
 
         return FALSE;
     }
@@ -1923,8 +1917,8 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
     if( wake_time < (this->now_system - .5) )
     {
         // trying to enqueue on a time that is less than now
-        EM_error3( "[chuck](VM): internal sanity check failed in shredule()" );
-        EM_error3( "[chuck](VM): (wake time is past) - %f : %f", wake_time, this->now_system );
+        EM_error2( 0, "(VM) internal consistency check failed in shredule()" );
+        EM_error2( 0, "(VM)  |- (wake time is past) - %f : %f", wake_time, this->now_system );
 
         return FALSE;
     }
@@ -2433,24 +2427,22 @@ void Chuck_VM_Shreduler::status()
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    CK_FPRINTF_STDOUT( "[chuck](VM): status | # of shreds in VM: %ld\n", m_status.list.size() );
-    CK_FPRINTF_STDOUT( "             earth time: %s\n",
-                       timestamp_formatted().c_str() );
-    CK_FPRINTF_STDOUT( "             chuck time: %.0f::samp (%ldh%ldm%lds)\n",
-                      m_status.now_system, h, m, sec );
+    EM_print2green( "(VM) status | # of shreds in VM: %ld", m_status.list.size() );
+    EM_print2vanilla( "             earth time: %s", timestamp_formatted().c_str() );
+    EM_print2vanilla( "             chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
 
     // print status
-    if( m_status.list.size() ) CK_FPRINTF_STDOUT( "             --------\n" );
+    if( m_status.list.size() ) EM_print2vanilla( "             --------" );
     for( t_CKUINT i = 0; i < m_status.list.size(); i++ )
     {
         shred = m_status.list[i];
-        CK_FPRINTF_STDOUT(
-            "    [shred id]: %ld [source]: %s [spork time]: %.2fs ago%s\n",
+        EM_print2vanilla(
+            "    [shred id]: %ld [source]: %s [spork time]: %.2fs ago%s",
             shred->xid, mini( shred->name.c_str() ),
             (m_status.now_system - shred->start) / m_status.srate,
             shred->has_event ? " (blocked)" : "" );
     }
-    if( m_status.list.size() ) CK_FPRINTF_STDOUT( "             --------\n" );
+    if( m_status.list.size() ) EM_print2vanilla( "             --------" );
 }
 
 

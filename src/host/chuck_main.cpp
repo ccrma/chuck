@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include "util_platforms.h"
 #include "util_string.h"
 #include <signal.h>
 
@@ -169,6 +170,7 @@ void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
 static void version()
 {
     CK_FPRINTF_STDERR( "\n" );
+    CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
     CK_FPRINTF_STDERR( "chuck version: %s\n", ChucK::version() );
     
     // platform string
@@ -221,13 +223,17 @@ static void version()
 void usage()
 {
     // (note: optional colon added 1.3.0.0)
-    CK_FPRINTF_STDERR( "usage: chuck --[options|commands] [+-=^] file1 file2 file3 ...\n" );
+    CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
+    CK_FPRINTF_STDERR( "\nusage: %s --[%s|%s] [%s] file1 file2 ...\n\n", "chuck", TC::orange("options").c_str(), TC::blue("commands").c_str(), TC::blue("+-=^").c_str() );
+    CK_FPRINTF_STDERR( "%s", TC::set_orange().c_str() );
     CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
     CK_FPRINTF_STDERR( "                channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
     CK_FPRINTF_STDERR( "                srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
     CK_FPRINTF_STDERR( "                remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe|\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
+    CK_FPRINTF_STDERR( "                --color:{on|off}|--no-color\n" );
+    CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
     CK_FPRINTF_STDERR( "       [+-=^] = shortcuts for add, remove, replace, status\n" );
@@ -491,6 +497,8 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKBOOL dump = FALSE;
     t_CKBOOL probe = FALSE;
     t_CKBOOL probe_chugs = FALSE;
+    t_CKBOOL doAbout = FALSE;
+    t_CKBOOL doVersion = FALSE;
     t_CKBOOL set_priority = FALSE;
     t_CKBOOL auto_depend = FALSE;
     t_CKBOOL block = FALSE;
@@ -506,6 +514,10 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKINT  chugin_load = 1; // 1 == auto (variable added 1.3.0.0)
     // whether to make this new VM the one that receives OTF commands
     t_CKBOOL update_otf_vm = TRUE;
+    // whether to print code quotes for compiler message | 1.5.0.5 (ge) added
+    t_CKBOOL suppress_error_quote = FALSE;
+    // color terminal output | 1.5.0.5 (ge) added
+    t_CKBOOL colorTerminal = TRUE;
     string   filename = "";
     vector<string> args;
     // audio driver | 1.5.0.0
@@ -516,6 +528,15 @@ t_CKBOOL go( int argc, const char ** argv )
     // default driver name | 1.5.0.1
     if( g_enable_realtime_audio )
         audio_driver = ChuckAudio::defaultDriverName();
+    // error message string
+    string errorMessage1;
+    string errorMessage2;
+
+    // do any ANSI code config | 1.5.0.5 (ge) added
+    // (e.g., windows need to explicitly be configured to process
+    // escape sequences, e.g., for color console output)
+    // NOTE: do this early in case printing is desired
+    ck_configANSI_ESCcodes();
 
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path;
@@ -536,7 +557,7 @@ t_CKBOOL go( int argc, const char ** argv )
     parse_path_list( initial_chugin_path, dl_search_path );
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
-    
+
 #if defined(__DISABLE_WATCHDOG__)
     do_watchdog = FALSE;
 #elif defined(__MACOSX_CORE__)
@@ -633,10 +654,9 @@ t_CKBOOL go( int argc, const char ** argv )
                 }
                 else
                 {
-                    // error
-                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--dac:'\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: (see 'chuck --help' for more info)\n" );
-                    exit( 1 );
+                    errorMessage1 = "invalid arguments for '--dac:'";
+                    errorMessage2 = "(see 'chuck --help' for more info)";
+                    break;
                 }
             }
             else if( !strncmp(argv[i], "--dac", 5) )
@@ -664,9 +684,9 @@ t_CKBOOL go( int argc, const char ** argv )
                 else
                 {
                     // error
-                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--adc:'\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: (see 'chuck --help' for more info)\n" );
-                    exit( 1 );
+                    errorMessage1 = "invalid arguments for '--adc:'";
+                    errorMessage2 = "(see 'chuck --help' for more info)";
+                    break;
                 }
             }
             else if( !strncmp(argv[i], "--adc", 5) )
@@ -739,9 +759,9 @@ t_CKBOOL go( int argc, const char ** argv )
                 else
                 {
                     // error
-                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--deprecate'...\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :stop, :warn, or :ignore)\n" );
-                    exit( 1 );
+                    errorMessage1 = "invalid arguments for '--deprecate:'";
+                    errorMessage2 = " |- looking for STOP, WARN, or IGNORE";
+                    break;
                 }
             }
             // (added 1.3.0.0)
@@ -754,9 +774,9 @@ t_CKBOOL go( int argc, const char ** argv )
                 else
                 {
                     // error
-                    CK_FPRINTF_STDERR( "[chuck]: invalid arguments for '--chugin-load'...\n" );
-                    CK_FPRINTF_STDERR( "[chuck]: ... (looking for :on or :off)\n" );
-                    exit( 1 );
+                    errorMessage1 = "invalid arguments for '--chugin-load:'";
+                    errorMessage2 = " |- looking for ON, OFF, or AUTO";
+                    break;
                 }
             }
             // (added 1.3.0.0)
@@ -776,11 +796,30 @@ t_CKBOOL go( int argc, const char ** argv )
             {
                 named_dls.push_back(argv[i]+sizeof("--chugin:")-1);
             }
-            // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-g", sizeof("-g")-1) )
             {
                 named_dls.push_back(argv[i]+sizeof("-g")-1);
             }
+            // (added 1.5.0.5)
+            else if( !strncmp(argv[i], "--color:", sizeof("--color:")-1) )
+            {
+                // get the rest
+                string arg = tolower(argv[i]+sizeof("--color:")-1);
+                if( arg == "off" ) colorTerminal = false;
+                else if( arg == "on" || arg == "auto") colorTerminal = true;
+                else
+                {
+                    // error
+                    errorMessage1 = "invalid arguments for '--color:'...";
+                    errorMessage2 = "... (looking for ON, OFF, or AUTO)";
+                    break;
+                }
+            }
+            else if( tolower(argv[i]) == "--color" )
+                colorTerminal = TRUE;
+            else if( tolower(argv[i]) == "--no-color" )
+                colorTerminal = FALSE;
+            // (added 1.3.0.0)
             else if( !strcmp( argv[i], "--no-otf" ) )
             {
                 // don't use this new vm for otf commands (use the previous one)
@@ -794,16 +833,16 @@ t_CKBOOL go( int argc, const char ** argv )
                 uh();
             else if( !strcmp( argv[i], "--caution-to-the-wind" ) )
                 g_enable_system_cmd = TRUE;
+            else if( !strcmp( argv[i], "--disable-error-show-code" ) )
+                suppress_error_quote = TRUE;
             else if( !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")
                     || !strcmp(argv[i], "--about") )
             {
-                usage();
-                exit( 2 );
+                doAbout= TRUE;
             }
             else if( !strcmp( argv[i], "--version" ) )
             {
-                version();
-                exit( 2 );
+                doVersion = TRUE;
             }
             else
             {
@@ -822,9 +861,8 @@ t_CKBOOL go( int argc, const char ** argv )
                 if( is_otf ) exit( 1 );
                 
                 // done
-                CK_FPRINTF_STDERR( "[chuck]: invalid flag '%s'\n", argv[i] );
-                usage();
-                exit( 1 );
+                errorMessage1 = string("invalid flag '") + argv[i] + "' (see --help/-h)";
+                break;
             }
         }
         else // doesn't look like an argument
@@ -834,12 +872,60 @@ t_CKBOOL go( int argc, const char ** argv )
         }
     }
 
-    // log level (commented out; this is done below)
-    // EM_setlog( log_level );
+    // check if we output to TTY (teletype char at a time)
+    // if not disable color teriminal to avoid outputing
+    // ANSI escape codes to the output stream, which would
+    // show up in | and >
+    if( !ck_isatty() ) colorTerminal = false;
 
+    //------------------ CHUCK PRE-INITIALIZATION ---------------------
+    // instantiate a ChucK!
+    the_chuck = new ChucK();
+
+    // set the color terminal global setting
+    the_chuck->setParam( CHUCK_PARAM_COLOR_TERMINAL_OUTPUT, colorTerminal );
+
+    // set log level so things can start logging
+    the_chuck->setLogLevel( log_level );
+    //-----------------------------------------------------------------
+
+    // check for error message from command-line arguments
+    if( errorMessage1 != "" ) EM_error2( 0, errorMessage1.c_str() );
+    if( errorMessage2 != "" ) EM_error2( 0, errorMessage2.c_str() );
+    // if either
+    if( errorMessage1.length() || errorMessage2.length() )
+    {
+        // see if need to print usage
+        if( doAbout ) usage();
+        // bail for now
+        exit(1);
+    }
+
+    //-----------------------------------------------------------------
+    // about
+    //-----------------------------------------------------------------
+    if( doAbout )
+    {
+        usage();
+        exit( 2 );
+    }
+    //-----------------------------------------------------------------
+    // version
+    //-----------------------------------------------------------------
+    if( doVersion )
+    {
+        version();
+        exit( 2 );
+    }
+    //-----------------------------------------------------------------
     // probe
+    //-----------------------------------------------------------------
     if( probe )
     {
+        // ensure log level is at least SYSTEM
+        if( the_chuck->getLogLevel() < CK_LOG_SYSTEM )
+            the_chuck->setLogLevel( CK_LOG_SYSTEM );
+
         // probe default/selected audio driver
         ChuckAudio::probe( audio_driver.c_str() );
     
@@ -878,7 +964,7 @@ t_CKBOOL go( int argc, const char ** argv )
 
     if( !files && vm_halt && !g_enable_shell && !probe_chugs )
     {
-        CK_FPRINTF_STDERR( "[chuck]: no input files... (try --help)\n" );
+        EM_error2( 0, "no input files... (try --help/-h)" );
         exit( 1 );
     }
 
@@ -941,17 +1027,14 @@ t_CKBOOL go( int argc, const char ** argv )
 
 
     //-------------------- VIRTUAL MACHINE SETUP (PART 1) ---------------------
-    // instantiate a ChucK!
-    the_chuck = new ChucK();
-    // set log level so things can start logging
-    the_chuck->setLogLevel( log_level );
-
     // set chugins parameters
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, dl_search_path );
 
+    //-----------------------------------------------------------------
     // probe chugins | 1.5.0.4 (ge) added
+    //-----------------------------------------------------------------
     if( probe_chugs )
     {
         // ensure log level is at least SYSTEM
@@ -1037,6 +1120,8 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );
     // set hint, so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, g_enable_realtime_audio );
+    // enable or disable highlighting code on compiler error
+    the_chuck->setParam( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR, (t_CKINT)!suppress_error_quote );
 
     // initialize
     if( !the_chuck->init() )
@@ -1117,7 +1202,7 @@ t_CKBOOL go( int argc, const char ** argv )
     }
 
     // version
-    EM_log( CK_LOG_SYSTEM, "chuck version: %s", the_chuck->version() );
+    EM_log( CK_LOG_SYSTEM,  "chuck version: %s", TC::green(the_chuck->version(), true).c_str() );
 
     // pop log
     EM_poplog();
