@@ -34,7 +34,11 @@
 #include "util_string.h"
 #include "chuck_errmsg.h"
 
+#include <stdio.h>
+#include <sys/stat.h>
+
 #ifdef __PLATFORM_WIN32__
+
   #ifndef __CHUNREAL_ENGINE__
     #include <windows.h> // for win32_tmpfile()
   #else
@@ -42,12 +46,13 @@
     // unreal engine on windows disallows including windows.h
     #include "Windows/MinWindows.h"
   #endif // #ifndef __CHUNREAL_ENGINE__
-#else // not windows
-  #include <unistd.h>
-#endif // #ifdef __PLATFORM_WIN32__
+  #include <io.h> // for _isatty()
 
-#include <stdio.h>
-#include <sys/stat.h>
+#else // not windows
+
+  #include <unistd.h>
+
+#endif // #ifdef __PLATFORM_WIN32__
 
 
 
@@ -173,17 +178,20 @@ t_CKBOOL ck_isatty( int fd )
 #ifndef __PLATFORM_WIN32__
     return isatty( fd ) != 0;
 #else
-    // windows, until we can figure this out
-    return TRUE;
+    return _isatty( fd ) != 0;
 #endif
 }
 //-----------------------------------------------------------------------------
-// get a general sense if current outputting to tty
+// get a general sense if currently outputting to TTY
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_isatty()
 {
-    // use 2 for stderr
-    return ck_isatty( 2 );
+    // let's test stderr, since much of chuck operates over it
+#ifndef __PLATFORM_WIN32__
+    return ck_isatty( fileno(stderr) );
+#else
+    return ck_isatty( _fileno(stderr) );
+#endif
 }
 
 
