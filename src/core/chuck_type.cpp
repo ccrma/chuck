@@ -31,17 +31,17 @@
 //       Autumn 2005 - rewrite
 //-----------------------------------------------------------------------------
 #include "chuck_type.h"
-#include "chuck_parse.h"
-#include "chuck_scan.h"
 #include "chuck_compile.h"
-#include "chuck_instr.h"
-#include "chuck_vm.h"
 #include "chuck_errmsg.h"
+#include "chuck_instr.h"
 #include "chuck_io.h"
 #include "chuck_lang.h"
+#include "chuck_parse.h"
+#include "chuck_scan.h"
 #include "chuck_symbol.h"
-#include "util_string.h"
+#include "chuck_vm.h"
 #include "ugen_xxx.h"
+#include "util_string.h"
 
 #include <sstream>
 #include <algorithm>
