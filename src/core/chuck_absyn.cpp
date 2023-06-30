@@ -35,6 +35,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// 1.5.0.5 (ge) added
+// ASSUME: on systems where the lexer/parser is generated using flex/bison,
+// that chuck_yacc.h is the same as chuck.tab.h
+// #include "chuck.tab.h"
+
 
 a_Program new_program( a_Section section, int pos )
 {
@@ -401,7 +406,7 @@ a_Exp new_exp_from_unary3( ae_Operator oper, a_Stmt code, int pos )
     return a;
 }
 
-a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos )
+a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos, int castPos )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
     a->s_type = ae_exp_cast;
@@ -409,7 +414,7 @@ a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos )
     a->cast.type = type;
     a->cast.exp = exp;
     a->linepos = pos;
-    a->cast.linepos = pos;
+    a->cast.linepos = castPos;
     a->cast.self = a;
 
     return a;
@@ -443,7 +448,7 @@ a_Exp new_exp_from_func_call( a_Exp base, a_Exp args, int pos )
     return a;
 }
 
-a_Exp new_exp_from_member_dot( a_Exp base, c_str xid, int pos )
+a_Exp new_exp_from_member_dot( a_Exp base, c_str xid, int pos, int memberPos )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
     a->s_type = ae_exp_dot_member;
@@ -451,7 +456,7 @@ a_Exp new_exp_from_member_dot( a_Exp base, c_str xid, int pos )
     a->dot_member.base = base;
     a->dot_member.xid = insert_symbol( xid );
     a->linepos = pos;
-    a->dot_member.linepos = pos;
+    a->dot_member.linepos = memberPos;
     a->dot_member.self = a;
 
     return a;
@@ -826,19 +831,22 @@ a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, int pos )
     return a;
 }
 
-a_Id_List new_id_list( c_constr xid, int pos )
+a_Id_List new_id_list( c_constr xid, int pos /*, YYLTYPE * loc*/ )
 {
     a_Id_List a = (a_Id_List)checked_malloc( sizeof( struct a_Id_List_ ) );
     a->xid = insert_symbol( xid );
     a->next = NULL;
     a->linepos = pos;
 
+    // debug print
+    // if( loc ) fprintf( stderr, "ID: %s %d %d %d %d | pos = %d\n", xid, loc->first_line, loc->first_column, loc->last_line, loc->last_column, pos );
+
     return a;
 }
 
-a_Id_List prepend_id_list( c_constr xid, a_Id_List list, int pos )
+a_Id_List prepend_id_list( c_constr xid, a_Id_List list, int pos /*, YYLTYPE * loc */ )
 {
-    a_Id_List a = new_id_list( xid, pos );
+    a_Id_List a = new_id_list( xid, pos /*, loc */ );
     a->next = list;
     a->linepos = pos;
 

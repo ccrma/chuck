@@ -5043,7 +5043,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         // emit as this.v
         // BUG: passing "this" below might be bad if the exp is freed and string with it
         a_Exp base = new_exp_from_id( (char *)"this", linepos );
-        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), linepos );
+        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), linepos, linepos );
         base->type = v->owner_class;
         dot->type = v->type;
         dot->dot_member.t_base = v->owner_class;

@@ -144,6 +144,20 @@ string capitalize( const string & s )
 
 
 //-----------------------------------------------------------------------------
+// name: replace_tabs()
+// desc: reaplce each tab in a string
+//-----------------------------------------------------------------------------
+std::string replace_tabs( const std::string & s, char replaceEachTabWithThis )
+{
+    string str = s;
+    std::replace( str.begin(), str.end(), '\t', replaceEachTabWithThis );
+    return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: trim()
 // desc: ...
 //-----------------------------------------------------------------------------

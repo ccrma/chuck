@@ -51,11 +51,10 @@
 t_CKINT EM_tokPos = 0;
 t_CKINT EM_lineNum = 1;
 t_CKINT EM_extLineNum = 1;
-t_CKBOOL anyErrors= FALSE;
 
 // local global
-static const char * fileName = "";
-static int lineNum = 1;
+static const char * the_filename = "";
+static t_CKINT the_lineNum = 1;
 #define CK_ERR_BUF_LENGTH 1024
 static char g_buffer[CK_ERR_BUF_LENGTH] = "";
 static const size_t LASTERROR_SIZE = 1024;
@@ -103,7 +102,7 @@ static const char * g_str[] = {
 
 // intList
 typedef struct intList { t_CKINT i; struct intList *rest; } *IntList;
-static IntList linePos = NULL;
+static IntList the_linePos = NULL;
 
 
 static int lastErrorCat(const char * str)
@@ -130,13 +129,17 @@ static IntList intList( t_CKINT i, IntList rest )
 }
 
 
-// new line in lexer
-void EM_newline(void)
+// called by lexer on new line
+// 1.5.0.5 (ge) updated to take a pos argument
+void EM_newline( t_CKINT pos )
 {
-    lineNum++;
+    the_lineNum++;
     EM_lineNum++;
     EM_extLineNum++;
-    linePos = intList(EM_tokPos, linePos);
+    the_linePos = intList( pos, the_linePos );
+
+    // debug print
+    // fprintf( stderr, "line %ld, pos: %ld\n", EM_lineNum, pos );
 }
 
 
@@ -192,6 +195,8 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT pos )
 
     // get error line
     std::string line = g_currentFile.getLine(lineNumber);
+    // replace tabs with a single space
+    line = replace_tabs( line, ' ' );
     if( line != "" )
     {
         //spaces = strlen(g_lasterror);
@@ -232,45 +237,62 @@ void EM_printLineInCode( t_CKINT lineNumber )
 void EM_error( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
-    IntList lines = linePos;
-    int num = lineNum;
+    IntList lines = the_linePos;
+    t_CKINT num = the_lineNum;
+    t_CKINT actualPos = -1;
 
-    anyErrors = TRUE;
-    while( lines && lines->i >= pos )
+    if( pos > 0 )
     {
-        lines = lines->rest;
-        num--;
+        // search for line containing pos
+        while( lines && lines->i >= pos )
+        {
+            lines = lines->rest;
+            num--;
+        }
+        // calculate actual pos on line
+        if( lines ) actualPos = pos - lines->i;
     }
 
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
 
-    CK_FPRINTF_STDERR( "[%s]:", TC::orange(*fileName ? mini(fileName) : "chuck", true).c_str() );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    // print [chuck]:
+    CK_FPRINTF_STDERR( "[%s]:", TC::orange(*the_filename ? mini(the_filename) : "chuck", true).c_str() );
+    // buffer the above
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
-    if(lines)
+    
+    // if found
+    if( lines )
     {
-        CK_FPRINTF_STDERR( TC::orange("line(%d).char(%d):", true).c_str(), num, pos-lines->i );
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d).char(%d):", num, (int)(pos-lines->i) );
+        // print line(LINE).char(CHAR):
+        CK_FPRINTF_STDERR( TC::orange("line(%d).char(%d):", true).c_str(), num, (int)actualPos );
+        // buffer the above
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d).char(%d):", (int)num, (int)actualPos );
         lastErrorCat( g_buffer );
     }
+    // print space
     CK_FPRINTF_STDERR( " " );
+    // buffer the above
     lastErrorCat( " " );
 
+    // print the message
     va_start(ap, message);
     CK_VFPRINTF_STDERR( TC::red(message, true).c_str(), ap );
     va_end(ap);
-
+    // buffer the message
     va_start(ap, message);
     vsnprintf( g_buffer, CK_ERR_BUF_LENGTH, message, ap );
     va_end(ap);
-
-    CK_FPRINTF_STDERR( "\n");
-    CK_FFLUSH_STDERR();
     lastErrorCat( g_buffer );
 
-    // print (lines could be NULL, for example on an empty program)
-    if( lines ) EM_printLineInCode( num, pos-lines->i );
+    // endl
+    CK_FPRINTF_STDERR( "\n");
+    // flush
+    CK_FFLUSH_STDERR();
+
+    // print (btw lines could be NULL, for example on an empty program)
+    if( lines ) EM_printLineInCode( num, actualPos );
 }
 
 
@@ -281,10 +303,32 @@ void EM_error( t_CKINT pos, const char * message, ... )
 // format: [%s]:line(%d):
 // desc: error output (variant 2, with terminal colors)
 //-----------------------------------------------------------------------------
-void EM_error2( t_CKINT line, const char * message, ... )
+void EM_error2( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
+    IntList lines = the_linePos;
+    t_CKINT line = the_lineNum;
+    t_CKINT actualPos = -1;
 
+    // do if pos is positive
+    if( pos > 0 )
+    {
+        while( lines && lines->i >= pos )
+        {
+            lines = lines->rest;
+            line--;
+        }
+
+        if( lines )
+        {
+            actualPos = pos - lines->i;
+
+            // debug print
+            // std::cerr << "lineNum: " << line << " lines->i: " << lines->i << " pos: " << pos << std::endl;
+        }
+    }
+
+    // save
     EM_extLineNum = line;
 
     // separate errmsgs with newlines
@@ -294,15 +338,15 @@ void EM_error2( t_CKINT line, const char * message, ... )
     t_CKBOOL bold = true;
 
     // header
-    std::string prefix = *fileName ? mini(fileName) : "chuck";
+    std::string prefix = *the_filename ? mini(the_filename) : "chuck";
     // print header
-    if( *fileName ) CK_FPRINTF_STDERR( "[%s]:", TC::orange(prefix, bold).c_str() );
+    if( *the_filename ) CK_FPRINTF_STDERR( "[%s]:", TC::orange(prefix, bold).c_str() );
     else CK_FPRINTF_STDERR( "[%s]:", prefix.c_str() );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
 
     // if given a valid line number
-    if( line > 0 )
+    if( pos )
     {
         CK_FPRINTF_STDERR( TC::orange("line(%d):",bold).c_str(), (int)line );
         snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d):", (int)line );
@@ -328,7 +372,7 @@ void EM_error2( t_CKINT line, const char * message, ... )
     CK_FFLUSH_STDERR();
 
     // print
-    EM_printLineInCode( line );
+    if( pos ) EM_printLineInCode( line, actualPos );
 }
 
 
@@ -348,8 +392,8 @@ void EM_error2b( t_CKINT line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror[0] != '\0' ) lastErrorCat( "\n" );
 
-    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
 
     // if given a valid line number
@@ -420,7 +464,7 @@ void EM_print2vanilla( const char * message, ... )
     va_list ap;
 
     // print
-    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     CK_FPRINTF_STDERR( " " );
 
     // print
@@ -445,7 +489,7 @@ void EM_print2green( const char * message, ... )
     va_list ap;
 
     // print
-    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     CK_FPRINTF_STDERR( " " );
 
     // print
@@ -470,7 +514,7 @@ void EM_print2blue( const char * message, ... )
     va_list ap;
 
     // print
-    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     CK_FPRINTF_STDERR( " " );
 
     // print
@@ -495,7 +539,7 @@ void EM_print2orange( const char * message, ... )
     va_list ap;
 
     // print
-    CK_FPRINTF_STDERR( "[%s]:", *fileName ? mini(fileName) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     CK_FPRINTF_STDERR( " " );
 
     // print
@@ -603,24 +647,23 @@ void EM_poplog()
 //-----------------------------------------------------------------------------
 void EM_start_filename( const char * fname )
 {
-    anyErrors = FALSE;
-    fileName = fname ? fname : (c_str)"";
-    lineNum = 1;
+    the_filename = fname ? fname : (c_str)"";
+    the_lineNum = 1;
     EM_lineNum = 1;
     EM_extLineNum = 1;
 
     // free the intList
     IntList curr = NULL;
-    while( linePos )
+    while( the_linePos )
     {
-        curr = linePos;
-        linePos = linePos->rest;
+        curr = the_linePos;
+        the_linePos = the_linePos->rest;
         // free
         free( curr );
     }
 
     // make new intList
-    linePos = intList( 0, NULL );
+    the_linePos = intList( 0, NULL );
 }
 
 
@@ -633,9 +676,9 @@ void EM_start_filename( const char * fname )
 void EM_reset_filename()
 {
     // set
-    fileName = (c_str)"";
+    the_filename = (c_str)"";
     // more set
-    lineNum = 0;
+    the_lineNum = 0;
     EM_lineNum = 0;
     EM_extLineNum = 0;
 }

@@ -1792,12 +1792,12 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_divide_chuck:
     case ae_op_percent_chuck:
         if( isa( left, env->t_object ) ) {
-            EM_error2( lhs->linepos, "cannot perform '%s' on object references...",
+            EM_error2( binary->linepos, "cannot perform '%s' on object references...",
                 op2str(op) );
             return NULL;
         }
         if( isa( right, env->t_object ) ) {
-            EM_error2( lhs->linepos, "cannot perform '%s' on object references...",
+            EM_error2( binary->linepos, "cannot perform '%s' on object references...",
                 op2str(op) );
             return NULL;
         }
@@ -2466,7 +2466,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             // got a problem
             else
             {
-                 EM_error2( unary->linepos,
+                 EM_error2( unary->exp ? unary->exp->linepos : unary->linepos,
                      "only function calls can be sporked..." );
                  return NULL;
             }
@@ -2478,8 +2478,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             t = type_engine_find_type( env, unary->type->xid );
             if( !t )
             {
-                EM_error2( unary->linepos,
-                    "... in 'new' expression ..." );
+                // EM_error2( 0, "... in 'new' expression ..." );
                 return NULL;
             }
 
@@ -2520,11 +2519,10 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             if( isa( t, env->t_int ) || isa( t, env->t_float ) || isa( t, env->t_dur )
                 || isa( t, env->t_time ) )
             {
-                EM_error2( unary->linepos,
-                    "cannot instantiate/(new) primitive type '%s'...",
+                EM_error2( unary->type->linepos,
+                    "cannot use 'new' on primitive type '%s'...",
                     t->c_name() );
-                EM_error2( unary->linepos,
-                    "...(primitive types: 'int', 'float', 'time', 'dur')" );
+                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
                 return NULL;
             }
 
@@ -2532,7 +2530,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             if( unary->type->ref && !unary->array )
             {
                 EM_error2( unary->linepos,
-                    "cannot instantiate/(new) single object references (@)..." );
+                    "cannot use 'new' on an individual object reference (@)..." );
                 return NULL;
             }
 
@@ -2577,7 +2575,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 if( !env->class_def )
                 {
                     EM_error2( exp->linepos,
-                        "keyword 'this' can be used only inside class definition..." );
+                        "keyword 'this' cannot used outside class definition..." );
                     return NULL;
                 }
 
@@ -3144,8 +3142,8 @@ t_CKTYPE type_engine_check_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
     if( !type_engine_check_cast_valid( env, t2, t ) )
     {
         EM_error2( cast->linepos,
-            "invalid cast to '%s' from '%s'...",
-            S_name( cast->type->xid->xid ), t->c_name() );
+            "invalid cast from '%s' to '%s'...",
+            t->c_name(), S_name( cast->type->xid->xid ) );
         return NULL;
     }
 
@@ -3875,7 +3873,7 @@ check_func:
     if( !value )
     {
         // can't find member
-        EM_error2( member->base->linepos,
+        EM_error2( member->linepos,
                   "class '%s' has no member '%s'",
                   the_base->c_name(), S_name(member->xid) );
         return NULL;
@@ -3957,7 +3955,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     if( !value )
     {
         // can't find member
-        EM_error2( member->base->linepos,
+        EM_error2( member->linepos,
                    "class '%s' has no member '%s'",
                    the_base->c_name(), S_name(member->xid) );
         return NULL;
@@ -4091,11 +4089,10 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
             // must not be primitive
             if( isprim( env, t_parent ) )
             {
-                EM_error2( class_def->ext->linepos,
+                EM_error2( class_def->ext->extend_id->linepos,
                     "cannot extend primitive type '%s'",
                     t_parent->c_name() );
-                EM_error2( class_def->ext->linepos,
-                    "...(note: primitives types are 'int', 'float', 'time', and 'dur')" );
+                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
                 return FALSE;
             }
 
@@ -6289,7 +6286,7 @@ a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
                     curr[size-j-1] = s;
                 }
                 // make a new id and put in list
-                list = prepend_id_list( (char *)curr.c_str(), list, 0 );
+                list = prepend_id_list( (char *)curr.c_str(), list, 0 /*, NULL */ );
                 // clear
                 curr = "";
             }

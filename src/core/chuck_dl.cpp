@@ -1204,7 +1204,7 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
 static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
 {
     Chuck_Env * env = shred->vm_ref->env();
-    a_Id_List list = new_id_list( name, 0 ); // TODO: nested types
+    a_Id_List list = new_id_list( name, 0 /*, NULL*/ ); // TODO: nested types
     Chuck_Type * t = type_engine_find_type( env, list );
     delete_id_list( list );
     return (Chuck_DL_Api::Type)t;

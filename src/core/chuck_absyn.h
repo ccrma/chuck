@@ -34,12 +34,18 @@
 
 #include "chuck_symbol.h"
 
+
+
+
 #if defined(_cplusplus) || defined(__cplusplus)
 extern "C" {
 #endif
 
 // pos
 typedef int a_Pos;
+
+// 1.5.0.5 (ge) flex/bison's location struct
+// typedef struct YYLTYPE YYLTYPE;
 
 // enum oper
 typedef enum {
@@ -156,11 +162,11 @@ a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, int pos );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, int pos );
 a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, a_Array_Sub array, int pos );
 a_Exp new_exp_from_unary3( ae_Operator oper, a_Stmt code, int pos );
-a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos );
+a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, int pos, int castPos );
 a_Exp new_exp_from_array( a_Exp base, a_Array_Sub indices, int pos );
 a_Exp new_exp_from_array_lit( a_Array_Sub exp_list, int pos );
 a_Exp new_exp_from_func_call( a_Exp base, a_Exp args, int pos );
-a_Exp new_exp_from_member_dot( a_Exp base, c_str member, int pos );
+a_Exp new_exp_from_member_dot( a_Exp base, c_str member, int pos, int memberPos );
 a_Exp new_exp_from_postfix( a_Exp base, ae_Operator op, int pos );
 a_Exp new_exp_from_dur( a_Exp base, a_Exp unit, int pos );
 a_Exp new_exp_from_id( c_str xid, int pos );
@@ -196,8 +202,8 @@ a_Class_Body new_class_body( a_Section section, int pos );
 a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, int pos );
 a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, int pos );
 a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, int pos );
-a_Id_List new_id_list( c_constr xid, int pos );
-a_Id_List prepend_id_list( c_constr xid, a_Id_List list, int pos );
+a_Id_List new_id_list( c_constr xid, int pos /*, YYLTYPE * loc*/ );
+a_Id_List prepend_id_list( c_constr xid, a_Id_List list, int pos /*, YYLTYPE * loc*/ );
 void clean_exp( a_Exp exp );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
