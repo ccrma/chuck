@@ -126,10 +126,11 @@ void tokenize( const std::string & str, std::vector<std::string> & tokens, const
 //
 //       calling TC::globalDisableOverride( false ) is not recommended!
 //
-// FYI nifty tool: https://michurin.github.io/xterm256-color-picker/
 // (still working on making TC more flexible!) more resources:
+// https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 // https://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
 // https://cplusplus.com/forum/general/18200/
+// FYI nifty tool: https://michurin.github.io/xterm256-color-picker/
 //-----------------------------------------------------------------------------
 class TC
 {
