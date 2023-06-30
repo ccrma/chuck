@@ -1088,10 +1088,10 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL retval = load_external_module_at_path( compiler, chugins2load[i].filename.c_str(),
+        t_CKBOOL loaded = load_external_module_at_path( compiler, chugins2load[i].filename.c_str(),
             chugins2load[i].path.c_str() );
         // if no error
-        if( chugins2load[i].isBundle && retval ) {
+        if( chugins2load[i].isBundle && loaded) {
             // log
             EM_pushlog();
             EM_log( CK_LOG_INFO, "macOS bundle was detected..." );
@@ -1263,10 +1263,10 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL retval = probe_external_module_at_path(
+        t_CKBOOL probed = probe_external_module_at_path(
             chugins2load[i].filename.c_str(), chugins2load[i].path.c_str() );
         // if no error
-        if( chugins2load[i].isBundle && retval ) {
+        if( chugins2load[i].isBundle && probed) {
             // log
             EM_pushlog();
             EM_log( CK_LOG_INFO, "macOS bundle was detected..." );

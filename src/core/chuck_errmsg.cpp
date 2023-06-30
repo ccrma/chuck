@@ -179,19 +179,19 @@ void EM_highlight_on_error( t_CKBOOL yesOrNo )
 // name: EM_printLineInCode() | 1.5.0.5 (ge) added
 // desc: output a particular line of code, with optional token `pos`
 //-----------------------------------------------------------------------------
-void EM_printLineInCode( t_CKINT lineNum, t_CKINT pos )
+void EM_printLineInCode( t_CKINT lineNumber, t_CKINT pos )
 {
     // check
-    if( !g_highlight_on_error || lineNum <= 0 ) return;
+    if( !g_highlight_on_error || lineNumber <= 0 ) return;
 
     t_CKINT spaces = 0;
 
     // line num display
     //std::string lineDisplay;
-    // lineDisplay += "line(" + itoa(lineNum) + "): ";
+    // lineDisplay += "line(" + itoa(lineNumber) + "): ";
 
     // get error line
-    std::string line = g_currentFile.getLine(lineNum);
+    std::string line = g_currentFile.getLine(lineNumber);
     if( line != "" )
     {
         //spaces = strlen(g_lasterror);
@@ -216,9 +216,9 @@ void EM_printLineInCode( t_CKINT lineNum, t_CKINT pos )
 // name: EM_printLineInCode() | 1.5.0.5 (ge) added
 // desc: overloaded version
 //-----------------------------------------------------------------------------
-void EM_printLineInCode( t_CKINT lineNum )
+void EM_printLineInCode( t_CKINT lineNumber )
 {
-    EM_printLineInCode( lineNum, -1 );
+    EM_printLineInCode( lineNumber, -1 );
 }
 
 
