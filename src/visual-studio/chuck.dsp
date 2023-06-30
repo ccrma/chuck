@@ -412,7 +412,7 @@ SOURCE=.\chuck_vm.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chuck_win32.c
+SOURCE=.\chuck_yacc.c
 
 !IF  "$(CFG)" == "chuck_win32 - Win32 Release"
 
