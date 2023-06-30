@@ -269,8 +269,8 @@ void EM_error( t_CKINT pos, const char * message, ... )
     CK_FFLUSH_STDERR();
     lastErrorCat( g_buffer );
 
-    // print
-    EM_printLineInCode( num, pos-lines->i );
+    // print (lines could be NULL, for example on an empty program)
+    if( lines ) EM_printLineInCode( num, pos-lines->i );
 }
 
 
