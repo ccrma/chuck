@@ -4,6 +4,12 @@ ChucK VERSIONS log
 
 1.5.0.5
 ---
+- (added) color TTY support for command-line chuck is here! chuck in
+  color! compiler errors, probes, logs, on-the-fly programm (OTF), and 
+  other messages are now output in color, when chuck detects it is 
+  outputting to a TTY (e.g., interactive terminal).
+- (added) color TTY can can be explicitly enabled/disabled using
+  --color and --no-color when running chuck on the command line
 - (added) code highlighting when reporting compiler errors
   > chuck test2.ck
   [test2.ck]:line(17): undefined variable 'bar'...
@@ -15,13 +21,10 @@ ChucK VERSIONS log
   [test1.ck]:line(5).char(9): syntax error
      it @ is not ! valid => syntax!
              ^
-  ---
 - (added) chuck now has color teminal output!
   highlights compiler and other message, logs, output from --probe and 
   --chugin-probe, for easier scanning and reading (need compatible 
   terminal program).
-- (added) color text output can be toggled using the 
-  --color and --no-color flags
 - (added) error message when given a directory name instead of .ck file
   > chuck myFolder
   [chuck]: cannot parse file: 'myFolder' is a directory
