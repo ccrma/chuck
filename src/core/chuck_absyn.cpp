@@ -540,7 +540,7 @@ a_Exp new_exp_from_str( c_str str, uint32_t lineNum, uint32_t posNum )
     a->s_type = ae_exp_primary;
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_str;
-    a->primary.str = str;
+    a->primary.str = strdup( str ); // 1.5.0.5 (ge) added strdup oops
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
@@ -554,7 +554,7 @@ a_Exp new_exp_from_char( c_str chr, uint32_t lineNum, uint32_t posNum )
     a->s_type = ae_exp_primary;
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_char;
-    a->primary.chr = chr;
+    a->primary.chr = strdup(chr);
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
@@ -855,13 +855,6 @@ a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t lineNum, uint3
     return a;
 }
 
-void clean_exp( a_Exp exp )
-{
-    if( !exp ) return;
-    clean_exp( exp->next );
-    free( exp );
-}
-
 a_Array_Sub new_array_sub( a_Exp exp, uint32_t lineNum, uint32_t posNum )
 {
     a_Array_Sub a = (a_Array_Sub)checked_malloc( sizeof( struct a_Array_Sub_ ) );
@@ -927,7 +920,7 @@ a_Array_Sub prepend_array_sub( a_Array_Sub a, a_Exp exp, uint32_t lineNum, uint3
     return a;
 
 error:
-    clean_exp( exp );
+    delete_exp( exp );
     return a;
 }
 
@@ -963,21 +956,6 @@ a_Vec new_vec( a_Exp e, uint32_t lineNum, uint32_t posNum ) // ge: added 1.3.5.3
     a->line = lineNum; a->where = posNum;
 
     return a;
-}
-
-void delete_id_list( a_Id_List x )
-{
-    if( !x ) return;
-
-    a_Id_List curr = x, next = x->next, temp;
-
-    while( curr )
-    {
-        temp = curr;
-        curr = next;
-        next = temp->next;
-        free( temp );
-    }
 }
 
 
@@ -1028,8 +1006,564 @@ static const char * op_str[] = {
 const char * op2str( ae_Operator op )
 {
     t_CKINT index = (t_CKINT)op;
-    if( index < 0 || index >= (t_CKINT)(sizeof(op_str)/sizeof(char *)) )
+    if( index < 0 || index >= (t_CKINT)(sizeof( op_str )/sizeof( char * )) )
         return "[non-existent operator]";
 
     return op_str[index];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// AST cleanup function (these are mostly called by chuck compiler)
+//-----------------------------------------------------------------------------
+void delete_program( a_Program program )
+{
+    if( !program ) return;
+
+    // recursive
+    delete_program( program->next );
+    // log
+    EM_log( CK_LOG_FINEST, "deleting program [%p] [next: %p]...", (void *)program, (void *)(program->next) );
+    // delete this section
+    delete_section( program->section );
+    // free this node
+    SAFE_FREE( program );
+}
+
+void delete_section( a_Section section )
+{
+    if( !section ) return;
+    EM_log( CK_LOG_FINEST, "deleting section [%p]...", (void *)section );
+
+    // check section type
+    switch( section->s_type )
+    {
+    case ae_section_stmt: delete_stmt_list( section->stmt_list ); break;
+    case ae_section_class: delete_class_def( section->class_def ); break;
+    case ae_section_func: delete_func_def( section->func_def ); break;
+    }
+    SAFE_FREE( section );
+}
+
+// delete stmt list
+void delete_stmt_list( a_Stmt_List list )
+{
+    if( !list ) return;
+
+    delete_stmt_list( list->next );
+    EM_log( CK_LOG_FINEST, "deleting stmt list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
+    delete_stmt( list->stmt );
+    SAFE_FREE( list );
+}
+
+// delete class_def
+void delete_class_def( a_Class_Def def )
+{
+    if( !def ) return;
+
+    // TODO: release reference count for def->type
+    // TODO: release reference count for def->home
+    // TODO: what to do about iface?
+    EM_log( CK_LOG_FINEST, "deleting class def [%p]...", (void *)def );
+
+    delete_id_list( def->name );
+    delete_class_ext( def->ext );
+    delete_class_body( def->body );
+    SAFE_FREE( def );
+}
+
+void delete_class_body( a_Class_Body body )
+{
+    if( !body ) return;
+    EM_log( CK_LOG_FINEST, "deleting class body [%p]...", (void *)body );
+
+    delete_class_body( body->next );
+    delete_section( body->section );
+    SAFE_FREE( body );
+}
+
+void delete_class_ext( a_Class_Ext ext )
+{
+    if( !ext ) return;
+    EM_log( CK_LOG_FINEST, "deleting class ext [%p]...", (void *)ext );
+
+    delete_id_list( ext->extend_id );
+    delete_id_list( ext->impl_list );
+    SAFE_FREE( ext );
+}
+
+// delete func def
+void delete_func_def( a_Func_Def def )
+{
+    if( !def ) return;
+    EM_log( CK_LOG_FINEST, "deleting func def [%p]...", (void *)def );
+
+    // TODO: release reference def->ret_type
+    // TODO: do something with Symbol def->name?
+    // TODO: release reference def->ck_func;
+
+    delete_type_decl( def->type_decl );
+    delete_arg_list( def->arg_list );
+    delete_stmt( def->code );
+    SAFE_FREE( def );
+}
+
+void delete_iface_def( a_Class_Def def )
+{
+    delete_class_def( def );
+}
+
+// delete stmt
+void delete_stmt( a_Stmt stmt )
+{
+    if( !stmt ) return;
+    EM_log( CK_LOG_FINEST, "deleting stmt [%p]...", (void *)stmt );
+
+    // unlike a_Exp, stmt are part of a list and don't have a ->next
+
+    // check statement type
+    switch( stmt->s_type )
+    {
+    case ae_stmt_exp:
+        delete_exp( stmt->stmt_exp );
+        break;
+    case ae_stmt_while:
+        delete_stmt_from_while( stmt );
+        break;
+    case ae_stmt_until:
+        delete_stmt_from_until( stmt );
+        break;
+    case ae_stmt_for:
+        delete_stmt_from_for( stmt );
+        break;
+    case ae_stmt_loop:
+        delete_stmt_from_loop( stmt );
+        break;
+    case ae_stmt_if:
+        delete_stmt_from_if( stmt );
+        break;
+    case ae_stmt_code:
+        delete_stmt_from_code( stmt );
+        break;
+    case ae_stmt_switch:
+        delete_stmt_from_switch( stmt );
+        break;
+    case ae_stmt_break:
+        delete_stmt_from_break( stmt );
+        break;
+    case ae_stmt_continue:
+        delete_stmt_from_continue( stmt );
+        break;
+    case ae_stmt_return:
+        delete_stmt_from_return( stmt );
+        break;
+    case ae_stmt_case:
+        // TODO?
+        break;
+    case ae_stmt_gotolabel:
+        delete_stmt_from_label( stmt );
+        break;
+    }
+
+    SAFE_FREE( stmt );
+}
+
+void delete_stmt_from_code( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (code)...", (void *)stmt );
+    delete_stmt_list( stmt->stmt_code.stmt_list );
+}
+
+void delete_stmt_from_while( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (while)...", (void *)stmt );
+    delete_exp( stmt->stmt_while.cond );
+    delete_stmt( stmt->stmt_while.body );
+}
+
+void delete_stmt_from_until( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (until)...", (void *)stmt );
+    delete_stmt( stmt->stmt_until.body );
+}
+
+void delete_stmt_from_for( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (for)...", (void *)stmt );
+    delete_stmt( stmt->stmt_for.c1 );
+    delete_stmt( stmt->stmt_for.c2 );
+    delete_exp( stmt->stmt_for.c3 );
+    delete_stmt( stmt->stmt_for.body );
+}
+
+void delete_stmt_from_loop( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (loop)...", (void *)stmt );
+    delete_exp( stmt->stmt_loop.cond );
+    delete_stmt( stmt->stmt_loop.body );
+}
+
+void delete_stmt_from_if( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (if)...", (void *)stmt );
+    delete_exp( stmt->stmt_if.cond );
+    delete_stmt( stmt->stmt_if.if_body );
+    delete_stmt( stmt->stmt_if.else_body );
+}
+
+void delete_stmt_from_return( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (return)...", (void *)stmt );
+    delete_exp( stmt->stmt_return.val );
+}
+
+void delete_stmt_from_switch( a_Stmt stmt )
+{
+    // TODO
+}
+
+void delete_stmt_from_break( a_Stmt stmt )
+{
+    // nothing to do
+}
+
+void delete_stmt_from_continue( a_Stmt stmt )
+{
+    // nothing to do
+}
+
+void delete_stmt_from_label( a_Stmt stmt )
+{
+    // TODO: someting with S_Symbol stmt->gotolabel.name
+}
+
+void delete_exp_from_primary( a_Exp_Primary_ & p )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary)..." );
+
+    switch( p.s_type )
+    {
+    case ae_primary_str:
+        delete_exp_from_str( &p );
+        break;
+    case ae_primary_char:
+        delete_exp_from_char( &p );
+        break;
+    case ae_primary_var:
+        delete_exp_from_id( &p );
+        break;
+    case ae_primary_array:
+        delete_exp_from_array_lit( &p );
+        break;
+    case ae_primary_exp:
+        delete_exp( p.exp );
+        break;
+    case ae_primary_complex:
+        delete_exp_from_complex( &p );
+        break;
+    case ae_primary_polar:
+        delete_exp_from_polar( &p );
+        break;
+    case ae_primary_vec:
+        delete_exp_from_vec( &p );
+        break;
+    case ae_primary_hack:
+        delete_exp_from_hack( &p );
+        break;
+
+    // have nothing to delete
+    case ae_primary_num:
+        EM_log( CK_LOG_FINEST, "deleting exp (primary NUM) [%d]...", (long)p.num );
+        break;
+    case ae_primary_float:
+        EM_log( CK_LOG_FINEST, "deleting exp (primary FLOAT) [%f]...", p.fnum );
+        break;
+    case ae_primary_nil:
+        EM_log( CK_LOG_FINEST, "deleting exp (primary NIL)..." );
+        break;
+    }
+}
+
+// delete an exp
+void delete_exp( a_Exp e )
+{
+    if( !e ) return;
+
+    // TODO: release reference type
+    // TODO: release reference owner
+
+    // could be a list
+    delete_exp( e->next );
+    EM_log( CK_LOG_FINEST, "deleting exp [%p] [next: %p]...", (void *)e, (void *)(e->next) );
+
+    // check expression type
+    switch( e->s_type )
+    {
+    case ae_exp_binary:
+        delete_exp_from_binary( e );
+        break;
+    case ae_exp_unary:
+        delete_exp_from_unary( e );
+        break;
+    case ae_exp_cast:
+        delete_exp_from_cast( e );
+        break;
+    case ae_exp_postfix:
+        delete_exp_from_postfix( e );
+        break;
+    case ae_exp_dur:
+        delete_exp_from_dur( e );
+        break;
+    case ae_exp_primary:
+        delete_exp_from_primary( e->primary );
+        break;
+    case ae_exp_array:
+        delete_exp_from_array( e );
+        break;
+    case ae_exp_func_call:
+        delete_exp_from_func_call( e );
+        break;
+    case ae_exp_dot_member:
+        delete_exp_from_member_dot( e );
+        break;
+    case ae_exp_if:
+        delete_exp_from_if( e );
+        break;
+    case ae_exp_decl:
+        delete_exp_decl( e );
+        break;
+    }
+
+    SAFE_FREE( e );
+}
+
+void delete_exp_from_binary( a_Exp e )
+{
+    // TODO: release reference ck_func
+    EM_log( CK_LOG_FINEST, "deleting exp (binary) [%p]...", (void *)e );
+
+    delete_exp( e->binary.lhs );
+    delete_exp( e->binary.rhs );
+}
+
+void delete_exp_from_unary( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (unary) [%p]...", (void *)e );
+
+    delete_exp( e->unary.exp );
+    delete_type_decl( e->unary.type );
+    delete_array_sub( e->unary.array );
+}
+
+void delete_exp_from_cast( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (cast) [%p]...", (void *)e );
+
+    delete_type_decl( e->cast.type );
+    delete_exp( e->cast.exp );
+}
+
+void delete_exp_from_array( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (arry) [%p]...", (void *)e );
+
+    delete_exp( e->array.base );
+    delete_array_sub( e->array.indices );
+}
+
+void delete_exp_from_func_call( a_Exp e )
+{
+    // TODO: release reference ret_type
+    // TODO: release reference ck_func
+    // TODO: release reference ck_vm_code
+    EM_log( CK_LOG_FINEST, "deleting exp (func call) [%p]...", (void *)e );
+
+    delete_exp( e->func_call.func );
+    delete_exp( e->func_call.args );
+}
+
+void delete_exp_from_member_dot( a_Exp e )
+{
+    // TODO: release reference t_base
+    // TODO: do something about Symbol xid?
+    EM_log( CK_LOG_FINEST, "deleting exp (member access) [%p]...", (void *)e );
+
+    delete_exp( e->dot_member.base );
+}
+
+void delete_exp_from_postfix( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (postfix) [%p]...", (void *)e );
+    delete_exp( e->postfix.exp );
+}
+
+void delete_exp_from_dur( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (dur) [%p]...", (void *)e );
+
+    delete_exp( e->dur.base );
+    delete_exp( e->dur.unit );
+}
+
+void delete_exp_from_if( a_Exp e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (if) [%p]...", (void *)e );
+
+    delete_exp( e->exp_if.cond );
+    delete_exp( e->exp_if.if_exp );
+    delete_exp( e->exp_if.else_exp );
+}
+
+void delete_exp_decl( a_Exp e )
+{
+    // TODO: release reference ck_type
+    EM_log( CK_LOG_FINEST, "deleting exp (decl) [%p]...", (void *)e );
+
+    delete_type_decl( e->decl.type );
+    delete_var_decl_list( e->decl.var_decl_list );
+}
+
+void delete_exp_from_id( a_Exp_Primary e )
+{
+    // TODO: do we need to anything with the Symbol?
+    EM_log( CK_LOG_FINEST, "deleting exp (primary ID '%s') [%p]...", S_name(e->var), (void *)e );
+}
+
+void delete_exp_from_str( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary str) [%p]...", (void *)e );
+
+    SAFE_FREE( e->str );
+}
+
+void delete_exp_from_char( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary char) [%p]...", (void *)e );
+
+    SAFE_FREE( e->chr );
+}
+
+void delete_exp_from_array_lit( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary array lit) [%p]...", (void *)e );
+
+    delete_array_sub( e->array );
+}
+
+void delete_exp_from_complex( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary complex) [%p]...", (void *)e );
+
+    delete_exp( e->complex->re );
+    delete_exp( e->complex->im );
+}
+
+void delete_exp_from_polar( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary polar) [%p]...", (void *)e );
+
+    delete_exp( e->polar->mod );
+    delete_exp( e->polar->phase );
+}
+
+void delete_exp_from_vec( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary vec) [%p]...", (void *)e );
+
+    delete_exp( e->vec->args );
+}
+
+void delete_exp_from_hack( a_Exp_Primary e )
+{
+    EM_log( CK_LOG_FINEST, "deleting exp (primary <<< hack >>>) [%p]...", (void *)e );
+
+    delete_exp( e->exp );
+}
+
+void delete_var_decl_list( a_Var_Decl_List list )
+{
+    if( !list ) return;
+    delete_var_decl_list( list->next );
+    EM_log( CK_LOG_FINEST, "deleting var decl list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
+    delete_var_decl( list->var_decl );
+    SAFE_FREE( list );
+}
+
+void delete_var_decl( a_Var_Decl decl )
+{
+    if( !decl ) return;
+    EM_log( CK_LOG_FINEST, "deleting var decl [%p]...", (void *)decl );
+
+    // TODO: do anything with Symbol xid?
+    // TODO: release reference value
+    // TODO: release reference ck_type
+
+    delete_array_sub( decl->array );
+    SAFE_FREE( decl );
+}
+
+void delete_type_decl( a_Type_Decl decl )
+{
+    if( !decl ) return;
+    EM_log( CK_LOG_FINEST, "deleting type decl [%p]...", (void *)decl );
+
+    delete_id_list( decl->xid );
+    delete_array_sub( decl->array );
+    SAFE_FREE( decl );
+}
+
+void delete_arg_list( a_Arg_List list )
+{
+    // TODO: release reference type
+    if( !list ) return;
+    delete_arg_list( list->next );
+    EM_log( CK_LOG_FINEST, "deleting arg list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
+    delete_type_decl( list->type_decl );
+    SAFE_FREE( list );
+}
+
+void delete_array_sub( a_Array_Sub sub )
+{
+    if( !sub ) return;
+    EM_log( CK_LOG_FINEST, "deleting type decl [%p]...", (void *)sub );
+    delete_exp( sub->exp_list );
+    SAFE_FREE( sub );
+}
+
+void delete_complex( a_Complex c )
+{
+    EM_log( CK_LOG_FINEST, "deleting complex [%p]...", (void *)c );
+    delete_exp( c->re );
+    delete_exp( c->im );
+    SAFE_FREE( c );
+}
+
+void delete_polar( a_Polar p )
+{
+    EM_log( CK_LOG_FINEST, "deleting polar [%p]...", (void *)p );
+    delete_exp( p->mod );
+    delete_exp( p->phase );
+    SAFE_FREE( p );
+}
+
+void delete_vec( a_Vec v )
+{
+    EM_log( CK_LOG_FINEST, "deleting vec [%p]...", (void *)v );
+    delete_exp( v->args );
+    SAFE_FREE( v );
+}
+
+void delete_id_list( a_Id_List list )
+{
+    if( !list ) return;
+    // TODO: what to do about Symbol xid?
+
+    // recurse
+    delete_id_list( list->next );
+    // log
+    EM_log( CK_LOG_FINEST, "deleting id list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
+    // free
+    SAFE_FREE( list );
 }

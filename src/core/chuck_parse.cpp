@@ -64,6 +64,26 @@ extern "C" {
 
 
 //-----------------------------------------------------------------------------
+// name: cleanup_AST()
+// desc: clean up the abstract syntax tree
+//-----------------------------------------------------------------------------
+static void cleanup_AST()
+{
+    // check
+    if( !g_program ) return;
+
+    // log
+    EM_log( CK_LOG_FINE, "cleaning up abstract syntax tree..." );
+    // do it
+    delete_program( g_program );
+    // reset to NULL
+    g_program = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: chuck_parse()
 // desc: INPUT: chuck code (either from file or actual code) to be parsed
 //       OUTPUT: abstract syntax tree representation of the code
@@ -136,9 +156,8 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
     EM_start_filename( g_filename.c_str() );
     // set current input source
     EM_setCurrentFileSource( source );
-
-    // TODO: clean g_program
-    g_program = NULL;
+    // ensure abstract syntax tree is clean
+    cleanup_AST();
 
     // parse
     if( !(yyparse() == 0) ) goto cleanup;
@@ -237,6 +256,9 @@ void reset_parse( )
 
     // empty file name
     EM_reset_filename();
+
+    // clean up the AST
+    cleanup_AST();
 }
 
 

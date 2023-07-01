@@ -173,7 +173,6 @@ a_Exp new_exp_from_postfix( a_Exp base, ae_Operator op, uint32_t line, uint32_t 
 a_Exp new_exp_from_dur( a_Exp base, a_Exp unit, uint32_t line, uint32_t where );
 a_Exp new_exp_from_id( c_str xid, uint32_t line, uint32_t where );
 a_Exp new_exp_from_int( long num, uint32_t line, uint32_t where );
-a_Exp new_exp_from_uint( unsigned long num, uint32_t line, uint32_t where );
 a_Exp new_exp_from_float( double num, uint32_t line, uint32_t where );
 a_Exp new_exp_from_str( c_str str, uint32_t line, uint32_t where );
 a_Exp new_exp_from_char( c_str chr, uint32_t line, uint32_t where );
@@ -206,7 +205,6 @@ a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, uint32_t li
 a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
 a_Id_List new_id_list( c_constr xid, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
-void clean_exp( a_Exp exp );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, uint32_t line, uint32_t where );
@@ -215,10 +213,64 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
 //------------------------------------------------------------------------------
 // utility functions including memory management
 //------------------------------------------------------------------------------
-// cleanup an absyn tree
-void cleanup_ast( a_Program root );
-// delete an id list
-void delete_id_list( a_Id_List x );
+// delete program and sections
+void delete_program( a_Program program );
+void delete_section( a_Section section );
+
+// delete stmt list
+void delete_stmt_list( a_Stmt_List list );
+// delete class_def
+void delete_class_def( a_Class_Def def );
+void delete_class_body( a_Class_Body body );
+void delete_class_ext( a_Class_Ext ext );
+void delete_iface_def( a_Class_Def def );
+// delete func def
+void delete_func_def( a_Func_Def def );
+// delete id list
+void delete_id_list( a_Id_List list );
+
+// delete stmt
+void delete_stmt( a_Stmt stmt );
+void delete_stmt_from_code( a_Stmt stmt );
+void delete_stmt_from_while( a_Stmt stmt );
+void delete_stmt_from_until( a_Stmt stmt );
+void delete_stmt_from_for( a_Stmt stmt );
+void delete_stmt_from_loop( a_Stmt stmt );
+void delete_stmt_from_if( a_Stmt stmt );
+void delete_stmt_from_switch( a_Stmt stmt );
+void delete_stmt_from_break( a_Stmt stmt );
+void delete_stmt_from_continue( a_Stmt stmt );
+void delete_stmt_from_return( a_Stmt stmt );
+void delete_stmt_from_label( a_Stmt stmt );
+
+// delete an exp
+void delete_exp( a_Exp exp );
+void delete_exp_from_binary( a_Exp e );
+void delete_exp_from_unary( a_Exp e );
+void delete_exp_from_cast( a_Exp e );
+void delete_exp_from_array( a_Exp e );
+void delete_exp_from_func_call( a_Exp e );
+void delete_exp_from_member_dot( a_Exp e );
+void delete_exp_from_postfix( a_Exp e );
+void delete_exp_from_dur( a_Exp e );
+void delete_exp_from_if( a_Exp e );
+void delete_exp_from_id( a_Exp_Primary e );
+void delete_exp_from_str( a_Exp_Primary e );
+void delete_exp_from_char( a_Exp_Primary e );
+void delete_exp_from_array_lit( a_Exp_Primary et );
+void delete_exp_from_complex( a_Exp_Primary e );
+void delete_exp_from_polar( a_Exp_Primary e );
+void delete_exp_from_vec( a_Exp_Primary e );
+void delete_exp_from_hack( a_Exp_Primary e );
+void delete_exp_decl( a_Exp e );
+void delete_var_decl_list( a_Var_Decl_List list );
+void delete_var_decl( a_Var_Decl decl );
+void delete_type_decl( a_Type_Decl decl );
+void delete_arg_list( a_Arg_List list );
+void delete_array_sub( a_Array_Sub sub );
+void delete_complex( a_Complex c );
+void delete_polar( a_Polar p );
+void delete_vec( a_Vec v );
 
 
 
@@ -243,7 +295,7 @@ struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_va
 struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
-struct a_Var_Decl_ { S_Symbol xid; a_Var_Decl var_decl; a_Array_Sub array; t_CKVALUE value;
+struct a_Var_Decl_ { S_Symbol xid; a_Array_Sub array; t_CKVALUE value;
                      void * addr; t_CKTYPE ck_type; int ref; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
 struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;
@@ -395,8 +447,7 @@ struct a_Func_Def_ {
 };
 
 // enum values for section types
-typedef enum { ae_section_stmt, ae_section_func, ae_section_class
-             } ae_Section_Type;
+typedef enum { ae_section_stmt, ae_section_class, ae_section_func } ae_Section_Type;
 
 struct a_Section_
 {

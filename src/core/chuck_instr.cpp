@@ -5271,8 +5271,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
 Chuck_Instr_Array_Init::~Chuck_Instr_Array_Init()
 {
     // delete
-    delete [] m_param_str;
-    m_param_str = NULL;
+    SAFE_DELETE_ARRAY( m_param_str );
     // release
     SAFE_RELEASE( m_type_ref );
 }
