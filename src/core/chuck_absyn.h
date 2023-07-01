@@ -33,6 +33,7 @@
 #define __CHUCK_ABSYN_H__
 
 #include "chuck_symbol.h"
+#include <stdint.h>
 
 
 

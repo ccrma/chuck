@@ -46,6 +46,8 @@
 #include <time.h>
 #include <limits.h>
 #include <stdio.h>
+
+#include <algorithm>
 using namespace std;
 
 
