@@ -113,7 +113,6 @@ const char * mini_type( const char * str );
 // things connected with lexer and parser
 //-----------------------------------------------------------------------------
 // variables
-extern t_CKBOOL EM_anyErrors;
 extern t_CKINT EM_tokPos;
 extern t_CKINT EM_lineNum;
 
