@@ -32,8 +32,9 @@
 #ifndef __CHUCK_ABSYN_H__
 #define __CHUCK_ABSYN_H__
 
+#include "chuck_def.h"
 #include "chuck_symbol.h"
-#include <stdint.h>
+#include <stdint.h> // for uint32_t; c++11
 
 
 

@@ -35,14 +35,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// 1.5.0.5 (ge) added
+
+// 1.5.0.5 (ge) option to include in case we need something from flex/bison
+// #include "chuck_yacc.h"
 // ASSUME: on systems where the lexer/parser is generated using flex/bison,
 // that chuck_yacc.h is the same as chuck.tab.h
-// #include "chuck.tab.h"
 
 
+//-----------------------------------------------------------------------------
+// AST construction function (these are mostly called by bison)
+//-----------------------------------------------------------------------------
 a_Program new_program( a_Section section, uint32_t lineNum, uint32_t posNum )
 {
+    // NB checked_malloc() zeros the allocated memory
     a_Program a = (a_Program)checked_malloc( sizeof( struct a_Program_ ) );
     a->section = section;
     a->line = lineNum; a->where = posNum;
@@ -53,23 +58,20 @@ a_Program new_program( a_Section section, uint32_t lineNum, uint32_t posNum )
 a_Program append_program( a_Program program, a_Section section, uint32_t lineNum, uint32_t posNum )
 {
     a_Program a = new_program( section, lineNum, posNum );
-    a_Program current;
+    a_Program current = program->next;
 
-    current = program->next;
-    if (current == NULL) {
-      program->next = a;
-      return program;
+    // initial state
+    if( current == NULL )
+    {
+        program->next = a;
+        return program;
     }
 
-    while (1)
-      {
-        if (current->next == NULL) {
-          current->next = a;
-          break;
-        } else {
-          current = current->next;
-        }
-      }
+    // go to the end
+    while( current->next ) current = current->next;
+    // append
+    current->next = a;
+
     return program;
 }
 
