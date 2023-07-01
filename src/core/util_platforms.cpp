@@ -51,9 +51,9 @@
 #else // not windows
 
   #include <unistd.h>
+  #include <sys/ioctl.h>
 
 #endif // #ifdef __PLATFORM_WIN32__
-
 
 
 
@@ -191,6 +191,27 @@ t_CKBOOL ck_isatty()
     return ck_isatty( fileno(stderr) );
 #else
     return ck_isatty( _fileno(stderr) );
+#endif
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_ttywidth() | 1.5.0.5 (ge) added
+// desc: get TTY terminal width; returns 80 if not supported or not TTY
+//-----------------------------------------------------------------------------
+t_CKUINT ck_ttywidth()
+{
+    // return a default if not TTY
+    if( !ck_isatty() ) return 80;
+
+#ifndef __PLATFORM_WIN32__
+    struct winsize w;
+    ioctl( 0, TIOCGWINSZ, &w );
+    return w.ws_col;
+#else
+    return 80;
 #endif
 }
 

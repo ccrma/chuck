@@ -216,14 +216,23 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
         // replace tabs with a single space
         line = replace_tabs( line, ' ' );
 
+        // get terminal width; -2 for the indentation below
+        t_CKUINT WIDTH = ck_ttywidth();
+        t_CKUINT CARET_POS = (t_CKUINT)(WIDTH/3.0);
+
+        // check for some mininum
+        if( WIDTH < 8 ) { WIDTH = 80; CARET_POS = 32; }
+        // account for indentation below
+        else{ WIDTH -= 4; CARET_POS -= 2; }
+
         // if line too long, roughly want to display it no further
-        if( line.length() > 78 || spaces > 32 )
+        if( line.length() > WIDTH || spaces > CARET_POS )
         {
             // quote the line
-            line = snippet( line, 78, 32, spaces );
+            line = snippet( line, WIDTH, CARET_POS, spaces );
         }
 
-        // print the line
+        // print the line with indentation
         CK_FPRINTF_STDERR( "  %s\n  ", line.c_str() );
 
         // if valid char position to print caret

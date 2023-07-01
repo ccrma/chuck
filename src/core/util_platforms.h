@@ -60,6 +60,9 @@ t_CKBOOL ck_isatty( int fd );
 // get a general idea (typically stderr is used here)
 t_CKBOOL ck_isatty();
 
+// get TTY terminal width; returns 80 if not supported or not TTY
+t_CKUINT ck_ttywidth();
+
 // abstraction for getline, c edition
 size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );
 
