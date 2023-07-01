@@ -53,8 +53,19 @@ std::string trim( const std::string & val );
 std::string ltrim( const std::string & val );
 // rtrim
 std::string rtrim( const std::string & val );
+
 // return capitalized copy of a string
 std::string capitalize( const std::string & s );
+
+// replace tabs
+std::string replace_tabs( const std::string & s,
+                          char replaceEachTabWithThis );
+
+// snippet a string around an offset; useful for displaying
+// long line of test with caret ^ offset; returns result and
+// potentially modifies targetPositionMutable argument
+std::string snippet( const std::string & str, t_CKINT desiredLength,
+                     t_CKINT desiredLeftPadding, t_CKINT & targetPositionMutable );
 
 // argument extraction
 t_CKBOOL extract_args( const std::string & token,

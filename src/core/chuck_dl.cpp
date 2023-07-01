@@ -102,10 +102,11 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
             return;
         }
 
+        // find parent type
         Chuck_Type * ck_parent_type = type_engine_find_type( query->env(), parent_path );
-
+        // clean up locally created id list
         delete_id_list( parent_path );
-
+        // not found
         if( !ck_parent_type )
         {
             // error
@@ -291,10 +292,11 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
         return CK_INVALID_OFFSET;
     }
 
+    // find type
     Chuck_Type * ck_type = type_engine_find_type( query->env(), path );
-
+    // clean up locally created id list
     delete_id_list( path );
-
+    // not found
     if( !ck_type )
     {
         // error
@@ -1204,7 +1206,7 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
 static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
 {
     Chuck_Env * env = shred->vm_ref->env();
-    a_Id_List list = new_id_list( name, 0 ); // TODO: nested types
+    a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
     Chuck_Type * t = type_engine_find_type( env, list );
     delete_id_list( list );
     return (Chuck_DL_Api::Type)t;

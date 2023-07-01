@@ -122,7 +122,7 @@ extern t_CKINT EM_lineNum;
 extern t_CKINT EM_extLineNum;
 
 // advance state when new line is encountered
-void EM_newline( );
+void EM_newline( t_CKINT pos );
 
 
 //-----------------------------------------------------------------------------
