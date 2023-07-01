@@ -48,6 +48,7 @@
 #include "util_network.h"
 #endif
 
+#include "util_platforms.h"
 #include "util_string.h"
 #include "ugen_stk.h"
 
@@ -88,7 +89,8 @@
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
 #define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT "1"
-#define CHUCK_PARAM_COLOR_TERMINAL_OUTPUT_DEFAULT  "0"
+#define CHUCK_PARAM_TTY_COLOR_DEFAULT              "0"
+#define CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT         "80"
 
 
 
@@ -216,7 +218,8 @@ void ChucK::initDefaultParams()
     m_listParams[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
     m_params[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO] = CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT;
     m_params[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT;
-    m_params[CHUCK_PARAM_COLOR_TERMINAL_OUTPUT] = CHUCK_PARAM_COLOR_TERMINAL_OUTPUT_DEFAULT;
+    m_params[CHUCK_PARAM_TTY_COLOR] = CHUCK_PARAM_TTY_COLOR_DEFAULT;
+    m_params[CHUCK_PARAM_TTY_WIDTH_HINT] = CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT;
 
     ck_param_types[CHUCK_PARAM_SAMPLE_RATE]              = ck_param_int;
     ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]           = ck_param_int;
@@ -235,7 +238,8 @@ void ChucK::initDefaultParams()
     ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES]  = ck_param_string_list;
     ck_param_types[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO]   = ck_param_int;
     ck_param_types[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = ck_param_int;
-    ck_param_types[CHUCK_PARAM_COLOR_TERMINAL_OUTPUT]    = ck_param_int;
+    ck_param_types[CHUCK_PARAM_TTY_COLOR]                = ck_param_int;
+    ck_param_types[CHUCK_PARAM_TTY_WIDTH_HINT]           = ck_param_int;
 }
 
 
@@ -250,10 +254,15 @@ t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_int )
     {
         // check and set
-        if( name == CHUCK_PARAM_COLOR_TERMINAL_OUTPUT )
+        if( name == CHUCK_PARAM_TTY_COLOR )
         {
             // set the global override switch
             TC::globalDisableOverride( !value );
+        }
+        else if( name == CHUCK_PARAM_TTY_WIDTH_HINT )
+        {
+            // set default
+            ck_ttywidth_setdefault( value );
         }
 
         // insert into map
@@ -1429,5 +1438,5 @@ Chuck_DL_MainThreadHook * ChucK::getMainThreadHook()
 //-----------------------------------------------------------------------------
 void ChucK::toggleGlobalColorTextoutput( t_CKBOOL onOff )
 {
-    this->setParam( CHUCK_PARAM_COLOR_TERMINAL_OUTPUT, onOff );
+    this->setParam( CHUCK_PARAM_TTY_COLOR, onOff );
 }

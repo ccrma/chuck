@@ -883,7 +883,7 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck = new ChucK();
 
     // set the color terminal global setting
-    the_chuck->setParam( CHUCK_PARAM_COLOR_TERMINAL_OUTPUT, colorTerminal );
+    the_chuck->setParam( CHUCK_PARAM_TTY_COLOR, colorTerminal );
 
     // set log level so things can start logging
     the_chuck->setLogLevel( log_level );

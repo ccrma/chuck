@@ -197,6 +197,8 @@ t_CKBOOL ck_isatty()
 
 
 
+// current dfeault
+static t_CKUINT g_ttywidth_default = 80;
 //-----------------------------------------------------------------------------
 // name: ck_ttywidth() | 1.5.0.5 (ge) added
 // desc: get TTY terminal width, or CK_DEFAULT_TTY_WIDTH if not TTY
@@ -204,7 +206,7 @@ t_CKBOOL ck_isatty()
 t_CKUINT ck_ttywidth()
 {
     // return default if not TTY
-    if( !ck_isatty() ) return CK_DEFAULT_TTY_WIDTH;
+    if( !ck_isatty() ) return g_ttywidth_default;
 
 #ifndef __PLATFORM_WIN32__
     struct winsize w;
@@ -222,7 +224,25 @@ t_CKUINT ck_ttywidth()
 #endif
 
 error:
-    return CK_DEFAULT_TTY_WIDTH;
+    return g_ttywidth_default;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// set default TTY width
+//-----------------------------------------------------------------------------
+void ck_ttywidth_setdefault( t_CKUINT width )
+{
+    g_ttywidth_default = width;
+}
+//-----------------------------------------------------------------------------
+// get default TTY width
+//-----------------------------------------------------------------------------
+t_CKUINT ck_ttywidth_default()
+{
+    return g_ttywidth_default;
 }
 
 

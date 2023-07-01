@@ -60,10 +60,12 @@ t_CKBOOL ck_isatty( int fd );
 // get a general idea (typically stderr is used here)
 t_CKBOOL ck_isatty();
 
-// the default tty width
-#define CK_DEFAULT_TTY_WIDTH 80
-// get TTY terminal width, or CK_DEFAULT_TTY_WIDTH if not TTY
+// get TTY terminal width, or a default width (if can't get from TTY)
 t_CKUINT ck_ttywidth();
+// set default TTY width
+void ck_ttywidth_setdefault( t_CKUINT width );
+// get default TTY width
+t_CKUINT ck_ttywidth_default();
 
 // abstraction for getline, c edition
 size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );
