@@ -211,7 +211,15 @@ t_CKUINT ck_ttywidth()
     ioctl( 0, TIOCGWINSZ, &w );
     return w.ws_col;
 #else
-    return 80;
+    // get windows handle to stderr
+    HANDLE hStderr = GetStdHandle( STD_ERROR_HANDLE );
+    // console buffer info
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    // get screen buffer info
+    if( !GetConsoleScreenBufferInfo( hStderr, &info ) )
+    { return 80; } // return default on error
+    // return width
+    return info.dwSize.X;
 #endif
 }
 
