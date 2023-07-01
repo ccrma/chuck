@@ -199,16 +199,16 @@ t_CKBOOL ck_isatty()
 
 //-----------------------------------------------------------------------------
 // name: ck_ttywidth() | 1.5.0.5 (ge) added
-// desc: get TTY terminal width; returns 80 if not supported or not TTY
+// desc: get TTY terminal width, or CK_DEFAULT_TTY_WIDTH if not TTY
 //-----------------------------------------------------------------------------
 t_CKUINT ck_ttywidth()
 {
-    // return a default if not TTY
-    if( !ck_isatty() ) return 80;
+    // return default if not TTY
+    if( !ck_isatty() ) return CK_DEFAULT_TTY_WIDTH;
 
 #ifndef __PLATFORM_WIN32__
     struct winsize w;
-    ioctl( 0, TIOCGWINSZ, &w );
+    if( ioctl( fileno(stderr), TIOCGWINSZ, &w ) != 0 ) { goto error; }
     return w.ws_col;
 #else
     // get windows handle to stderr
@@ -216,11 +216,13 @@ t_CKUINT ck_ttywidth()
     // console buffer info
     CONSOLE_SCREEN_BUFFER_INFO info;
     // get screen buffer info
-    if( !GetConsoleScreenBufferInfo( hStderr, &info ) )
-    { return 80; } // return default on error
+    if( !GetConsoleScreenBufferInfo( hStderr, &info ) ) { goto error; }
     // return width
     return info.dwSize.X;
 #endif
+
+error:
+    return CK_DEFAULT_TTY_WIDTH;
 }
 
 
