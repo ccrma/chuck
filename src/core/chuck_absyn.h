@@ -210,6 +210,13 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, uint32_t line, uint32_t where );
 
+
+//------------------------------------------------------------------------------
+// utility functions including memory management
+//------------------------------------------------------------------------------
+// cleanup an absyn tree
+void cleanup_ast( a_Program root );
+// delete an id list
 void delete_id_list( a_Id_List x );
 
 

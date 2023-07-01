@@ -5848,6 +5848,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_check_exp_decl( env, &exp_decl->decl ) )
     {
+        // clean up locally created id list
         delete_id_list( thePath );
         return CK_INVALID_OFFSET;
     }
@@ -5855,7 +5856,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     if( doc != NULL )
         var_decl->value->doc = doc;
 
-    // cleanup
+    // clean up locally created id list
     delete_id_list( thePath );
 
     // return the offset
@@ -5908,6 +5909,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_check_exp_decl( env, &exp_decl->decl ) )
     {
+        // clean up locally created id list
         delete_id_list( thePath );
         return FALSE;
     }
@@ -5915,7 +5917,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     if( doc != NULL )
         var_decl->value->doc = doc;
 
-    // cleanup
+    // clean up locally created id list
     delete_id_list( thePath );
 
     return TRUE;
@@ -6263,7 +6265,7 @@ a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
                 // error
                 EM_error2( 0, "illegal character '%c' in path '%s'...",
                     c, thePath.c_str() );
-                // delete
+                // clean up locally created id list
                 delete_id_list( list );
                 return NULL;
             }
@@ -6296,7 +6298,7 @@ a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
                 // error
                 EM_error2( 0, "path '%s' must not begin or end with '.'",
                     thePath.c_str() );
-                // delete
+                // clean up locally created id list
                 delete_id_list( list );
                 return NULL;
             }
@@ -6430,7 +6432,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
         // error
         EM_error2( 0, "...during function import '%s' (type2)...",
             dl_fun->name.c_str() );
-        // delete list
+        // clean up locally created id list
         delete_id_list( type_path );
         type_path = NULL;
         goto error;
@@ -6626,7 +6628,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         // TODO: clean up?
     }
 
-    // free the path
+    // clean up locally created id list
     delete_id_list( thePath );
 
     return TRUE;
@@ -6636,7 +6638,7 @@ error:
     EM_error2( 0, "...(in object import '%s' in DLL '%s')",
         query ? ( query->dll_name == "" ? query->dll_name.c_str() : "[empty]" ) : "[null]", dll->name() );
 
-    // free the path
+    // clean up locally created id list
     delete_id_list( thePath );
 
     // TODO: free the absyn stuff?
