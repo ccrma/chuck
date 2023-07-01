@@ -68,8 +68,6 @@ extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
 // 1.5.0.5 (ge) added
 t_CKINT yycolumn = 1;
-// starting 1.5.0.5 | may not be needed
-t_CKINT char_pos = 1;
 
 // define error handling
 #define YY_FATAL_ERROR(msg) EM_error2( 0, msg )
@@ -118,12 +116,16 @@ void yyinitial( void )
 {
     // set to initial
     BEGIN(YY_START);
+    // reset
+    yycolumn = 1;
+    EM_tokPos = yycolumn;
+    yylloc.first_line   = yylloc.last_line   = 1;
+    yylloc.first_column = yylloc.last_column = 0;
 }
 
 // yywrap()
 int yywrap( void )
 {
-    char_pos = 1;
     yycolumn = 1;
     return 1;
 }
@@ -134,16 +136,22 @@ void a_newline()
     EM_newline( yylloc.last_column );
 }
 
+// manually advance
+void advance_m()
+{
+    yycolumn++;
+    yylloc.first_column++;
+    yylloc.last_column++;
+}
+
 // adjust()
 void adjust()
 {
+    // update tok pos
     EM_tokPos = yylloc.first_column;
-    // EM_tokPos = char_pos;
-    char_pos += yyleng;
 
     // handy debug print for precise position and bounds of each token
-    // fprintf( stderr, "yylloc: %d %d %d %d ------ %s\n",
-    //     yylloc.first_line, yylloc.first_column, yylloc.last_line, yylloc.last_column, yytext );
+    // fprintf( stderr, "yylloc: %d %ld %d %d ------ %s\n", yylloc.first_line, yycolumn, yylloc.last_line, yylloc.last_column, yytext );
 }
 
 // strip
@@ -199,20 +207,22 @@ long htol( c_str str )
 #define block_comment_hack loop: \
     while ((c = input()) != '*' && c != 0 && c != EOF ) { \
         if( c == '\n' ) { a_newline(); } \
-        else { char_pos++; } \
+        else { advance_m(); adjust(); } \
     } \
     if( c == EOF ) { \
         adjust(); \
     } else if( (c1 = input()) != '/' && c != 0 ) { \
+        advance_m(); \
+        adjust(); \
         unput(c1); \
         goto loop; \
     } \
-    if( c != 0 ) { adjust(); };
+    if( c != 0 ) { advance_m(); advance_m(); adjust(); };
 
 
 // comment hack
 #define comment_hack \
-    while( (c = input()) != '\n' && c != '\r' && c != 0 && c != EOF ) char_pos++; \
+    while( (c = input()) != '\n' && c != '\r' && c != 0 && c != EOF ) ; \
     if( c != 0 ) { \
         if( c == '\n' ) { a_newline(); } \
     }

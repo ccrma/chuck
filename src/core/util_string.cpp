@@ -144,22 +144,8 @@ string capitalize( const string & s )
 
 
 //-----------------------------------------------------------------------------
-// name: replace_tabs()
-// desc: reaplce each tab in a string
-//-----------------------------------------------------------------------------
-std::string replace_tabs( const std::string & s, char replaceEachTabWithThis )
-{
-    string str = s;
-    std::replace( str.begin(), str.end(), '\t', replaceEachTabWithThis );
-    return str;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: trim()
-// desc: ...
+// desc: return a whitespace (spaces and tabs)-trimmed string
 //-----------------------------------------------------------------------------
 string trim( const string & val )
 {
@@ -195,9 +181,10 @@ string trim( const string & val )
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: ltrim()
-// desc: ...
+// desc: left trim
 //-----------------------------------------------------------------------------
 string ltrim( const string & val )
 {
@@ -225,7 +212,7 @@ string ltrim( const string & val )
 
 //-----------------------------------------------------------------------------
 // name: rtrim()
-// desc: ...
+// desc: right trim
 //-----------------------------------------------------------------------------
 string rtrim( const string & val )
 {
@@ -246,6 +233,54 @@ string rtrim( const string & val )
 
     // return
     return val.substr( start, end - start + 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: replace_tabs()
+// desc: replace each tab in a string
+//-----------------------------------------------------------------------------
+std::string replace_tabs( const std::string & s, char replaceEachTabWithThis )
+{
+    string str = s;
+    std::replace( str.begin(), str.end(), '\t', replaceEachTabWithThis );
+    return str;
+}
+
+
+
+#include <iostream>
+//-----------------------------------------------------------------------------
+// name: snippet()
+// desc: snippet a string around an offset; useful for displaying
+// long line of test with caret ^ offset
+//-----------------------------------------------------------------------------
+std::string snippet( const std::string & str, t_CKINT desiredLength,
+                     t_CKINT desiredLeftPadding, t_CKINT & targetPosition )
+{
+    // check: str already within desired length
+    if( str.length() < desiredLength ) return str;
+    // check: targetPosition out of bounds
+    if( targetPosition < 0 || targetPosition >= str.length() ) return str;
+
+    // ensure
+    if( desiredLeftPadding > desiredLength )
+        desiredLeftPadding = desiredLength;
+
+    // where to start the snippet
+    t_CKINT left = 0;
+
+    // if target beyond left padding
+    if( targetPosition > desiredLeftPadding )
+    {
+        left += (targetPosition-desiredLeftPadding);
+        targetPosition = desiredLeftPadding;
+    }
+
+    // start from left, ensure no greater than desiredLength
+    return str.substr( left, desiredLength );
 }
 
 

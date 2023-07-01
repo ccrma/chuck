@@ -123,7 +123,7 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
         // reset yyin to fd
         yyrestart( fd );
         // set to initial condition | 1.5.0.5 (ge) added
-        // yyinitial();
+        yyinitial();
 
         // check
         if( yyin == NULL ) goto cleanup;
