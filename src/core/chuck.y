@@ -266,13 +266,13 @@ id_dot
 
 function_definition
         : function_decl static_decl type_decl2 ID LPAREN arg_list RPAREN code_segment
-            { $$ = new_func_def( $1, $2, $3, $4, $6, $8, @1.first_line, @1.first_column ); }
+            { $$ = new_func_def( $1, $2, $3, $4, $6, $8, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN code_segment
-            { $$ = new_func_def( $1, $2, $3, $4, NULL, $7, @1.first_line, @1.first_column ); }
+            { $$ = new_func_def( $1, $2, $3, $4, NULL, $7, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN arg_list RPAREN SEMICOLON
-            { $$ = new_func_def( $1, $2, $3, $4, $6, NULL, @1.first_line, @1.first_column ); }
+            { $$ = new_func_def( $1, $2, $3, $4, $6, NULL, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN SEMICOLON
-            { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, @1.first_line, @1.first_column ); }
+            { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, TRUE, @1.first_line, @1.first_column ); }
         ;
 
 class_decl

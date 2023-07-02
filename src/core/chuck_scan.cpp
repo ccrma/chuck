@@ -272,7 +272,9 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     else { the_class->info->parent = env->curr; }
     // TODO: add ref to the parent?
     the_class->func = NULL;
-    the_class->def = class_def;
+    // 1.5.0.5 (ge) commented out; the AST is cleaned up after every compilation;
+    // would need to make deep copy if want to keep around
+    // the_class->def = class_def;
     // add code
     the_class->info->pre_ctor = new Chuck_VM_Code;
     SAFE_ADD_REF( the_class->info->pre_ctor );
@@ -1335,6 +1337,9 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         EM_error2( f->where, "... in return type of function '%s' ...", S_name(f->name) );
         goto error;
     }
+    // add reference | 1.5.0.5
+    SAFE_ADD_REF( f->ret_type );
+
     // check if array
     if( f->type_decl->array != NULL )
     {
@@ -2535,7 +2540,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // set the base name (i.e., without designations); 1.4.1.0
     func->base_name = orig_name;
     // reference the function definition
-    func->def = f;
+    func->funcdef_connect( f ); // 1.5.0.5 (ge) part of new AST cleanup
     // note whether the function is marked as member
     func->is_member = (f->static_decl != ae_key_static) &&
                       (env->class_def != NULL);
@@ -2552,7 +2557,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // is static inside
         func->code->is_static = func->is_static;
         // set the function pointer
-        func->code->native_func = (t_CKUINT)func->def->dl_func_ptr;
+        func->code->native_func = (t_CKUINT)func->def()->dl_func_ptr;
     }
 
     // make a new type for the function
@@ -2728,23 +2733,23 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // make sure return types match
         // 1.5.0.0 (ge) more precise error reporting
         // -----------------------
-        if( *(f->ret_type) != *(overload->func_ref->def->ret_type) )
+        if( *(f->ret_type) != *(overload->func_ref->def()->ret_type) )
         {
             EM_error2( f->where, "overloaded functions require matching return types..." );
             // check if in class definition
             if( env->class_def )
             {
                 EM_error3( "    |- function in question: %s %s.%s(...)",
-                           func->def->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+                           func->def()->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
                 EM_error3( "    |- previous defined as: %s %s.%s(...)",
-                           overload->func_ref->def->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+                           overload->func_ref->def()->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
             }
             else
             {
                 EM_error3( "    |- function in question: %s %s(...)",
-                           func->def->ret_type->name.c_str(), S_name(f->name) );
+                           func->def()->ret_type->name.c_str(), S_name(f->name) );
                 EM_error3( "    |- previous defined as: %s %s(...)",
-                           overload->func_ref->def->ret_type->name.c_str(), S_name(f->name) );
+                           overload->func_ref->def()->ret_type->name.c_str(), S_name(f->name) );
             }
             goto error;
         }
@@ -2761,8 +2766,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             if( func != overfunc )
             {
                 // compare argument lists
-                a_Arg_List lhs = func->def->arg_list;
-                a_Arg_List rhs = overfunc->def->arg_list;
+                a_Arg_List lhs = func->def()->arg_list;
+                a_Arg_List rhs = overfunc->def()->arg_list;
                 // check
                 if( same_arg_lists(lhs, rhs) )
                 {
@@ -2770,13 +2775,13 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                     if( env->class_def )
                     {
                         EM_error3( "    |- '%s %s.%s( %s )' already defined elsewhere",
-                                   func->def->ret_type->name.c_str(), env->class_def->c_name(),
-                                   orig_name.c_str(), arglist2string(func->def->arg_list).c_str() );
+                                   func->def()->ret_type->name.c_str(), env->class_def->c_name(),
+                                   orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
                     }
                     else
                     {
                         EM_error3( "    |- '%s %s( %s )' already defined elsewhere",
-                                   func->def->ret_type->name.c_str(), orig_name.c_str(), arglist2string(func->def->arg_list).c_str() );
+                                   func->def()->ret_type->name.c_str(), orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
                     }
                     goto error;
                 }

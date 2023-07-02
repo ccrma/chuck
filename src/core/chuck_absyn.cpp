@@ -554,7 +554,7 @@ a_Exp new_exp_from_char( c_str chr, uint32_t lineNum, uint32_t posNum )
     a->s_type = ae_exp_primary;
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_char;
-    a->primary.chr = strdup(chr);
+    a->primary.chr = strdup(chr);  // 1.5.0.5 (ge) added strdup oops
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
@@ -767,7 +767,8 @@ a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl,
 
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
-                         a_Arg_List arg_list, a_Stmt code, uint32_t lineNum, uint32_t posNum )
+                         a_Arg_List arg_list, a_Stmt code,
+                         uint32_t is_from_ast, uint32_t lineNum, uint32_t posNum )
 {
     a_Func_Def a = (a_Func_Def)checked_malloc(
         sizeof( struct a_Func_Def_ ) );
@@ -778,6 +779,7 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
     a->arg_list = arg_list;
     a->s_type = ae_func_user;
     a->code = code;
+    a->ast_owned = is_from_ast != 0; // 1.5.0.5 (ge) added
     a->line = lineNum; a->where = posNum;
 
     return a;
@@ -1098,6 +1100,14 @@ void delete_class_ext( a_Class_Ext ext )
 void delete_func_def( a_Func_Def def )
 {
     if( !def ) return;
+
+    // safety check
+    if( def->ast_owned && def->vm_refs > 0 )
+    {
+        EM_error2( 0, "(internal error): cannot delete Func_Def %s with %ld VM references...", S_name(def->name), def->vm_refs );
+        return;
+    }
+
     EM_log( CK_LOG_FINEST, "deleting func def [%p]...", (void *)def );
 
     // TODO: release reference def->ret_type

@@ -157,9 +157,8 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
     // set current input source
     EM_setCurrentFileSource( source );
 
-    // ensure abstract syntax tree is clean
-    // cleanup_AST(); // TODO
-    g_program = NULL;
+    // ensure abstract syntax tree is clean | 1.5.0.5 (ge) added, finally
+    cleanup_AST();
 
     // parse
     if( !(yyparse() == 0) ) goto cleanup;
@@ -260,7 +259,7 @@ void reset_parse( )
     EM_reset_filename();
 
     // clean up the AST
-    // cleanup_AST();
+    cleanup_AST();
 }
 
 

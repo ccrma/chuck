@@ -298,7 +298,7 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
 
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
     // how messages print to console (e.g., [file.ck]: or [chuck]:)
-    // EM_reset_filename();
+    // 1.5.0.5 (ge) | changed to reset_parse() which does more reset
     // reset the parser, which also resets filename
     reset_parse();
 

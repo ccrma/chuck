@@ -207,7 +207,8 @@ a_Id_List new_id_list( c_constr xid, uint32_t line, uint32_t where /*, YYLTYPE *
 a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
-                         a_Arg_List arg_list, a_Stmt code, uint32_t line, uint32_t where );
+                         a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
+                         uint32_t line, uint32_t where );
 
 
 //------------------------------------------------------------------------------
@@ -443,6 +444,8 @@ struct a_Func_Def_ {
     unsigned int s_type;
     unsigned int stack_depth;
     void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
+    uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
+    uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references
     uint32_t line; uint32_t where;
 };
 

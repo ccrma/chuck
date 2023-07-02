@@ -3486,7 +3486,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 
     // the pointer
     Chuck_Instr * instr = NULL;
-    if( func->def->s_type == ae_func_builtin )
+    if( func->def()->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
         if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX ||

@@ -514,20 +514,20 @@ public:
     {
         // return type
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
-                     + css_class_for_type(m_env_ref, func->def->ret_type) + "\">"
-                    + func->def->ret_type->name;
+                     + css_class_for_type(m_env_ref, func->def()->ret_type) + "\">"
+                    + func->def()->ret_type->name;
         // check array
-        if( func->def->ret_type->array_depth )
+        if( func->def()->ret_type->array_depth )
         {
             m_outputStr += "</span>";
             m_outputStr += "<span class=\"typename\">";
-            for(int i = 0; i < func->def->ret_type->array_depth; i++)
+            for(int i = 0; i < func->def()->ret_type->array_depth; i++)
                 m_outputStr += "[]";
         }
         m_outputStr += "</span> ";
 
         // function name
-        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def->name)) + "</span>(";
+        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def()->name)) + "</span>(";
 
         m_func = func;
     }
@@ -550,20 +550,20 @@ public:
     {
         // return type
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
-                     + css_class_for_type(m_env_ref, func->def->ret_type)
-                     + "\">" + func->def->ret_type->name.c_str();
+                     + css_class_for_type(m_env_ref, func->def()->ret_type)
+                     + "\">" + func->def()->ret_type->name.c_str();
         // check array
-        if( func->def->ret_type->array_depth )
+        if( func->def()->ret_type->array_depth )
         {
             m_outputStr += "</span>";
             m_outputStr += "<span class=\"typename\">";
-            for(int i = 0; i < func->def->ret_type->array_depth; i++)
+            for(int i = 0; i < func->def()->ret_type->array_depth; i++)
                 m_outputStr += "[]";
         }
         m_outputStr += "</span> ";
 
         // function name
-        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def->name)) + "</span>(";
+        m_outputStr += "<span class=\"membername\">" + string(S_name(func->def()->name)) + "</span>(";
 
         m_func = func;
     }
@@ -1193,7 +1193,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             // first one
             func_names[func->name] = 1;
             // static or instance?
-            if(func->def->static_decl == ae_key_static) sfuncs.push_back(func);
+            if(func->def()->static_decl == ae_key_static) sfuncs.push_back(func);
             else mfuncs.push_back(func);
         }
 
@@ -1240,7 +1240,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
                 // begin output
                 output->begin_static_member_func(func);
                 // argument list
-                a_Arg_List args = func->def->arg_list;
+                a_Arg_List args = func->def()->arg_list;
                 while(args != NULL)
                 {
                     // output argument
@@ -1267,7 +1267,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
                 // begin the func
                 output->begin_member_func(func);
                 // argument list
-                a_Arg_List args = func->def->arg_list;
+                a_Arg_List args = func->def()->arg_list;
                 while(args != NULL)
                 {
                     // output argument

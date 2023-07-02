@@ -1551,13 +1551,13 @@ CK_DLL_CTOR( foogen_ctor )
         Chuck_Func * func = ugen->vtable->funcs[i];
         if(func->name.find("tick") == 0 &&
            // ensure has one argument
-           func->def->arg_list != NULL &&
+           func->def()->arg_list != NULL &&
            // ensure first argument is float
-           func->def->arg_list->type == SHRED->vm_ref->env()->t_float &&
+           func->def()->arg_list->type == SHRED->vm_ref->env()->t_float &&
            // ensure has only one argument
-           func->def->arg_list->next == NULL &&
+           func->def()->arg_list->next == NULL &&
            // ensure returns float
-           func->def->ret_type == SHRED->vm_ref->env()->t_float )
+           func->def()->ret_type == SHRED->vm_ref->env()->t_float )
         {
             tick_fun_index = i;
             break;

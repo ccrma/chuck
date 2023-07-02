@@ -4824,7 +4824,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         push_( reg_sp, retval.v_uint );
 
         // 1.5.0.0 (ge) | added -- ensure ref count
-        if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
+        if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
         {
             // get return value as object reference
             Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
@@ -4873,7 +4873,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         //       return value is one of these args being released;
         //          e.g., functions that pass through args;
         //          e.g., string Sndbuf.read(string)
-        func_release_args( vm, m_func_ref->def->arg_list, (t_CKBYTE *)(mem_sp+1) );
+        func_release_args( vm, m_func_ref->def()->arg_list, (t_CKBYTE *)(mem_sp+1) );
     }
 
     // pop the stack pointer
@@ -4957,7 +4957,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         push_( reg_sp, retval.v_uint );
 
         // 1.5.0.0 (ge) | added -- ensure ref count
-        if( m_func_ref && isobj(vm->env(), m_func_ref->def->ret_type) )
+        if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
         {
             // get return value as object reference
             Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
@@ -5006,7 +5006,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         //       return value is one of these args being released;
         //          e.g., functions that pass through args;
         //          e.g., string Sndbuf.read(string)
-        func_release_args( vm, m_func_ref->def->arg_list, (t_CKBYTE *)(mem_sp+1) );
+        func_release_args( vm, m_func_ref->def()->arg_list, (t_CKBYTE *)(mem_sp+1) );
     }
 
     // pop the stack pointer

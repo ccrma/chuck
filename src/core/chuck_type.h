@@ -228,14 +228,24 @@ public:
     // get list of top level
     void get_toplevel( std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
     {
-        assert( scope.size() != 0 );
-        std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
+        // pass on
+        get_level( 0, out, includeMangled );
+    }
 
+    // get list of top level
+    void get_level( int level, std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
+    {
+        assert( scope.size() > level );
         // clear the out
         out.clear();
-        // get the front of the array
-        std::map<S_Symbol, Chuck_VM_Object *> * m = scope.front();
 
+        // our iterator
+        std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
+        // get func map
+        std::map<S_Symbol, Chuck_VM_Object *> * m = NULL;
+
+        // 1.5.0.5 (ge) modified: actually use level
+        m = scope[level];
         // go through map
         for( iter = m->begin(); iter != m->end(); iter++ )
         {
@@ -245,28 +255,20 @@ public:
             // add
             out.push_back( (*iter).second );
         }
-    }
 
-    // get list of top level
-    void get_level( int level, std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
-    {
-        assert( scope.size() >= level );
-        std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
-
-        // clear the out
-        out.clear();
-        // get the front of the array
-        std::map<S_Symbol, Chuck_VM_Object *> * m = &commit_map;
-
-        // go through map
-        for( iter = m->begin(); iter != m->end(); iter++ )
+        // if level 0 then also include commit map | 1.5.0.5 (ge) added
+        if( level == 0 )
         {
-            // check mangled name
-            if( !includeMangled && is_mangled( std::string(S_name((*iter).first))) )
-                continue;
-
-            // add
-            out.push_back( (*iter).second );
+            m = &commit_map;
+            // go through map
+            for( iter = m->begin(); iter != m->end(); iter++ )
+            {
+                // check mangled name
+                if( !includeMangled && is_mangled( std::string(S_name((*iter).first))) )
+                    continue;
+                // add
+                out.push_back( (*iter).second );
+            }
         }
     }
 
@@ -372,14 +374,15 @@ struct Chuck_Context : public Chuck_VM_Object
     std::string filename;
     // full filepath (if available) -- added 1.3.0.0
     std::string full_path;
-    // parse tree
-    a_Program parse_tree;
     // context namespace
     Chuck_Namespace * nspc;
-    // public class def if any
-    a_Class_Def public_class_def;
     // error - means to free nspc too
     t_CKBOOL has_error;
+
+    // AST parse tree (does not persist past context unloading)
+    a_Program parse_tree;
+    // AST public class def if any (does not persist past context unloading)
+    a_Class_Def public_class_def;
 
     // progress
     enum { P_NONE = 0, P_CLASSES_ONLY, P_ALL_DONE };
@@ -392,21 +395,20 @@ struct Chuck_Context : public Chuck_VM_Object
     std::vector<Chuck_VM_Object *> new_funcs;
     std::vector<Chuck_VM_Object *> new_nspc;
 
-    // commit map
-    std::map<Chuck_Namespace *, Chuck_Namespace *> commit_map;
-    // add for commit/rollback
-    void add_commit_candidate( Chuck_Namespace * nspc );
-    // commit
-    void commit();
-    // rollback
-    void rollback();
+public:
+    // decouple from AST (called when a context is compiled)
+    // called when a context is finished and being unloaded | 1.5.0.5 (ge)
+    void decouple_ast();
 
+public:
     // constructor
     Chuck_Context() { parse_tree = NULL; nspc = new Chuck_Namespace;
                       public_class_def = NULL; has_error = FALSE;
                       progress = P_NONE; }
     // destructor
     virtual ~Chuck_Context();
+
+public:
     // get the top-level code
     Chuck_VM_Code * code() { return nspc->pre_ctor; }
 
@@ -599,8 +601,6 @@ struct Chuck_Type : public Chuck_Object
     Chuck_Namespace * info;
     // func info
     Chuck_Func * func;
-    // def
-    a_Class_Def def;
     // ugen
     Chuck_UGen_Info * ugen_info;
     // copy
@@ -755,8 +755,6 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string name;
     // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
-    // func def from parser
-    a_Func_Def def;
     // code (included imported)
     Chuck_VM_Code * code;
     // imported code
@@ -777,14 +775,33 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
+protected:
+    // AST func def from parser | 1.5.0.5 (ge) moved to protected
+    // access through funcdef_*() functions
+    a_Func_Def m_def;
+
+public:
+    // connect (called when this func is type checked)
+    void funcdef_connect( a_Func_Def f );
+    // severe references to AST (called after compilation, before AST cleanup)
+    // make a fresh partial deep copy of m_def ONLY IF it is owned by AST
+    void funcdef_decouple_ast();
+    // cleanup funcdef (if/when this function is cleaned up)
+    void funcdef_cleanup();
+
+public:
+    // get the func def (do not keep a reference to this...
+    // as contents may shift during and after compilation)
+    a_Func_Def def() const { return m_def; }
+
+public:
     // constructor
-    Chuck_Func() { def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
+    Chuck_Func() { m_def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
         vt_index = CK_NO_VALUE; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
         up = NULL; }
 
     // destructor
-    virtual ~Chuck_Func()
-    { }
+    virtual ~Chuck_Func();
 };
 
 

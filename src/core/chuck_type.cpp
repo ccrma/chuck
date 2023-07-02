@@ -96,6 +96,9 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 // helpers
 a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
                             t_CKBOOL is_base_primtive );
+// make a partial deep copy, to separate type systems from AST
+a_Func_Def partial_deep_copy_fn( a_Func_Def f );
+a_Arg_List partial_deep_copy_args( a_Arg_List args );
 
 
 
@@ -916,14 +919,27 @@ t_CKBOOL type_engine_unload_context( Chuck_Env * env )
     // make sure
     assert( env->context != NULL );
     assert( env->contexts.size() != 0 );
+
     // log
-    EM_log( CK_LOG_FINER, "unloading context '%s'...",
-        env->context->filename.c_str() );
+    EM_log( CK_LOG_FINER, "unloading context '%s'...", env->context->filename.c_str() );
+
     // push indent
     EM_pushlog();
-    EM_log( CK_LOG_FINER, "restoring context '%s'...",
-        env->contexts.back()->filename.c_str() );
-    // assert( env->context->has_error == FALSE );
+
+    // log
+    EM_log( CK_LOG_FINER, "decoupling namespace from AST..." );
+    // decouple from AST, so we don't have references to deleted nodes
+    // after AST cleanup | 1.5.0.5 (ge) added
+    env->context->decouple_ast();
+    // removing reference to AST tree, which is cleaned up elsewhere
+    // see cleanup_AST() in the parser | 1.5.0.5 (ge) added
+    env->context->parse_tree = NULL;
+    // removing reference to public_class_def
+    // this should only be used during compilation | 1.5.0.5 (ge) added
+    env->context->public_class_def = NULL;
+
+    // log
+    EM_log( CK_LOG_FINER, "restoring context '%s'...", env->contexts.back()->filename.c_str() );
     // pop the context scope
     env->context->nspc->value.pop();
     // restore the current namespace
@@ -1399,11 +1415,11 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
         ret_type = env->t_void;
 
     // check to see that return type matches the prototype
-    if( ret_type && !isa( ret_type, env->func->def->ret_type ) )
+    if( ret_type && !isa( ret_type, env->func->def()->ret_type ) )
     {
         EM_error2( stmt->where,
             "function '%s' was defined with return type '%s' -- but returning type '%s'",
-            env->func->name.c_str(), env->func->def->ret_type->c_name(),
+            env->func->name.c_str(), env->func->def()->ret_type->c_name(),
             ret_type->c_name() );
         return FALSE;
     }
@@ -1494,6 +1510,8 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp )
             curr->type = type_engine_check_exp_func_call( env, &curr->func_call );
             // set the return type
             curr->func_call.ret_type = curr->type;
+            // add reference | 1.5.0.5
+            SAFE_ADD_REF( curr->func_call.ret_type );
         break;
 
         case ae_exp_dot_member:
@@ -3533,7 +3551,7 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
         while( theFunc )
         {
             e = args;
-            e1 = theFunc->def->arg_list;
+            e1 = theFunc->def()->arg_list;
             count = 1;
 
             // check arguments against the definition
@@ -3718,7 +3736,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
 
     ck_func = theFunc;
 
-    return theFunc->def->ret_type;
+    return theFunc->def()->ret_type;
 }
 
 
@@ -4279,13 +4297,13 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( f->s_type == ae_func_user ) has_code = ( f->code != NULL );
     else has_code = (f->dl_func_ptr != NULL); // imported
 
-    // if interface, then cannot have code
-    if( env->class_def && env->class_def->def && env->class_def->def->iface && has_code )
-    {
-        EM_error2( f->where, "interface function signatures cannot contain code..." );
-        EM_error2( f->where, "...at function '%s'", S_name(f->name) );
-        goto error;
-    }
+//    // if interface, then cannot have code | a_Class_Def class_def->def removed for now
+//    if( env->class_def && env->class_def->def && env->class_def->def->iface && has_code )
+//    {
+//        EM_error2( f->where, "interface function signatures cannot contain code..." );
+//        EM_error2( f->where, "...at function '%s'", S_name(f->name) );
+//        goto error;
+//    }
 
     // if pure, then cannot have code
     if( f->static_decl == ae_key_abstract && has_code )
@@ -4331,7 +4349,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                 {
                     // match the prototypes
                     string err;
-                    if( !type_engine_compat_func( f, parent_func->def, f->where, err, FALSE ) )
+                    if( !type_engine_compat_func( f, parent_func->def(), f->where, err, FALSE ) )
                     {
                         // next
                         parent_func = parent_func->next;
@@ -4387,7 +4405,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                     }
 
                     // make sure returns are equal
-                    if( *(f->ret_type) != *(parent_func->def->ret_type) )
+                    if( *(f->ret_type) != *(parent_func->def()->ret_type) )
                     {
                         EM_error2( f->where, "function signatures differ in return type..." );
                         EM_error2( f->where,
@@ -4761,65 +4779,26 @@ Chuck_Context::~Chuck_Context()
         // clear it
         new_types.clear();
     }
-
-    // TODO: delete abstract syntax tree *
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: add_commit_candidate()
-// desc: ...
+// name: decouple_ast()
+// desc: decouple from AST (called when a context is compiled)
 //-----------------------------------------------------------------------------
-void Chuck_Context::add_commit_candidate( Chuck_Namespace * theNpsc )
+void Chuck_Context::decouple_ast()
 {
-    // add for commit
-    commit_map[theNpsc] = theNpsc;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: commit()
-// desc: ...
-//-----------------------------------------------------------------------------
-void Chuck_Context::commit()
-{
-    std::map<Chuck_Namespace *, Chuck_Namespace *>::iterator iter;
-
-    // loop through
-    for( iter = commit_map.begin(); iter != commit_map.end(); iter++ )
+    Chuck_Func * f = NULL;
+    // iterate over Chuck_Func * added as part of this context
+    for( t_CKINT i = 0; i < new_funcs.size(); i++ )
     {
-        // commit
-        (*iter).second->commit();
+        // get as func
+        f = (Chuck_Func *)new_funcs[i];
+        // decouple with intention of keep func def around
+        f->funcdef_decouple_ast();
     }
-
-    // clear
-    commit_map.clear();
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: rollback()
-// desc: ...
-//-----------------------------------------------------------------------------
-void Chuck_Context::rollback()
-{
-    std::map<Chuck_Namespace *, Chuck_Namespace *>::iterator iter;
-
-    // loop through
-    for( iter = commit_map.begin(); iter != commit_map.end(); iter++ )
-    {
-        // rollback
-        (*iter).second->rollback();
-    }
-
-    // clear
-    commit_map.clear();
 }
 
 
@@ -5853,6 +5832,8 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         return CK_INVALID_OFFSET;
     }
 
+    // TODO 2023 1.5.0.5 -- clean up the various decls?
+
     if( doc != NULL )
         var_decl->value->doc = doc;
 
@@ -5913,6 +5894,8 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
         delete_id_list( thePath );
         return FALSE;
     }
+
+    // TODO 2023 1.5.0.5 -- clean up the various decls?
 
     if( doc != NULL )
         var_decl->value->doc = doc;
@@ -6315,6 +6298,67 @@ a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
 
 
 //-----------------------------------------------------------------------------
+// name: partial_deep_copy_args()
+// desc: partial deep copy of an arg list AST node
+//-----------------------------------------------------------------------------
+a_Arg_List partial_deep_copy_args( a_Arg_List list )
+{
+    if( !list ) return NULL;
+
+    a_Arg_List copy = NULL;
+    a_Var_Decl var_decl = NULL;
+
+    // need name but not 'array' on var_decl
+    var_decl = new_var_decl( S_name(list->var_decl->xid), NULL, list->var_decl->line, list->var_decl->where );
+    // need var_decl by not type_decl
+    copy = new_arg_list( NULL, var_decl, list->line, list->where );
+    // set type and add reference
+    copy->type = list->type; SAFE_ADD_REF( copy->type );
+
+    // go down the list
+    copy->next = partial_deep_copy_args( list->next );
+
+    // return
+    return copy;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: partial_deep_copy()
+// desc: partial deep copy of a func def AST node; useful and safer because
+//       the original AST node will be cleaned up after compilation
+//-----------------------------------------------------------------------------
+a_Func_Def partial_deep_copy_fn( a_Func_Def f )
+{
+    a_Func_Def copy = new_func_def( f->func_decl,
+                                    f->static_decl,
+                                    NULL,
+                                    S_name(f->name),
+                                    partial_deep_copy_args(f->arg_list),
+                                    NULL,
+                                    FALSE, // from AST
+                                    f->line,
+                                    f->where );
+    // copy ret_type and reference count
+    copy->ret_type = f->ret_type; SAFE_ADD_REF( copy->ret_type );
+    // copy ck_func and reference count
+    copy->ck_func = f->ck_func; SAFE_ADD_REF( copy->ck_func );
+
+    // copy DL func pointers
+    copy->dl_func_ptr = f->dl_func_ptr;
+    // copy other data
+    copy->global = f->global;
+    copy->stack_depth = f->stack_depth;
+
+    return copy;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: make_dll_arg_list()
 // desc: make an chuck dll function into arg list
 //-----------------------------------------------------------------------------
@@ -6467,9 +6511,9 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
         goto error;
     }
 
-    // make a func_def
+    // make a func_def | added from_ast=FALSE 1.5.0.5
     func_def = new_func_def( func_decl, static_decl, type_decl,
-                             (char *)name, arg_list, NULL, 0, 0 );
+                             (char *)name, arg_list, NULL, FALSE, 0, 0 );
     // mark the function as imported (instead of defined in ChucK)
     func_def->s_type = ae_func_builtin;
     // copy the function pointer - the type doesn't matter here
@@ -7037,6 +7081,116 @@ string arglist2string( a_Arg_List list )
 
 
 //-----------------------------------------------------------------------------
+// name: ~Chuck_Func()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Func::~Chuck_Func()
+{
+    // TODO: release references
+
+    // delete our partial deep copy
+    funcdef_cleanup();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: funcdef_connect()
+// desc: connect a Func_Def (called when this func is type checked)
+//-----------------------------------------------------------------------------
+void Chuck_Func::funcdef_connect( a_Func_Def f )
+{
+    // cleanup first
+    this->funcdef_cleanup();
+
+    if( !f )
+    {
+        EM_error2( 0, "(internal error): Chuck_Func::referenceTo() NULL func def..." );
+        return;
+    }
+
+    // copy | NOTE the func_def could continue to be modified during compilation
+    // after compilation, we keep this Func around but make deep copy of this->def
+    this->m_def = f;
+
+    // if AST owned, increment the ref
+    if( f->ast_owned ) f->vm_refs++;
+
+    // log
+    EM_log( CK_LOG_FINEST, "funcdef_connect() for '%s' | AST-owned: %s vm_refs: %s",
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: funcdef_decouple_ast()
+// desc: severe references to AST (called after compilation, before AST cleanup)
+// make a fresh partial deep copy of m_def ONLY IF it is owned by AST
+//-----------------------------------------------------------------------------
+void Chuck_Func::funcdef_decouple_ast()
+{
+    // make copy
+    a_Func_Def f = this->m_def;
+
+    // if NULL
+    if( !f ) return;
+
+    // if AST owned
+    if( f->ast_owned )
+    {
+        // make partial deep copy
+        this->m_def = partial_deep_copy_fn( f );
+        // decrement ref count
+        f->vm_refs--;
+    }
+
+    // log
+    EM_log( CK_LOG_FINEST, "funcdef_decouple_ast() for '%s' | AST-owned: %s vm_refs: %s",
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: funcdef_decouple_ast()
+// desc: cleanup funcdef (if/when this function is cleaned up)
+//-----------------------------------------------------------------------------
+void Chuck_Func::funcdef_cleanup()
+{
+    // make copy
+    a_Func_Def f = this->m_def;
+
+    // if NULL
+    if( !f ) return;
+
+    // log
+    EM_log( CK_LOG_FINEST, "funcdef_cleanup() for '%s' | AST-owned: %s vm_refs: %s",
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+
+    // if AST owned
+    if( f->ast_owned )
+    {
+        // decrement ref count
+        f->vm_refs--;
+    }
+    else
+    {
+        // not AST owned, we created this, we delete this
+        delete_func_def( f );
+    }
+
+    // zero out
+    this->m_def = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Type()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -7046,7 +7200,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     m_env = env;
     xid = _id; name = _n; parent = _p; size = _s; owner = NULL;
     array_type = NULL; array_depth = 0; obj_size = 0;
-    info = NULL; func = NULL; def = NULL; is_copy = FALSE;
+    info = NULL; func = NULL; /* def = NULL; */ is_copy = FALSE;
     ugen_info = NULL; is_complete = TRUE; has_constructor = FALSE;
     has_destructor = FALSE; allocator = NULL; originHint = te_originUnknown;
 
@@ -7115,7 +7269,6 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     this->parent = rhs.parent;
     this->obj_size = rhs.obj_size;
     this->size = rhs.size;
-    this->def = rhs.def;
     this->is_copy = TRUE;
     this->array_depth = rhs.array_depth;
     this->array_type = rhs.array_type; // SAFE_ADD_REF(this->array_type);
@@ -7406,20 +7559,20 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
     // print line prefix, if any
     sout << PREFIX;
     // print static
-    sout << (theFunc->def->static_decl == ae_key_static ? "static " : "");
+    sout << (theFunc->def()->static_decl == ae_key_static ? "static " : "");
     // output return type
-    sout << theFunc->def->ret_type->str();
+    sout << theFunc->def()->ret_type->str();
     // space
     sout << " ";
     // output function name
-    sout << S_name(theFunc->def->name);
+    sout << S_name(theFunc->def()->name);
     // open paren
     sout << "(";
     // extra space, if we have args
-    if( theFunc->def->arg_list != NULL ) sout << " ";
+    if( theFunc->def()->arg_list != NULL ) sout << " ";
 
     // argument list
-    a_Arg_List args = theFunc->def->arg_list;
+    a_Arg_List args = theFunc->def()->arg_list;
     while( args != NULL )
     {
         // output arg
@@ -7429,7 +7582,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
     }
 
     // extra space, if we are args
-    if( theFunc->def->arg_list != NULL ) sout << " ";
+    if( theFunc->def()->arg_list != NULL ) sout << " ";
 
     // close paren
     sout << ");" << endl;
