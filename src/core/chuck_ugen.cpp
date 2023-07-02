@@ -537,7 +537,7 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
     }
     else
     {
-        EM_error3( "internal error: unhandled UGen add: outs: %d ins: %d", outs, ins );
+        EM_error3( "(internal error) unhandled UGen add: outs: %d ins: %d", outs, ins );
         assert( FALSE );
     }
 

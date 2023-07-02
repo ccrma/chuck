@@ -412,7 +412,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
     // ensure namespace allocation
     if( objT->info == NULL )
     {
-        EM_error3( "[chuck]: internal error initializing base class '%s'...", objT->name.c_str() );
+        EM_error3( "[chuck]: internal error initializing base class '%s'", objT->name.c_str() );
         return FALSE;
     }
 
@@ -800,7 +800,7 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
     if( !env->context )
     {
         // error
-        EM_error2( 0, "internal error: env->context NULL!" );
+        EM_error2( 0, "(internal error) env->context NULL!" );
         ret = FALSE; goto done;
     }
 
@@ -809,7 +809,7 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
     if( !prog )
     {
         // error
-        EM_error2( 0, "internal error: context->parse_tree NULL!" );
+        EM_error2( 0, "(internal error) context->parse_tree NULL!" );
         ret = FALSE; goto done;
     }
 
@@ -841,7 +841,7 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
 
         default:
             EM_error2( prog->where,
-                "internal error: unrecognized program section in type checker..." );
+                "(internal error) unrecognized program section in type checker..." );
             ret = FALSE;
             break;
         }
@@ -1157,9 +1157,9 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
         // error
         EM_error2( stmt->where,
                   "empty for loop condition..." );
-        EM_error2( stmt->where,
+        EM_error2( 0,
                   "...(note: explicitly use 'true' if it's the intent)" );
-        EM_error2( stmt->where,
+        EM_error2( 0,
                   "...(e.g., 'for( ; true; ){ /*...*/ }')" );
         return FALSE;
     }
@@ -1316,7 +1316,7 @@ t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt )
     else if( !isa( type, env->t_int ) ) // must be int
     {
         EM_error2( stmt->where,
-            "loop * conditional must be of type 'int'..." );
+            "loop * conditional must be of type 'int'" );
         return FALSE;
     }
 
@@ -1344,7 +1344,7 @@ t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt )
 t_CKBOOL type_engine_check_switch( Chuck_Env * env, a_Stmt_Switch stmt )
 {
     // TODO: implement this
-    EM_error2( stmt->where, "switch not implemented..." );
+    EM_error2( stmt->where, "switch not implemented" );
 
     return FALSE;
 }
@@ -1362,7 +1362,7 @@ t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br )
     if( env->breaks.size() <= 0 )
     {
         EM_error2( br->where,
-            "'break' found outside of for/while/until/switch..." );
+            "'break' found outside of for/while/until/switch" );
         return FALSE;
     }
 
@@ -1382,7 +1382,7 @@ t_CKBOOL type_engine_check_continue( Chuck_Env * env, a_Stmt_Continue cont )
     if( env->breaks.size() <= 0 )
     {
         EM_error2( cont->where,
-            "'continue' found outside of for/while/until..." );
+            "'continue' found outside of for/while/until" );
         return FALSE;
     }
 
@@ -1528,7 +1528,7 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp )
 
         default:
             EM_error2( curr->where,
-                "internal compiler error - no expression type '%i'...",
+                "internal compiler error - no expression type '%i'",
                 curr->s_type );
             return NULL;
         }
@@ -1627,7 +1627,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     {
         // TODO: implement this
         EM_error2( lhs->where,
-            "multi-value (%s) operation not supported/implemented...",
+            "multi-value (%s) operation not supported/implemented",
             op2str(op));
         return NULL;
     }
@@ -1810,12 +1810,12 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_divide_chuck:
     case ae_op_percent_chuck:
         if( isa( left, env->t_object ) ) {
-            EM_error2( binary->where, "cannot perform '%s' on object references...",
+            EM_error2( binary->where, "cannot perform '%s' on object references",
                 op2str(op) );
             return NULL;
         }
         if( isa( right, env->t_object ) ) {
-            EM_error2( binary->where, "cannot perform '%s' on object references...",
+            EM_error2( binary->where, "cannot perform '%s' on object references",
                 op2str(op) );
             return NULL;
         }
@@ -1984,7 +1984,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             else if( isa( right, env->t_string ) ) return left;
             else // error
             {
-                EM_error2( lhs->where, "on suitable IO action for '%s' <= '%s'...",
+                EM_error2( lhs->where, "on suitable IO action for '%s' <= '%s'",
                     left->c_name(), right->c_name() );
                 return NULL;
             }
@@ -2081,7 +2081,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     if( lhs->next || rhs->next )
     {
         EM_error2( lhs->where,
-            "multi-value (=>) operation not supported/implemented..." );
+            "multi-value (=>) operation not supported/implemented" );
         return NULL;
     }
 
@@ -2147,7 +2147,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         {
             // error
             EM_error2( lhs->where,
-                "ugen's of type '%s' have no output - cannot => to another ugen...",
+                "ugen's of type '%s' have no output - cannot => to another ugen",
                 left_ugen_type->c_name() );
             return NULL;
         }
@@ -2155,7 +2155,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         {
             // error
             EM_error2( rhs->where,
-                "ugen's of type '%s' have no input - cannot => from another ugen...",
+                "ugen's of type '%s' have no input - cannot => from another ugen",
                 right_ugen_type->c_name() );
             return NULL;
         }
@@ -2276,7 +2276,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 
     // no match
     EM_error2( lhs->where,
-        "cannot resolve operator '=>' on types '%s' and '%s'...",
+        "cannot resolve operator '=>' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
     return NULL;
@@ -2300,9 +2300,7 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 
     // no match
     EM_error2( lhs->where,
-        "no suitable resolution for binary operator '=<'..." );
-    EM_error2( lhs->where,
-        "...on types '%s' and '%s'",
+        "cannot resolve operator '=<' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
     return NULL;
@@ -2326,9 +2324,7 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 
     // no match
     EM_error2( lhs->where,
-        "no suitable resolution for binary operator '=^'..." );
-    EM_error2( lhs->where,
-        "...on types '%s' and '%s'",
+        "cannot resolve operator '=^' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
     return NULL;
@@ -2349,13 +2345,13 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     //if( isa( left, env->t_class ) )
     //{
     //    EM_error2( lhs->where,
-    //        "cannot assign '@=>' using static class as left operand..." );
+    //        "cannot assign '@=>' using static class as left operand" );
     //    return NULL;
     //}
     //else if( isa( right, env->t_class ) )
     //{
     //    EM_error2( rhs->where,
-    //        "cannot assign '@=>' using static class as right operand..." );
+    //        "cannot assign '@=>' using static class as right operand" );
     //    return NULL;
     //}
 
@@ -2453,7 +2449,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             {
                 EM_error2( unary->where,
                     "prefix unary operator '%s' cannot "
-                    "be used on non-mutable data-types...", op2str( unary->op ) );
+                    "be used on non-mutable data-types", op2str( unary->op ) );
                 return NULL;
             }
 
@@ -2485,7 +2481,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             else
             {
                  EM_error2( unary->exp ? unary->exp->where : unary->where,
-                     "only function calls can be sporked..." );
+                     "only function calls can be sporked" );
                  return NULL;
             }
         break;
@@ -2496,7 +2492,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             t = type_engine_find_type( env, unary->type->xid );
             if( !t )
             {
-                // EM_error2( 0, "... in 'new' expression ..." );
+                // EM_error2( 0, "...in 'new' expression " );
                 return NULL;
             }
 
@@ -2510,7 +2506,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 // if empty
                 if( !unary->array->exp_list )
                 {
-                    EM_error2( unary->where, "cannot use empty [] with 'new'..." );
+                    EM_error2( unary->where, "cannot use empty [] with 'new'" );
                     return NULL;
                 }
 
@@ -2540,7 +2536,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 EM_error2( unary->type->where,
                     "cannot use 'new' on primitive type '%s'...",
                     t->c_name() );
-                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
+                EM_error2( 0, "(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
                 return NULL;
             }
 
@@ -2548,7 +2544,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             if( unary->type->ref && !unary->array )
             {
                 EM_error2( unary->where,
-                    "cannot use 'new' on an individual object reference (@)..." );
+                    "cannot use 'new' on an individual object reference (@)" );
                 return NULL;
             }
 
@@ -2561,7 +2557,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 
     // no match
     EM_error2( unary->where,
-        "no suitable resolution for prefix unary operator '%s' on type '%s...",
+        "cannot resolve prefix operator '%s' on type '%s",
         op2str( unary->op ), t->c_name() );
     return NULL;
 }
@@ -2593,7 +2589,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 if( !env->class_def )
                 {
                     EM_error2( exp->where,
-                        "keyword 'this' cannot used outside class definition..." );
+                        "keyword 'this' cannot used outside class definition" );
                     return NULL;
                 }
 
@@ -2601,7 +2597,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 if( env->func && !env->func->is_member )
                 {
                     EM_error2( exp->where,
-                        "keyword 'this' cannot be used inside static functions..." );
+                        "keyword 'this' cannot be used inside static functions" );
                     return NULL;
                 }
 
@@ -2687,7 +2683,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                                 if( env->func->is_static && v->is_member && !v->is_static )
                                 {
                                     EM_error2( exp->where,
-                                        "non-static member '%s' used from static function...", S_name(exp->var) );
+                                        "non-static member '%s' used from static function", S_name(exp->var) );
                                     return NULL;
                                 }
                             }
@@ -2700,13 +2696,13 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         if( !env->class_def /* || env->class_scope > 0 */ )
                         {
                             EM_error2( exp->where,
-                                "undefined variable '%s'...", S_name(exp->var) );
+                                "undefined variable '%s'", S_name(exp->var) );
                             return NULL;
                         }
                         else
                         {
                             EM_error2( exp->where,
-                                "undefined variable/member '%s' in class/namespace '%s'...",
+                                "undefined variable/member '%s' in class/namespace '%s'",
                                 S_name(exp->var), env->class_def->name.c_str() );
                             return NULL;
                         }
@@ -2717,7 +2713,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 if( !v->is_decl_checked )
                 {
                     EM_error2( exp->where,
-                        "variable/member '%s' is used before declaration...",
+                        "variable/member '%s' is used before declaration",
                         S_name(exp->var) );
                     return NULL;
                 }
@@ -2728,7 +2724,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 //    // check level
                 //    if( env->deprecate_level < 2 )
                 //    {
-                //        EM_error2( exp->where, "deprecated: '%s' --> use: '%s'...",
+                //        EM_error2( exp->where, "deprecated: '%s' --> use: '%s'",
                 //                   "pi", "Math.PI" );
                 //    }
                 // }
@@ -2801,7 +2797,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
             if( exp->exp->s_type == ae_exp_decl )
             {
                 EM_error2( exp->where,
-                    "cannot use <<< >>> on variable declarations..." );
+                    "cannot use <<< >>> on variable declarations" );
                 return NULL;
             }
 
@@ -2816,7 +2812,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
         // no match
         default:
             EM_error2( exp->where,
-                "internal error - unrecognized primary type '%i'...", exp->s_type );
+                "internal error - unrecognized primary type '%i'", exp->s_type );
         return NULL;
     }
 
@@ -2887,7 +2883,7 @@ t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
                 else
                 {
                     // incompatible
-                    EM_error2( e->where, "array init [...] contains incompatible types..." );
+                    EM_error2( e->where, "array init [...] contains incompatible types" );
                     return NULL;
                 }
             }
@@ -3152,7 +3148,7 @@ t_CKTYPE type_engine_check_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
     t_CKTYPE t2 = type_engine_find_type( env, cast->type->xid );
     if( !t2 )
     {
-        EM_error2( cast->where, "... in cast expression ..." );
+        EM_error2( cast->where, "...in cast expression" );
         return NULL;
     }
 
@@ -3160,7 +3156,7 @@ t_CKTYPE type_engine_check_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
     if( !type_engine_check_cast_valid( env, t2, t ) )
     {
         EM_error2( cast->where,
-            "invalid cast from '%s' to '%s'...",
+            "invalid cast from '%s' to '%s'",
             t->c_name(), S_name( cast->type->xid->xid ) );
         return NULL;
     }
@@ -3259,7 +3255,7 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
             if( postfix->exp->s_meta != ae_meta_var )
             {
                 EM_error2( postfix->exp->where,
-                    "postfix operator '%s' cannot be used on non-mutable data-type...",
+                    "postfix operator '%s' cannot be used on non-mutable data-type",
                     op2str( postfix->op ) );
                 return NULL;
             }
@@ -3281,7 +3277,7 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
 
     // no match
     EM_error2( postfix->where,
-        "no suitable resolutation for postfix operator '%s' on type '%s'...",
+        "cannot resolve postfix operator '%s' on type '%s'",
         op2str( postfix->op ), t->c_name() );
     return NULL;
 }
@@ -3304,7 +3300,7 @@ t_CKTYPE type_engine_check_exp_if( Chuck_Env * env, a_Exp_If exp_if )
     if( !cond || !if_exp || !else_exp )
     {
         EM_error2( exp_if->where,
-                   "type system (internal) error determining types in IF expression..." );
+                   "type system (internal) error determining types in IF expression" );
         return NULL;
     }
 
@@ -3323,7 +3319,7 @@ t_CKTYPE type_engine_check_exp_if( Chuck_Env * env, a_Exp_If exp_if )
     if( !( *if_exp == *else_exp ) )
     {
         EM_error2( exp_if->where,
-            "incompatible types '%s' and '%s' in if expression...",
+            "incompatible types '%s' and '%s' in if expression",
             if_exp->c_name(), else_exp->c_name() );
         return NULL;
     }
@@ -3349,7 +3345,7 @@ t_CKBOOL type_engine_check_array_subscripts( Chuck_Env * env, a_Exp exp_list )
         if( !isa( exp->type, env->t_int ) )
         {
             EM_error2( exp->where,
-                "incompatible array subscript type '%s'...",
+                "incompatible array subscript type '%s'",
                 exp->type->name.c_str() );
             return FALSE;
         }
@@ -3391,7 +3387,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             if( value )
             {
                 EM_error2( var_decl->where,
-                    "'%s' has already been defined in super class '%s'...",
+                    "'%s' has already been defined in super class '%s'",
                     S_name(var_decl->xid), value->owner_class->c_name() );
                 return NULL;
             }
@@ -3446,7 +3442,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             if( env->class_def == NULL || env->class_scope > 0 )
             {
                 EM_error2( decl->where,
-                    "static variables must be declared at class scope..." );
+                    "static variables must be declared at class scope" );
                 return FALSE;
             }
 
@@ -3677,7 +3673,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
             EM_error2( exp_func->where,
                 "argument type(s) do not match:" );
             EM_error2( exp_func->where,
-                "... for function '%s(...)' ...",
+                "...for function '%s(...)'...",
                 S_name(exp_func->primary.var) );
         }
         else if( exp_func->s_type == ae_exp_dot_member )
@@ -3685,13 +3681,13 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
             EM_error2( exp_func->where,
                 "arguments type(s) do not match:" );
             EM_error2( exp_func->where,
-                "... for function '%s(...)' ...",
+                "...for function '%s(...)'...",
                 type_engine_print_exp_dot_member( env, &exp_func->dot_member ).c_str() );
         }
         else
         {
             EM_error2( exp_func->where,
-                "argument type(s) do not match for function ..." );
+                "argument type(s) do not match for function..." );
         }
 
         EM_error2( exp_func->where,
@@ -3711,7 +3707,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         {
             // error
             EM_error2( exp_func->where,
-                "internal error: function type different on second check..." );
+                "(internal error) function type different on second check" );
             return NULL;
         }
     }
@@ -3727,7 +3723,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         {
             // error
             EM_error2( exp_func->where,
-                "internal error: function type different on second check..." );
+                "(internal error) function type different on second check" );
             return NULL;
         }
         */
@@ -3775,7 +3771,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
             {
                 // error
                 EM_error2( member->base->where,
-                          "cannot assign value to literal complex value..." );
+                          "cannot assign value to literal complex value" );
                 return NULL;
             }
 
@@ -3785,7 +3781,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
         {
             // not valid
             EM_error2( member->where,
-                      "type '%s' has no member named '%s'...", member->t_base->c_name(), str.c_str() );
+                      "type '%s' has no member named '%s'", member->t_base->c_name(), str.c_str() );
             return NULL;
         }
     }
@@ -3801,7 +3797,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
             {
                 // error
                 EM_error2( member->base->where,
-                          "cannot assign value to literal polar value..." );
+                          "cannot assign value to literal polar value" );
                 return NULL;
             }
 
@@ -3811,7 +3807,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
         {
             // not valid
             EM_error2( member->where,
-                      "type '%s' has no member named '%s'...", member->t_base->c_name(), str.c_str() );
+                      "type '%s' has no member named '%s'", member->t_base->c_name(), str.c_str() );
             return NULL;
         }
     }
@@ -3829,7 +3825,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
             {
                 // error
                 EM_error2( member->base->where,
-                           "cannot assign value to literal %s value...",
+                           "cannot assign value to literal %s value",
                            member->t_base->c_name() );
                 return NULL;
             }
@@ -3844,7 +3840,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
             {
                 // error
                 EM_error2( member->base->where,
-                           "cannot assign value to literal %s value...",
+                           "cannot assign value to literal %s value",
                            member->t_base->c_name() );
                 return NULL;
             }
@@ -3860,7 +3856,7 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
 
     // should not get here
     EM_error2( member->base->where,
-               "type checer internal error in special literal..." );
+               "type checer internal error in special literal" );
 
     return NULL;
 
@@ -3881,7 +3877,7 @@ check_func:
     {
         // error
         EM_error2( member->base->where,
-                  "cannot call function from literal %s value...",
+                  "cannot call function from literal %s value",
                   member->t_base->c_name() );
         return NULL;
     }
@@ -3954,14 +3950,14 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
         if( base_static )
         {
             EM_error2( member->where,
-                "keyword 'this' must be associated with object instance..." );
+                "keyword 'this' must be associated with object instance" );
             return NULL;
         }
         // in member func
         if( env->func && !env->func->is_member )
         {
             EM_error2( member->where,
-                "keyword 'this' cannot be used inside static functions..." );
+                "keyword 'this' cannot be used inside static functions" );
             return NULL;
         }
 
@@ -3984,7 +3980,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     {
         // this won't work
         EM_error2( member->where,
-            "cannot access member '%s.%s' without object instance...",
+            "cannot access member '%s.%s' without object instance",
             the_base->c_name(), S_name(member->xid) );
         return NULL;
     }
@@ -5055,7 +5051,7 @@ Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List thePat
         // check level
         if( env->deprecate_level < 2 )
         {
-            EM_error2( thePath->where, "deprecated: '%s' --> use: '%s'...",
+            EM_error2( thePath->where, "deprecated: '%s' --> use: '%s'",
                 type_path( thePath ), actual.c_str() );
         }
     }
@@ -5217,7 +5213,7 @@ Chuck_Value * type_engine_find_value( Chuck_Env * env, const string & xid,
             // check level
             if( env->deprecate_level < 2 )
             {
-                EM_error2( linepos, "deprecated: '%s' --> use: '%s'...",
+                EM_error2( linepos, "deprecated: '%s' --> use: '%s'",
                     xid.c_str(), actual.c_str() );
             }
         }
@@ -5251,14 +5247,14 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List thePath )
         if( isprim( env, type ) )
         {
             // error
-            EM_error2( 0, "primitive type '%s' has no namespace and cannot be extended...",
+            EM_error2( 0, "primitive type '%s' has no namespace and cannot be extended",
                 type->c_name() );
             return NULL;
         }
         else
         {
             // internal error
-            EM_error2( 0, "internal error: type '%s' without namespace...",
+            EM_error2( 0, "(internal error) type '%s' without namespace",
                 type->c_name() );
             return NULL;
         }
@@ -5294,7 +5290,7 @@ t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, strin
         if( print )
         {
             EM_error2( pos, "function signatures differ in access modifiers..." );
-            EM_error2( pos, "(both must be one of public/private/protected/function)..." );
+            EM_error2( pos, "(both must be one of public/private/protected/function)" );
         }
         return FALSE;
     }
@@ -5312,7 +5308,7 @@ t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, strin
         // match types
         if( *e1->type != *e2->type )
         {
-            if( print ) EM_error2( pos, "function signatures differ in argument %i's type...", count );
+            if( print ) EM_error2( pos, "function signatures differ in argument %i's type", count );
             return FALSE;
         }
 
@@ -5325,7 +5321,7 @@ t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, strin
     if( e1 != NULL || e2 != NULL )
     {
         if( print ) EM_error2( pos,
-            "function signatures differ in number of arguments..." );
+            "function signatures differ in number of arguments" );
         return FALSE;
     }
 
@@ -5352,7 +5348,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     if( type->info != NULL )
     {
         // error
-        EM_error2( 0, "during import: class '%s' already imported...", type->c_name() );
+        EM_error2( 0, "during import: class '%s' already imported", type->c_name() );
         return NULL;
     }
 
@@ -5502,7 +5498,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
 
 error:
     // error
-    EM_error2( 0, "... during import of class '%s'", name );
+    EM_error2( 0, "...during import of class '%s'", name );
     // free
     SAFE_DELETE( type );
 
@@ -5658,7 +5654,7 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
     if( !env->class_def )
     {
         // error
-        EM_error2( 0, "import: too many class_end called..." );
+        EM_error2( 0, "import: too many class_end called" );
         return FALSE;
     }
 
@@ -5790,7 +5786,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     if( !thePath )
     {
         // error
-        EM_error2( 0, "... during mvar import '%s.%s'...",
+        EM_error2( 0, "...during mvar import '%s.%s'",
             env->class_def->c_name(), name );
         return CK_INVALID_OFFSET;
     }
@@ -5870,7 +5866,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     if( !thePath )
     {
         // error
-        EM_error2( 0, "... during svar import '%s.%s'...",
+        EM_error2( 0, "...during svar import '%s.%s'",
             env->class_def->c_name(), name );
         return FALSE;
     }
@@ -6171,19 +6167,19 @@ t_CKBOOL verify_array( a_Array_Sub array )
         if( array->err_num == 1 )
         {
             EM_error2( array->where,
-                "invalid format for array init [...][...]..." );
+                "invalid format for array init [...][...]" );
             return FALSE;
         }
         else if( array->err_num == 2 )
         {
             EM_error2( array->where,
-                "partially empty array init [...][]..." );
+                "partially empty array init [...][]" );
             return FALSE;
         }
         else
         {
             EM_error2( array->where,
-                "internal error: unrecognized array error..." );
+                "(internal error) unrecognized array error" );
             return FALSE;
         }
     }
@@ -6246,7 +6242,7 @@ a_Id_List str2list( const string & thePath, t_CKUINT & array_depth )
             else
             {
                 // error
-                EM_error2( 0, "illegal character '%c' in path '%s'...",
+                EM_error2( 0, "illegal character '%c' in path '%s'",
                     c, thePath.c_str() );
                 // clean up locally created id list
                 delete_id_list( list );
@@ -6391,7 +6387,7 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
         if( !type_path )
         {
             // error
-            EM_error2( 0, "...at argument '%i'...", i+1 );
+            EM_error2( 0, "...at argument '%i'", i+1 );
             // delete the arg list
             // delete_arg_list( arg_list );
             return NULL;
@@ -6462,7 +6458,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     if( !type_path )
     {
         // error
-        EM_error2( 0, "...during function import '%s' (type)...",
+        EM_error2( 0, "...during function import '%s' (type)",
             dl_fun->name.c_str() );
         goto error;
     }
@@ -6474,7 +6470,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     if( !type_decl )
     {
         // error
-        EM_error2( 0, "...during function import '%s' (type2)...",
+        EM_error2( 0, "...during function import '%s' (type2)",
             dl_fun->name.c_str() );
         // clean up locally created id list
         delete_id_list( type_path );
@@ -6503,7 +6499,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     if( dl_fun->args.size() > 0 && !arg_list )
     {
         // error
-        EM_error2( 0, "...during function import '%s' (arg_list)...",
+        EM_error2( 0, "...during function import '%s' (arg_list)",
             dl_fun->name.c_str() );
         // delete type_decl
         // delete_type_decl( type_decl );
@@ -6517,7 +6513,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // mark the function as imported (instead of defined in ChucK)
     func_def->s_type = ae_func_builtin;
     // copy the function pointer - the type doesn't matter here
-    // ... since we copying into a void * - so mfun is used
+    // ...since we copying into a void * - so mfun is used
     func_def->dl_func_ptr = (void *)dl_fun->mfun;
 
     return func_def;
@@ -6614,7 +6610,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
         }
 
         // loop over member data
-        // ignored for now... -spencer
+        // ignored for now...-spencer
         for( j = 0; j < cl->mvars.size(); j++ )
         {
         }
@@ -7106,7 +7102,7 @@ void Chuck_Func::funcdef_connect( a_Func_Def f )
 
     if( !f )
     {
-        EM_error2( 0, "(internal error): Chuck_Func::referenceTo() NULL func def..." );
+        EM_error2( 0, "(internal error): Chuck_Func::referenceTo() NULL func def" );
         return;
     }
 
@@ -7477,7 +7473,7 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
         nameStr += " (";
         if( this->array_depth > 1 )
         {
-            // sigh... to_string() on earlier windows / VC++ 2010
+            // sigh...to_string() on earlier windows / VC++ 2010
             ostringstream num;
             num << this->array_depth;
             nameStr += num.str() + "D ";

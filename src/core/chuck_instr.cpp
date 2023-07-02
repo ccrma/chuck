@@ -2370,7 +2370,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
             {
                 // we have a problem
                 CK_FPRINTF_STDERR(
-                    "[chuck](VM): UninitializedUGenException: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): ... (hint: need to declare global UGen earlier in file)\n",
+                    "[chuck](VM): UninitializedUGenException: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): ...(hint: need to declare global UGen earlier in file)\n",
                     m_linepos, shred->xid, shred->name.c_str());
                 goto error;
             }
@@ -2388,7 +2388,7 @@ void Chuck_Instr_Reg_Push_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
             {
                 // we have a problem
                 CK_FPRINTF_STDERR(
-                                  "[chuck](VM): UninitializedObjectException: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): ... (hint: need to declare global Object earlier in file)\n",
+                                  "[chuck](VM): UninitializedObjectException: on line[%lu] in shred[id=%lu:%s]\n[chuck](VM): ...(hint: need to declare global Object earlier in file)\n",
                                   m_linepos, shred->xid, shred->name.c_str());
                 goto error;
             }
@@ -4386,7 +4386,7 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             (*rhs_ptr)->add_ref();
             (*rhs_ptr)->set( lhs->str() );
         }
-        //EM_error2( 0, "internal error: somehow the type checker has allowed NULL strings" );
+        //EM_error2( 0, "(internal error) somehow the type checker has allowed NULL strings" );
         //EM_error2( 0, "we are sorry for the inconvenience but..." );
         //EM_error2( 0, "we have to crash now.  Thanks." );
         //assert( FALSE );
@@ -5616,7 +5616,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 internal_error_array_depth:
     // we have a big problem
     CK_FPRINTF_STDERR(
-        "[chuck](VM): internal error: multi-dimensional array depth mismatch while allocating arrays...\n" );
+        "[chuck](VM): (internal error) multi-dimensional array depth mismatch while allocating arrays...\n" );
     goto error;
 
 out_of_memory:
@@ -7943,7 +7943,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         }
         else if( type->size == 0 )
         {
-            CK_FPRINTF_STDERR( "... " );
+            CK_FPRINTF_STDERR( "..." );
         }
         else
             assert( FALSE );

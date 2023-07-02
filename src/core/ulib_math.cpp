@@ -829,7 +829,7 @@ CK_DLL_SFUN( rtop_impl )
     if( !from || !to )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.rtop( ... ) was given one or more NULL arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.rtop(...) was given one or more NULL arrays..." );
         return;
     }
 
@@ -868,7 +868,7 @@ CK_DLL_SFUN( ptor_impl )
     if( !from || !to )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.ptor( ... ) was given one or more NULL arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.ptor(...) was given one or more NULL arrays..." );
         return;
     }
 
@@ -993,7 +993,7 @@ CK_DLL_SFUN( cossim_impl )
     if( a == NULL || b == NULL )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more NULL arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) was given one or more NULL arrays..." );
         // error out
         return;
     }
@@ -1004,7 +1004,7 @@ CK_DLL_SFUN( cossim_impl )
     if( size == 0 )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more 0-length arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) was given one or more 0-length arrays..." );
         // error out
         return;
     }
@@ -1054,7 +1054,7 @@ CK_DLL_SFUN( cossim3d_impl )
     if( norm1 == 0 || norm2 == 0 )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) zero in denominator..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) zero in denominator..." );
         // error out
         return;
     }
@@ -1096,7 +1096,7 @@ CK_DLL_SFUN( cossim4d_impl )
     if( norm1 == 0 || norm2 == 0 )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) zero in denominator..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) zero in denominator..." );
         // error out
         return;
     }
@@ -1121,7 +1121,7 @@ CK_DLL_SFUN( euclidean_impl )
     if( a == NULL || b == NULL )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more NULL arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) was given one or more NULL arrays..." );
         // error out
         return;
     }
@@ -1132,7 +1132,7 @@ CK_DLL_SFUN( euclidean_impl )
     if( size == 0 )
     {
         // log
-        EM_log( CK_LOG_WARNING, "Math.cossim( ... ) was given one or more 0-length arrays..." );
+        EM_log( CK_LOG_WARNING, "Math.cossim(...) was given one or more 0-length arrays..." );
         // error out
         return;
     }

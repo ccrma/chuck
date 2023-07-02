@@ -185,7 +185,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
 
         default:
             EM_error2( prog->where,
-                "internal error: unrecognized program section in type checker pre-scan..." );
+                "(internal error) unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
         }
@@ -418,7 +418,7 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
 
         default:
             EM_error2( prog->where,
-                "internal error: unrecognized program section in type checker pre-scan..." );
+                "(internal error) unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
         }
@@ -1112,7 +1112,7 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
     if( !t )
     {
         // resolve
-        EM_error2( decl->where, "... in declaration ..." );
+        EM_error2( decl->where, "...in declaration" );
         return FALSE;
     }
 
@@ -1334,7 +1334,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     if( !f->ret_type )
     {
         // TODO: try to resolve
-        EM_error2( f->where, "... in return type of function '%s' ...", S_name(f->name) );
+        EM_error2( f->where, "...in return type of function '%s'", S_name(f->name) );
         goto error;
     }
     // add reference | 1.5.0.5
@@ -1388,7 +1388,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
             // TODO: try to resolve
             // EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
             EM_error2( arg_list->where,
-                "... in argument %i '%s' of function '%s(.)' ...",
+                "...in argument %i '%s' of function '%s(.)'",
                 count, S_name(arg_list->var_decl->xid), S_name(f->name) );
             goto error;
         }
@@ -1465,7 +1465,7 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
 
         default:
             EM_error2( prog->where,
-                "internal error: unrecognized program section in type checker pre-scan..." );
+                "(internal error) unrecognized program section in type checker pre-scan..." );
             ret = FALSE;
             break;
         }
@@ -2221,7 +2221,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         if( env->curr->lookup_value( var_decl->xid, FALSE ) )
         {
             EM_error2( var_decl->where,
-                "'%s' has already been defined in the same scope...",
+                "'%s' has already been defined in the same scope",
                 S_name(var_decl->xid) );
             return FALSE;
         }
@@ -2511,7 +2511,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             {
                 // error
                 EM_error2( f->where,
-                    "internal error: missing function '%s'",
+                    "(internal error) missing function '%s'",
                     overload->name.c_str() );
                 return FALSE;
             }

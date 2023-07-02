@@ -811,7 +811,7 @@ t_CKBOOL go( int argc, const char ** argv )
                 {
                     // error
                     errorMessage1 = "invalid arguments for '--color:'...";
-                    errorMessage2 = "... (looking for ON, OFF, or AUTO)";
+                    errorMessage2 = "...(looking for ON, OFF, or AUTO)";
                     break;
                 }
             }

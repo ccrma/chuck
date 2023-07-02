@@ -974,7 +974,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     if( !m_carrier->compiler )
     {
         // error
-        EM_error2( 0, "compileFile() invoked before initialization ..." );
+        EM_error2( 0, "compileFile() invoked before initialization..." );
         return false;
     }
 
@@ -1095,7 +1095,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     if( !m_carrier->compiler )
     {
         // error
-        EM_error2( 0, "compileCode() invoked before initialization ..." );
+        EM_error2( 0, "compileCode() invoked before initialization..." );
         return false;
     }
 

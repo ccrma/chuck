@@ -973,7 +973,7 @@ std::string timestamp_formatted()
     if( !timestr ) return "[unable to determine/format time]";
 
     // copy formatted date; ctime() always returns fixed length
-    // e.g., "Sat Jun 24 04:18:42 2023" -- 24 characters... okay
+    // e.g., "Sat Jun 24 04:18:42 2023" -- 24 characters...okay
     // what happens when the year becomes 5 or more digits?
     // in the year 10000...
     // will there still be computers? or humans? computer music?!?

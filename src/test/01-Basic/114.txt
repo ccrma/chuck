@@ -1,1 +1,1 @@
-[114.ck]:line(2): error: cannot '=>' from/to a multi-variable declaration
+[114.ck:2]: error: cannot '=>' from/to a multi-variable declaration

@@ -324,7 +324,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
     while( left )
     {
         // log
-        EM_log( CK_LOG_FINER, "%03d bytes left ... ", left );
+        EM_log( CK_LOG_FINER, "%03d bytes left...", left );
         // amount to send
         msg.length = left > NET_BUFFER_SIZE ? NET_BUFFER_SIZE : left;
         // read
@@ -758,8 +758,8 @@ const char * poop[] = {
     "[chuck]: an unknown fatal error has occurred. please restart your computer...",
     "[chuck]: an unknown fatal error has occurred. please reinstall something...",
     "[chuck]: an unknown fatal error has occurred. please update to chuck-3.0",
-    "[chuck]: internal error: unknown error",
-    "[chuck]: internal error: too many errors!!!",
+    "[chuck]: (internal error) unknown error",
+    "[chuck]: (internal error) too many errors!!!",
     "[chuck]: error printing error message. cannot continue 2#%%HGAFf9a0x"
 };
 

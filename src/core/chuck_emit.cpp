@@ -241,7 +241,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         {
             EM_error2( 0, "compiler error: dac replacement '%s' was never initialized...",
                 emit->dac_replacement.c_str() );
-            EM_error2( 0, " ... (hint: need to declare this variable as a global UGen)" );
+            EM_error2( 0, "...(hint: need to declare this variable as a global UGen)" );
             ret = FALSE;
         }
 
@@ -4159,7 +4159,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         {
             // fail if type unsupported
             EM_error2( decl->where, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
-            EM_error2( decl->where, "... (supported types: int, float, string, Event, UGen, Object)" );
+            EM_error2( decl->where, "...(supported types: int, float, string, Event, UGen, Object)" );
             return FALSE;
         }
     }
@@ -4546,7 +4546,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->code = new Chuck_Code;
     // name the code
     emit->code->name = emit->env->class_def ? emit->env->class_def->name + "." : "";
-    emit->code->name += func->name + "( ... )";
+    emit->code->name += func->name + "(...)";
     // set whether need this
     emit->code->need_this = func->is_member;
     // if static inside class | 1.4.1.0 (ge) added

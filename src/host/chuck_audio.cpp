@@ -225,10 +225,10 @@ void print( const RtAudio::DeviceInfo & info )
 {
     EM_error2b( 0, "device name = \"%s\"", info.name.c_str() );
     if (!info.probed)
-        EM_error2b( 0, "probe [failed] ..." );
+        EM_error2b( 0, "probe [failed]..." );
     else
     {
-        EM_error2b( 0, "probe [success] ..." );
+        EM_error2b( 0, "probe [success]..." );
         EM_error2b( 0, "# output channels = %d", info.outputChannels );
         EM_error2b( 0, "# input channels  = %d", info.inputChannels );
         EM_error2b( 0, "# duplex Channels = %d", info.duplexChannels );

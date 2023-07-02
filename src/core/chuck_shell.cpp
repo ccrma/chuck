@@ -1100,7 +1100,7 @@ t_CKINT Chuck_Shell::Command_Add::execute( vector< string > & argv,
 //-----------------------------------------------------------------------------
 string Chuck_Shell::Command_Add::usage()
 {
-    return "add file ...";
+    return "add file...";
 }
 
 
@@ -1142,7 +1142,7 @@ t_CKINT Chuck_Shell::Command_Remove::execute( vector< string > & argv,
 //-----------------------------------------------------------------------------
 string Chuck_Shell::Command_Remove::usage()
 {
-    return "remove shred_number ...";
+    return "remove shred_number...";
 }
 
 
@@ -1252,7 +1252,7 @@ t_CKINT Chuck_Shell::Command_Replace::execute( vector< string > & argv,
 //-----------------------------------------------------------------------------
 string Chuck_Shell::Command_Replace::usage()
 {
-    return "replace shred_id file ...";
+    return "replace shred_id file...";
 }
 
 
@@ -1326,7 +1326,7 @@ t_CKINT Chuck_Shell::Command_Close::execute( vector< string > & argv,
 {
     caller->close();
 
-    out += "closing chuck shell...  bye!\n";
+    out += "closing chuck shell...bye!\n";
 
     // REFACTOR-2017: removed: this needs to be done outside
     // if( g_shell != NULL )

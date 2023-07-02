@@ -539,7 +539,7 @@ cleanup:
     // unload the context from the type-checker
     if( !type_engine_unload_context( env() ) )
     {
-        EM_error2( 0, "internal error unloading context..." );
+        EM_error2( 0, "(internal error) unloading context..." );
         return FALSE;
     }
 
@@ -584,7 +584,7 @@ t_CKBOOL Chuck_Compiler::do_auto_depend( const string & filename,
     if( !code )
     {
         ret = FALSE;
-        EM_error2( 0, "internal error: context->code() NULL!" );
+        EM_error2( 0, "(internal error) context->code() NULL!" );
         goto cleanup;
     }
 
@@ -598,7 +598,7 @@ cleanup:
     // unload the context from the type-checker
     if( !type_engine_unload_context( env() ) )
     {
-        EM_error2( 0, "internal error unloading context..." );
+        EM_error2( 0, "(internal error) unloading context..." );
         return FALSE;
     }
 

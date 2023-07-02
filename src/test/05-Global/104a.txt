@@ -1,1 +1,1 @@
-[104b.ck]:line(1): error: global Object 'foo' has different type 'HidMsg' than already existing global Object of the same name
+[104b.ck:1]: error: global Object 'foo' has different type 'HidMsg' than already existing global Object of the same name

@@ -167,7 +167,7 @@ void Chuck_VM_Object::release()
     if( m_ref_count <= 0 )
     {
         // print error
-        EM_error3( "[chuck]: internal error: Object.release() refcount == %d", m_ref_count );
+        EM_error3( "[chuck]: (internal error) Object.release() refcount == %d", m_ref_count );
         // make sure there is at least one reference
         assert( m_ref_count > 0 );
     }
@@ -185,7 +185,7 @@ void Chuck_VM_Object::release()
         // this is not good | TODO: our_locks_in_effect assumes single VM
         if( our_locks_in_effect && m_locked )
         {
-            EM_error2( 0, "internal error: releasing locked VM object!" );
+            EM_error2( 0, "(internal error) releasing locked VM object!" );
             // fail
             assert( FALSE );
             // in case assert is disabled

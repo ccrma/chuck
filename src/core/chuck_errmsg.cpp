@@ -295,24 +295,24 @@ void EM_error( t_CKINT pos, const char * message, ... )
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
     // print [chuck]:
-    CK_FPRINTF_STDERR( "[%s]:", TC::orange(*the_filename ? mini(the_filename) : "chuck", true).c_str() );
+    CK_FPRINTF_STDERR( "[%s", TC::orange(*the_filename ? mini(the_filename) : "chuck", true).c_str() );
     // buffer the above
     snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
-    
+
     // if found
     if( pos > 0 && actualPos > 0 )
     {
         // print line(LINE).char(CHAR):
-        CK_FPRINTF_STDERR( TC::orange("line(%d).char(%d):", true).c_str(), (int)num, (int)actualPos );
+        CK_FPRINTF_STDERR( TC::orange(":%d:%d", true).c_str(), (int)num, (int)actualPos );
         // buffer the above
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d).char(%d):", (int)num, (int)actualPos );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)num, (int)actualPos );
         lastErrorCat( g_buffer );
     }
     // print space
-    CK_FPRINTF_STDERR( " " );
+    CK_FPRINTF_STDERR( "]: " );
     // buffer the above
-    lastErrorCat( " " );
+    lastErrorCat( "]: " );
 
     // print the message
     va_start(ap, message);
@@ -378,24 +378,27 @@ void EM_error2( t_CKINT pos, const char * message, ... )
     // header
     std::string prefix = *the_filename ? mini(the_filename) : "chuck";
     // print header
-    if( *the_filename ) CK_FPRINTF_STDERR( "[%s]:", TC::orange(prefix, bold).c_str() );
-    else CK_FPRINTF_STDERR( "[%s]:", prefix.c_str() );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
+    if( *the_filename ) CK_FPRINTF_STDERR( "[%s", TC::orange(prefix, bold).c_str() );
+    else CK_FPRINTF_STDERR( "[%s", prefix.c_str() );
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
 
     // if given a valid line number
     if( pos )
     {
-        CK_FPRINTF_STDERR( TC::orange("line(%d):",bold).c_str(), (int)line );
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d):", (int)line );
+        CK_FPRINTF_STDERR( TC::orange(":%d",bold).c_str(), (int)line );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d", (int)line );
         lastErrorCat( g_buffer );
-
-        // print error only if there is non-zero line number
-        CK_FPRINTF_STDERR( " %s", TC::red("error:", true).c_str() );
-        lastErrorCat( " error:" );
     }
-    CK_FPRINTF_STDERR( " " );
-    lastErrorCat( " " );
+    CK_FPRINTF_STDERR( "]: " );
+    lastErrorCat( "]: " );
+
+    if( pos )
+    {
+        // print error only if there is non-zero line number
+        CK_FPRINTF_STDERR( "%s", TC::red("error: ", true).c_str() );
+        lastErrorCat( "error: " );
+    }
 
     va_start( ap, message );
     CK_VFPRINTF_STDERR( TC::orange(message,bold).c_str(), ap );
@@ -430,19 +433,19 @@ void EM_error2b( t_CKINT line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
-    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
+    CK_FPRINTF_STDERR( "[%s", *the_filename ? mini(the_filename) : "chuck" );
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s", *the_filename ? mini(the_filename) : "chuck" );
     lastErrorCat( g_buffer );
 
     // if given a valid line number
     if( line > 0 )
     {
-        CK_FPRINTF_STDERR( "line(%d):", (int)line );
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "line(%d):", (int)line );
+        CK_FPRINTF_STDERR( ":%d", (int)line );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d", (int)line );
         lastErrorCat( g_buffer );
     }
-    CK_FPRINTF_STDERR( " " );
-    lastErrorCat( " " );
+    CK_FPRINTF_STDERR( "]: " );
+    lastErrorCat( "]: " );
 
     va_start( ap, message );
     CK_VFPRINTF_STDERR( message, ap );
