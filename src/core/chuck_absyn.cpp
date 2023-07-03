@@ -1022,16 +1022,24 @@ const char * op2str( ae_Operator op )
 //-----------------------------------------------------------------------------
 void delete_program( a_Program program )
 {
-    if( !program ) return;
+    // pointer
+    a_Program next = NULL;
 
-    // recursive
-    delete_program( program->next );
     // log
-    EM_log( CK_LOG_FINEST, "deleting program [%p] [next: %p]...", (void *)program, (void *)(program->next) );
-    // delete this section
-    delete_section( program->section );
-    // free this node
-    SAFE_FREE( program );
+    EM_log( CK_LOG_FINEST, "deleting AST root PROGRAM [%p]...", (void *)program );
+
+    // iterate linearly instead of recursing to avoid stack overflow
+    while( program )
+    {
+        // delete the section in this program node
+        delete_section( program->section );
+        // get the next node before we delete this one
+        next = program->next;
+        // delete this one
+        SAFE_FREE( program );
+        // move to the next one
+        program = next;
+    }
 }
 
 void delete_section( a_Section section )
@@ -1052,12 +1060,24 @@ void delete_section( a_Section section )
 // delete stmt list
 void delete_stmt_list( a_Stmt_List list )
 {
-    if( !list ) return;
+    // log
+    EM_log( CK_LOG_FINEST, "deleting stmt list [%p]...", (void *)list );
 
-    delete_stmt_list( list->next );
-    EM_log( CK_LOG_FINEST, "deleting stmt list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
-    delete_stmt( list->stmt );
-    SAFE_FREE( list );
+    // pointers
+    a_Stmt_List next = NULL;
+
+    // iterate without recursion to avoid stack overflow
+    while( list )
+    {
+        // delete the stmt at this node
+        delete_stmt( list->stmt );
+        // get the next node before we delete this one
+        next = list->next;
+        // delete this one
+        SAFE_FREE( list );
+        // move to the next
+        list = next;
+    }
 }
 
 // delete class_def
@@ -1297,15 +1317,11 @@ void delete_exp_from_primary( a_Exp_Primary_ & p )
 }
 
 // delete an exp
-void delete_exp( a_Exp e )
+void delete_exp_contents( a_Exp e )
 {
+    // chekc
     if( !e ) return;
-
-    // TODO: release reference type
-    // TODO: release reference owner
-
-    // could be a list
-    delete_exp( e->next );
+    // log
     EM_log( CK_LOG_FINEST, "deleting exp [%p] [next: %p]...", (void *)e, (void *)(e->next) );
 
     // check expression type
@@ -1345,8 +1361,30 @@ void delete_exp( a_Exp e )
         delete_exp_decl( e );
         break;
     }
+}
 
-    SAFE_FREE( e );
+
+// delete an exp
+void delete_exp( a_Exp e )
+{
+    // pointer
+    a_Exp next = NULL;
+
+    // iterate instead of recurse to avoid stack overflow
+    while( e )
+    {
+        // TODO: release reference type
+        // TODO: release reference owner
+
+        // delete content in this exp
+        delete_exp_contents( e );
+        // get next exp before we delete this one
+        next = e->next;
+        // delete this one
+        SAFE_FREE( e );
+        // move to the next one
+        e = next;
+    }
 }
 
 void delete_exp_from_binary( a_Exp e )
@@ -1567,13 +1605,20 @@ void delete_vec( a_Vec v )
 
 void delete_id_list( a_Id_List list )
 {
-    if( !list ) return;
-    // TODO: what to do about Symbol xid?
+    // pointer
+    a_Id_List next = NULL;
 
-    // recurse
-    delete_id_list( list->next );
-    // log
-    EM_log( CK_LOG_FINEST, "deleting id list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
-    // free
-    SAFE_FREE( list );
+    // iterate instead of recursive to avoid stack overflow
+    while( list )
+    {
+        // TODO: what to do about Symbol xid?
+        // log
+        EM_log( CK_LOG_FINEST, "deleting id list [%p] [next: %p]...", (void *)list );
+        // get next before we delete this
+        next = list->next;
+        // delete this one
+        SAFE_FREE( list );
+        // move to the next one
+        list = next;
+    }
 }
