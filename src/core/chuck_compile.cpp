@@ -275,13 +275,13 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
                              const string & full_path,
                              const string & codeLiteral )
 {
-    t_CKBOOL ret = TRUE;
-    // Chuck_Context * context = NULL;
+    // hold return value
+    t_CKBOOL ret = FALSE;
 
     // clear any error messages
     EM_reset_msg();
-    // option: whether to highlight | 1.5.0.5 (ge) added
-    opt_highlight_on_error( m_carrier->chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR ) );
+    // set the chuck | 1.5.0.5 (ge) added
+    EM_set_current_chuck( this->carrier()->chuck );
 
     // check to see if resolve dependencies automatically
     if( !m_auto_depend )
@@ -295,29 +295,13 @@ t_CKBOOL Chuck_Compiler::go( const string & filename,
         ret = this->do_auto_depend( filename, codeLiteral, full_path );
     }
 
-
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
     // how messages print to console (e.g., [file.ck]: or [chuck]:)
     // 1.5.0.5 (ge) | changed to reset_parse() which does more reset
-    // reset the parser, which also resets filename
+    // reset the parser, including reset filename and unset current chuck *
     reset_parse();
 
     return ret;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: opt_highlight_on_error()
-// desc: whether to highligh code on compiler error
-//       this defaults to true, but may be disabled when helpful
-//       (e.g., to match output for automated testing)
-//-----------------------------------------------------------------------------
-void Chuck_Compiler::opt_highlight_on_error( t_CKBOOL yesOrNo )
-{
-    // pass to EM
-    EM_highlight_on_error( yesOrNo );
 }
 
 

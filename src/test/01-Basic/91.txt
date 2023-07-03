@@ -1,1 +1,3 @@
-[91.ck:6]: error: [..., ...] is invalid subscript syntax.
+91.ck:6:3: error: [..., ...] is invalid subscript syntax.
+[6] a[1,1] => int b;
+      ^

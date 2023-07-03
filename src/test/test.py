@@ -45,13 +45,15 @@ def run_test(exe, path, filename, attempt):
         return
 
     try:
-        # NOTE --disable-error-show-code to suppress compiler error 
-        # messages from showing the code in question | 1.5.0.5 (ge)
-        # NOTE: might use --no-color to explicitly disable ANSI escape 
-        # codes (e.g., for color terminal text) from showing up in chuck 
-        # output; chuck implicitly checks for TTY; if not will disable 
-        # printing escape codes; but leaving this here, just in case...
-        result = subprocess.check_output([exe, "--silent", "--disable-error-show-code", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
+        # NOTE: each command line argument is a new arg to check_output
+        # e.g., chuck_output([exe, "--silent", "--disable-error-show-code", ...
+        # NOTE: use --disable-error-show-code to not showing code on error
+        # NOTE: use --no-color to explicitly disable ANSI escape codes (e.g.,
+        # for color terminal text) from showing up in chuck output;
+        # FYI chuck implicitly checks for TTY; if not will disable printing
+        # escape codes; but leaving this note here FYI
+        "--disable-error-show-code"
+        result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
 
         if result.strip().endswith(("\"success\" :(string)",)):
             successes += 1

@@ -257,6 +257,8 @@ void reset_parse( )
 
     // empty file name
     EM_reset_filename();
+    // clear current ChucK pointer; no dangling references
+    EM_set_current_chuck( NULL );
 
     // clean up the AST
     cleanup_AST();

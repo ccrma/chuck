@@ -64,7 +64,7 @@ extern "C" {
 // output log message
 void EM_log( t_CKINT, c_constr, ... );
 // set log level [CK_LOG_NONE, CK_LOG_ALL]
-void EM_setlog( t_CKINT );
+void EM_setlog( t_CKINT level );
 // push the log indentation
 void EM_pushlog();
 // pop log indentation
@@ -101,8 +101,6 @@ void EM_start_filename( c_constr filename );
 void EM_reset_filename();
 // get last erorr
 const char * EM_lasterror();
-// whether to highligh code on compiler error
-void EM_highlight_on_error( t_CKBOOL yesOrNo );
 
 // get filename portion of path; e.g., mini("foo/bar.ck") -> "bar.ck"
 const char * mini( const char * path );
@@ -161,6 +159,15 @@ void ck_set_stderr_callback( void (*callback)(const char *) );
 extern "C++"
 {
 #include <sstream>
+
+// forward reference | 1.5.0.5 (ge) added
+class ChucK;
+
+// set current ChucK; used to query params | 1.5.0.5
+void EM_set_current_chuck( ChucK * ck );
+
+
+
 
 //-----------------------------------------------------------------------------
 // c++: custom stream-like thing | REFACTOR-2017 (jack)

@@ -1,1 +1,3 @@
-[114.ck:2]: error: cannot '=>' from/to a multi-variable declaration
+114.ck:2:6: error: cannot '=>' from/to a multi-variable declaration
+[2] 5 => int x, y;
+         ^

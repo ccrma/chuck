@@ -1,1 +1,3 @@
-[101.ck:9]: error: global Event 'e' has different type 'myEvent' than already existing global Event of the same name
+101.ck:9:5: error: global Event 'e' has different type 'myEvent' than already existing global Event of the same name
+[9]     global myEvent e;
+        ^

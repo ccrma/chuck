@@ -298,7 +298,7 @@ void ChuckAudio::probe( const char * driver )
 
     // get count
     int devices = audio->getDeviceCount();
-    EM_error2b( 0, "[%s] driver found %d audio device(s)...", dnm, devices );
+    EM_error2b( 0, "[%s] driver found %d audio device(s)...", TC::green(dnm,bold).c_str(), devices );
     EM_error2b( 0, "" );
 
     // reset -- what does this do
@@ -315,7 +315,7 @@ void ChuckAudio::probe( const char * driver )
         }
         
         // print
-        EM_print2orange( "------( audio device: %d )------", i+1 );
+        EM_print2blue( "------( audio device: %d )------", i+1 );
         print( info );
         // skip
         if( i < devices ) EM_error2b( 0, "" );

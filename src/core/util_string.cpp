@@ -260,8 +260,13 @@ std::string replace_tabs( const std::string & s, char replaceEachTabWithThis )
 // long line of test with caret ^ offset
 //-----------------------------------------------------------------------------
 std::string snippet( const std::string & str, t_CKINT desiredLength,
-                     t_CKINT desiredLeftPadding, t_CKINT & targetPosition )
+                     t_CKINT desiredLeftPadding, t_CKINT & targetPosition,
+                     t_CKINT * pLeftTrimmed, t_CKINT * pRightTrimmed )
 {
+    // zero out optional fields
+    if( pLeftTrimmed ) *pLeftTrimmed = 0;
+    if( pRightTrimmed ) *pRightTrimmed = 0;
+
     // check: str already within desired length
     if( str.length() < desiredLength ) return str;
     // check: targetPosition out of bounds
@@ -277,8 +282,19 @@ std::string snippet( const std::string & str, t_CKINT desiredLength,
     // if target beyond left padding
     if( targetPosition > desiredLeftPadding )
     {
+        // where to start
         left += (targetPosition-desiredLeftPadding);
+        // report back
         targetPosition = desiredLeftPadding;
+        // optional info (how much was trimmed on the left)
+        if( pLeftTrimmed ) *pLeftTrimmed = left;
+    }
+
+    // optional info (how much was trimmed on the right)
+    if( pRightTrimmed )
+    {
+        t_CKINT rtrim = (str.length()-left) - desiredLength;
+        if( rtrim > 0 ) *pRightTrimmed = rtrim;
     }
 
     // start from left, ensure no greater than desiredLength

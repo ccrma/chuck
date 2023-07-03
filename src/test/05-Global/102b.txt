@@ -1,2 +1,6 @@
-[102b.ck:1]: error: undefined type 'Foo'...
-[102b.ck:1]: error: ...in declaration
+102b.ck:1:8: error: undefined type 'Foo'...
+[1] global Foo foo;
+           ^
+102b.ck:1:1: error: ...in declaration
+[1] global Foo foo;
+    ^

@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck_errmsg.h"
 #include "chuck_utils.h"
+#include "chuck.h"
 #include "util_platforms.h"
 #include "util_string.h"
 
@@ -54,11 +55,17 @@ t_CKINT EM_tokPos = 0;
 t_CKINT EM_lineNum = 1;
 t_CKINT EM_extLineNum = 1;
 
-// local global
+// current filename
 static const char * the_filename = "";
+// current line number
 static t_CKINT the_lineNum = 1;
+// current chuck
+static ChucK * the_chuck = NULL;
+
+// a local global string buffer for snprintf
 #define CK_ERR_BUF_LENGTH 2048
 static char g_buffer[CK_ERR_BUF_LENGTH] = "";
+// last error
 static std::string g_lasterror = "";
 
 // log globals
@@ -97,6 +104,19 @@ static const char * g_str[] = {
     "FINEST",       // 9
     "ALL!!"           // 10
 };
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: EM_set_current_chuck()
+// set current ChucK; used to query current params
+//-----------------------------------------------------------------------------
+void EM_set_current_chuck( ChucK * ck )
+{
+    // set as current chuck
+    the_chuck = ck;
+}
 
 
 
@@ -186,11 +206,22 @@ void EM_reset_msg()
 
 
 //-----------------------------------------------------------------------------
-// whether to highlight code on compiler error
+// name: EM_highlight_on_error() | 1.5.0.5 (ge) added
+// desc: whether to highligh code on compiler error
+//       this defaults to true, but may be disabled when helpful
+//       (e.g., to match output for automated testing)
 //-----------------------------------------------------------------------------
-void EM_highlight_on_error( t_CKBOOL yesOrNo )
+t_CKBOOL EM_highlight_on_error()
 {
-    g_highlight_on_error = yesOrNo;
+    // if we have a chuck reference
+    if( the_chuck )
+    {
+        // update
+        g_highlight_on_error = the_chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR );
+    }
+
+    // return
+    return g_highlight_on_error;
 }
 
 
@@ -203,7 +234,7 @@ void EM_highlight_on_error( t_CKBOOL yesOrNo )
 void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
 {
     // check
-    if( !g_highlight_on_error || lineNumber <= 0 ) return;
+    if( !EM_highlight_on_error() || lineNumber <= 0 ) return;
 
     // get error line
     std::string line = g_currentFile.getLine(lineNumber);
@@ -216,24 +247,54 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
         // replace tabs with a single space
         line = replace_tabs( line, ' ' );
 
+        // line position
+        string posLine = itoa(lineNumber);
+        // spaces due to lineNumber + [] + space
+        t_CKINT posLineIndent = posLine.length() + 3;
+
         // get terminal width; -2 for the indentation below
-        t_CKUINT WIDTH = ck_ttywidth();
+        t_CKUINT WIDTH = ck_ttywidth()-posLineIndent;
         t_CKUINT CARET_POS = (t_CKUINT)(WIDTH/3.0);
 
         // check for some mininum
-        if( WIDTH < 8 ) { WIDTH = 80; CARET_POS = 32; }
-        // account for indentation below
-        else{ WIDTH -= 4; CARET_POS -= 2; }
+        if( WIDTH < posLineIndent + 4 )
+        {
+            // base defaults
+            WIDTH = 80; CARET_POS = 28;
+            // check if update
+            if( the_chuck )
+            {
+                // get params stored in chuck; could have been set from host
+                WIDTH = the_chuck->getParamInt( CHUCK_PARAM_TTY_WIDTH_HINT );
+                CARET_POS = (t_CKUINT)(WIDTH/3.0);
+            }
+        }
+        // any padding on the right
+        else{ WIDTH -= 1; CARET_POS -= 1; }
 
-        // if line too long, roughly want to display it no further
+        // if line too long, snippet it
         if( line.length() > WIDTH || spaces > CARET_POS )
         {
+            t_CKINT leftTrimmed = 0;
+            t_CKINT rightTrimmed = 0;
             // quote the line
-            line = snippet( line, WIDTH, CARET_POS, spaces );
+            line = snippet( line, WIDTH, CARET_POS, spaces, &leftTrimmed, &rightTrimmed );
+
+            // beyond certain length, replace end(s) with ...
+            if( line.length() > 32 )
+            {
+                // left
+                if( leftTrimmed >= 3 ) line.replace( 0, 3, "..." );
+                // right
+                if( rightTrimmed >= 3 ) line.replace( line.length()-3, 3, "..." );
+            }
         }
 
-        // print the line with indentation
-        CK_FPRINTF_STDERR( "  %s\n  ", line.c_str() );
+        // account for lineNumber width + [] + space
+        spaces += posLineIndent;
+
+        // print the line with indentation e.g., [5]
+        CK_FPRINTF_STDERR( "[%s] %s\n", TC::blue(posLine,TRUE).c_str(), line.c_str() );
 
         // if valid char position to print caret
         if( spaces >= 0 )
@@ -265,16 +326,77 @@ void EM_printLineInCode( t_CKINT lineNumber )
 
 
 //-----------------------------------------------------------------------------
+// name: EM_error_prefix_begin()
+// desc: begin the error prefix, e.g, "[chuck" or "[FILE.ck"
+//-----------------------------------------------------------------------------
+static void EM_error_prefix_begin( t_CKBOOL colorTTY = TRUE, t_CKBOOL bold = FALSE )
+{
+    // set color TTY mode
+    if( colorTTY ) { TC::on(); } else { TC::off(); }
+
+    // check filename
+    t_CKBOOL hasFilename = (*the_filename) != '\0';
+
+    // prefix text
+    std::string prefix = hasFilename ? mini(the_filename) : "[chuck";
+
+    // print prefix
+    if( hasFilename ) CK_FPRINTF_STDERR( "%s", TC::orange(prefix, bold).c_str() );
+    else CK_FPRINTF_STDERR( "%s", prefix.c_str() );
+
+    // print to string
+    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "%s", prefix.c_str() );
+    // concat into last error
+    lastErrorCat( g_buffer );
+
+    // if off reenable color TTY
+    if( !colorTTY ) TC::on();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: EM_error_prefix_end()
+// desc: close the error prefix, e.g, "]:"
+//-----------------------------------------------------------------------------
+static void EM_error_prefix_end( t_CKBOOL colorTTY = TRUE, t_CKBOOL bold = FALSE )
+{
+    // set color TTY mode
+    if( colorTTY ) { TC::on(); } else { TC::off(); }
+
+    // check filename
+    t_CKBOOL hasFilename = (*the_filename) != '\0';
+
+    // prefix text
+    std::string prefix_end = hasFilename ? TC::orange(": ",bold).c_str() : "]: ";
+
+    // print space
+    CK_FPRINTF_STDERR( prefix_end.c_str() );
+    // buffer the above
+    lastErrorCat( prefix_end.c_str() );
+
+    // if off reenable color TTY
+    if( !colorTTY ) TC::on();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_error()
-// format: [%s]:line(%d).char(%d):
+// format: [%s:%d:%d]: // was [%s].line(%d).char(%d):
 // desc: work horse of compiler and system error reporting
 //-----------------------------------------------------------------------------
 void EM_error( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
     IntList lines = the_linePos;
-    t_CKINT num = the_lineNum;
+    t_CKINT line = the_lineNum;
     t_CKINT actualPos = -1;
+    t_CKBOOL bold = TRUE;
+    // declare each time to pick up any TC state
+    string COLON = TC::orange(":",bold);
 
     if( pos > 0 )
     {
@@ -282,37 +404,28 @@ void EM_error( t_CKINT pos, const char * message, ... )
         while( lines && lines->i >= pos )
         {
             lines = lines->rest;
-            num--;
+            line--;
         }
         // calculate actual pos on line
         if( lines ) actualPos = pos - lines->i;
     }
 
+    // separate errmsgs with newlines
+    if( g_lasterror != "" ) lastErrorCat( "\n" );
     // debug print
     // cerr << "EM_error(): pos: " << pos << " actualPos:" << actualPos << " the_lineNum: " << the_lineNum << endl;
 
-    // separate errmsgs with newlines
-    if( g_lasterror != "" ) lastErrorCat( "\n" );
-
-    // print [chuck]:
-    CK_FPRINTF_STDERR( "[%s", TC::orange(*the_filename ? mini(the_filename) : "chuck", true).c_str() );
-    // buffer the above
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
-    lastErrorCat( g_buffer );
-
+    // begin prefix, e.g, "FILE.ck" or "[chuck"
+    EM_error_prefix_begin( TRUE, bold );
     // if found
     if( pos > 0 && actualPos > 0 )
     {
-        // print line(LINE).char(CHAR):
-        CK_FPRINTF_STDERR( TC::orange(":%d:%d", true).c_str(), (int)num, (int)actualPos );
-        // buffer the above
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)num, (int)actualPos );
+        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(itoa(line),bold).c_str(), COLON.c_str(), TC::green(itoa(actualPos),bold).c_str() );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)line, (int)actualPos );
         lastErrorCat( g_buffer );
     }
-    // print space
-    CK_FPRINTF_STDERR( "]: " );
-    // buffer the above
-    lastErrorCat( "]: " );
+    // end prefix, e.g, ": " or "]: "
+    EM_error_prefix_end( TRUE, bold );
 
     // print the message
     va_start(ap, message);
@@ -330,7 +443,7 @@ void EM_error( t_CKINT pos, const char * message, ... )
     CK_FFLUSH_STDERR();
 
     // print (btw lines could be NULL, for example on an empty program)
-    if( actualPos > 0 ) EM_printLineInCode( num, actualPos );
+    if( actualPos > 0 ) EM_printLineInCode( line, actualPos );
 }
 
 
@@ -338,7 +451,7 @@ void EM_error( t_CKINT pos, const char * message, ... )
 
 //-----------------------------------------------------------------------------
 // name: EM_error2()
-// format: [%s]:line(%d):
+// format: [%s:%d:%d]: // was [%s]:line(%d):
 // desc: error output (variant 2, with terminal colors)
 //-----------------------------------------------------------------------------
 void EM_error2( t_CKINT pos, const char * message, ... )
@@ -347,6 +460,9 @@ void EM_error2( t_CKINT pos, const char * message, ... )
     IntList lines = the_linePos;
     t_CKINT line = the_lineNum;
     t_CKINT actualPos = -1;
+    t_CKBOOL bold = TRUE;
+    // declare each time to pick up any TC state
+    string COLON = TC::orange(":",bold);
 
     // do if pos is positive
     if( pos > 0 )
@@ -368,30 +484,20 @@ void EM_error2( t_CKINT pos, const char * message, ... )
 
     // save
     EM_extLineNum = line;
-
     // separate errmsgs with newlines
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
-    // is bold?
-    t_CKBOOL bold = true;
-
-    // header
-    std::string prefix = *the_filename ? mini(the_filename) : "chuck";
-    // print header
-    if( *the_filename ) CK_FPRINTF_STDERR( "[%s", TC::orange(prefix, bold).c_str() );
-    else CK_FPRINTF_STDERR( "[%s", prefix.c_str() );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s", *the_filename ? mini(the_filename) : "chuck" );
-    lastErrorCat( g_buffer );
-
+    // begin prefix, e.g, "FILE.ck" or "[chuck"
+    EM_error_prefix_begin( TRUE, bold );
     // if given a valid line number
     if( pos )
     {
-        CK_FPRINTF_STDERR( TC::orange(":%d",bold).c_str(), (int)line );
-        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d", (int)line );
+        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(itoa(line),bold).c_str(), COLON.c_str(), TC::green(itoa(actualPos),bold).c_str() );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)line, (int)actualPos );
         lastErrorCat( g_buffer );
     }
-    CK_FPRINTF_STDERR( "]: " );
-    lastErrorCat( "]: " );
+    // end prefix, e.g, ": " or "]: "
+    EM_error_prefix_end( TRUE, bold );
 
     if( pos )
     {
@@ -421,7 +527,7 @@ void EM_error2( t_CKINT pos, const char * message, ... )
 
 //-----------------------------------------------------------------------------
 // name: EM_error2b()
-// format: [%s]:line(%d):
+// format: [%s:%d:%d]: // was [%s]:line(%d):
 // desc: error output -- like variant 2, but without color teriminal output
 //-----------------------------------------------------------------------------
 void EM_error2b( t_CKINT line, const char * message, ... )
@@ -433,10 +539,8 @@ void EM_error2b( t_CKINT line, const char * message, ... )
     // separate errmsgs with newlines
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
-    CK_FPRINTF_STDERR( "[%s", *the_filename ? mini(the_filename) : "chuck" );
-    snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s", *the_filename ? mini(the_filename) : "chuck" );
-    lastErrorCat( g_buffer );
-
+    // begin prefix, e.g, "FILE.ck" or "[chuck"
+    EM_error_prefix_begin( FALSE );
     // if given a valid line number
     if( line > 0 )
     {
@@ -444,8 +548,8 @@ void EM_error2b( t_CKINT line, const char * message, ... )
         snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d", (int)line );
         lastErrorCat( g_buffer );
     }
-    CK_FPRINTF_STDERR( "]: " );
-    lastErrorCat( "]: " );
+    // end prefix, e.g, ": " or "]: "
+    EM_error_prefix_end( FALSE );
 
     va_start( ap, message );
     CK_VFPRINTF_STDERR( message, ap );

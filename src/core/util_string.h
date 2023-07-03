@@ -65,7 +65,9 @@ std::string replace_tabs( const std::string & s,
 // long line of test with caret ^ offset; returns result and
 // potentially modifies targetPositionMutable argument
 std::string snippet( const std::string & str, t_CKINT desiredLength,
-                     t_CKINT desiredLeftPadding, t_CKINT & targetPositionMutable );
+                     t_CKINT desiredLeftPadding, t_CKINT & targetPositionMutable,
+                     t_CKINT * optionalLeftTrimmed = NULL,
+                     t_CKINT * optionalRightTrimmed = NULL );
 
 // argument extraction
 t_CKBOOL extract_args( const std::string & token,

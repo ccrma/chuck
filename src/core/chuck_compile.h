@@ -115,12 +115,6 @@ public: // compile
     // get the code generated from the last go()
     Chuck_VM_Code * output( );
 
-public: // additional compiler options | 1.5.0.5 (ge)
-    // whether to highligh code on compiler error
-    // this defaults to true, but may be disabled when helpful
-    // (e.g., to match output for automated testing)
-    void opt_highlight_on_error( t_CKBOOL yesOrNo );
-
 public: // special FILE input mode | added 1.5.0.5 (ge)
     // set an already open FILE descriptor `fd` for one time use
     // by the next call to go(), which will use `fd` as the input
