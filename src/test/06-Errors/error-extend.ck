@@ -1,0 +1,3 @@
+class I extends int
+{
+}

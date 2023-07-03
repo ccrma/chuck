@@ -1,0 +1,3 @@
+error-incomplete.ck:1:10: syntax error
+[1] SinOsc @ 
+             ^

@@ -20,7 +20,7 @@ def handle_directory(dir, exe):
 
     global successes
 
-    for filename in os.listdir(dir):
+    for filename in sorted(os.listdir(dir)):
         path = os.path.join(dir, filename)
         # 1.4.1.1 (added) nshaheed
         # split path into its components and then rejoin cast as a posix path

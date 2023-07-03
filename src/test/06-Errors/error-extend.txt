@@ -1,0 +1,4 @@
+error-extend.ck:1:17: error: cannot extend primitive type 'int'
+[1] class I extends int
+                    ^
+error-extend.ck: ...(primitive types: 'int', 'float', 'time', 'dur', etc.)

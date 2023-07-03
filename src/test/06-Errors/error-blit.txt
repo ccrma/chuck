@@ -1,0 +1,6 @@
+error-blit.ck:29:5: error: undefined variable 'x5'
+[29]     x5::mss => now;
+         ^
+error-blit.ck:29:9: error: undefined variable 'mss'
+[29]     x5::mss => now;
+             ^

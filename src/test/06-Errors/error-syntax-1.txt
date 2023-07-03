@@ -1,0 +1,3 @@
+error-syntax-1.ck:5:12: syntax error
+[5] */ it @ is not ! valid => syntax!
+               ^

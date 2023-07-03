@@ -1,0 +1,2 @@
+error-empty-file.ck:1:1: syntax error
+(empty file)

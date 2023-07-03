@@ -1,0 +1,3 @@
+error-no-memb1.ck:17:17: error: class 'Math' has no member 'random3'
+[17]         hi[Math.random3(0,hi.size()-1)] ) => s.freq;
+                     ^

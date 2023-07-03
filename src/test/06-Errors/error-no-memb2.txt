@@ -1,0 +1,3 @@
+error-no-memb2.ck:3:5: error: class 'SinOsc' has no member 'test'
+[3] foo.test();
+        ^

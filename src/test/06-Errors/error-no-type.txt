@@ -1,0 +1,3 @@
+error-no-type.ck:1:5: error: undefined type 'Foo'...
+[1] new Foo;
+        ^

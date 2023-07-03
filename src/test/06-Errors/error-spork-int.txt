@@ -1,0 +1,3 @@
+error-spork-int.ck:1:9: error: only function calls can be sporked
+[1] spork ~ 1;
+            ^

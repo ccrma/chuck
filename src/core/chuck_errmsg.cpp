@@ -238,6 +238,14 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
 
     // get error line
     std::string line = g_currentFile.getLine(lineNumber);
+
+    // detect empty file
+    if( lineNumber == 1 && trim(line) == "" )
+    {
+        CK_FPRINTF_STDERR( "(empty file)\n" );
+        return;
+    }
+
     // spaces before caret
     t_CKINT spaces = charNumber - 1;
 
@@ -442,8 +450,8 @@ void EM_error( t_CKINT pos, const char * message, ... )
     // flush
     CK_FFLUSH_STDERR();
 
-    // print (btw lines could be NULL, for example on an empty program)
-    if( actualPos > 0 ) EM_printLineInCode( line, actualPos );
+    // print code on error
+    if( pos > 0 ) EM_printLineInCode( line, actualPos );
 }
 
 
@@ -518,8 +526,8 @@ void EM_error2( t_CKINT pos, const char * message, ... )
     CK_FPRINTF_STDERR( "\n" );
     CK_FFLUSH_STDERR();
 
-    // print
-    if( pos ) EM_printLineInCode( line, actualPos );
+    // print code on error
+    if( pos > 0 ) EM_printLineInCode( line, actualPos );
 }
 
 
@@ -564,7 +572,7 @@ void EM_error2b( t_CKINT line, const char * message, ... )
     CK_FFLUSH_STDERR();
 
     // print
-    EM_printLineInCode( line );
+    if( line > 0 ) EM_printLineInCode( line );
 }
 
 

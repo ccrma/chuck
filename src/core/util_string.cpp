@@ -156,7 +156,7 @@ string trim( const string & val )
     t_CKINT end = val.length() - 1;
 
     // left trim
-    for( start = 0; start < end; start++ )
+    for( start = 0; start <= end; start++ )
     {
         // non-white space
         if( val[start] != ' ' && val[start] != '\t' )
