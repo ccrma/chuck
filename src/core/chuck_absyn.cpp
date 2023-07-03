@@ -540,7 +540,7 @@ a_Exp new_exp_from_str( c_str str, uint32_t lineNum, uint32_t posNum )
     a->s_type = ae_exp_primary;
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_str;
-    a->primary.str = strdup( str ); // 1.5.0.5 (ge) added strdup oops
+    a->primary.str = str; // no strdup( str ); <-- str should have been allocated in alloc_str()
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
@@ -554,7 +554,7 @@ a_Exp new_exp_from_char( c_str chr, uint32_t lineNum, uint32_t posNum )
     a->s_type = ae_exp_primary;
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_char;
-    a->primary.chr = strdup(chr);  // 1.5.0.5 (ge) added strdup oops
+    a->primary.chr = chr; // no strdup( chr ); <-- chr should have been allocated in alloc_str()
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;

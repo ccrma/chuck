@@ -145,20 +145,20 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
     QUERY->add_sfun( QUERY, machine_eval_impl, "int", "eval" );
-    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, compile it and spork it as an independent shred." );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, compile it and immediately spork it as a new independent shred, and automatically yield the current shred to give the new shred a chance to run, without advancing time." );
     QUERY->add_arg( QUERY, "string", "code" );
 
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
     QUERY->add_sfun( QUERY, machine_eval2_impl, "int", "eval" );
-    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and spork it as an independent shred." );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and immediately spork it as a new independent shred, and automatically yield the current shred to give the new shred a chance to run, without advancing time." );
     QUERY->add_arg( QUERY, "string", "code" );
     QUERY->add_arg( QUERY, "string", "args" );
 
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
     QUERY->add_sfun( QUERY, machine_eval3_impl, "int", "eval" );
-    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and spork 'count' independent shreds." );
+    QUERY->doc_func( QUERY, "evaluate a string as ChucK code, with optional arguments (bundled in 'args' as \"ARG1:ARG2:...\", compile it and immediately spork 'count' independent shreds; and automatically yield the current shred to give all new shreds a chance to run, without advancing time." );
     QUERY->add_arg( QUERY, "string", "code" );
     QUERY->add_arg( QUERY, "string", "args" );
     QUERY->add_arg( QUERY, "int", "count" );
@@ -207,6 +207,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
+    QUERY->add_ex( QUERY, "machine/eval-global.ck" );
     QUERY->add_ex( QUERY, "machine/intsize.ck" );
     QUERY->add_ex( QUERY, "machine/is-realtime.ck" );
     QUERY->add_ex( QUERY, "machine/machine-shred.ck" );
@@ -251,11 +252,13 @@ t_CKUINT machine_realtime( Chuck_VM * vm )
 // desc: evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
 //-----------------------------------------------------------------------------
 t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
-                       t_CKINT count, Chuck_VM * vm )
+                       t_CKINT count, Chuck_VM_Shred * evaluator )
 {
     // check if null
     if( codeStr == NULL ) return FALSE;
 
+    // get VM
+    Chuck_VM * vm = evaluator->vm_ref;
     // get ChucK instance
     ChucK * chuck = vm->carrier()->chuck;
     // get code as string
@@ -263,7 +266,13 @@ t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
     // get args, if there
     string args = argsTogether ? argsTogether->str() : "";
 
-    return chuck->compileCode( code, args, count );
+    // compile and spork | 1.5.0.5 (ge) immediate=TRUE
+    t_CKUINT retval = chuck->compileCode( code, args, count, TRUE );
+    // automatically yield current shred to let new code run | 1.5.0.5 (ge)
+    evaluator->yield();
+
+    // return
+    return retval;
 }
 
 
@@ -371,7 +380,7 @@ CK_DLL_SFUN( machine_eval_impl )
     // get arguments
     Chuck_String * code = GET_NEXT_STRING(ARGS);
 
-    RETURN->v_int = machine_eval( code, NULL, 1, VM );
+    RETURN->v_int = machine_eval( code, NULL, 1, SHRED );
 }
 
 CK_DLL_SFUN( machine_eval2_impl )
@@ -380,7 +389,7 @@ CK_DLL_SFUN( machine_eval2_impl )
     Chuck_String * code = GET_NEXT_STRING(ARGS);
     Chuck_String * argsTogether = GET_NEXT_STRING(ARGS);
 
-    RETURN->v_int = machine_eval( code, argsTogether, 1, VM );
+    RETURN->v_int = machine_eval( code, argsTogether, 1, SHRED );
 }
 
 CK_DLL_SFUN( machine_eval3_impl )
@@ -390,7 +399,7 @@ CK_DLL_SFUN( machine_eval3_impl )
     Chuck_String * argsTogether = GET_NEXT_STRING(ARGS);
     t_CKINT count = GET_NEXT_INT(ARGS);
 
-    RETURN->v_int = machine_eval( code, argsTogether, count, VM );
+    RETURN->v_int = machine_eval( code, argsTogether, count, SHRED );
 }
 
 CK_DLL_SFUN( machine_version_impl )

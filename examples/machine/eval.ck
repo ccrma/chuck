@@ -3,7 +3,10 @@
 //       this enables chuck to generate more code to run!
 //       powerful! perilous!
 //
-// version: need chuck-1.5.0.0 or higher
+// version: need chuck-1.5.0.5 or higher
+//          first introduced in 1.5.0.0; behavior was changed
+//          in 1.5.0.5 to run immediately, yielding the current
+//          shred
 //
 // uncomment this to print out info about Machine:
 // Machine.help();
@@ -11,12 +14,18 @@
 // date: Spring 2023
 
 // our code to run
-"cherr <= 1+1 <= IO.newline();" => string codeStr;
+"cherr <= \"hello!\" <= IO.newline();" => string codeStr;
 
 // compile the string as code and spork it as a new shred
 if( !Machine.eval( codeStr ) ) <<< "error evaluating code!", "" >>>;
 
-// NOTE: since Machine.eval() sporks the code as a child shred, we
-// need to give it a chance to run; (a parent shred upon ending will
-// also end all of its child shreds)
-1::samp => now;
+// each of these will be evaluated and run as code,
+// each on its independent shred; Machine.eval() automatically
+// yields the originating "evaluator" shred, giving the evaluated
+// code a chance to run without advancing time
+Machine.eval( "<<< 1 >>>;" );
+<<< "a" >>>;
+Machine.eval( "<<< 2 >>>;" );
+<<< "b" >>>;
+Machine.eval( "<<< 3 >>>;" );
+<<< "c" >>>;

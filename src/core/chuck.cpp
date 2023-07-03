@@ -1089,7 +1089,7 @@ error: // 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::compileCode( const std::string & code,
                              const std::string & argsTogether,
-                             t_CKINT count )
+                             t_CKINT count, t_CKBOOL immediate )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1153,8 +1153,9 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     while( count-- )
     {
 #ifndef __EMSCRIPTEN__
-        // spork (for now, spork_immediate arg is always false)
-        shred = m_carrier->vm->spork( vm_code, NULL, FALSE );
+        // spork | 1.5.0.5 (ge) added immediate arg defaulting to TRUE
+        // previously the immediate flag was always FALSE
+        shred = m_carrier->vm->spork( vm_code, NULL, immediate );
 #else
         // spork (in emscripten, need to spork immediately so can get shred id)
         shred = m_carrier->vm->spork( vm_code, NULL, TRUE );

@@ -124,7 +124,7 @@ public:
     // compile a file (can be called anytime)
     t_CKBOOL compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
     // compile code directly
-    t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1 );
+    t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1, t_CKBOOL immediate = TRUE );
 
 public:
     // initialize ChucK (using params)

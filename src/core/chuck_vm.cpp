@@ -1646,7 +1646,7 @@ CK_VM_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG shred %04lu code %s pc %04lu %s( %s
              this->xid, this->code->name.c_str(), this->pc, instr[pc]->name(),
              instr[pc]->params() ) );
 CK_VM_DEBUG( t_CKBYTE * t_mem_sp = this->mem->sp );
-CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->mem->sp );
+CK_VM_DEBUG( t_CKBYTE * t_reg_sp = this->reg->sp );
 //-----------------------------------------------------------------------------
         // execute the instruction
         instr[pc]->execute( vm, this );
@@ -1675,6 +1675,28 @@ CK_VM_DEBUG(CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
 
     // is the shred finished
     return !is_done;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: yield() | 1.5.0.5 (ge) made this a function from scattered code
+// desc: yield the shred in vm (without advancing time, politely yield to run
+//       all other shreds waiting to run at the current
+//       same in effect as 0::second +=> now;
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::yield()
+{
+    // need a VM to yield on
+    if( !this->vm_ref ) return FALSE;
+
+    // suspend this shred
+    this->is_running = FALSE;
+    // reshredule this at the current time
+    vm_ref->shreduler()->shredule( this, this->now );
+    // done
+    return TRUE;
 }
 
 

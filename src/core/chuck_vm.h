@@ -185,6 +185,9 @@ public:
     t_CKBOOL shutdown();
     // run the shred on vm
     t_CKBOOL run( Chuck_VM * vm );
+    // yield the shred in vm (without advancing time, politely yield to run
+    // all other shreds waiting to run at the current (i.e., 0::second +=> now;)
+    t_CKBOOL yield(); // 1.5.0.5 (ge) made this a function from scattered code
     // associate ugen with shred
     t_CKBOOL add( Chuck_UGen * ugen );
     // unassociate ugen with shred

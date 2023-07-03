@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.5
+1.5.0.5 (July 2023)
 ---
 - (added) color TTY support for command-line chuck is here! chuck in
   color! compiler errors, probes, logs, on-the-fly programm (OTF), and 
@@ -10,31 +10,53 @@ ChucK VERSIONS log
   outputting to a TTY (e.g., interactive terminal).
 - (added) color TTY can can be explicitly enabled/disabled using
   --color and --no-color when running chuck on the command line
+- (added) color TTY support for --verbose --probe and --chugin-probe
+  ===
 - (added) code highlighting when reporting compiler errors
-  > chuck test2.ck
-  [test2.ck]:line(17): undefined variable 'bar'...
-     hi[Math.random2(0,hi.size()-1)] ) => bar.freq;
-  > chuck test3.ck
-  [test3.ck]:line(3): error: class 'SinOsc' has no member 'test'
-     foo.test();
-  > chuck test1.ck
-  [test1.ck]:line(5).char(9): syntax error
-     it @ is not ! valid => syntax!
-             ^
-- (added) chuck now has color teminal output!
-  highlights compiler and other message, logs, output from --probe and 
-  --chugin-probe, for easier scanning and reading (need compatible 
-  terminal program).
+  ```
+  terminal> chuck test/06-Errors/error-no-memb2.ck
+    error-no-memb2.ck:3:5: error: class 'SinOsc' has no member 'test'
+    [3] foo.test();
+          ^
+  terminal> chuck test/06-Errors/error-syntax-1.ck
+    error-syntax-1.ck:5:12: syntax error
+    [5] */ it @ is not ! valid => syntax!
+                   ^
+  ```
 - (added) error message when given a directory name instead of .ck file
-  > chuck myFolder
+  ```
+  terminal> chuck myFolder
   [chuck]: cannot parse file: 'myFolder' is a directory
-  ---
-- (updated) chugins with errors during query are no longer loaded,
-  and is more clearly reported (LOG level -v3 or above)
-- (updated) more robust parsing of code literals
+  ```
 - (added) --disable-error-show-code command line flag to not print code 
   highlighting when reporting compiler errors this is a compatibility flag 
   and is mainly used for unit testing
+  ===
+- (updated) Machine.eval() execution semantics 
+  *** NEW: Machine.eval() now will immediately spork and run
+  the evaluated code as a new shred, and automatically yield the current 
+  shred to give the new shred a chance to run, without advancing time.
+  *** PREVIOUSLY: Machine.eval() sent an ADD message, this incurs a 
+  one sample delay and does not run immediately
+  ---
+  For example, this one line program under the NEW behavior will print
+  1 before "foo"; the PREVIOUS behavior would print "foo" first and will
+  not print 1 until time is advanced by a > 0 amount
+  ```
+  Machine.eval( "<<< 1 >>>;" );
+  <<< "foo" >>>;
+  ```
+- (updated) examples/machine/eval.ck -- updated to reflect the above
+- (added) examples/machine/eval-global.ck -- shows the new Machine.eval()
+  in action to synchronously modify a shared global variable
+- (added) scientific notations for floating point
+  <<< 123e4 >>>; // prints 1230000.000000 :(float)
+- (added) hexidecimal float literals
+  <<< 0x1p-4 >>>; // prints 0.062500 :(float)
+- (updated) chugins with errors during query are no longer loaded,
+  and is more clearly reported (LOG level -v3 or above)
+- (updated) more robust parsing of code literals
+- (updated, developer)
 
 
 1.5.0.4 (June 2023)
