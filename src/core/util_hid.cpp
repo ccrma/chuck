@@ -119,6 +119,10 @@ Hid Probe
 #include "util_buffers.h"
 #endif // __CK_HID_WIIREMOTE__
 
+// 1.5.0.5 (ge) added
+#include "util_platforms.h"
+
+
 class lockable
 {
 public:
@@ -2580,7 +2584,8 @@ int Keyboard_send( int k, const HidMsg * msg )
 
     eventStruct.type = kIOHIDElementTypeOutput;
     eventStruct.elementCookie = output->cookie;
-    eventStruct.timestamp = UpTime();
+    // eventStruct.timestamp = UpTime(); // deprecated in macOS
+    eventStruct.timestamp = ck_macOS_uptime(); // 1.5.0.5 (ge) updated
     eventStruct.longValueSize = 0;
     eventStruct.longValue = NULL;
 
@@ -2922,24 +2927,28 @@ static int TiltSensor_do_read()
 
 static int TiltSensor_detect()
 {
-    // try different interfaces until we find one that works
-
-    SInt32 osx_version;
-    int powerbookKernFunc = 0;
-
     // log
     EM_log( CK_LOG_FINE, "detecting SMS sensor..." );
 
-    Gestalt( gestaltSystemVersion, &osx_version );
+    // try different interfaces until we find one that works
+    int powerbookKernFunc = 0;
 
-    if( osx_version == 0x1040 ||
-        osx_version == 0x1041 ||
-        osx_version == 0x1042 ||
-        osx_version == 0x1043 )
-        powerbookKernFunc = 24;
+    // get macOS release version | 1.5.0.5 (ge) new way
+    ck_OSVersion v = ck_macOS_version();
+    // check 10.4.[0,3]
+    if( v.major == 10 & v.minor == 4 && v.patch <= 3 ) powerbookKernFunc = 24;
+    else powerbookKernFunc = 21;
 
-    else
-        powerbookKernFunc = 21;
+    // old way
+    // SInt32 osx_version = 0;
+    // Gestalt( gestaltSystemVersion, &osx_version );
+    // if( osx_version == 0x1040 ||
+    //     osx_version == 0x1041 ||
+    //     osx_version == 0x1042 ||
+    //     osx_version == 0x1043 )
+    //     powerbookKernFunc = 24;
+    // else
+    //     powerbookKernFunc = 21;
 
     // 1.3.1.0: added cast to t_CKINT
     // CK_FPRINTF_STDOUT( "osx_version = %ld \n", (t_CKINT)osx_version );

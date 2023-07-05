@@ -65,18 +65,7 @@ struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 struct Chuck_VM;
 struct Chuck_IO_File;
-class  CBufferSimple; // added 1.3.0.0
-
-
-
-
-// enum
-enum Chuck_Global_Get_Callback_Type
-{
-    ck_get_plain,
-    ck_get_name,
-    ck_get_id
-};
+class  CBufferSimple;
 
 
 
@@ -105,6 +94,10 @@ public:
     // explicitly call up to ChucK_VM_Object (ge: 2013)
 
 public:
+    // get reference count
+    t_CKUINT refcount() const;
+
+public:
     // unlock_all: dis/allow deletion of locked objects
     static void lock_all();
     static void unlock_all();
@@ -122,33 +115,6 @@ public:
 private:
     void init_ref();
 };
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_VM_Alloc
-// desc: vm object manager
-//-----------------------------------------------------------------------------
-//struct Chuck_VM_Alloc
-//{
-//public:
-//    static Chuck_VM_Alloc * instance();
-//
-//public:
-//    void add_object( Chuck_VM_Object * obj );
-//    void free_object( Chuck_VM_Object * obj );
-//
-//protected:
-//    static Chuck_VM_Alloc * our_instance;
-//
-//protected:
-//    Chuck_VM_Alloc();
-//    ~Chuck_VM_Alloc();
-//
-//protected: // data
-//    std::map<Chuck_VM_Object *, void *> m_objects;
-//};
 
 
 
@@ -211,7 +177,7 @@ public:
 #define CHUCK_ARRAY32_DATAKIND kindof_VEC4 // 1.3.5.3
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
-// desc: native ChucK arrays ( virtual base class )
+// desc: native ChucK arrays (virtual base class)
 //-----------------------------------------------------------------------------
 struct Chuck_Array : public Chuck_Object
 {
@@ -247,7 +213,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array4
-// desc: native ChucK arrays (for 4-byte)
+// desc: native ChucK arrays (for 4-byte/8-byte int types)
 //-----------------------------------------------------------------------------
 struct Chuck_Array4 : public Chuck_Array
 {
@@ -302,7 +268,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array8
-// desc: native ChucK arrays (for 8-byte)
+// desc: native ChucK arrays (for 8-byte float)
 //-----------------------------------------------------------------------------
 struct Chuck_Array8 : public Chuck_Array
 {
@@ -491,6 +457,20 @@ public:
 public:
     std::vector<t_CKVEC4> m_vector;
     std::map<std::string, t_CKVEC4> m_map;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: enum Chuck_Global_Get_Callback_Type
+// desc: enumeration for type of callback, used in globals
+//-----------------------------------------------------------------------------
+enum Chuck_Global_Get_Callback_Type
+{
+    ck_get_plain,
+    ck_get_name,
+    ck_get_id
 };
 
 

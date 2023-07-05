@@ -39,19 +39,21 @@
 #include <list>
 
 
-// itoa
+// int to ascii
 std::string itoa( t_CKINT val );
-// ftoa
+// float to ascii
 std::string ftoa( t_CKFLOAT val, t_CKUINT precision );
-// tolower
+// pointer to ascii
+std::string ptoa( void * val );
+// lower-case string
 std::string tolower( const std::string & val );
-// toupper
+// upper-case string
 std::string toupper( const std::string & val );
-// trim
+// trim a string
 std::string trim( const std::string & val );
-// ltrim
+// left trim
 std::string ltrim( const std::string & val );
-// rtrim
+// right trim
 std::string rtrim( const std::string & val );
 
 // return capitalized copy of a string

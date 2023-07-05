@@ -44,7 +44,7 @@
 #define CK_LOG_FINEST           9
 #define CK_LOG_FINER            8
 #define CK_LOG_FINE             7
-#define CK_LOG_CONFIG           6
+#define CK_LOG_DEBUG            6  // 1.5.0.5 was: CK_LOG_CONFIG
 #define CK_LOG_INFO             5
 #define CK_LOG_WARNING          4
 #define CK_LOG_SEVERE           3
@@ -61,6 +61,11 @@ extern "C" {
 //-----------------------------------------------------------------------------
 // the many ways to report errors; tools for an error prone world
 //-----------------------------------------------------------------------------
+// log macros -- generally more efficient than calling EM_log() directly...
+// since this macro conditionally computes args based on log level
+#define CK_LOG( level, ... ) do{ if(level <= g_loglevel) \
+                                 { EM_log( level, __VA_ARGS__ ); } }while(0)
+
 // output log message
 void EM_log( t_CKINT, c_constr, ... );
 // set log level [CK_LOG_NONE, CK_LOG_ALL]
@@ -71,8 +76,6 @@ void EM_pushlog();
 void EM_poplog();
 // actual level
 extern t_CKINT g_loglevel;
-// macro to compare
-#define DO_LOG(x) ( x <= g_loglevel )
 
 // [%s]:line(%d).char(%d):
 void EM_error( t_CKINT, c_constr, ... );
@@ -92,7 +95,6 @@ void EM_print2blue( c_constr, ... );
 // orange edition
 void EM_print2orange( c_constr, ... );
 
-
 // clear last error message
 void EM_reset_msg();
 // prepare for new file before a file
@@ -105,6 +107,8 @@ const char * EM_lasterror();
 // get filename portion of path; e.g., mini("foo/bar.ck") -> "bar.ck"
 const char * mini( const char * path );
 const char * mini_type( const char * str );
+
+
 
 
 //-----------------------------------------------------------------------------

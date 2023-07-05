@@ -3671,17 +3671,13 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
         {
             EM_error2( exp_func->where,
-                "argument type(s) do not match:" );
-            EM_error2( exp_func->where,
-                "...for function '%s(...)'...",
+                "argument type(s) do not match...\n...for function '%s(...)'...",
                 S_name(exp_func->primary.var) );
         }
         else if( exp_func->s_type == ae_exp_dot_member )
         {
             EM_error2( exp_func->where,
-                "arguments type(s) do not match:" );
-            EM_error2( exp_func->where,
-                "...for function '%s(...)'...",
+                "argument type(s) do not match...\n...for function '%s(...)'...",
                 type_engine_print_exp_dot_member( env, &exp_func->dot_member ).c_str() );
         }
         else
@@ -3690,7 +3686,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
                 "argument type(s) do not match for function..." );
         }
 
-        EM_error2( exp_func->where,
+        EM_error2( 0,
             "...(please check the argument types)" );
 
         return NULL;
