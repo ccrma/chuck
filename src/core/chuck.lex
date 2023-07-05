@@ -244,7 +244,7 @@ long htol( c_str str )
 EXP ([Ee][-+]?[0-9]+)
 /* universal character name */
 UCN (\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})
-/* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT
+/* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT_VAL
    https://web.iitd.ac.in/~sumeet/flex__bison.pdf */
 
 %%
@@ -353,13 +353,13 @@ global                  { adjust(); return GLOBAL; }
 
 [A-Za-z_][A-Za-z0-9_]*  { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 
-[0-9]+{IS}?             { adjust(); yylval.ival=atoi(yytext); return NUM; }
-0[cC][0-7]+{IS}?        { adjust(); yylval.ival=atoi(yytext); return NUM; }
-0[xX][0-9a-fA-F]+{IS}?  { adjust(); yylval.ival=htol(yytext); return NUM; }
+[0-9]+{IS}?             { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
+0[cC][0-7]+{IS}?        { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
+0[xX][0-9a-fA-F]+{IS}?  { adjust(); yylval.ival=htol(yytext); return INT_VAL; }
 
-[0-9]+{EXP}[flFL]?      { adjust(); yylval.fval=atof(yytext); return FLOAT; }
-([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]? { adjust(); yylval.fval=atof(yytext); return FLOAT; }
-0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]? { adjust(); yylval.fval=atof(yytext); return FLOAT; }
+[0-9]+{EXP}[flFL]?      { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
+([0-9]*\.[0-9]+|[0-9]+\.){EXP}?[flFL]? { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
+0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]? { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 
 \"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\" { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 \'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+\' { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
@@ -369,7 +369,7 @@ global                  { adjust(); return GLOBAL; }
 %%
 
 // older
-// ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+) { adjust(); yylval.fval=atof(yytext); return FLOAT; }
+// ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+) { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 // \"(\\.|[^\\"])*\"       { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 // `(\\.|[^\\`])*`         { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 // '(\\.|[^\\'])'          { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }

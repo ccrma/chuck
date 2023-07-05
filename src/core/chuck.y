@@ -115,8 +115,8 @@ a_Program g_program = NULL;
 %expect 79
 
 %token <sval> ID STRING_LIT CHAR_LIT
-%token <ival> NUM
-%token <fval> FLOAT
+%token <ival> INT_VAL
+%token <fval> FLOAT_VAL
 
 %token
   POUND COMMA COLON SEMICOLON LPAREN RPAREN
@@ -615,8 +615,8 @@ postfix_expression
 // 1.3.3.0: added CHAR_LIT - spencer
 primary_expression
         : ID                                { $$ = new_exp_from_id( $1, @1.first_line, @1.first_column ); }
-        | NUM                               { $$ = new_exp_from_int( $1, @1.first_line, @1.first_column ); }
-        | FLOAT                             { $$ = new_exp_from_float( $1, @1.first_line, @1.first_column ); }
+        | INT_VAL                           { $$ = new_exp_from_int( $1, @1.first_line, @1.first_column ); }
+        | FLOAT_VAL                         { $$ = new_exp_from_float( $1, @1.first_line, @1.first_column ); }
         | STRING_LIT                        { $$ = new_exp_from_str( $1, @1.first_line, @1.first_column ); }
         | CHAR_LIT                          { $$ = new_exp_from_char( $1, @1.first_line, @1.first_column ); }
         | array_exp                         { $$ = new_exp_from_array_lit( $1, @1.first_line, @1.first_column ); }

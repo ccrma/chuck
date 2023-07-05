@@ -150,7 +150,7 @@ CK_DLL_SFUN( Windowing_rectangle );
 CK_DLL_SFUN( Windowing_triangle );
 // static array
 static Chuck_Array8 * Windowing_array = NULL;
-static FLOAT * float_array = NULL;
+static FLOAT_XFORM * float_array = NULL;
 static t_CKINT float_array_size = 0;
 
 
@@ -330,7 +330,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     Windowing_array->add_ref();
     // set size
     float_array_size = 16384;
-    float_array = new FLOAT[float_array_size];
+    float_array = new FLOAT_XFORM[float_array_size];
 
 
     //---------------------------------------------------------------------
@@ -1672,7 +1672,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
     {
         float_array_size = size;
         CK_SAFE_DELETE_ARRAY( float_array );
-        float_array = new FLOAT[float_array_size];
+        float_array = new FLOAT_XFORM[float_array_size];
         if( !float_array ) goto out_of_memory;
     }
 
@@ -1681,7 +1681,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
 out_of_memory:
     // we have a problem
     CK_FPRINTF_STDERR(
-        "[chuck](Windowing): OutOfMemoryException (allocating FLOAT[%ld])\n",
+        "[chuck](Windowing): OutOfMemoryException (allocating FLOAT_XFORM[%ld])\n",
         float_array_size );
     goto done;
 

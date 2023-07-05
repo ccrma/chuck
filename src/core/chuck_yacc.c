@@ -69,8 +69,8 @@
      ID = 258,
      STRING_LIT = 259,
      CHAR_LIT = 260,
-     NUM = 261,
-     FLOAT = 262,
+     INT_VAL = 261,
+     FLOAT_VAL = 262,
      POUND = 263,
      COMMA = 264,
      COLON = 265,
@@ -181,8 +181,8 @@
 #define ID 258
 #define STRING_LIT 259
 #define CHAR_LIT 260
-#define NUM 261
-#define FLOAT 262
+#define INT_VAL 261
+#define FLOAT_VAL 262
 #define POUND 263
 #define COMMA 264
 #define COLON 265
@@ -826,39 +826,40 @@ static const yytype_uint16 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "ID", "STRING_LIT", "CHAR_LIT", "NUM",
-  "FLOAT", "POUND", "COMMA", "COLON", "SEMICOLON", "LPAREN", "RPAREN",
-  "LBRACK", "RBRACK", "LBRACE", "RBRACE", "DOT", "PLUS", "MINUS", "TIMES",
-  "DIVIDE", "PERCENT", "EQ", "NEQ", "LT", "LE", "GT", "GE", "AND", "OR",
-  "ASSIGN", "IF", "THEN", "ELSE", "WHILE", "FOR", "DO", "LOOP", "BREAK",
-  "CONTINUE", "NULL_TOK", "FUNCTION", "RETURN", "QUESTION", "EXCLAMATION",
-  "S_OR", "S_AND", "S_XOR", "PLUSPLUS", "MINUSMINUS", "DOLLAR",
-  "POUNDPAREN", "PERCENTPAREN", "ATPAREN", "SIMULT", "PATTERN", "CODE",
-  "TRANSPORT", "HOST", "TIME", "WHENEVER", "NEXT", "UNTIL", "EXTERNAL",
-  "GLOBAL", "EVERY", "BEFORE", "AFTER", "AT", "AT_SYM", "ATAT_SYM", "NEW",
-  "SIZEOF", "TYPEOF", "SAME", "PLUS_CHUCK", "MINUS_CHUCK", "TIMES_CHUCK",
-  "DIVIDE_CHUCK", "S_AND_CHUCK", "S_OR_CHUCK", "S_XOR_CHUCK",
-  "SHIFT_RIGHT_CHUCK", "SHIFT_LEFT_CHUCK", "PERCENT_CHUCK", "SHIFT_RIGHT",
-  "SHIFT_LEFT", "TILDA", "CHUCK", "COLONCOLON", "S_CHUCK", "AT_CHUCK",
-  "LEFT_S_CHUCK", "UNCHUCK", "UPCHUCK", "CLASS", "INTERFACE", "EXTENDS",
-  "IMPLEMENTS", "PUBLIC", "PROTECTED", "PRIVATE", "STATIC", "ABSTRACT",
-  "CONST", "SPORK", "ARROW_RIGHT", "ARROW_LEFT", "L_HACK", "R_HACK",
-  "$accept", "program", "program_section", "class_definition", "class_ext",
-  "class_body", "class_body2", "class_section", "iface_ext", "id_list",
-  "id_dot", "function_definition", "class_decl", "function_decl",
-  "static_decl", "type_decl_a", "type_decl_b", "type_decl", "type_decl2",
-  "arg_list", "statement_list", "statement", "jump_statement",
-  "selection_statement", "loop_statement", "code_segment",
-  "expression_statement", "expression", "chuck_expression",
-  "arrow_expression", "array_exp", "array_empty", "decl_expression",
-  "var_decl_list", "var_decl", "complex_exp", "polar_exp", "vec_exp",
-  "chuck_operator", "arrow_operator", "conditional_expression",
-  "logical_or_expression", "logical_and_expression",
-  "inclusive_or_expression", "exclusive_or_expression", "and_expression",
-  "equality_expression", "relational_expression", "shift_expression",
-  "additive_expression", "multiplicative_expression", "tilda_expression",
-  "cast_expression", "unary_expression", "unary_operator",
-  "dur_expression", "postfix_expression", "primary_expression", 0
+  "$end", "error", "$undefined", "ID", "STRING_LIT", "CHAR_LIT",
+  "INT_VAL", "FLOAT_VAL", "POUND", "COMMA", "COLON", "SEMICOLON", "LPAREN",
+  "RPAREN", "LBRACK", "RBRACK", "LBRACE", "RBRACE", "DOT", "PLUS", "MINUS",
+  "TIMES", "DIVIDE", "PERCENT", "EQ", "NEQ", "LT", "LE", "GT", "GE", "AND",
+  "OR", "ASSIGN", "IF", "THEN", "ELSE", "WHILE", "FOR", "DO", "LOOP",
+  "BREAK", "CONTINUE", "NULL_TOK", "FUNCTION", "RETURN", "QUESTION",
+  "EXCLAMATION", "S_OR", "S_AND", "S_XOR", "PLUSPLUS", "MINUSMINUS",
+  "DOLLAR", "POUNDPAREN", "PERCENTPAREN", "ATPAREN", "SIMULT", "PATTERN",
+  "CODE", "TRANSPORT", "HOST", "TIME", "WHENEVER", "NEXT", "UNTIL",
+  "EXTERNAL", "GLOBAL", "EVERY", "BEFORE", "AFTER", "AT", "AT_SYM",
+  "ATAT_SYM", "NEW", "SIZEOF", "TYPEOF", "SAME", "PLUS_CHUCK",
+  "MINUS_CHUCK", "TIMES_CHUCK", "DIVIDE_CHUCK", "S_AND_CHUCK",
+  "S_OR_CHUCK", "S_XOR_CHUCK", "SHIFT_RIGHT_CHUCK", "SHIFT_LEFT_CHUCK",
+  "PERCENT_CHUCK", "SHIFT_RIGHT", "SHIFT_LEFT", "TILDA", "CHUCK",
+  "COLONCOLON", "S_CHUCK", "AT_CHUCK", "LEFT_S_CHUCK", "UNCHUCK",
+  "UPCHUCK", "CLASS", "INTERFACE", "EXTENDS", "IMPLEMENTS", "PUBLIC",
+  "PROTECTED", "PRIVATE", "STATIC", "ABSTRACT", "CONST", "SPORK",
+  "ARROW_RIGHT", "ARROW_LEFT", "L_HACK", "R_HACK", "$accept", "program",
+  "program_section", "class_definition", "class_ext", "class_body",
+  "class_body2", "class_section", "iface_ext", "id_list", "id_dot",
+  "function_definition", "class_decl", "function_decl", "static_decl",
+  "type_decl_a", "type_decl_b", "type_decl", "type_decl2", "arg_list",
+  "statement_list", "statement", "jump_statement", "selection_statement",
+  "loop_statement", "code_segment", "expression_statement", "expression",
+  "chuck_expression", "arrow_expression", "array_exp", "array_empty",
+  "decl_expression", "var_decl_list", "var_decl", "complex_exp",
+  "polar_exp", "vec_exp", "chuck_operator", "arrow_operator",
+  "conditional_expression", "logical_or_expression",
+  "logical_and_expression", "inclusive_or_expression",
+  "exclusive_or_expression", "and_expression", "equality_expression",
+  "relational_expression", "shift_expression", "additive_expression",
+  "multiplicative_expression", "tilda_expression", "cast_expression",
+  "unary_expression", "unary_operator", "dur_expression",
+  "postfix_expression", "primary_expression", 0
 };
 #endif
 
@@ -3090,7 +3091,7 @@ yyreduce:
 
 
 /* Line 1267 of yacc.c.  */
-#line 3094 "chuck.tab.c"
+#line 3095 "chuck.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4248,7 +4249,7 @@ long htol( c_str str )
 #line 935 "chuck.yy.c"
 /* float exponent | 1.5.0.5 (ge) */
 /* universal character name */
-/* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT
+/* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT_VAL
    https://web.iitd.ac.in/~sumeet/flex__bison.pdf */
 #line 940 "chuck.yy.c"
 
@@ -5014,32 +5015,32 @@ YY_RULE_SETUP
 case 97:
 YY_RULE_SETUP
 #line 356 "chuck.lex"
-{ adjust(); yylval.ival=atoi(yytext); return NUM; }
+{ adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
 #line 357 "chuck.lex"
-{ adjust(); yylval.ival=atoi(yytext); return NUM; }
+{ adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
 #line 358 "chuck.lex"
-{ adjust(); yylval.ival=htol(yytext); return NUM; }
+{ adjust(); yylval.ival=htol(yytext); return INT_VAL; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
 #line 360 "chuck.lex"
-{ adjust(); yylval.fval=atof(yytext); return FLOAT; }
+{ adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
 #line 361 "chuck.lex"
-{ adjust(); yylval.fval=atof(yytext); return FLOAT; }
+{ adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
 #line 362 "chuck.lex"
-{ adjust(); yylval.fval=atof(yytext); return FLOAT; }
+{ adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 103:
 /* rule 103 can match eol */
@@ -6084,7 +6085,7 @@ void yyfree (void * ptr )
 
 
 // older
-// ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+) { adjust(); yylval.fval=atof(yytext); return FLOAT; }
+// ([0-9]+"."[0-9]*)|([0-9]*"."[0-9]+) { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 // \"(\\.|[^\\"])*\"       { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 // `(\\.|[^\\`])*`         { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 // '(\\.|[^\\'])'          { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }

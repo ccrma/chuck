@@ -38,7 +38,7 @@
 #include "chuck_def.h"
 
 // our float type
-#define FLOAT       SAMPLE
+#define FLOAT_XFORM       SAMPLE
 
 // complex absolute value
 #define cmp_abs(x) ( sqrt( (x).re * (x).re + (x).im * (x).im ) )
@@ -55,31 +55,31 @@ extern "C" {
 #endif
 
 // make the window
-void hanning( FLOAT * window, unsigned long length );
-void hamming( FLOAT * window, unsigned long length );
-void blackman( FLOAT * window, unsigned long length );
-void bartlett( FLOAT * window, unsigned long length );
+void hanning( FLOAT_XFORM * window, unsigned long length );
+void hamming( FLOAT_XFORM * window, unsigned long length );
+void blackman( FLOAT_XFORM * window, unsigned long length );
+void bartlett( FLOAT_XFORM * window, unsigned long length );
 // apply the window
-void apply_window( FLOAT * data, FLOAT * window, unsigned long length );
+void apply_window( FLOAT_XFORM * data, FLOAT_XFORM * window, unsigned long length );
 
 // real fft, N must be power of 2
-void rfft( FLOAT * x, long N, unsigned int forward );
+void rfft( FLOAT_XFORM * x, long N, unsigned int forward );
 // complex fft, NC must be power of 2
-void cfft( FLOAT * x, long NC, unsigned int forward );
+void cfft( FLOAT_XFORM * x, long NC, unsigned int forward );
 
 // type II dct, often referred to as "the dct"
-void the_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout );
+void the_dct( FLOAT_XFORM * x, unsigned long N, FLOAT_XFORM * out, unsigned long Nout );
 // generates NxN type II dct matrix
-void the_dct_matrix( FLOAT ** out, unsigned long N );
+void the_dct_matrix( FLOAT_XFORM ** out, unsigned long N );
 // type III dct, often referred to as "the inverse_dct"
-void the_inverse_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout );
+void the_inverse_dct( FLOAT_XFORM * x, unsigned long N, FLOAT_XFORM * out, unsigned long Nout );
 // generates NxN type II dct matrix
-void the_inverse_dct_matrix( FLOAT ** out, unsigned long N );
+void the_inverse_dct_matrix( FLOAT_XFORM ** out, unsigned long N );
 
 // apply dct from matrix
-void the_dct_now( FLOAT * x, FLOAT ** matrix, unsigned long N, FLOAT * out, unsigned long Nout );
+void the_dct_now( FLOAT_XFORM * x, FLOAT_XFORM ** matrix, unsigned long N, FLOAT_XFORM * out, unsigned long Nout );
 // apply inverse dct from matrix
-void the_inverse_dct_now( FLOAT * x, FLOAT ** matrix, unsigned long N, FLOAT * out, unsigned long Nout );
+void the_inverse_dct_now( FLOAT_XFORM * x, FLOAT_XFORM ** matrix, unsigned long N, FLOAT_XFORM * out, unsigned long Nout );
 
 // c linkage
 #if ( defined( __cplusplus ) || defined( _cplusplus ) )

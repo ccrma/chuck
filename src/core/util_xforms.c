@@ -42,7 +42,7 @@
 // name: hanning()
 // desc: make window
 //-----------------------------------------------------------------------------
-void hanning( FLOAT * window, unsigned long length )
+void hanning( FLOAT_XFORM * window, unsigned long length )
 {
     unsigned long i;
     double pi, phase = 0, delta;
@@ -52,7 +52,7 @@ void hanning( FLOAT * window, unsigned long length )
 
     for( i = 0; i < length; i++ )
     {
-        window[i] = (FLOAT)(0.5 * (1.0 - cos(phase)));
+        window[i] = (FLOAT_XFORM)(0.5 * (1.0 - cos(phase)));
         phase += delta;
     }
 }
@@ -64,7 +64,7 @@ void hanning( FLOAT * window, unsigned long length )
 // name: hamming()
 // desc: make window
 //-----------------------------------------------------------------------------
-void hamming( FLOAT * window, unsigned long length )
+void hamming( FLOAT_XFORM * window, unsigned long length )
 {
     unsigned long i;
     double pi, phase = 0, delta;
@@ -74,7 +74,7 @@ void hamming( FLOAT * window, unsigned long length )
 
     for( i = 0; i < length; i++ )
     {
-        window[i] = (FLOAT)(0.54 - .46*cos(phase));
+        window[i] = (FLOAT_XFORM)(0.54 - .46*cos(phase));
         phase += delta;
     }
 }
@@ -86,7 +86,7 @@ void hamming( FLOAT * window, unsigned long length )
 // name: blackman()
 // desc: make window
 //-----------------------------------------------------------------------------
-void blackman( FLOAT * window, unsigned long length )
+void blackman( FLOAT_XFORM * window, unsigned long length )
 {
     unsigned long i;
     double pi, phase = 0, delta;
@@ -96,7 +96,7 @@ void blackman( FLOAT * window, unsigned long length )
 
     for( i = 0; i < length; i++ )
     {
-        window[i] = (FLOAT)(0.42 - .5*cos(phase) + .08*cos(2*phase));
+        window[i] = (FLOAT_XFORM)(0.42 - .5*cos(phase) + .08*cos(2*phase));
         phase += delta;
     }
 }
@@ -108,10 +108,10 @@ void blackman( FLOAT * window, unsigned long length )
 // name: bartlett()
 // desc: make window
 //-----------------------------------------------------------------------------
-void bartlett( FLOAT * window, unsigned long length )
+void bartlett( FLOAT_XFORM * window, unsigned long length )
 {
     unsigned long i;
-    FLOAT half = (FLOAT)length / 2;
+    FLOAT_XFORM half = (FLOAT_XFORM)length / 2;
 
     for( i = 0; i < length; i++ )
     {
@@ -127,7 +127,7 @@ void bartlett( FLOAT * window, unsigned long length )
 // name: apply_window()
 // desc: apply a window to data
 //-----------------------------------------------------------------------------
-void apply_window( FLOAT * data, FLOAT * window, unsigned long length )
+void apply_window( FLOAT_XFORM * data, FLOAT_XFORM * window, unsigned long length )
 {
     unsigned long i;
 
@@ -135,9 +135,9 @@ void apply_window( FLOAT * data, FLOAT * window, unsigned long length )
         data[i] *= window[i];
 }
 
-static FLOAT PI ;
-static FLOAT TWOPI ;
-void bit_reverse( FLOAT * x, long N );
+static FLOAT_XFORM PI ;
+static FLOAT_XFORM TWOPI ;
+void bit_reverse( FLOAT_XFORM * x, long N );
 
 //-----------------------------------------------------------------------------
 // name: rfft()
@@ -156,17 +156,17 @@ void bit_reverse( FLOAT * x, long N );
 //   N MUST be a power of 2.
 //
 //-----------------------------------------------------------------------------
-void rfft( FLOAT * x, long N, unsigned int forward )
+void rfft( FLOAT_XFORM * x, long N, unsigned int forward )
 {
     static int first = 1 ;
-    FLOAT c1, c2, h1r, h1i, h2r, h2i, wr, wi, wpr, wpi, temp, theta ;
-    FLOAT xr, xi ;
+    FLOAT_XFORM c1, c2, h1r, h1i, h2r, h2i, wr, wi, wpr, wpi, temp, theta ;
+    FLOAT_XFORM xr, xi ;
     long i, i1, i2, i3, i4, N2p1 ;
 
     if( first )
     {
-        PI = (FLOAT) (4.*atan( 1. )) ;
-        TWOPI = (FLOAT) (8.*atan( 1. )) ;
+        PI = (FLOAT_XFORM) (4.*atan( 1. )) ;
+        TWOPI = (FLOAT_XFORM) (8.*atan( 1. )) ;
         first = 0 ;
     }
 
@@ -191,8 +191,8 @@ void rfft( FLOAT * x, long N, unsigned int forward )
         x[1] = 0. ;
     }
     
-    wpr = (FLOAT) (-2.*pow( sin( 0.5*theta ), 2. )) ;
-    wpi = (FLOAT) sin( theta ) ;
+    wpr = (FLOAT_XFORM) (-2.*pow( sin( 0.5*theta ), 2. )) ;
+    wpi = (FLOAT_XFORM) sin( theta ) ;
     N2p1 = (N<<1) + 1 ;
     
     for( i = 0 ; i <= N>>1 ; i++ )
@@ -244,18 +244,17 @@ void rfft( FLOAT * x, long N, unsigned int forward )
 //   these routines from CARL software, spect.c
 //   check out the CARL CMusic distribution for more software
 //
-//   cfft replaces FLOAT array x containing NC complex values (2*NC FLOAT 
-//   values alternating real, imagininary, etc.) by its Fourier transform 
-//   if forward is true, or by its inverse Fourier transform ifforward is 
-//   false, using a recursive Fast Fourier transform method due to 
-//   Danielson and Lanczos.
+//   cfft replaces FLOAT_XFORM array x containing NC complex values
+//   (2*NC FLOAT_XFORM values alternating real, imagininary, etc.)
+//   by its Fourier transform; if forward is true, or by its inverse
+//   Fourier transform ifforward is false, using a recursive Fast Fourier
+//   transform method due to Danielson and Lanczos.
 //
 //   NC MUST be a power of 2.
-//
 //-----------------------------------------------------------------------------
-void cfft( FLOAT * x, long NC, unsigned int forward )
+void cfft( FLOAT_XFORM * x, long NC, unsigned int forward )
 {
-    FLOAT wr, wi, wpr, wpi, theta, scale ;
+    FLOAT_XFORM wr, wi, wpr, wpi, theta, scale ;
     long mmax, ND, m, i, j, delta ;
     ND = NC<<1 ;
     bit_reverse( x, ND ) ;
@@ -264,14 +263,14 @@ void cfft( FLOAT * x, long NC, unsigned int forward )
     {
         delta = mmax<<1 ;
         theta = TWOPI/( forward? mmax : -mmax ) ;
-        wpr = (FLOAT) (-2.*pow( sin( 0.5*theta ), 2. )) ;
-        wpi = (FLOAT) sin( theta ) ;
+        wpr = (FLOAT_XFORM) (-2.*pow( sin( 0.5*theta ), 2. )) ;
+        wpi = (FLOAT_XFORM) sin( theta ) ;
         wr = 1. ;
         wi = 0. ;
 
         for( m = 0 ; m < mmax ; m += 2 )
         {
-            /* register */ FLOAT rtemp, itemp ;
+            /* register */ FLOAT_XFORM rtemp, itemp ;
             for( i = m ; i < ND ; i += delta )
             {
                 j = i + mmax ;
@@ -289,9 +288,9 @@ void cfft( FLOAT * x, long NC, unsigned int forward )
     }
 
     // scale output
-    scale = (FLOAT)(forward ? 1./ND : 2.) ;
+    scale = (FLOAT_XFORM)(forward ? 1./ND : 2.) ;
     {
-        /* register */ FLOAT *xi=x, *xe=x+ND ;
+        /* register */ FLOAT_XFORM *xi=x, *xe=x+ND ;
         while( xi < xe )
             *xi++ *= scale ;
     }
@@ -302,12 +301,12 @@ void cfft( FLOAT * x, long NC, unsigned int forward )
 
 //-----------------------------------------------------------------------------
 // name: bit_reverse()
-// desc: bitreverse places FLOAT array x containing N/2 complex values
+// desc: bitreverse places FLOAT_XFORM array x containing N/2 complex values
 //       into bit-reversed order
 //-----------------------------------------------------------------------------
-void bit_reverse( FLOAT * x, long N )
+void bit_reverse( FLOAT_XFORM * x, long N )
 {
-    FLOAT rtemp, itemp ;
+    FLOAT_XFORM rtemp, itemp ;
     long i, j, m ;
     for( i = j = 0 ; i < N ; i += 2, j += m )
     {
@@ -330,14 +329,14 @@ void bit_reverse( FLOAT * x, long N )
 // name: the_dct()
 // desc: type ii dct on N reals
 //-----------------------------------------------------------------------------
-void the_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout )
+void the_dct( FLOAT_XFORM * x, unsigned long N, FLOAT_XFORM * out, unsigned long Nout )
 {
     unsigned long k, n;
 
     // sanity check
     assert( Nout <= N );
     // zero out
-    memset( out, 0, sizeof(FLOAT)*Nout );
+    memset( out, 0, sizeof(FLOAT_XFORM)*Nout );
 
     // go for it
     for( k = 0; k < Nout; k++ )
@@ -357,7 +356,7 @@ void the_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout )
 // name: the_dct_matrix()
 // desc: type ii dct matrx on N reals
 //-----------------------------------------------------------------------------
-void the_dct_matrix( FLOAT ** out, unsigned long N )
+void the_dct_matrix( FLOAT_XFORM ** out, unsigned long N )
 {
     unsigned long k, n;
 
@@ -376,15 +375,15 @@ void the_dct_matrix( FLOAT ** out, unsigned long N )
 // name: the_dct_now()
 // desc: apply dct matrx on N reals
 //-----------------------------------------------------------------------------
-void the_dct_now( FLOAT * x, FLOAT ** matrix, unsigned long N,
-                  FLOAT * out, unsigned long Nout )
+void the_dct_now( FLOAT_XFORM * x, FLOAT_XFORM ** matrix, unsigned long N,
+                  FLOAT_XFORM * out, unsigned long Nout )
 {
     unsigned long k, n;
 
     // sanity check
     assert( Nout <= N );
     // zero out
-    memset( out, 0, sizeof(FLOAT)*Nout );
+    memset( out, 0, sizeof(FLOAT_XFORM)*Nout );
 
     // go for it
     for( k = 0; k < Nout; k++ )
@@ -403,7 +402,7 @@ void the_dct_now( FLOAT * x, FLOAT ** matrix, unsigned long N,
 // name: the_inverse_dct()
 // desc: type iii dct, or inverse dct
 //-----------------------------------------------------------------------------
-void the_inverse_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout )
+void the_inverse_dct( FLOAT_XFORM * x, unsigned long N, FLOAT_XFORM * out, unsigned long Nout )
 {
 }
 
@@ -412,7 +411,7 @@ void the_inverse_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nou
 // name: the_inverse_dct_matrix()
 // desc: generates the NxN DCT matrix
 //-----------------------------------------------------------------------------
-void the_inverse_dct_matrix( FLOAT ** out, unsigned long N )
+void the_inverse_dct_matrix( FLOAT_XFORM ** out, unsigned long N )
 {
     unsigned long k, n;
 
@@ -433,15 +432,15 @@ void the_inverse_dct_matrix( FLOAT ** out, unsigned long N )
 // name: the_inverse_dct_now()
 // desc: apply inverse dct matrx on N reals
 //-----------------------------------------------------------------------------
-void the_inverse_dct_now( FLOAT * x, FLOAT ** matrix, unsigned long N,
-                  FLOAT * out, unsigned long Nout )
+void the_inverse_dct_now( FLOAT_XFORM * x, FLOAT_XFORM ** matrix, unsigned long N,
+                  FLOAT_XFORM * out, unsigned long Nout )
 {
     unsigned long k, n;
 
     // sanity check
     assert( Nout <= N );
     // zero out
-    memset( out, 0, sizeof(FLOAT)*Nout );
+    memset( out, 0, sizeof(FLOAT_XFORM)*Nout );
 
     // go for it
     for( k = 0; k < Nout; k++ )

@@ -42,8 +42,8 @@
      ID = 258,
      STRING_LIT = 259,
      CHAR_LIT = 260,
-     NUM = 261,
-     FLOAT = 262,
+     INT_VAL = 261,
+     FLOAT_VAL = 262,
      POUND = 263,
      COMMA = 264,
      COLON = 265,
@@ -154,8 +154,8 @@
 #define ID 258
 #define STRING_LIT 259
 #define CHAR_LIT 260
-#define NUM 261
-#define FLOAT 262
+#define INT_VAL 261
+#define FLOAT_VAL 262
 #define POUND 263
 #define COMMA 264
 #define COLON 265
