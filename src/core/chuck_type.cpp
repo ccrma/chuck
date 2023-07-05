@@ -4036,11 +4036,11 @@ t_CKTYPE type_engine_check_exp_array( Chuck_Env * env, a_Exp_Array array )
         // advance the list
         e = e->next;
     }
-    //TODO: Catch commas inside array subscripts earlier on, perhaps in .y
+    // TODO: Catch commas inside array subscripts earlier on, perhaps in .y
     if( array->indices->depth != depth )
     {
-        a_Exp e = array->indices->exp_list;
-        EM_error2( e ? e->where : array->where,
+        a_Exp e2 = array->indices->exp_list;
+        EM_error2( e2 ? e2->where : array->where,
                    "[..., ...] is invalid subscript syntax." );
         return NULL;
     }
