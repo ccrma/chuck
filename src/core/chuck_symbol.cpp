@@ -49,9 +49,9 @@ static S_Symbol mksymbol( c_constr name, S_Symbol next )
     return s;
 }
 
-#define SIZE 65347  /* should be prime */
+#define CK_SIM_HASH_SIZE 65347  /* should be prime */
 
-static S_Symbol hashtable[SIZE];
+static S_Symbol hashtable[CK_SIM_HASH_SIZE];
 
 static unsigned int s_hash(const char *s0)
 {
@@ -69,7 +69,7 @@ static int streq(c_constr a, c_constr b)
 S_Symbol insert_symbol(c_constr name)
 {
     S_Symbol syms = NULL, sym;
-    int index= s_hash(name) % SIZE;
+    int index= s_hash(name) % CK_SIM_HASH_SIZE;
 
     if( !name ) return NULL;
     syms = hashtable[index];
