@@ -2515,6 +2515,9 @@ void Chuck_VM_Status::clear()
 
 
 
+// begin CK_VM_DEBUG implementation
+//-----------------------------------------------------------------------------
+#if CK_VM_DEBUG_ENABLE
 //-----------------------------------------------------------------------------
 // Chuck_VM_Debug implementation | 1.5.0.5 (ge) added
 //-----------------------------------------------------------------------------
@@ -2944,3 +2947,5 @@ void Chuck_VM_Debug::print_all_objects()
         EM_poplog();
     }
 }
+
+#endif // #if CK_VM_DEBUG_ENABLE

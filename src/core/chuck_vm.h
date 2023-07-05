@@ -680,6 +680,8 @@ struct Chuck_Msg
 
 
 
+// control compilation
+#if CK_VM_DEBUG_ENABLE
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Debug | 1.5.0.5 (ge) added
 // desc: vm debug helper
@@ -770,6 +772,7 @@ protected:
     t_CKUINT m_numAddRefs;
     t_CKUINT m_numReleases;
 };
+#endif
 
 
 
