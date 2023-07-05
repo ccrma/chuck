@@ -55,7 +55,7 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 // name: itoa()
-// desc: ...
+// desc: int to ascii
 //-----------------------------------------------------------------------------
 string itoa( t_CKINT val )
 {
@@ -70,9 +70,10 @@ string itoa( t_CKINT val )
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: ftoa()
-// desc: ...
+// desc: float to ascii
 //-----------------------------------------------------------------------------
 string ftoa( t_CKFLOAT val, t_CKUINT precision )
 {
@@ -81,6 +82,20 @@ string ftoa( t_CKFLOAT val, t_CKUINT precision )
     if( precision > 32 ) precision = 32;
     snprintf( str, 32, "%%.%lif", (long)precision );
     snprintf( buffer, 128, str, val );
+    return string(buffer);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ptoa()
+// desc: pointer to ascii
+//-----------------------------------------------------------------------------
+string ptoa( void * val )
+{
+    char buffer[128];
+    snprintf( buffer, 128, "%p", val );
     return string(buffer);
 }
 

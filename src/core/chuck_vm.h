@@ -48,14 +48,6 @@
 #endif
 
 
-#define CK_DEBUG_MEMORY_MGMT (0)
-#if CK_DEBUG_MEMORY_MGMT
-#define CK_MEMMGMT_TRACK(x) do{ x; } while(0)
-#else
-#define CK_MEMMGMT_TRACK(x)
-#endif
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -651,6 +643,132 @@ struct Chuck_Msg
         args = new std::vector<std::string>;
         (*args) = vargs;
     }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// VM debug macros | 1.5.0.5 (ge) added
+// these are governed by the presence of __CHUCK_DEBUG__ (e.g., from makefile)
+//-----------------------------------------------------------------------------
+#ifdef __CHUCK_DEBUG__
+  // enable VM debug
+  #define CK_VM_DEBUG_ENABLE 1
+#else
+  // disable VM debug
+  #define CK_VM_DEBUG_ENABLE 0
+#endif
+
+// vm debug macros
+#if CK_VM_DEBUG_ENABLE
+  // calls/access 'member' on the VM_Debug singleton
+  // e.g., `CK_VM_DEBUGGER( add_ref(obj) )` expands to...
+  // ----> `(Chuck_VM_Debug::instance())->add_ref(obj)`
+  #define CK_VM_DEBUGGER( member ) CK_VM_DEBUGGER_INSTANCE->member
+  // expands to the Chuck_VM_Debug singleton
+  #define CK_VM_DEBUGGER_INSTANCE (Chuck_VM_Debug::instance())
+  // expands to the argument
+  #define CK_VM_DEBUG_ACTION( act ) act
+#else
+  // empty macros; will be compiled-out
+  #define CK_VM_DEBUGGER( act )
+  #define CK_VM_DEBUGGER_INSTANCE
+  #define CK_VM_DEBUG_ACTION( act )
+#endif
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Debug | 1.5.0.5 (ge) added
+// desc: vm debug helper
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Debug
+{
+public:
+    // call this right after instantiation (tracking)
+    void construct( Chuck_VM_Object * obj, const std::string & note = "" );
+    // call this right before destruct (tracking)
+    void destruct( Chuck_VM_Object * obj, const std::string & note = "" );
+    // add this on add reference (tracking)
+    void add_ref( Chuck_VM_Object * obj, const std::string & note = "" );
+    // add this on release reference (tracking)
+    void release( Chuck_VM_Object * obj, const std::string & note = "" );
+
+public:
+    // set log level to print to
+    void set_log_evel( t_CKUINT level );
+    // number of objects being tracked
+    t_CKUINT num_objects();
+    // print all objects being tracked
+    void print_all_objects();
+    // print stats
+    void print_stats();
+    // reset stats
+    void reset_stats();
+
+public:
+    // one func to get info using runtime types
+    std::string info( Chuck_VM_Object * obj );
+
+    // info by type
+    std::string info_obj( Chuck_Object * obj );
+    std::string info_type( Chuck_Type * type );
+    std::string info_func( Chuck_Func * func );
+    std::string info_value( Chuck_Value * value );
+    std::string info_namespace( Chuck_Namespace * nspc );
+    std::string info_context( Chuck_Context * context );
+    std::string info_env( Chuck_Env * env );
+    std::string info_ugen_info( Chuck_UGen_Info * ug );
+    std::string info_code( Chuck_VM_Code * code );
+    std::string info_shred( Chuck_VM_Shred * shred );
+    std::string info_vm( Chuck_VM * vm );
+
+public:
+    // one func to try to print them all
+    void print( Chuck_VM_Object * obj, const std::string & note = "" );
+
+public:
+    // get call stack as string
+    static std::string info_backtrace( );
+    // print call stack at this point
+     void backtrace( const std::string & note = "" );
+
+public:
+    // get shared instance
+    static Chuck_VM_Debug * instance();
+    // destructor
+    ~Chuck_VM_Debug();
+
+protected:
+    // shared instance pointer
+    static Chuck_VM_Debug * our_instance;
+    // protected constructor
+    Chuck_VM_Debug();
+
+protected:
+    // insert into object map
+    void insert( Chuck_VM_Object * obj );
+    // insert into object map
+    void remove( Chuck_VM_Object * obj );
+    // is present?
+    t_CKBOOL contains( Chuck_VM_Object * obj );
+    // get map by type name
+    std::map<Chuck_VM_Object *, Chuck_VM_Object *> get_objs( const std::string & key);
+
+protected:
+    // log level
+    t_CKUINT m_log_level;
+    // object map by name -> map
+    std::map< std::string, std::map<Chuck_VM_Object *, Chuck_VM_Object *> > m_objects_map;
+
+protected:
+    // stats
+    t_CKUINT m_numConstructed;
+    t_CKUINT m_numDestructed;
+    t_CKUINT m_numAddRefs;
+    t_CKUINT m_numReleases;
 };
 
 

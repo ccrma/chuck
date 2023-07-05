@@ -392,6 +392,174 @@ size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
 
 
 //-----------------------------------------------------------------------------
+#if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+//-----------------------------------------------------------------------------
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <mach/mach.h>
+#include <mach/mach_time.h> // for mach_absolute_time | 1.5.0.5
+
+
+//-----------------------------------------------------------------------------
+// name: ck_darwin_version()
+// desc: get darwin release version (also see ck_macOS_version())
+// https://stackoverflow.com/questions/11072804/how-do-i-determine-the-os-version-at-runtime-in-os-x-or-ios-without-using-gesta
+//-----------------------------------------------------------------------------
+ck_OSVersion ck_darwin_version()
+{
+    // version
+    ck_OSVersion ver;
+
+    // get darwin release number
+    char str[256];
+    size_t size = sizeof(str);
+    // get darwin kernel release version
+    // note: sysctl() is supported on macOS; no longer in linux kernels
+    int ret = sysctlbyname( "kern.osrelease", str, &size, NULL, 0 );
+
+    // error
+    if( ret ) return ver;
+
+    // read it in
+    sscanf( str, "%hd.%hd.%hd", &ver.major, &ver.minor, &ver.patch );
+
+    // return version
+    return ver;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_macOS_version()
+// desc: get macOS release version
+// note: alternative for Gestalt() which is deprecated
+// https://stackoverflow.com/questions/11072804/how-do-i-determine-the-os-version-at-runtime-in-os-x-or-ios-without-using-gesta
+// https://en.wikipedia.org/wiki/Darwin_(operating_system)
+// Darwin operating system version to macOS release version
+// 22.x.x. macOS 13.x.x Ventura
+// 21.x.x. macOS 12.x.x Monterey
+// 20.x.x. macOS 11.x.x Big Sur
+// 19.x.x. macOS 10.15.x Catalina
+// 18.x.x. macOS 10.14.x Mojave
+// 17.x.x. macOS 10.13.x High Sierra
+// 16.x.x  macOS 10.12.x Sierra
+// 15.x.x  OS X  10.11.x El Capitan
+// 14.x.x  OS X  10.10.x Yosemite
+// 13.x.x  OS X  10.9.x  Mavericks
+// 12.x.x  OS X  10.8.x  Mountain Lion
+// 11.x.x  OS X  10.7.x  Lion
+// 10.x.x  OS X  10.6.x  Snow Leopard
+//  9.x.x  OS X  10.5.x  Leopard
+//  8.x.x  OS X  10.4.x  Tiger
+//  7.x.x  OS X  10.3.x  Panther
+//  6.x.x  OS X  10.2.x  Jaguar
+//  5.x    OS X  10.1.x  Puma
+//  4.x    OS X  10.0.x  Cheetah
+//-----------------------------------------------------------------------------
+ck_OSVersion ck_macOS_version()
+{
+    // version
+    ck_OSVersion ver;
+
+    // first try to get macOS release number directly
+    // FYI this may not work in older versions, circa before 2018
+    char str[256];
+    size_t size = sizeof(str);
+    // get darwin kernel release version
+    // note: sysctl() is supported on macOS; no longer in linux kernels
+    int ret = sysctlbyname( "kern.osproductversion", str, &size, NULL, 0 );
+
+    // success
+    if( ret == 0 )
+    {
+        // read it in
+        sscanf( str, "%hd.%hd.%hd", &ver.major, &ver.minor, &ver.patch );
+        // done
+        return ver;
+    }
+
+    // fall back -- get darwin version and our own conversion
+    // FYI darwin minor version could be off by 1 due to security patches
+    ver = ck_darwin_version();
+
+    // test
+    if( ver.major < 4 ) // before 10.1.x Puma
+    {
+        // reset to 0
+        ver.reset();
+        // return 0 version
+        return ver;
+    }
+
+    // convert to macOS release number
+    if( ver.major <= 19 )
+    {
+        // still in OS X era
+        ver.minor = ver.major - 4;
+        ver.major = 10;
+    }
+    else
+    {
+        // hopefully this is future proof; depends on Apple release versioning
+        ver.major = ver.major - 9;
+    }
+
+    // return version
+    return ver;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: str()
+// desc: get version as string
+//-----------------------------------------------------------------------------
+std::string ck_OSVersion::str()
+{
+    return itoa(major) + "." + itoa(minor) + "." + itoa(patch);
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_macOS_uptime() | 1.5.0.5 (ge) added
+// desc: return macOS uptime
+// note: replacement for UpTime(), which is deprecated
+// https://stackoverflow.com/questions/47168914/absolutetonanoseconds-uptime-deprecated
+// https://opensource.apple.com/source/Libc/Libc-1158.1.2/gen/clock_gettime.c.auto.html
+// clock_gettime_nsec_np(CLOCK_UPTIME_RAW) doesn't seem be the same as UpTime
+// at least on apple silicon macOS 13 (Ventura)
+//-----------------------------------------------------------------------------
+AbsoluteTime ck_macOS_uptime()
+{
+    uint64_t mt = mach_absolute_time();
+    AbsoluteTime at;
+    at.hi = (uint32_t)(mt << 32);
+    at.lo = (uint32_t)(mt & 0xffffffff);
+    return at;
+}
+
+
+/*
+static void testUpTime()
+{
+    uint64_t mt = mach_absolute_time();
+    AbsoluteTime at = UpTime();
+    uint64_t t = ((uint64_t)at.hi << 32) + at.lo;
+
+    AbsoluteTime at2;
+    at2.hi = mt >> 32;
+    at2.lo = mt & 0xffffffff;
+    uint64_t t2 = ((uint64_t)at2.hi << 32) + at2.lo;
+
+    cerr << "TIME:" << clock_gettime_nsec_np(CLOCK_UPTIME_RAW) / 1000000 << " mach: " << mt << " UpTime: " << t2 << endl;
+}
+*/
+
+
+#endif // #if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+
+
+
+
+//-----------------------------------------------------------------------------
 #ifdef __ANDROID__
 //-----------------------------------------------------------------------------
 #include <jni.h>

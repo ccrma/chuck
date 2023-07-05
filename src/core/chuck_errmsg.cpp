@@ -76,10 +76,12 @@ XMutex g_logmutex;
 #endif
 
 // more local globals
-static const size_t g_buffer2_size = 1024;
-static char g_buffer2[g_buffer2_size] = "";
 std::stringstream g_stdout_stream;
 std::stringstream g_stderr_stream;
+// 1.5.0.5 (ge) increase g_buffer2_size from 1024 to 8192
+// to accomodate longer, potentially multiline output strings
+static const size_t g_buffer2_size = 8192;
+static char g_buffer2[g_buffer2_size] = "";
 
 // local global callbacks
 void (*g_stdout_callback)(const char *) = NULL;
@@ -98,7 +100,7 @@ static const char * g_str[] = {
     "SEVERE",       // 3
     "WARN!!",       // 4
     "INFORM",       // 5
-    "CONFIG",       // 6
+    "DEBUG!",       // 6 <-- 1.5.0.5 changed from "CONFIG" to "DEBUG!"
     "FINE!!",       // 7
     "FINER!",       // 8
     "FINEST",       // 9
@@ -999,6 +1001,12 @@ void ck_fprintf_stdout( const char * format, ... )
 
     // try flushing
     ck_fflush_stdout();
+
+    // NOTE: currently the output size is limitd by g_buffer2_size, which
+    // will cut off longer strings (e.g., trying to print a deep stack trace)
+    // might look into vasprintf(), which dynamically allocates the
+    // final string buffer, accomodates arbitrarily long string; the downside
+    // is that vasprintf dynamically allocates memory each time
 }
 
 
@@ -1020,6 +1028,12 @@ void ck_fprintf_stderr( const char * format, ... )
 
     // try flushing
     ck_fflush_stderr();
+
+    // NOTE: currently the output size is limitd by g_buffer2_size, which
+    // will cut off longer strings (e.g., trying to print a deep stack trace)
+    // might look into vasprintf(), which dynamically allocates the
+    // final string buffer, accomodates arbitrarily long string; the downside
+    // is that vasprintf dynamically allocates memory each time
 }
 
 

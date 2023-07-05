@@ -23,7 +23,7 @@ CFLAGS+= -D__CHUCK_STAT_TRACK__
 endif
 
 ifneq ($(CHUCK_DEBUG),)
-CFLAGS+= -g
+CFLAGS+= -g -D__CHUCK_DEBUG__
 else
 CFLAGS+= -O3
 endif
