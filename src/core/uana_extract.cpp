@@ -976,7 +976,7 @@ CK_DLL_DTOR( Flux_dtor )
 {
     // clean up
     StateOfFlux * state = (StateOfFlux *)OBJ_MEMBER_UINT( SELF, Flux_offset_data );
-    SAFE_DELETE( state );
+    CK_SAFE_DELETE( state );
     OBJ_MEMBER_UINT( SELF, Flux_offset_data ) = 0;
 }
 
@@ -1238,13 +1238,13 @@ struct MFCC_Object
     void reset()
     {
         // delete
-        SAFE_DELETE_ARRAY( filterbank );
-        SAFE_DELETE_ARRAY( filterpoints );
-        SAFE_DELETE_ARRAY( filterfreqs );
-        SAFE_DELETE_ARRAY( dct );
-        SAFE_DELETE_ARRAY( spectrum );
-        SAFE_DELETE_ARRAY( filtered );
-        SAFE_DELETE_ARRAY( result );
+        CK_SAFE_DELETE_ARRAY( filterbank );
+        CK_SAFE_DELETE_ARRAY( filterpoints );
+        CK_SAFE_DELETE_ARRAY( filterfreqs );
+        CK_SAFE_DELETE_ARRAY( dct );
+        CK_SAFE_DELETE_ARRAY( spectrum );
+        CK_SAFE_DELETE_ARRAY( filtered );
+        CK_SAFE_DELETE_ARRAY( result );
         // zero out
         size = 0;
         sample_rate = 0.0;
@@ -1292,13 +1292,13 @@ struct MFCC_Object
         this->curr_num_coeffs = this->num_coeffs;
 
         // filter bank
-        SAFE_DELETE_ARRAY( this->filterbank );
+        CK_SAFE_DELETE_ARRAY( this->filterbank );
         this->filterbank = new t_CKFLOAT[num_filters * theSize];
         memset( this->filterbank, 0, sizeof( t_CKFLOAT ) * num_filters * theSize);
 
-        SAFE_DELETE_ARRAY( this->filterpoints );
+        CK_SAFE_DELETE_ARRAY( this->filterpoints );
         this->filterpoints = new t_CKINT[num_filters + 2];
-        SAFE_DELETE_ARRAY( this->filterfreqs );
+        CK_SAFE_DELETE_ARRAY( this->filterfreqs );
         this->filterfreqs = new t_CKFLOAT[num_filters + 2];
 
         t_CKFLOAT filterwidth = ::round( this->freq2mel( this->sample_rate / 2.0 ) / ( this->num_filters + 1.0 ) );
@@ -1327,7 +1327,7 @@ struct MFCC_Object
         }
 
         // dct
-        SAFE_DELETE_ARRAY( this->dct );
+        CK_SAFE_DELETE_ARRAY( this->dct );
         this->dct = new t_CKFLOAT[num_coeffs * num_filters];
         for( int i = 0; i < this->num_coeffs; i++ )
         {
@@ -1343,21 +1343,21 @@ struct MFCC_Object
                 for( int j = 0; j < this->num_filters; j++ )
                 {
                     this->dct[i * num_filters + j] =
-                        sqrt( 2.0 / this->num_filters ) * cos( ONE_PI * i * ( j + 0.5 ) / this->num_filters );
+                        sqrt( 2.0 / this->num_filters ) * cos( CK_ONE_PI * i * ( j + 0.5 ) / this->num_filters );
                 }
             }
         }
 
         // spectrum
-        SAFE_DELETE_ARRAY( this->spectrum );
+        CK_SAFE_DELETE_ARRAY( this->spectrum );
         this->spectrum = new t_CKFLOAT[theSize];
 
         // filtered
-        SAFE_DELETE_ARRAY( this->filtered );
+        CK_SAFE_DELETE_ARRAY( this->filtered );
         this->filtered = new t_CKFLOAT[num_filters];
 
         // result
-        SAFE_DELETE_ARRAY( this->result );
+        CK_SAFE_DELETE_ARRAY( this->result );
         this->result = new t_CKFLOAT[num_coeffs];
     }
 
@@ -1448,7 +1448,7 @@ CK_DLL_CTOR( MFCC_ctor )
 CK_DLL_DTOR( MFCC_dtor )
 {
     MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
-    SAFE_DELETE( mfcc );
+    CK_SAFE_DELETE( mfcc );
     OBJ_MEMBER_UINT( SELF, MFCC_offset_data ) = 0;
 }
 
@@ -1693,11 +1693,11 @@ struct SFM_Object
         sample_rate = 0;
         nr_bands = 0;
         nr_valid_bands = 0;
-        SAFE_DELETE_ARRAY( edge );
-        SAFE_DELETE_ARRAY( bandLoEdge );
-        SAFE_DELETE_ARRAY( bandHiEdge );
-        SAFE_DELETE_ARRAY( il );
-        SAFE_DELETE_ARRAY( ih );
+        CK_SAFE_DELETE_ARRAY( edge );
+        CK_SAFE_DELETE_ARRAY( bandLoEdge );
+        CK_SAFE_DELETE_ARRAY( bandHiEdge );
+        CK_SAFE_DELETE_ARRAY( il );
+        CK_SAFE_DELETE_ARRAY( ih );
     }
 
     // update
@@ -1717,13 +1717,13 @@ struct SFM_Object
         this->nr_bands = 24;
         this->nr_valid_bands = this->nr_bands;
 
-        SAFE_DELETE_ARRAY( edge );
+        CK_SAFE_DELETE_ARRAY( edge );
         edge = new t_CKFLOAT[nr_bands + 1];
         memset( edge, 0, sizeof( t_CKFLOAT ) * ( nr_bands + 1 ) );
-        SAFE_DELETE( bandLoEdge );
+        CK_SAFE_DELETE( bandLoEdge );
         bandLoEdge = new t_CKFLOAT[nr_bands];
         memset( bandLoEdge, 0, sizeof( t_CKFLOAT ) * nr_bands );
-        SAFE_DELETE( bandHiEdge );
+        CK_SAFE_DELETE( bandHiEdge );
         bandHiEdge = new t_CKFLOAT[nr_bands];
         memset( bandHiEdge, 0, sizeof( t_CKFLOAT ) * nr_bands );
 
@@ -1744,10 +1744,10 @@ struct SFM_Object
         t_CKFLOAT df = this->sample_rate / theSize;
 
         //calculate FFT bin indexes for each band's edges
-        SAFE_DELETE( il );
+        CK_SAFE_DELETE( il );
         il = new t_CKINT[nr_bands];
         memset( il, 0, sizeof( t_CKINT ) * nr_bands );
-        SAFE_DELETE( ih );
+        CK_SAFE_DELETE( ih );
         ih = new t_CKINT[nr_bands];
         memset( ih, 0, sizeof( t_CKINT ) * nr_bands );
         for( i = 0; i < this->nr_bands; ++i )
@@ -1826,7 +1826,7 @@ CK_DLL_CTOR( SFM_ctor )
 CK_DLL_DTOR( SFM_dtor )
 {
     SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
-    SAFE_DELETE( sfm );
+    CK_SAFE_DELETE( sfm );
     OBJ_MEMBER_UINT( SELF, SFM_offset_data ) = 0;
 }
 
@@ -1943,10 +1943,10 @@ struct Chroma_Object
     ~Chroma_Object()
     {
         // delete
-        SAFE_DELETE_ARRAY( m );
-        SAFE_DELETE_ARRAY( freq );
-        SAFE_DELETE_ARRAY( filter );
-        SAFE_DELETE_ARRAY( chord );
+        CK_SAFE_DELETE_ARRAY( m );
+        CK_SAFE_DELETE_ARRAY( freq );
+        CK_SAFE_DELETE_ARRAY( filter );
+        CK_SAFE_DELETE_ARRAY( chord );
         // zero out
         size = 0;
         sample_rate = 0;
@@ -1975,16 +1975,16 @@ struct Chroma_Object
         t_CKFLOAT tmp;
 
         // memory allocation and initialization
-        SAFE_DELETE_ARRAY( m );
+        CK_SAFE_DELETE_ARRAY( m );
         m = new t_CKFLOAT[9];
         memset( m, 0, sizeof( t_CKFLOAT ) * 9 );
-        SAFE_DELETE_ARRAY( freq );
+        CK_SAFE_DELETE_ARRAY( freq );
         freq = new t_CKFLOAT[theSize];
         memset( freq, 0, sizeof( t_CKFLOAT ) * theSize);
-        SAFE_DELETE_ARRAY( filter );
+        CK_SAFE_DELETE_ARRAY( filter );
         filter = new t_CKFLOAT[14 * theSize];
         memset( filter, 0, sizeof( t_CKFLOAT ) * 14 * theSize);
-        SAFE_DELETE_ARRAY( chord );
+        CK_SAFE_DELETE_ARRAY( chord );
         chord = new t_CKFLOAT[14];
         memset( chord, 0, sizeof( t_CKFLOAT ) * 14 );
         chord[1] = 261.625565; // C4
@@ -2083,7 +2083,7 @@ CK_DLL_CTOR( Chroma_ctor )
 CK_DLL_DTOR( Chroma_dtor )
 {
     Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
-    SAFE_DELETE( chroma );
+    CK_SAFE_DELETE( chroma );
     OBJ_MEMBER_UINT( SELF, Chroma_offset_data ) = 0;
 }
 
@@ -2371,9 +2371,9 @@ struct Corr_Object
     // reset
     void reset()
     {
-        SAFE_DELETE_ARRAY( fbuf );
-        SAFE_DELETE_ARRAY( gbuf );
-        SAFE_DELETE_ARRAY( buffy );
+        CK_SAFE_DELETE_ARRAY( fbuf );
+        CK_SAFE_DELETE_ARRAY( gbuf );
+        CK_SAFE_DELETE_ARRAY( buffy );
         fcap = gcap = bufcap = 0;
     }
 
@@ -2398,19 +2398,19 @@ struct Corr_Object
         // verify
         if( fcap < mincap )
         {
-            SAFE_DELETE_ARRAY( fbuf );
+            CK_SAFE_DELETE_ARRAY( fbuf );
             fbuf = new SAMPLE[mincap];
             fcap = mincap;
         }
         if( gcap < mincap )
         {
-            SAFE_DELETE_ARRAY( gbuf );
+            CK_SAFE_DELETE_ARRAY( gbuf );
             gbuf = new SAMPLE[mincap];
             gcap = mincap;
         }
         if( bufcap < mincap )
         {
-            SAFE_DELETE_ARRAY( buffy );
+            CK_SAFE_DELETE_ARRAY( buffy );
             buffy = new SAMPLE[mincap];
             bufcap = mincap;
         }
@@ -2505,7 +2505,7 @@ CK_DLL_CTOR( AutoCorr_ctor )
 CK_DLL_DTOR( AutoCorr_dtor )
 {
     Corr_Object * ac = (Corr_Object *)OBJ_MEMBER_UINT( SELF, AutoCorr_offset_data );
-    SAFE_DELETE( ac );
+    CK_SAFE_DELETE( ac );
     OBJ_MEMBER_UINT( SELF, AutoCorr_offset_data ) = 0;
 }
 
@@ -2597,7 +2597,7 @@ CK_DLL_CTOR( XCorr_ctor )
 CK_DLL_DTOR( XCorr_dtor )
 {
     Corr_Object * xc = (Corr_Object *)OBJ_MEMBER_UINT( SELF, XCorr_offset_data );
-    SAFE_DELETE( xc );
+    CK_SAFE_DELETE( xc );
     OBJ_MEMBER_UINT( SELF, XCorr_offset_data ) = 0;
 }
 

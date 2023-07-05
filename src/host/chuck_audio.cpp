@@ -325,7 +325,7 @@ void ChuckAudio::probe( const char * driver )
     }
 
     // done
-    SAFE_DELETE( audio );
+    CK_SAFE_DELETE( audio );
 
     return;
 }
@@ -406,7 +406,7 @@ t_CKINT ChuckAudio::device_named( const char * driver,
     }
 
     // clean up
-    SAFE_DELETE( audio );
+    CK_SAFE_DELETE( audio );
     
     // done
     return device_no;
@@ -646,7 +646,7 @@ t_CKBOOL ChuckAudio::watchdog_stop()
     // wait a bit | TODO: is this needed?
     usleep( 100000 );
     // delete watchdog thread | TODO: is this safe?
-    SAFE_DELETE( g_watchdog_thread );
+    CK_SAFE_DELETE( g_watchdog_thread );
     
     return TRUE;
 }
@@ -1054,7 +1054,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         if( code > RTAUDIO_WARNING ) // was: } catch( RtAudioErrorType ) {
         {
             // RtAudio no longer throws, errors reported via errorHandler
-            SAFE_DELETE( m_rtaudio );
+            CK_SAFE_DELETE( m_rtaudio );
             // clean up
             goto error;
         }
@@ -1273,11 +1273,11 @@ void ChuckAudio::shutdown()
     // close stream
     m_rtaudio->closeStream();
     // cleanup
-    SAFE_DELETE( m_rtaudio );
+    CK_SAFE_DELETE( m_rtaudio );
 
     // deallocate | 1.5.0.0 (ge) added
-    SAFE_DELETE( m_buffer_in );
-    SAFE_DELETE( m_buffer_out );
+    CK_SAFE_DELETE( m_buffer_in );
+    CK_SAFE_DELETE( m_buffer_out );
 
     // unflag
     m_init = FALSE;

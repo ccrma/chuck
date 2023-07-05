@@ -3036,8 +3036,8 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         str = new Chuck_String();
         if( !str || !initialize_object( str, emit->env->t_string ) )
         {
-            // error (TODO: why is this a SAFE_RELEASE and not SAFE_DELETE?)
-            SAFE_RELEASE( str );
+            // error (TODO: why is this a CK_SAFE_RELEASE and not CK_SAFE_DELETE?)
+            CK_SAFE_RELEASE( str );
             // error out
             CK_FPRINTF_STDERR(
                 "[chuck](emitter): OutOfMemory: while allocating string literal '%s'\n", exp->str );
@@ -4118,7 +4118,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL needs_global_ctor = FALSE;
 
     t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
-    te_GlobalType globalType; // added 1.4.0.1 (jack)
+    te_GlobalType globalType = te_globalTypeNone; // added 1.4.0.1 (jack)
 
     if( decl->is_global )
     {
@@ -4669,7 +4669,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // unset the func
     emit->env->func = NULL;
     // delete the code
-    SAFE_DELETE( emit->code );
+    CK_SAFE_DELETE( emit->code );
     // pop the code
     assert( emit->stack.size() );
     emit->code = emit->stack.back();
@@ -4796,14 +4796,14 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     if( !ret )
     {
         // clean
-        SAFE_DELETE( type->info->pre_ctor );
+        CK_SAFE_DELETE( type->info->pre_ctor );
     }
 
     // unset the class
     emit->env->class_def = emit->env->class_stack.back();
     emit->env->class_stack.pop_back();
     // delete the code
-    SAFE_DELETE( emit->code );
+    CK_SAFE_DELETE( emit->code );
     // pop the code
     assert( emit->stack.size() );
     emit->code = emit->stack.back();
@@ -4994,7 +4994,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
     // if global, find what type
     // (due to user classes, this info is only available during emit)
-    te_GlobalType global_type;
+    te_GlobalType global_type = te_globalTypeNone;
     if( v->is_global )
     {
         if( isa( v->type, emit->env->t_int ) )
@@ -5236,7 +5236,7 @@ void Chuck_Emitter::pop_scope( )
         }
 
         // reclaim local; null out to be safe
-        SAFE_DELETE( local ); locals[i] = NULL;
+        CK_SAFE_DELETE( local ); locals[i] = NULL;
     }
 
     // clear it

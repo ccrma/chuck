@@ -955,7 +955,7 @@ t_CKBOOL KBHitManager::init()
     if( !the_buf->initialize( BUFFER_SIZE, sizeof(t_CKINT) ) )
     {
         EM_log( CK_LOG_SEVERE, "KBHitManager: couldn't allocate central KB buffer..." );
-        SAFE_DELETE( the_buf );
+        CK_SAFE_DELETE( the_buf );
         return FALSE;
     }
 
@@ -975,7 +975,7 @@ t_CKBOOL KBHitManager::init()
 void KBHitManager::shutdown()
 {
     EM_log( CK_LOG_INFO, "shutting down KBHitManager..." );
-    SAFE_DELETE( the_buf );
+    CK_SAFE_DELETE( the_buf );
     kb_endwin();
 
     the_onoff = 0;
@@ -1434,7 +1434,7 @@ StrTok::StrTok()
 
 StrTok::~StrTok()
 {
-    SAFE_DELETE( m_ss );
+    CK_SAFE_DELETE( m_ss );
 }
 
 void StrTok::set( const string & line )
@@ -1442,7 +1442,7 @@ void StrTok::set( const string & line )
     string s;
 
     // delete
-    SAFE_DELETE( m_ss );
+    CK_SAFE_DELETE( m_ss );
     // alloc
     m_ss = new istringstream( line );
     // read

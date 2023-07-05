@@ -60,7 +60,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // set srate
     g_srateFilter = QUERY->srate;
     // set radians per sample
-    g_radians_per_sample = TWO_PI / (t_CKFLOAT)g_srateFilter;
+    g_radians_per_sample = CK_TWO_PI / (t_CKFLOAT)g_srateFilter;
 
     std::string doc;
 
@@ -1083,7 +1083,7 @@ CK_DLL_DTOR( FilterBasic_dtor )
     // get data
     FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
     // delete
-    SAFE_DELETE(d);
+    CK_SAFE_DELETE(d);
     // set
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = 0;
 }
@@ -1206,7 +1206,7 @@ CK_DLL_CTRL( LPF_ctrl_freq )
 
     t_CKFLOAT C = 1.0 / ::tan(pfreq);
     t_CKFLOAT C2 = C * C;
-    t_CKFLOAT sqrt2C = C * SQRT2;
+    t_CKFLOAT sqrt2C = C * CK_SQRT2;
     t_CKFLOAT next_a0 = 1.0 / (1.0 + sqrt2C + C2);
     t_CKFLOAT next_b1 = -2.0 * (1.0 - C2) * next_a0 ;
     t_CKFLOAT next_b2 = -(1.f - sqrt2C + C2) * next_a0;
@@ -1282,7 +1282,7 @@ CK_DLL_CTRL( HPF_ctrl_freq )
 
     t_CKFLOAT C = ::tan(pfreq);
     t_CKFLOAT C2 = C * C;
-    t_CKFLOAT sqrt2C = C * SQRT2;
+    t_CKFLOAT sqrt2C = C * CK_SQRT2;
     t_CKFLOAT next_a0 = 1.0 / (1.0 + sqrt2C + C2);
     t_CKFLOAT next_b1 = 2.0 * (1.0 - C2) * next_a0 ;
     t_CKFLOAT next_b2 = -(1.0 - sqrt2C + C2) * next_a0;
@@ -2146,7 +2146,7 @@ CK_DLL_CTOR( biquad_ctor )
 CK_DLL_DTOR( biquad_dtor )
 {
     biquad_data * d = (biquad_data *)OBJ_MEMBER_UINT(SELF, biquad_offset_data );
-    SAFE_DELETE( d );
+    CK_SAFE_DELETE( d );
     OBJ_MEMBER_UINT(SELF, biquad_offset_data) = 0;
 }
 
@@ -2178,7 +2178,7 @@ CK_DLL_TICK( biquad_tick )
 void biquad_set_reson( biquad_data * d )
 {
     d->m_a2 = (SAMPLE)(d->prad * d->prad);
-    d->m_a1 = (SAMPLE)(-2.0 * d->prad * cos(2.0 * ONE_PI * d->pfreq / (double)d->srate));
+    d->m_a1 = (SAMPLE)(-2.0 * d->prad * cos(2.0 * CK_ONE_PI * d->pfreq / (double)d->srate));
 
     if ( d->norm ) {
         // Use zeros at +- 1 and normalize the filter peak gain.
@@ -2235,7 +2235,7 @@ CK_DLL_CTRL( biquad_cget_prad )
 void biquad_set_notch( biquad_data * d )
 {
     d->m_b2 = (SAMPLE)(d->zrad * d->zrad);
-    d->m_b1 = (SAMPLE)(-2.0 * d->zrad * cos(2.0 * ONE_PI * d->zfreq / (double)d->srate));
+    d->m_b1 = (SAMPLE)(-2.0 * d->zrad * cos(2.0 * CK_ONE_PI * d->zfreq / (double)d->srate));
 }
 
 //-----------------------------------------------------------------------------
@@ -2589,8 +2589,8 @@ CK_DLL_CTRL( twopole_ctrl_freq )
     if( d->norm )
     {
         // Normalize the filter gain ... not terribly efficient.
-        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * ONE_PI * d->pfreq / d->srate );
-        double imag = (d->m_a2 - d->prad) * sin( 2.0 * ONE_PI * d->pfreq / d->srate );
+        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
+        double imag = (d->m_a2 - d->prad) * sin( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
         d->m_b0 = sqrt( real*real + imag*imag );
     }
 }
@@ -2608,8 +2608,8 @@ CK_DLL_CTRL( twopole_ctrl_rad )
     if( d->norm )
     {
         // Normalize the filter gain ... not terrbly efficient
-        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * ONE_PI * d->pfreq / d->srate );
-        double imag = (d->m_a2 - d->prad) * sin( 2.0 * ONE_PI * d->pfreq / d->srate );
+        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
+        double imag = (d->m_a2 - d->prad) * sin( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
         d->m_b0 = sqrt( real*real + imag*imag );
     }
 }
@@ -2626,8 +2626,8 @@ CK_DLL_CTRL( twopole_ctrl_norm )
     if( d->norm )
     {
         // Normalize the filter gain ... not terribly efficient
-        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * ONE_PI * d->pfreq / d->srate );
-        double imag = (d->m_a2 - d->prad) * sin( 2.0 * ONE_PI * d->pfreq / d->srate );
+        double real = 1.0 - d->prad + (d->m_a2 - d->prad) * cos( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
+        double imag = (d->m_a2 - d->prad) * sin( 2.0 * CK_ONE_PI * d->pfreq / d->srate );
         d->m_b0 = sqrt( real*real + imag*imag );
     }
 }

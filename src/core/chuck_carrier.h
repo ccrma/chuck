@@ -96,17 +96,16 @@ struct Chuck_Carrier
         compiler( NULL ),
         env( NULL ),
         vm( NULL ),
+        chout( NULL ),
+        cherr( NULL ),
         #ifndef __DISABLE_OTF_SERVER__
         otf_socket( NULL ),
         otf_port( 0 ),
         otf_thread( 0 ),
         #endif
         #ifndef __DISABLE_WVOUT__
-        stk_writeThread( NULL ),
+        stk_writeThread( NULL )
         #endif
-        chout( NULL ),
-        cherr( NULL )
-
     { }
 
     // get hint: is realtime audio?

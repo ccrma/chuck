@@ -1380,7 +1380,7 @@ CK_DLL_DTOR( object_dtor )
     // get the string
     Chuck_String * str = (Chuck_String *)OBJ_MEMBER_UINT(SELF, Object_offset_string);
     // release
-    SAFE_RELEASE( str );
+    CK_SAFE_RELEASE( str );
 }
 
 
@@ -1684,7 +1684,7 @@ CK_DLL_DTOR( uana_dtor )
     // get the blob
     Chuck_UAnaBlobProxy * blob = (Chuck_UAnaBlobProxy *)OBJ_MEMBER_INT(SELF, uana_offset_blob);
     // delete the blob proxy | 1.5.0.0 (ge) added
-    SAFE_DELETE( blob ); // this should also clean up actual blob reference
+    CK_SAFE_DELETE( blob ); // this should also clean up actual blob reference
     // zero out
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = 0;
 }
@@ -1820,7 +1820,7 @@ Chuck_UAnaBlobProxy::Chuck_UAnaBlobProxy( Chuck_Object * blob )
 Chuck_UAnaBlobProxy::~Chuck_UAnaBlobProxy()
 {
     // release
-    SAFE_RELEASE( m_blob );
+    CK_SAFE_RELEASE( m_blob );
 }
 
 t_CKTIME & Chuck_UAnaBlobProxy::when()
@@ -2950,7 +2950,7 @@ static void typeGetTypes(
                 // copy
                 ret->m_vector.push_back( (t_CKINT)types[i] );
                 // add reference
-                SAFE_ADD_REF( types[i] );
+                CK_SAFE_ADD_REF( types[i] );
             }
         }
     }
@@ -3078,7 +3078,7 @@ CK_DLL_MFUN( type_children )
         // copy
         ret->m_vector.push_back( (t_CKINT)types[i] );
         // add reference
-        SAFE_ADD_REF( types[i] );
+        CK_SAFE_ADD_REF( types[i] );
     }
 
     // return

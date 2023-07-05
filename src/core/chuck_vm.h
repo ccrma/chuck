@@ -552,7 +552,7 @@ protected:
     // free shred
     t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade,
                    t_CKBOOL dec = TRUE );
-    void dump( Chuck_VM_Shred * shred );
+    void dump_shred( Chuck_VM_Shred * shred );
     void release_dump();
 
 protected:
@@ -632,14 +632,14 @@ struct Chuck_Msg
     std::vector<std::string> * args;
 
     Chuck_Msg() : args(NULL) { clear(); }
-    ~Chuck_Msg() { SAFE_DELETE( args ); }
+    ~Chuck_Msg() { CK_SAFE_DELETE( args ); }
 
     // added 1.3.0.0
-    void clear() { SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
+    void clear() { CK_SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
 
     void set( const std::vector<std::string> & vargs )
     {
-        SAFE_DELETE(args);
+        CK_SAFE_DELETE(args);
         args = new std::vector<std::string>;
         (*args) = vargs;
     }

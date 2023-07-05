@@ -168,7 +168,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             // error
             EM_error2( 0, "malformed filename with argument list..." );
             EM_error2( 0, "    -->  '%s'", msg->buffer );
-            SAFE_DELETE(cmd);
+            CK_SAFE_DELETE(cmd);
             goto cleanup;
         }
 
@@ -189,7 +189,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
             {
                 EM_error2( 0, "incoming source transfer '%s' failed...",
                     mini(msg->buffer) );
-                SAFE_DELETE(cmd);
+                CK_SAFE_DELETE(cmd);
                 goto cleanup;
             }
         }
@@ -203,7 +203,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // parse, type-check, and emit
         if( !compiler->go( msg->buffer, full_path ) )
         {
-            SAFE_DELETE(cmd);
+            CK_SAFE_DELETE(cmd);
             goto cleanup;
         }
 
@@ -231,13 +231,13 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         vm->abort_current_shred();
         // short circuit
         ret = 1;
-        SAFE_DELETE(cmd);
+        CK_SAFE_DELETE(cmd);
         goto cleanup;
     }
     else
     {
         EM_error2( 0, "unrecognized incoming command from network: '%li'", cmd->type );
-        SAFE_DELETE(cmd);
+        CK_SAFE_DELETE(cmd);
         goto cleanup;
     }
 

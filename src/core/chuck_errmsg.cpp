@@ -945,7 +945,7 @@ std::string getLineFromFile( FILE * fd, t_CKUINT n )
     }
 
     // free
-    SAFE_FREE( line );
+    CK_SAFE_FREE( line );
 
     // return
     return ret;

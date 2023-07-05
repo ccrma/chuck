@@ -217,10 +217,10 @@ Chuck_Shell::~Chuck_Shell()
 
     //iterate through commands, delete the associated heap data
     for( i = 0; i != len; i++ )
-        SAFE_DELETE( allocated_commands[i] );
+        CK_SAFE_DELETE( allocated_commands[i] );
 
     // delete ui
-    SAFE_DELETE( ui );
+    CK_SAFE_DELETE( ui );
 
     // flag
     initialized = FALSE;
@@ -260,7 +260,7 @@ t_CKBOOL Chuck_Shell::init( Chuck_VM * vm, Chuck_Shell_UI * ui )
     if( !cspv->init( "localhost", 8888 ) )
     {
         CK_FPRINTF_STDERR( "[chuck](via shell): error initializing process VM..." );
-        SAFE_DELETE( cspv );
+        CK_SAFE_DELETE( cspv );
         return FALSE;
     }
 
@@ -1429,7 +1429,7 @@ t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
 
         if( i >= k )
         {
-            SAFE_DELETE_ARRAY( cwd );
+            CK_SAFE_DELETE_ARRAY( cwd );
             cwd = new char [i + 2];
             GetCurrentDirectory( i, cwd );
         }
@@ -1543,14 +1543,14 @@ t_CKINT Chuck_Shell::Command_Pwd::execute( vector< string > & argv,
 
     if( i >= k )
     {
-        SAFE_DELETE_ARRAY( cwd );
+        CK_SAFE_DELETE_ARRAY( cwd );
         cwd = new char [i];
         GetCurrentDirectory( i, cwd );
     }
 
     out += string( cwd ) + "\n";
 
-    SAFE_DELETE_ARRAY( cwd );
+    CK_SAFE_DELETE_ARRAY( cwd );
 #endif
 
     if( argv.size() > 0 )
@@ -1745,7 +1745,7 @@ Chuck_Shell::Command_VM::~Command_VM()
 
     //iterate through commands, delete the associated heap data
     for( i = 0; i != len; i++ )
-        SAFE_DELETE( allocated_commands[i] );
+        CK_SAFE_DELETE( allocated_commands[i] );
 }
 
 
@@ -1844,11 +1844,11 @@ t_CKINT Chuck_Shell::Command_VMAttach::execute( vector < string > & argv,
 
         /*if( !new_vm->status( temp ) )
         {
-            SAFE_DELETE( new_vm );
+            CK_SAFE_DELETE( new_vm );
             result = -1;
         }*/
 
-        SAFE_DELETE( caller->current_vm );
+        CK_SAFE_DELETE( caller->current_vm );
         caller->current_vm = new_vm;
         out += argv[0] + " is now current VM\n";
         result = 0;
@@ -1922,7 +1922,7 @@ t_CKINT Chuck_Shell::Command_VMRemove::execute( vector< string > & argv,
         }
         else
         {
-            SAFE_DELETE( caller->vms[vm_no] );
+            CK_SAFE_DELETE( caller->vms[vm_no] );
         }
     }
 
@@ -1954,7 +1954,7 @@ t_CKINT Chuck_Shell::Command_VMSwap::execute( vector< string > & argv,
         return -1;
     }
 
-    SAFE_DELETE( caller->current_vm );
+    CK_SAFE_DELETE( caller->current_vm );
     caller->current_vm = caller->vms[new_vm]->copy();
     out += "current VM is now " + caller->current_vm->fullname() + "\n";
 
@@ -2096,7 +2096,7 @@ Chuck_Shell::Command_Code::~Command_Code()
 
     //iterate through commands, delete the associated heap data
     for( i = 0; i != len; i++ )
-        SAFE_DELETE( allocated_commands[i] );
+        CK_SAFE_DELETE( allocated_commands[i] );
 }
 
 

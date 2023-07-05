@@ -78,7 +78,7 @@ MidiOut::MidiOut()
 MidiOut::~MidiOut()
 {
     if( mout ) this->close();
-//    SAFE_DELETE( mout );
+//    CK_SAFE_DELETE( mout );
 }
 
 
@@ -320,7 +320,7 @@ MidiIn::MidiIn()
 MidiIn::~MidiIn( )
 {
     this->close();
-    // SAFE_DELETE( min );
+    // CK_SAFE_DELETE( min );
 }
 
 

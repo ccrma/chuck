@@ -254,7 +254,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     assert( env->context != NULL );
     the_class = env->context->new_Chuck_Type( env );
     // add reference
-    SAFE_ADD_REF( the_class );
+    CK_SAFE_ADD_REF( the_class );
     // set the fields
     the_class->xid = te_user;
     the_class->name = S_name(class_def->name->xid);
@@ -263,7 +263,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     the_class->size = sizeof(void *);
     the_class->obj_size = 0;  // TODO:
     the_class->info = env->context->new_Chuck_Namespace();
-    SAFE_ADD_REF( the_class->info );
+    CK_SAFE_ADD_REF( the_class->info );
     the_class->info->name = the_class->name;
     // if public class, then set parent to context
     // ... allowing the class to address current context
@@ -277,7 +277,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // the_class->def = class_def;
     // add code
     the_class->info->pre_ctor = new Chuck_VM_Code;
-    SAFE_ADD_REF( the_class->info->pre_ctor );
+    CK_SAFE_ADD_REF( the_class->info->pre_ctor );
     // add to env
     env->curr->type.add( the_class->name, the_class );  // URGENT: make this global
     // incomplete
@@ -1144,14 +1144,14 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         }
 
         // 1.4.2.0 (ge) added: var_decl->ck_type = t;
-        SAFE_REF_ASSIGN( var_decl->ck_type, t );
+        CK_SAFE_REF_ASSIGN( var_decl->ck_type, t );
 
         // the next var decl
         list = list->next;
     }
 
     // remember : decl->ck_type = t;
-    SAFE_REF_ASSIGN( decl->ck_type, t );
+    CK_SAFE_REF_ASSIGN( decl->ck_type, t );
 
     return TRUE;
 }
@@ -1338,7 +1338,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         goto error;
     }
     // add reference | 1.5.0.5
-    SAFE_ADD_REF( f->ret_type );
+    CK_SAFE_ADD_REF( f->ret_type );
 
     // check if array
     if( f->type_decl->array != NULL )
@@ -1370,7 +1370,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         // set ref
         f->type_decl->ref = TRUE;
         // replace type : f->ret_type = t
-        SAFE_REF_ASSIGN( f->ret_type, t );
+        CK_SAFE_REF_ASSIGN( f->ret_type, t );
     }
 
     // look up types for the function arguments
@@ -2262,7 +2262,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             //   int x[1], y[2];
             //   int x, y[1];
             // set reference : var_decl->ck_type = type;
-            SAFE_REF_ASSIGN( var_decl->ck_type, type );
+            CK_SAFE_REF_ASSIGN( var_decl->ck_type, type );
 
             // 1.4.2.0 (ge) | if one and only one variable, then update decl->ck_type
             // otherwise, the variables could have different array depths, and therefore different types
@@ -2271,7 +2271,7 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
             if( is_first_in_list && list->next == NULL )
             {
                 // set reference : var_decl->ck_type = type;
-                SAFE_REF_ASSIGN( decl->ck_type, type );
+                CK_SAFE_REF_ASSIGN( decl->ck_type, type );
             }
         }
 
@@ -2697,7 +2697,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // set ref
             arg_list->type_decl->ref = TRUE;
             // set type : arg_list->type = t;
-            SAFE_REF_ASSIGN( arg_list->type, t );
+            CK_SAFE_REF_ASSIGN( arg_list->type, t );
         }
 
         // make new value
@@ -2829,7 +2829,7 @@ error:
     if( func )
     {
         env->func = NULL;
-        SAFE_RELEASE(func);
+        CK_SAFE_RELEASE(func);
     }
 
     return FALSE;

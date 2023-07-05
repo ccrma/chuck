@@ -1024,7 +1024,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 
 error:
     // clean up
-    SAFE_DELETE( dll );
+    CK_SAFE_DELETE( dll );
 
     return FALSE;
 }

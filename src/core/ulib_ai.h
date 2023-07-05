@@ -180,7 +180,7 @@ public:
     void cleanup()
     {
         // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY( m_matrix );
+        CK_SAFE_DELETE_ARRAY( m_matrix );
         // zero out
         m_xDim = m_yDim = 0;
     }
@@ -313,7 +313,7 @@ public:
     void cleanup()
     {
         // reclaim array memory and zero the pointer
-        SAFE_DELETE_ARRAY( m_vector );
+        CK_SAFE_DELETE_ARRAY( m_vector );
         // zero out
         m_length = 0;
     }

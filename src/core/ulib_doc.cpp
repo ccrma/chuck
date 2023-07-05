@@ -275,7 +275,7 @@ private:
 
 public:
     CKDocHTMLOutput( Chuck_VM * vm )
-        : m_vm_ref(vm), m_func(NULL)
+      : m_func(NULL), m_vm_ref(vm)
     {
         // get the env
         m_env_ref = vm != NULL ? vm->env() : NULL;
@@ -759,10 +759,10 @@ void CKDoc::clearGroups()
         for( t_CKINT j = 0; j < m_groups[i]->types.size(); j++ )
         {
             // release ref count
-            SAFE_RELEASE( m_groups[i]->types[j] );
+            CK_SAFE_RELEASE( m_groups[i]->types[j] );
         }
         // deallocate the group struct
-        SAFE_DELETE( m_groups[i] );
+        CK_SAFE_DELETE( m_groups[i] );
     }
 
     // clear the arrar
@@ -781,7 +781,7 @@ void CKDoc::clearOutput()
     // reste
     m_format = FORMAT_NONE;
     // deallocate
-    SAFE_DELETE( m_output );
+    CK_SAFE_DELETE( m_output );
 }
 
 
@@ -831,7 +831,7 @@ t_CKBOOL CKDoc::addGroup( const vector<Chuck_Type *> & types, const string & nam
         if( types[i] == NULL ) continue;
 
         // ref count
-        SAFE_ADD_REF( types[i] );
+        CK_SAFE_ADD_REF( types[i] );
         // append
         group->types.push_back( types[i] );
     }
@@ -1370,7 +1370,7 @@ CK_DLL_CTOR( CKDoc_ctor )
 CK_DLL_DTOR( CKDoc_dtor )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT( SELF, CKDoc_offset_data );
-    SAFE_DELETE( ckdoc );
+    CK_SAFE_DELETE( ckdoc );
     OBJ_MEMBER_UINT( SELF, CKDoc_offset_data ) = 0;
 }
 

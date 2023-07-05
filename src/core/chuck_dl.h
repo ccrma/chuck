@@ -631,8 +631,8 @@ public:
     // constructor
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
-        m_query( carrier ), m_done_query(FALSE), m_query_func(NULL),
-        m_version_func(NULL), m_versionMajor(0), m_versionMinor(0)
+        m_done_query(FALSE), m_version_func(NULL), m_query_func(NULL),
+        m_query( carrier ), m_versionMajor(0), m_versionMinor(0)
     { }
     // destructor
     ~Chuck_DLL() { this->unload(); }

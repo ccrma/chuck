@@ -89,7 +89,7 @@ const char * Chuck_Instr::name() const
 void Chuck_Instr::set_codestr( const string & str )
 {
     // cleanup
-    SAFE_DELETE( m_codestr );
+    CK_SAFE_DELETE( m_codestr );
     // allocate
     m_codestr = new string( str );
 }
@@ -3887,7 +3887,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
     // set the type reference
     object->type_ref = type;
     // reference count
-    SAFE_ADD_REF(object->type_ref);
+    CK_SAFE_ADD_REF(object->type_ref);
     // get the size
     object->data_size = type->obj_size;
     // allocate memory
@@ -3944,7 +3944,7 @@ out_of_memory:
         type->c_name() );
 
     // delete
-    if( object ) SAFE_DELETE( object->vtable );
+    if( object ) CK_SAFE_DELETE( object->vtable );
 
     // return FALSE
     return FALSE;
@@ -4061,7 +4061,7 @@ out_of_memory:
 error:
 
     // delete
-    SAFE_DELETE( object );
+    CK_SAFE_DELETE( object );
 
     // return NULL
     return NULL;
@@ -4207,7 +4207,7 @@ void Chuck_Instr_Pre_Ctor_Array_Post::execute( Chuck_VM * vm, Chuck_VM_Shred * s
 
     // clean up the array
     t_CKUINT * arr = (t_CKUINT *)*reg_sp;
-    SAFE_DELETE_ARRAY( arr );
+    CK_SAFE_DELETE_ARRAY( arr );
 }
 
 
@@ -5271,9 +5271,9 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
 Chuck_Instr_Array_Init::~Chuck_Instr_Array_Init()
 {
     // delete
-    SAFE_DELETE_ARRAY( m_param_str );
+    CK_SAFE_DELETE_ARRAY( m_param_str );
     // release
-    SAFE_RELEASE( m_type_ref );
+    CK_SAFE_RELEASE( m_type_ref );
 }
 
 
@@ -5446,10 +5446,10 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT dept
     // copy array content type, e.g., int
     m_type_ref_content = contentType;
     // remember
-    SAFE_ADD_REF( m_type_ref_content );
+    CK_SAFE_ADD_REF( m_type_ref_content );
     // remember the type of the array itself, e.g., int[][]
     m_type_ref_array = arrayType;
-    SAFE_ADD_REF( m_type_ref_array );
+    CK_SAFE_ADD_REF( m_type_ref_array );
 
     // parameter string
     m_param_str = new char[64];
@@ -5481,10 +5481,10 @@ Chuck_Instr_Array_Alloc::Chuck_Instr_Array_Alloc( Chuck_Env * env, t_CKUINT dept
 Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 {
     // delete | 1.5.0.0 (ge) convert to macro
-    SAFE_DELETE_ARRAY( m_param_str );
+    CK_SAFE_DELETE_ARRAY( m_param_str );
     // release | 1.5.0.0 (ge) added
-    SAFE_RELEASE(m_type_ref_content);
-    SAFE_RELEASE(m_type_ref_array);
+    CK_SAFE_RELEASE(m_type_ref_content);
+    CK_SAFE_RELEASE(m_type_ref_array);
 }
 
 
@@ -5633,7 +5633,7 @@ negative_array_size:
 
 error:
     // base shouldn't have been ref counted
-    SAFE_DELETE( theBase );
+    CK_SAFE_DELETE( theBase );
     return NULL;
 }
 
@@ -5698,7 +5698,7 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // check to see if we need to allocate
         // if( num_obj > shred->obj_array_size )
         // {
-        //     SAFE_DELETE( shred->obj_array );
+        //     CK_SAFE_DELETE( shred->obj_array );
         //     shred->obj_array_size = 0;
         //     shred->obj_array = new t_CKUINT[num_obj];
         //     if( !shred->obj_array ) goto out_of_memory;
@@ -7781,7 +7781,7 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
-            CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/ONE_PI, m_type_ref->c_name() );
+            CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/CK_ONE_PI, m_type_ref->c_name() );
         }
         else
         {
@@ -7919,7 +7919,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                 CK_FPRINTF_STDERR( "#(%.4f,%.4f) ", *(sp), *(sp+1) );
             else if( type->xid == te_polar )
                 // print it
-                CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/ONE_PI );
+                CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/CK_ONE_PI );
 
             the_sp += sz_COMPLEX; // ISSUE: 64-bit (fixed 1.3.1.0)
         }

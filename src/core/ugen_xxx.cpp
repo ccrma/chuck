@@ -1619,7 +1619,7 @@ CK_DLL_DTOR( foogen_dtor )
 {
     FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
     OBJ_MEMBER_UINT(SELF, foogen_offset_data) = 0;
-    SAFE_DELETE(data);
+    CK_SAFE_DELETE(data);
 }
 
 //-----------------------------------------------------------------------------
@@ -1706,7 +1706,7 @@ CK_DLL_CGET( multi_cget_chan )
 void pan_eq_power( Chuck_UGen * left, Chuck_UGen * right, t_CKFLOAT pan)
 {
     // remap pan from [-1,1] to [0,pi/2]
-    t_CKFLOAT panme = (pan+1.0)/2 * ONE_PI/2;
+    t_CKFLOAT panme = (pan+1.0)/2 * CK_ONE_PI/2;
     // pan it (NEW: constant-power panning; fixed 1.4.1.0)
     left->m_pan = ::cos(panme);
     right->m_pan = ::sin(panme);
@@ -1955,7 +1955,7 @@ public:
   } 
   ~CNoise_Data() {
       // 1.5.0.1 (anthonyhawes) added
-      SAFE_FREE( pink_array );
+      CK_SAFE_FREE( pink_array );
   }
 
   t_CKINT fprob;
@@ -2416,7 +2416,7 @@ struct delayp_data
 
     ~delayp_data()
     {
-        SAFE_DELETE_ARRAY( buffer );
+        CK_SAFE_DELETE_ARRAY( buffer );
     }
 };
 
@@ -2428,7 +2428,7 @@ CK_DLL_CTOR( delayp_ctor )
 CK_DLL_DTOR( delayp_dtor )
 {
     delayp_data * d = (delayp_data *)OBJ_MEMBER_UINT(SELF, delayp_offset_data);
-    SAFE_DELETE(d);
+    CK_SAFE_DELETE(d);
     OBJ_MEMBER_UINT(SELF, delayp_offset_data) = 0;
 }
 
@@ -2900,13 +2900,13 @@ struct sndbuf_data
 
     ~sndbuf_data()
     {
-        SAFE_DELETE_ARRAY( buffer );
+        CK_SAFE_DELETE_ARRAY( buffer );
 
         if( chunk_map )
         {
             for(int i = 0; i < chunk_num; i++)
-                SAFE_DELETE_ARRAY(chunk_map[i]);
-            SAFE_DELETE_ARRAY(chunk_map);
+                CK_SAFE_DELETE_ARRAY(chunk_map[i]);
+            CK_SAFE_DELETE_ARRAY(chunk_map);
         }
     }
 
@@ -2932,7 +2932,7 @@ CK_DLL_CTOR( sndbuf_ctor )
 CK_DLL_DTOR( sndbuf_dtor )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    SAFE_DELETE(d);
+    CK_SAFE_DELETE(d);
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = 0;
 }
 
@@ -3141,13 +3141,13 @@ void sndbuf_make_sinc( sndbuf_data * d )
     t_CKINT i;
     // CK_FPRINTF_STDERR( "building sinc table\n" );
     double temp, win_freq, win;
-    win_freq = ONE_PI / d->sinc_width / d->sinc_samples_per_zero_crossing;
+    win_freq = CK_ONE_PI / d->sinc_width / d->sinc_samples_per_zero_crossing;
     t_CKINT tabsize = d->sinc_width * d->sinc_samples_per_zero_crossing;
 
     d->sinc_table = (double *) realloc( d->sinc_table, tabsize * sizeof(double) );
     d->sinc_table[0] = 1.0;
     for( i = 1; i < tabsize; i++ ) {
-        temp = (double) i * ONE_PI / d->sinc_samples_per_zero_crossing;
+        temp = (double) i * CK_ONE_PI / d->sinc_samples_per_zero_crossing;
         d->sinc_table[i] = (float)(sin(temp) / temp);
         win = 0.5 + 0.5 * cos(win_freq * i);
         d->sinc_table[i] *= (float)win;
@@ -3186,7 +3186,7 @@ double sndbuf_sinc( sndbuf_data * d, double x )
     else {
         if( x == 0.0 ) return 1.0;
         else {
-            temp = ONE_PI * x;
+            temp = CK_ONE_PI * x;
             return sin(temp) / (temp);
         }
     }
@@ -3375,13 +3375,13 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
     RETURN->v_string = ckfilename;
 
     // cleanup
-    SAFE_DELETE_ARRAY(d->buffer);
+    CK_SAFE_DELETE_ARRAY(d->buffer);
     // clean up chunk map
     if( d->chunk_map )
     {
         for(int i = 0; i < d->chunk_num; i++)
-            SAFE_DELETE_ARRAY(d->chunk_map[i]);
-        SAFE_DELETE_ARRAY(d->chunk_map);
+            CK_SAFE_DELETE_ARRAY(d->chunk_map[i]);
+        CK_SAFE_DELETE_ARRAY(d->chunk_map);
         d->chunk_num = 0;
     }
     // close file descriptor
@@ -3508,7 +3508,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         else if( strstr(filename, "special:sinewave") ) {
             d->buffer = new SAMPLE[rawsize+1];
             for( t_CKUINT j = 0; j < rawsize; j++ )
-                d->buffer[j] = sin(2*ONE_PI*j/rawsize);
+                d->buffer[j] = sin(2*CK_ONE_PI*j/rawsize);
         }
         else {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): cannot load '%s'\n", filename );
@@ -4232,7 +4232,7 @@ struct LiSaMulti_data
     void cleanup()
     {
         // deallocate
-        SAFE_FREE( mdata );
+        CK_SAFE_FREE( mdata );
     }
 
     // allocate memory, length in samples
@@ -4616,9 +4616,9 @@ CK_DLL_DTOR( LiSaMulti_dtor )
     // get data
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     // clean up | 1.5.0.0 (ge) added
-    SAFE_DELETE_ARRAY( d->outsamples );
+    CK_SAFE_DELETE_ARRAY( d->outsamples );
     // delete
-    SAFE_DELETE(d);
+    CK_SAFE_DELETE(d);
     // set
     OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = 0;
 }

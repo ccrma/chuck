@@ -2996,17 +2996,17 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
 {
     m_do_read_thread = FALSE;
     m_do_write_thread = FALSE;
-    SAFE_DELETE(m_read_thread);
+    CK_SAFE_DELETE(m_read_thread);
     if( m_event_buffer )
         m_vmRef->destroy_event_buffer( m_event_buffer );
 
     close();
 
-    SAFE_DELETE(m_io_buf);
+    CK_SAFE_DELETE(m_io_buf);
     m_io_buf_max = 0;
     m_io_buf_pos = m_io_buf_available = 0;
 
-    SAFE_DELETE(m_tmp_buf);
+    CK_SAFE_DELETE(m_tmp_buf);
     m_tmp_buf_max = 0;
 
     s_serials.remove(this);
@@ -4079,7 +4079,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
     return TRUE;
 
 error:
-    SAFE_DELETE(array);
+    CK_SAFE_DELETE(array);
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
 
@@ -4130,7 +4130,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
     return TRUE;
 
 error:
-    SAFE_DELETE(array);
+    CK_SAFE_DELETE(array);
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
 

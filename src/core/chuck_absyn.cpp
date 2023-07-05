@@ -1036,7 +1036,7 @@ void delete_program( a_Program program )
         // get the next node before we delete this one
         next = program->next;
         // delete this one
-        SAFE_FREE( program );
+        CK_SAFE_FREE( program );
         // move to the next one
         program = next;
     }
@@ -1054,7 +1054,7 @@ void delete_section( a_Section section )
     case ae_section_class: delete_class_def( section->class_def ); break;
     case ae_section_func: delete_func_def( section->func_def ); break;
     }
-    SAFE_FREE( section );
+    CK_SAFE_FREE( section );
 }
 
 // delete stmt list
@@ -1074,7 +1074,7 @@ void delete_stmt_list( a_Stmt_List list )
         // get the next node before we delete this one
         next = list->next;
         // delete this one
-        SAFE_FREE( list );
+        CK_SAFE_FREE( list );
         // move to the next
         list = next;
     }
@@ -1093,7 +1093,7 @@ void delete_class_def( a_Class_Def def )
     delete_id_list( def->name );
     delete_class_ext( def->ext );
     delete_class_body( def->body );
-    SAFE_FREE( def );
+    CK_SAFE_FREE( def );
 }
 
 void delete_class_body( a_Class_Body body )
@@ -1103,7 +1103,7 @@ void delete_class_body( a_Class_Body body )
 
     delete_class_body( body->next );
     delete_section( body->section );
-    SAFE_FREE( body );
+    CK_SAFE_FREE( body );
 }
 
 void delete_class_ext( a_Class_Ext ext )
@@ -1113,7 +1113,7 @@ void delete_class_ext( a_Class_Ext ext )
 
     delete_id_list( ext->extend_id );
     delete_id_list( ext->impl_list );
-    SAFE_FREE( ext );
+    CK_SAFE_FREE( ext );
 }
 
 // delete func def
@@ -1137,7 +1137,7 @@ void delete_func_def( a_Func_Def def )
     delete_type_decl( def->type_decl );
     delete_arg_list( def->arg_list );
     delete_stmt( def->code );
-    SAFE_FREE( def );
+    CK_SAFE_FREE( def );
 }
 
 void delete_iface_def( a_Class_Def def )
@@ -1197,7 +1197,7 @@ void delete_stmt( a_Stmt stmt )
         break;
     }
 
-    SAFE_FREE( stmt );
+    CK_SAFE_FREE( stmt );
 }
 
 void delete_stmt_from_code( a_Stmt stmt )
@@ -1381,7 +1381,7 @@ void delete_exp( a_Exp e )
         // get next exp before we delete this one
         next = e->next;
         // delete this one
-        SAFE_FREE( e );
+        CK_SAFE_FREE( e );
         // move to the next one
         e = next;
     }
@@ -1483,14 +1483,14 @@ void delete_exp_from_str( a_Exp_Primary e )
 {
     EM_log( CK_LOG_FINEST, "deleting exp (primary str) [%p]...", (void *)e );
 
-    SAFE_FREE( e->str );
+    CK_SAFE_FREE( e->str );
 }
 
 void delete_exp_from_char( a_Exp_Primary e )
 {
     EM_log( CK_LOG_FINEST, "deleting exp (primary char) [%p]...", (void *)e );
 
-    SAFE_FREE( e->chr );
+    CK_SAFE_FREE( e->chr );
 }
 
 void delete_exp_from_array_lit( a_Exp_Primary e )
@@ -1536,7 +1536,7 @@ void delete_var_decl_list( a_Var_Decl_List list )
     delete_var_decl_list( list->next );
     EM_log( CK_LOG_FINEST, "deleting var decl list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
     delete_var_decl( list->var_decl );
-    SAFE_FREE( list );
+    CK_SAFE_FREE( list );
 }
 
 void delete_var_decl( a_Var_Decl decl )
@@ -1549,7 +1549,7 @@ void delete_var_decl( a_Var_Decl decl )
     // TODO: release reference ck_type
 
     delete_array_sub( decl->array );
-    SAFE_FREE( decl );
+    CK_SAFE_FREE( decl );
 }
 
 void delete_type_decl( a_Type_Decl decl )
@@ -1559,7 +1559,7 @@ void delete_type_decl( a_Type_Decl decl )
 
     delete_id_list( decl->xid );
     delete_array_sub( decl->array );
-    SAFE_FREE( decl );
+    CK_SAFE_FREE( decl );
 }
 
 void delete_arg_list( a_Arg_List list )
@@ -1569,7 +1569,7 @@ void delete_arg_list( a_Arg_List list )
     delete_arg_list( list->next );
     EM_log( CK_LOG_FINEST, "deleting arg list [%p] [next: %p]...", (void *)list, (void *)(list->next) );
     delete_type_decl( list->type_decl );
-    SAFE_FREE( list );
+    CK_SAFE_FREE( list );
 }
 
 void delete_array_sub( a_Array_Sub sub )
@@ -1577,7 +1577,7 @@ void delete_array_sub( a_Array_Sub sub )
     if( !sub ) return;
     EM_log( CK_LOG_FINEST, "deleting type decl [%p]...", (void *)sub );
     delete_exp( sub->exp_list );
-    SAFE_FREE( sub );
+    CK_SAFE_FREE( sub );
 }
 
 void delete_complex( a_Complex c )
@@ -1585,7 +1585,7 @@ void delete_complex( a_Complex c )
     EM_log( CK_LOG_FINEST, "deleting complex [%p]...", (void *)c );
     delete_exp( c->re );
     delete_exp( c->im );
-    SAFE_FREE( c );
+    CK_SAFE_FREE( c );
 }
 
 void delete_polar( a_Polar p )
@@ -1593,14 +1593,14 @@ void delete_polar( a_Polar p )
     EM_log( CK_LOG_FINEST, "deleting polar [%p]...", (void *)p );
     delete_exp( p->mod );
     delete_exp( p->phase );
-    SAFE_FREE( p );
+    CK_SAFE_FREE( p );
 }
 
 void delete_vec( a_Vec v )
 {
     EM_log( CK_LOG_FINEST, "deleting vec [%p]...", (void *)v );
     delete_exp( v->args );
-    SAFE_FREE( v );
+    CK_SAFE_FREE( v );
 }
 
 void delete_id_list( a_Id_List list )
@@ -1617,7 +1617,7 @@ void delete_id_list( a_Id_List list )
         // get next before we delete this
         next = list->next;
         // delete this one
-        SAFE_FREE( list );
+        CK_SAFE_FREE( list );
         // move to the next one
         list = next;
     }

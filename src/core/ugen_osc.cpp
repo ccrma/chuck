@@ -477,7 +477,7 @@ CK_DLL_TICK( sinosc_tick )
     }
 
     // set output
-    *out = (SAMPLE) ::sin( d->phase * TWO_PI );
+    *out = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
 
     if( inc_phase )
     {
@@ -1234,7 +1234,7 @@ CK_DLL_DTOR( genX_dtor )
     // get the data
     genX_Data * data = (genX_Data *)OBJ_MEMBER_UINT(SELF, genX_offset_data );
     // delete
-    SAFE_DELETE(data);
+    CK_SAFE_DELETE(data);
     // set to NULL
     OBJ_MEMBER_UINT(SELF, genX_offset_data) = 0;
 }
@@ -1469,7 +1469,7 @@ CK_DLL_CTRL( gen9_coeffs )
     for(j = size - 1; j > 0; j -= 3) {
         if(coeffs[j - 1] != 0) {
             for(i = 0; i < genX_tableSize; i++) {
-                t_CKDOUBLE val = sin(TWO_PI * ((t_CKDOUBLE) i / ((t_CKDOUBLE) (genX_tableSize)
+                t_CKDOUBLE val = sin(CK_TWO_PI * ((t_CKDOUBLE) i / ((t_CKDOUBLE) (genX_tableSize)
                                  / coeffs[j - 2]) + coeffs[j] / 360.));
                 d->genX_table[i] += val * coeffs[j - 1];
             }
@@ -1527,7 +1527,7 @@ CK_DLL_CTRL( gen10_coeffs )
         if( d->coeffs[j] != 0 ) {
             for( i = 0; i < genX_tableSize; i++ ) {
                 // 1.4.1.0 updated to (j+1.0) to force floating point division
-                val = (t_CKDOUBLE)( TWO_PI * i / (genX_tableSize/(j+1.0)) );
+                val = (t_CKDOUBLE)( CK_TWO_PI * i / (genX_tableSize/(j+1.0)) );
                 d->genX_table[i] += sin(val) * d->coeffs[j];
             }
         }

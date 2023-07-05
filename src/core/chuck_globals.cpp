@@ -2449,7 +2449,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
     for( std::map< std::string, Chuck_Global_String_Container * >::iterator it=
         m_global_strings.begin(); it!=m_global_strings.end(); it++ )
     {
-        SAFE_RELEASE( it->second->val );
+        CK_SAFE_RELEASE( it->second->val );
         delete (it->second);
     }
     m_global_strings.clear();
@@ -2458,7 +2458,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
     for( std::map< std::string, Chuck_Global_Event_Container * >::iterator it=
         m_global_events.begin(); it!=m_global_events.end(); it++ )
     {
-        SAFE_RELEASE( it->second->val );
+        CK_SAFE_RELEASE( it->second->val );
         delete (it->second);
     }
     m_global_events.clear();
@@ -2467,7 +2467,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
     for( std::map< std::string, Chuck_Global_UGen_Container * >::iterator it=
         m_global_ugens.begin(); it!=m_global_ugens.end(); it++ )
     {
-        SAFE_RELEASE( it->second->val );
+        CK_SAFE_RELEASE( it->second->val );
         delete (it->second);
     }
     m_global_ugens.clear();
@@ -2479,7 +2479,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
         // release. array initialization adds a reference,
         // but the release instruction is prevented from being
         // used on all global objects (including arrays)
-        SAFE_RELEASE( it->second->array );
+        CK_SAFE_RELEASE( it->second->array );
         delete (it->second);
     }
     m_global_arrays.clear();
@@ -2488,7 +2488,7 @@ void Chuck_Globals_Manager::cleanup_global_variables()
     for( std::map< std::string, Chuck_Global_Object_Container * >::iterator it=
         m_global_objects.begin(); it!=m_global_objects.end(); it++ )
     {
-        SAFE_RELEASE( it->second->val );
+        CK_SAFE_RELEASE( it->second->val );
         delete (it->second);
     }
     m_global_objects.clear();
@@ -2525,7 +2525,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         m_vm->process_msg( message.executeChuckMsgRequest->msg );
                     }
                     // clean up request storage
-                    SAFE_DELETE( message.executeChuckMsgRequest );
+                    CK_SAFE_DELETE( message.executeChuckMsgRequest );
                     break;
 
                 case spork_shred_request:
@@ -2539,7 +2539,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set int
                     m_global_ints[message.setIntRequest->name]->val = message.setIntRequest->val;
                     // clean up request storage
-                    SAFE_DELETE( message.setIntRequest );
+                    CK_SAFE_DELETE( message.setIntRequest );
                     break;
 
                 case get_global_int_request:
@@ -2563,7 +2563,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    SAFE_DELETE( message.getIntRequest );
+                    CK_SAFE_DELETE( message.getIntRequest );
                     break;
 
                 case set_global_float_request:
@@ -2572,7 +2572,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set float
                     m_global_floats[message.setFloatRequest->name]->val = message.setFloatRequest->val;
                     // clean up request storage
-                    SAFE_DELETE( message.setFloatRequest );
+                    CK_SAFE_DELETE( message.setFloatRequest );
                     break;
 
                 case get_global_float_request:
@@ -2596,7 +2596,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    SAFE_DELETE( message.getFloatRequest );
+                    CK_SAFE_DELETE( message.getFloatRequest );
                     break;
 
                 case set_global_string_request:
@@ -2605,7 +2605,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     // set string
                     m_global_strings[message.setStringRequest->name]->val->set( message.setStringRequest->val );
                     // clean up request storage
-                    SAFE_DELETE( message.setStringRequest );
+                    CK_SAFE_DELETE( message.setStringRequest );
                     break;
 
                 case get_global_string_request:
@@ -2629,7 +2629,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         }
                     }
                     // clean up request storage
-                    SAFE_DELETE( message.getStringRequest );
+                    CK_SAFE_DELETE( message.getStringRequest );
                     break;
 
                 case signal_global_event_request:
@@ -2667,7 +2667,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.signalEventRequest );
+                        CK_SAFE_DELETE( message.signalEventRequest );
                     }
                     break;
 
@@ -2738,7 +2738,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.listenForEventRequest );
+                        CK_SAFE_DELETE( message.listenForEventRequest );
                     }
                     break;
 
@@ -2783,7 +2783,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setIntArrayRequest );
+                        CK_SAFE_DELETE( message.setIntArrayRequest );
                     }
                     break;
 
@@ -2844,7 +2844,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getIntArrayRequest );
+                        CK_SAFE_DELETE( message.getIntArrayRequest );
                     }
                     break;
 
@@ -2886,7 +2886,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setIntArrayValueRequest );
+                        CK_SAFE_DELETE( message.setIntArrayValueRequest );
                     }
                     break;
 
@@ -2939,7 +2939,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getIntArrayValueRequest );
+                        CK_SAFE_DELETE( message.getIntArrayValueRequest );
                     }
                     break;
 
@@ -2978,7 +2978,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setAssociativeIntArrayValueRequest );
+                        CK_SAFE_DELETE( message.setAssociativeIntArrayValueRequest );
                     }
                     break;
 
@@ -3031,7 +3031,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getAssociativeIntArrayValueRequest );
+                        CK_SAFE_DELETE( message.getAssociativeIntArrayValueRequest );
                     }
                     break;
 
@@ -3076,7 +3076,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setFloatArrayRequest );
+                        CK_SAFE_DELETE( message.setFloatArrayRequest );
                     }
                     break;
 
@@ -3136,7 +3136,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getFloatArrayRequest );
+                        CK_SAFE_DELETE( message.getFloatArrayRequest );
                     }
                     break;
 
@@ -3178,7 +3178,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setFloatArrayValueRequest );
+                        CK_SAFE_DELETE( message.setFloatArrayValueRequest );
                     }
                     break;
 
@@ -3230,7 +3230,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getFloatArrayValueRequest );
+                        CK_SAFE_DELETE( message.getFloatArrayValueRequest );
                     }
                     break;
 
@@ -3269,7 +3269,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.setAssociativeFloatArrayValueRequest );
+                        CK_SAFE_DELETE( message.setAssociativeFloatArrayValueRequest );
                     }
                     break;
 
@@ -3321,7 +3321,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                     }
                     else
                     {
-                        SAFE_DELETE( message.getAssociativeFloatArrayValueRequest );
+                        CK_SAFE_DELETE( message.getAssociativeFloatArrayValueRequest );
                     }
                     break;
             }

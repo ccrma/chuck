@@ -2756,7 +2756,7 @@ static unsigned int __stdcall sms_loop( void * )
     }
 
     // TODO: hack!
-    SAFE_DELETE( SMSManager::the_thread );
+    CK_SAFE_DELETE( SMSManager::the_thread );
 
     return 0;
 }
@@ -4713,11 +4713,11 @@ void WiiRemote_quit()
     for( xvector< WiiRemote * >::size_type i = 0; i < wiiremotes->size(); i++ )
     {
         if( ( *wiiremotes )[i] )
-            SAFE_DELETE( ( *wiiremotes )[i] );
+            CK_SAFE_DELETE( ( *wiiremotes )[i] );
     }
-    SAFE_DELETE( wiiremotes );
-    SAFE_DELETE( wr_addresses );
-    SAFE_DELETE( WiiRemoteOp_cbuf );
+    CK_SAFE_DELETE( wiiremotes );
+    CK_SAFE_DELETE( wr_addresses );
+    CK_SAFE_DELETE( WiiRemoteOp_cbuf );
 
     Hid_quit2();
 #endif // __CK_HID_WIIREMOTE__

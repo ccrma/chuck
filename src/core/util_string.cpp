@@ -462,7 +462,7 @@ t_CKBOOL extract_args( const string & token,
 
 done:
     // reclaim
-    SAFE_DELETE_ARRAY( mask );
+    CK_SAFE_DELETE_ARRAY( mask );
 
     return ret;
 }
@@ -593,7 +593,7 @@ std::string getUserNameWindows()
     // check if succeeded
     if( retval ) result = buf;
     // clean up
-    SAFE_DELETE_ARRAY( buf );
+    CK_SAFE_DELETE_ARRAY( buf );
     // return
     return result;
 }

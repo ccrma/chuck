@@ -318,9 +318,9 @@ Chuck_Object::~Chuck_Object()
     }
 
     // free
-    SAFE_DELETE( vtable );
-    SAFE_RELEASE( type_ref );
-    SAFE_DELETE_ARRAY( data );
+    CK_SAFE_DELETE( vtable );
+    CK_SAFE_RELEASE( type_ref );
+    CK_SAFE_DELETE_ARRAY( data );
     // if( vtable ) { delete vtable; vtable = NULL; }
     // if( type_ref ) { type_ref->release(); type_ref = NULL; }
     // if( data ) { delete [] data; size = 0; data = NULL; }
@@ -339,7 +339,7 @@ void Chuck_Object::dump() // 1.4.1.1 (ge)
     Chuck_Type * type = this->type_ref;
 
     // output state with type info
-    type->dump( this );
+    type->dump_obj( this );
 }
 
 
@@ -368,7 +368,7 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 Chuck_Array::~Chuck_Array()
 {
     // decrement reference count; added (ge): 1.4.1.0
-    SAFE_RELEASE( m_array_type );
+    CK_SAFE_RELEASE( m_array_type );
 }
 
 
@@ -2337,7 +2337,7 @@ void Chuck_Event::signal_local()
         #endif
         // REFACTOR-2017: BUG-FIX
         // release the extra ref we added when we started waiting for this event
-        SAFE_RELEASE( shred->event );
+        CK_SAFE_RELEASE( shred->event );
         // get shreduler
         Chuck_VM_Shreduler * shreduler = shred->vm_ref->shreduler();
         // remove the blocked shred from the list
@@ -2384,7 +2384,7 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
         else
         {
             // TARPIT: this might seem like the right place for
-            // SAFE_RELEASE(shred->event), however this might cause
+            // CK_SAFE_RELEASE(shred->event), however this might cause
             // the deletion of the object while we are still using it.
             // so, put it in the caller: Chuck_VM_Shreduler::remove_blocked()
 
@@ -2833,7 +2833,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // vm instruction Chuck_Instr_Release_Object2, in order to tell the event
         // to forget the shred. So, add another reference so it won't be freed
         // until the shred is done with it.  REFACTOR-2017
-        SAFE_ADD_REF( shred->event );
+        CK_SAFE_ADD_REF( shred->event );
 
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );

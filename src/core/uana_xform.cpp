@@ -633,9 +633,9 @@ FFT_object::FFT_object()
 FFT_object::~FFT_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
-    SAFE_DELETE_ARRAY( m_spectrum );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_spectrum );
     m_window_size = 0;
     m_size = 0;
 }
@@ -661,8 +661,8 @@ t_CKBOOL FFT_object::resize( t_CKINT size )
     EM_log( CK_LOG_FINE, "FFT resize %d -> %d", m_size, size );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
-    SAFE_DELETE_ARRAY( m_spectrum );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_spectrum );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     m_spectrum = new t_CKCOMPLEX[size/2];
@@ -673,8 +673,8 @@ t_CKBOOL FFT_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: FFT failed to allocate %ld, %ld buffers...\n",
             size, size/2 );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
-        SAFE_DELETE_ARRAY( m_spectrum );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_spectrum );
         // done
         return FALSE;
     }
@@ -708,7 +708,7 @@ t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -917,7 +917,7 @@ CK_DLL_CTOR( FFT_ctor )
 CK_DLL_DTOR( FFT_dtor )
 {
     FFT_object * fft = (FFT_object *)OBJ_MEMBER_UINT(SELF, FFT_offset_data);
-    SAFE_DELETE( fft );
+    CK_SAFE_DELETE( fft );
     OBJ_MEMBER_UINT(SELF, FFT_offset_data) = 0;
 }
 
@@ -1177,9 +1177,9 @@ IFFT_object::IFFT_object()
 IFFT_object::~IFFT_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
-    SAFE_DELETE_ARRAY( m_inverse );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_inverse );
     m_window_size = 0;
     m_size = 0;
 }
@@ -1205,8 +1205,8 @@ t_CKBOOL IFFT_object::resize( t_CKINT size )
     EM_log( CK_LOG_FINE, "IFFT resize %d -> %d", m_size, size );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
-    SAFE_DELETE_ARRAY( m_inverse );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_inverse );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     m_inverse = new SAMPLE[size];
@@ -1217,8 +1217,8 @@ t_CKBOOL IFFT_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: IFFT failed to allocate %ld, %ld buffers...\n",
             size/2, size );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
-        SAFE_DELETE_ARRAY( m_inverse );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_inverse );
         // done
         return FALSE;
     }
@@ -1250,7 +1250,7 @@ t_CKBOOL IFFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -1408,7 +1408,7 @@ CK_DLL_CTOR( IFFT_ctor )
 CK_DLL_DTOR( IFFT_dtor )
 {
     IFFT_object * ifft = (IFFT_object *)OBJ_MEMBER_UINT(SELF, IFFT_offset_data);
-    SAFE_DELETE( ifft );
+    CK_SAFE_DELETE( ifft );
     OBJ_MEMBER_UINT(SELF, IFFT_offset_data) = 0;
 }
 
@@ -1671,7 +1671,7 @@ static t_CKBOOL prepare_window( void * ARGS, Chuck_VM_Shred * SHRED, t_CKINT & s
     if( size > float_array_size )
     {
         float_array_size = size;
-        SAFE_DELETE_ARRAY( float_array );
+        CK_SAFE_DELETE_ARRAY( float_array );
         float_array = new FLOAT[float_array_size];
         if( !float_array ) goto out_of_memory;
     }
@@ -1815,10 +1815,10 @@ static void delete_matrix( SAMPLE ** matrix, t_CKUINT N )
 
     // delete
     for( i = 0; i < N; i++ )
-        SAFE_DELETE_ARRAY( matrix[i] );
+        CK_SAFE_DELETE_ARRAY( matrix[i] );
 
     // delete
-    SAFE_DELETE_ARRAY( matrix );
+    CK_SAFE_DELETE_ARRAY( matrix );
 }
 
 
@@ -1884,8 +1884,8 @@ Flip_object::Flip_object()
 Flip_object::~Flip_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     m_window_size = 0;
     m_size = 0;
 }
@@ -1906,7 +1906,7 @@ t_CKBOOL Flip_object::resize( t_CKINT size )
     EM_log( CK_LOG_FINE, "Flip resize %d -> %d", m_size, size );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     // check it
@@ -1916,7 +1916,7 @@ t_CKBOOL Flip_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: Flip failed to allocate %ld buffer...\n",
             size );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
         // done
         return FALSE;
     }
@@ -1949,7 +1949,7 @@ t_CKBOOL Flip_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -2101,7 +2101,7 @@ CK_DLL_CTOR( Flip_ctor )
 CK_DLL_DTOR( Flip_dtor )
 {
     Flip_object * flip = (Flip_object *)OBJ_MEMBER_UINT(SELF, Flip_offset_data);
-    SAFE_DELETE( flip );
+    CK_SAFE_DELETE( flip );
     OBJ_MEMBER_UINT(SELF, Flip_offset_data) = 0;
 }
 
@@ -2349,8 +2349,8 @@ UnFlip_object::UnFlip_object()
 UnFlip_object::~UnFlip_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     m_window_size = 0;
     m_size = 0;
 }
@@ -2371,7 +2371,7 @@ t_CKBOOL UnFlip_object::resize( t_CKINT size )
     EM_log( CK_LOG_FINE, "UnFlip resize %d -> %d", m_size, size );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     // check it
@@ -2381,7 +2381,7 @@ t_CKBOOL UnFlip_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: UnFlip failed to allocate %ld buffer...\n",
             size );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
         // done
         return FALSE;
     }
@@ -2412,7 +2412,7 @@ t_CKBOOL UnFlip_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -2561,7 +2561,7 @@ CK_DLL_CTOR( UnFlip_ctor )
 CK_DLL_DTOR( UnFlip_dtor )
 {
     UnFlip_object * unflip = (UnFlip_object *)OBJ_MEMBER_UINT(SELF, UnFlip_offset_data);
-    SAFE_DELETE( unflip );
+    CK_SAFE_DELETE( unflip );
     OBJ_MEMBER_UINT(SELF, UnFlip_offset_data) = 0;
 }
 
@@ -2864,10 +2864,10 @@ DCT_object::DCT_object()
 DCT_object::~DCT_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     delete_matrix( m_matrix, m_size );
-    SAFE_DELETE_ARRAY( m_spectrum );
+    CK_SAFE_DELETE_ARRAY( m_spectrum );
     m_window_size = 0;
     m_size = 0;
 }
@@ -2887,9 +2887,9 @@ t_CKBOOL DCT_object::resize( t_CKINT size )
     assert( size > 0 );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     delete_matrix( m_matrix, m_size );
-    SAFE_DELETE_ARRAY( m_spectrum );
+    CK_SAFE_DELETE_ARRAY( m_spectrum );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     m_spectrum = new SAMPLE[size];
@@ -2903,9 +2903,9 @@ t_CKBOOL DCT_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: DCT failed to allocate %ld, %ld buffers...\n",
             size, size/2 );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
         delete_matrix( m_matrix, size );
-        SAFE_DELETE_ARRAY( m_spectrum );
+        CK_SAFE_DELETE_ARRAY( m_spectrum );
         // done
         return FALSE;
     }
@@ -2941,7 +2941,7 @@ t_CKBOOL DCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -3094,7 +3094,7 @@ CK_DLL_CTOR( DCT_ctor )
 CK_DLL_DTOR( DCT_dtor )
 {
     DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
-    SAFE_DELETE( dct );
+    CK_SAFE_DELETE( dct );
     OBJ_MEMBER_UINT(SELF, DCT_offset_data) = 0;
 }
 
@@ -3342,10 +3342,10 @@ IDCT_object::IDCT_object()
 IDCT_object::~IDCT_object()
 {
     // clean up
-    SAFE_DELETE_ARRAY( m_window );
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     delete_matrix( m_matrix, m_size );
-    SAFE_DELETE_ARRAY( m_inverse );
+    CK_SAFE_DELETE_ARRAY( m_inverse );
     m_window_size = 0;
     m_size = 0;
 }
@@ -3365,9 +3365,9 @@ t_CKBOOL IDCT_object::resize( t_CKINT size )
     assert( size > 0 );
 
     // reallocate
-    SAFE_DELETE_ARRAY( m_buffer );
+    CK_SAFE_DELETE_ARRAY( m_buffer );
     delete_matrix( m_matrix, m_size );
-    SAFE_DELETE_ARRAY( m_inverse );
+    CK_SAFE_DELETE_ARRAY( m_inverse );
     m_size = 0;
     m_buffer = new SAMPLE[size];
     m_matrix = new SAMPLE *[size];
@@ -3380,9 +3380,9 @@ t_CKBOOL IDCT_object::resize( t_CKINT size )
         CK_FPRINTF_STDERR( "[chuck]: IDCT failed to allocate %ld, %ld, %ldx%ld buffers...\n",
             size, size, size, size );
         // clean
-        SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
         delete_matrix( m_matrix, size );
-        SAFE_DELETE_ARRAY( m_inverse );
+        CK_SAFE_DELETE_ARRAY( m_inverse );
         // done
         return FALSE;
     }
@@ -3416,7 +3416,7 @@ t_CKBOOL IDCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
     assert( win_size >= 0 );
 
     // in any case, clean up
-    SAFE_DELETE_ARRAY( m_window );
+    CK_SAFE_DELETE_ARRAY( m_window );
     // reset
     m_window_size = 0;
 
@@ -3570,7 +3570,7 @@ CK_DLL_CTOR( IDCT_ctor )
 CK_DLL_DTOR( IDCT_dtor )
 {
     IDCT_object * idct = (IDCT_object *)OBJ_MEMBER_UINT(SELF, IDCT_offset_data);
-    SAFE_DELETE( idct );
+    CK_SAFE_DELETE( idct );
     OBJ_MEMBER_UINT(SELF, IDCT_offset_data) = 0;
 }
 

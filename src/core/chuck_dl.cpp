@@ -1135,12 +1135,11 @@ Chuck_DL_Func::~Chuck_DL_Func()
 }
 
 
-/*******************************************************************************
 
- Main Thread Hook stuff
 
-*******************************************************************************/
-
+//-----------------------------------------------------------------------------
+// Main Thread Hook stuff
+//-----------------------------------------------------------------------------
 t_CKBOOL ck_mthook_activate(Chuck_DL_MainThreadHook *hook)
 {
     hook->m_carrier->chuck->setMainThreadHook(hook);
@@ -1159,15 +1158,15 @@ t_CKBOOL ck_mthook_deactivate(Chuck_DL_MainThreadHook *hook)
 // name: Chuck_DL_MainThreadHook()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
-                                                 void * bindle, Chuck_Carrier * carrier) :
-m_hook(hook),
-m_quit(quit),
-m_carrier(carrier),
-m_bindle(bindle),
-activate(ck_mthook_activate),
-deactivate(ck_mthook_deactivate),
-m_active(FALSE)
+Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook( f_mainthreadhook hook, f_mainthreadquit quit,
+                                                  void * bindle, Chuck_Carrier * carrier )
+  : activate(ck_mthook_activate),
+    deactivate(ck_mthook_deactivate),
+    m_carrier(carrier),
+    m_hook(hook),
+    m_quit(quit),
+    m_bindle(bindle),
+    m_active(FALSE)
 { }
 
 

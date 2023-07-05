@@ -174,7 +174,7 @@ public:
         // add for commit
         else commit_map[xid] = value;
         // add reference
-        SAFE_ADD_REF(value);
+        CK_SAFE_ADD_REF(value);
     }
 
     // lookup id
@@ -326,9 +326,9 @@ struct Chuck_Namespace : public Chuck_VM_Object
                         class_data = NULL; class_data_size = 0; }
     // destructor
     virtual ~Chuck_Namespace() {
-        /* TODO: SAFE_RELEASE( this->parent ); */
-        /* TODO: SAFE_DELETE( pre_ctor ); */
-        /* TODO: SAFE_DELETE( dtor ); */
+        /* TODO: CK_SAFE_RELEASE( this->parent ); */
+        /* TODO: CK_SAFE_DELETE( pre_ctor ); */
+        /* TODO: CK_SAFE_DELETE( dtor ); */
     }
 
     // look up type
@@ -658,9 +658,9 @@ public: // apropos | 1.4.1.0 (ge)
 
 public: // dump | 1.4.1.1 (ge)
     // generate object state; output to console
-    void dump( Chuck_Object * obj );
+    void dump_obj( Chuck_Object * obj );
     // generate object state; output to string
-    void dump( Chuck_Object * obj, std::string & output );
+    void dump_obj( Chuck_Object * obj, std::string & output );
 
 protected: // apropos-related helper function
     // dump top level info
@@ -720,11 +720,11 @@ struct Chuck_Value : public Chuck_VM_Object
     Chuck_Value( Chuck_Type * t, const std::string & n, void * a = NULL,
                  t_CKBOOL c = FALSE, t_CKBOOL acc = 0, Chuck_Namespace * o = NULL,
                  Chuck_Type * oc = NULL, t_CKUINT s = 0 )
-    { type = t; SAFE_ADD_REF(type); // add reference
+    { type = t; CK_SAFE_ADD_REF(type); // add reference
       name = n; offset = s;
       is_const = c; access = acc;
-      owner = o; SAFE_ADD_REF(o); // add reference
-      owner_class = oc; SAFE_ADD_REF(oc); // add reference
+      owner = o; CK_SAFE_ADD_REF(o); // add reference
+      owner_class = oc; CK_SAFE_ADD_REF(oc); // add reference
       addr = a; is_member = FALSE;
       is_static = FALSE; is_context_global = FALSE;
       is_decl_checked = TRUE; // only set to false in certain cases
@@ -735,10 +735,10 @@ struct Chuck_Value : public Chuck_VM_Object
     virtual ~Chuck_Value()
     {
         // release
-        // SAFE_RELEASE( type );
-        // SAFE_RELEASE( owner ):
-        // SAFE_RELEASE( owner_class );
-        // SAFE_RELEASE( func_ref );
+        // CK_SAFE_RELEASE( type );
+        // CK_SAFE_RELEASE( owner ):
+        // CK_SAFE_RELEASE( owner_class );
+        // CK_SAFE_RELEASE( func_ref );
     }
 };
 

@@ -119,15 +119,14 @@ typedef const char *                c_constr;
 // sample
 #ifdef __CHUCK_USE_64_BIT_SAMPLE__
 #define SAMPLE                      double
-#define SILENCE                     0.0
+#define CK_SILENCE                  0.0
 #define CK_DDN                      CK_DDN_DOUBLE
 #else
 #define SAMPLE                      float
-#define SILENCE                     0.0f
+#define CK_SILENCE                  0.0f
 #define CK_DDN                      CK_DDN_SINGLE
 #endif
 
-// for external use
 #define t_CKSAMPLE                  SAMPLE
 
 // sample complex
@@ -143,19 +142,17 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define CK_NO_VALUE                 0xffffffff
 
 // 3.1415926535897932384626433832795028841971693993751058209749445...
-#define ONE_PI (3.14159265358979323846)
-#define TWO_PI (2.0 * ONE_PI)
-#define SQRT2  (1.41421356237309504880)
+#define CK_ONE_PI                   (3.14159265358979323846)
+#define CK_TWO_PI                   (2.0 * CK_ONE_PI)
+#define CK_SQRT2                    (1.41421356237309504880)
 
-#ifndef SAFE_DELETE
-#define SAFE_DELETE(x)              do { if(x){ delete x; x = NULL; } } while(0)
-#define SAFE_DELETE_ARRAY(x)        do { if(x){ delete [] x; x = NULL; } } while(0)
-#define SAFE_RELEASE(x)             do { if(x){ x->release(); x = NULL; } } while(0)
-#define SAFE_ADD_REF(x)             do { if(x){ x->add_ref(); } } while(0)
-#define SAFE_REF_ASSIGN(lhs,rhs)    do { SAFE_RELEASE(lhs); (lhs) = (rhs); SAFE_ADD_REF(lhs); } while(0)
-#define SAFE_FREE(x)                do { if(x){ free(x); x = NULL; } } while(0)
-#define SAFE_UNLOCK_DELETE(x)       do { if(x){ x->unlock(); delete x; x = NULL; } } while(0)
-#endif
+#define CK_SAFE_DELETE(x)           do { if(x){ delete x; x = NULL; } } while(0)
+#define CK_SAFE_DELETE_ARRAY(x)     do { if(x){ delete [] x; x = NULL; } } while(0)
+#define CK_SAFE_RELEASE(x)          do { if(x){ x->release(); x = NULL; } } while(0)
+#define CK_SAFE_ADD_REF(x)          do { if(x){ x->add_ref(); } } while(0)
+#define CK_SAFE_REF_ASSIGN(lhs,rhs) do { CK_SAFE_RELEASE(lhs); (lhs) = (rhs); CK_SAFE_ADD_REF(lhs); } while(0)
+#define CK_SAFE_FREE(x)             do { if(x){ free(x); x = NULL; } } while(0)
+#define CK_SAFE_UNLOCK_DELETE(x)    do { if(x){ x->unlock(); delete x; x = NULL; } } while(0)
 
 // max + min
 #define ck_max(x,y)                 ( (x) >= (y) ? (x) : (y) )

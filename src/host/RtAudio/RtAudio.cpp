@@ -3912,7 +3912,7 @@ static const char* getAsioErrorString( ASIOError result )
 
 //=============================================================================
 
-#define SAFE_RELEASE( objectPtr )\
+#define CK_SAFE_RELEASE( objectPtr )\
 if ( objectPtr )\
 {\
   objectPtr->Release();\
@@ -4175,14 +4175,14 @@ public:
 
     MFShutdown();
 
-    SAFE_RELEASE( _transformUnk );
-    SAFE_RELEASE( _transform );
-    SAFE_RELEASE( _mediaType );
-    SAFE_RELEASE( _inputMediaType );
-    SAFE_RELEASE( _outputMediaType );
+    CK_SAFE_RELEASE( _transformUnk );
+    CK_SAFE_RELEASE( _transform );
+    CK_SAFE_RELEASE( _mediaType );
+    CK_SAFE_RELEASE( _inputMediaType );
+    CK_SAFE_RELEASE( _outputMediaType );
 
     #ifdef __IWMResamplerProps_FWD_DEFINED__
-      SAFE_RELEASE( _resamplerProps );
+      CK_SAFE_RELEASE( _resamplerProps );
     #endif
   }
 
@@ -4229,8 +4229,8 @@ public:
 
     _transform->ProcessInput( 0, rInSample, 0 );
 
-    SAFE_RELEASE( rInBuffer );
-    SAFE_RELEASE( rInSample );
+    CK_SAFE_RELEASE( rInBuffer );
+    CK_SAFE_RELEASE( rInSample );
 
     // 7. Perform sample rate conversion
 
@@ -4256,14 +4256,14 @@ public:
     if ( _transform->ProcessOutput( 0, 1, &rOutDataBuffer, &rStatus ) == MF_E_TRANSFORM_NEED_MORE_INPUT )
     {
       outSampleCount = 0;
-      SAFE_RELEASE( rOutBuffer );
-      SAFE_RELEASE( rOutDataBuffer.pSample );
+      CK_SAFE_RELEASE( rOutBuffer );
+      CK_SAFE_RELEASE( rOutDataBuffer.pSample );
       return;
     }
 
     // 7.3 Write output data to outBuffer
 
-    SAFE_RELEASE( rOutBuffer );
+    CK_SAFE_RELEASE( rOutBuffer );
     rOutDataBuffer.pSample->ConvertToContiguousBuffer( &rOutBuffer );
     rOutBuffer->GetCurrentLength( &rBytes );
 
@@ -4273,8 +4273,8 @@ public:
     rOutByteBuffer = NULL;
 
     outSampleCount = rBytes / _bytesPerSample / _channelCount;
-    SAFE_RELEASE( rOutBuffer );
-    SAFE_RELEASE( rOutDataBuffer.pSample );
+    CK_SAFE_RELEASE( rOutBuffer );
+    CK_SAFE_RELEASE( rOutDataBuffer.pSample );
   }
 
 private:
@@ -4341,7 +4341,7 @@ RtApiWasapi::~RtApiWasapi()
   if ( stream_.state != STREAM_CLOSED )
     closeStream();
 
-  SAFE_RELEASE( deviceEnumerator_ );
+  CK_SAFE_RELEASE( deviceEnumerator_ );
 
   // If this object previously called CoInitialize()
   if ( coInitialized_ )
@@ -4390,8 +4390,8 @@ unsigned int RtApiWasapi::getDeviceCount( void )
 
 Exit:
   // release all references
-  SAFE_RELEASE( captureDevices );
-  SAFE_RELEASE( renderDevices );
+  CK_SAFE_RELEASE( captureDevices );
+  CK_SAFE_RELEASE( renderDevices );
 
   if ( errorText_.empty() )
     return captureDeviceCount + renderDeviceCount;
@@ -4611,13 +4611,13 @@ Exit:
   PropVariantClear( &deviceNameProp );
   PropVariantClear( &defaultDeviceNameProp );
 
-  SAFE_RELEASE( captureDevices );
-  SAFE_RELEASE( renderDevices );
-  SAFE_RELEASE( devicePtr );
-  SAFE_RELEASE( defaultDevicePtr );
-  SAFE_RELEASE( audioClient );
-  SAFE_RELEASE( devicePropStore );
-  SAFE_RELEASE( defaultDevicePropStore );
+  CK_SAFE_RELEASE( captureDevices );
+  CK_SAFE_RELEASE( renderDevices );
+  CK_SAFE_RELEASE( devicePtr );
+  CK_SAFE_RELEASE( defaultDevicePtr );
+  CK_SAFE_RELEASE( audioClient );
+  CK_SAFE_RELEASE( devicePropStore );
+  CK_SAFE_RELEASE( defaultDevicePropStore );
 
   CoTaskMemFree( deviceFormat );
   CoTaskMemFree( closestMatchFormat );
@@ -4639,11 +4639,11 @@ void RtApiWasapi::closeStream( void )
     stopStream();
 
   // clean up stream memory
-  SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->captureAudioClient )
-  SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->renderAudioClient )
+  CK_SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->captureAudioClient )
+  CK_SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->renderAudioClient )
 
-  SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->captureClient )
-  SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->renderClient )
+  CK_SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->captureClient )
+  CK_SAFE_RELEASE( ( ( WasapiHandle* ) stream_.apiHandle )->renderClient )
 
   if ( ( ( WasapiHandle* ) stream_.apiHandle )->captureEvent )
     CloseHandle( ( ( WasapiHandle* ) stream_.apiHandle )->captureEvent );
@@ -4980,9 +4980,9 @@ bool RtApiWasapi::probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
 Exit:
   //clean up
-  SAFE_RELEASE( captureDevices );
-  SAFE_RELEASE( renderDevices );
-  SAFE_RELEASE( devicePtr );
+  CK_SAFE_RELEASE( captureDevices );
+  CK_SAFE_RELEASE( renderDevices );
+  CK_SAFE_RELEASE( devicePtr );
   CoTaskMemFree( deviceFormat );
 
   // if method failed, close the stream

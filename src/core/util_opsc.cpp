@@ -1693,8 +1693,8 @@ OSC_Receiver::~OSC_Receiver()
     free( _inbox );
 
     // clean up
-    SAFE_DELETE( _io_mutex );
-    SAFE_DELETE( _address_mutex );
+    CK_SAFE_DELETE( _io_mutex );
+    CK_SAFE_DELETE( _address_mutex );
 
     // TODO: do this thread-safely
     // if( m_event_buffer )
@@ -2159,7 +2159,7 @@ OSC_Address_Space::~OSC_Address_Space()
     // clean up
     if( _queue ) free( _queue );
     // added 1.3.1.1
-    SAFE_DELETE( _buffer_mutex );
+    CK_SAFE_DELETE( _buffer_mutex );
 }
 
 void

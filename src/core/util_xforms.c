@@ -344,7 +344,7 @@ void the_dct( FLOAT * x, unsigned long N, FLOAT * out, unsigned long Nout )
     {
         for( n = 0; n < N; n++ )
         {
-            out[k] += x[n] * cos( ONE_PI / N * k * (n + .5) );
+            out[k] += x[n] * cos( CK_ONE_PI / N * k * (n + .5) );
         }
     }
 }
@@ -366,7 +366,7 @@ void the_dct_matrix( FLOAT ** out, unsigned long N )
     {
         for( n = 0; n < N; n++ )
         {
-            out[k][n] = cos( ONE_PI / N * k * (n + .5) );
+            out[k][n] = cos( CK_ONE_PI / N * k * (n + .5) );
         }
     }
 }
@@ -421,7 +421,7 @@ void the_inverse_dct_matrix( FLOAT ** out, unsigned long N )
     {
         for( n = 0; n < N; n++ )
         {
-            out[k][n] = cos( ONE_PI / N * n * (k + .5) );
+            out[k][n] = cos( CK_ONE_PI / N * n * (k + .5) );
         }
     }
 }

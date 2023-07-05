@@ -1259,7 +1259,7 @@ public:
     // destructor
     ~SVM_Object()
     {
-        SAFE_DELETE( w );
+        CK_SAFE_DELETE( w );
     }
 
     // train
@@ -1268,15 +1268,15 @@ public:
         ChaiMatrixFast<t_CKFLOAT> * x = chuck2chai( x_ );
         ChaiMatrixFast<t_CKFLOAT> * y = chuck2chai( y_ );
         train( *x, *y, x->xDim() );
-        SAFE_DELETE( x );
-        SAFE_DELETE( y );
+        CK_SAFE_DELETE( x );
+        CK_SAFE_DELETE( y );
         return 0;
     }
 
     void train( ChaiMatrixFast<t_CKFLOAT> & x, ChaiMatrixFast<t_CKFLOAT> & y, t_CKINT n_sample )
     {
         // init
-        SAFE_DELETE( w );
+        CK_SAFE_DELETE( w );
         t_CKINT x_dim = x.yDim(), y_dim = y.yDim();
         w = new ChaiMatrixFast<t_CKFLOAT>( x_dim + 1, y_dim );
         // compute svm
@@ -1433,7 +1433,7 @@ CK_DLL_CTOR( SVM_ctor )
 CK_DLL_DTOR( SVM_dtor )
 {
     SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
-    SAFE_DELETE( svm );
+    CK_SAFE_DELETE( svm );
     OBJ_MEMBER_UINT( SELF, SVM_offset_data ) = 0;
 }
 
@@ -1483,9 +1483,9 @@ public:
     // clear
     void clear()
     {
-        SAFE_DELETE( X );
-        SAFE_DELETE( Y );
-        SAFE_DELETE( weights );
+        CK_SAFE_DELETE( X );
+        CK_SAFE_DELETE( Y );
+        CK_SAFE_DELETE( weights );
     }
 
     // train
@@ -1810,7 +1810,7 @@ CK_DLL_CTOR( KNN_ctor )
 CK_DLL_DTOR( KNN_dtor )
 {
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
-    SAFE_DELETE( knn );
+    CK_SAFE_DELETE( knn );
     OBJ_MEMBER_UINT( SELF, KNN_offset_data ) = 0;
 }
 
@@ -1899,7 +1899,7 @@ CK_DLL_CTOR( KNN2_ctor )
 CK_DLL_DTOR( KNN2_dtor )
 {
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
-    SAFE_DELETE( knn );
+    CK_SAFE_DELETE( knn );
     OBJ_MEMBER_UINT( SELF, KNN2_offset_data ) = 0;
 }
 
@@ -2035,9 +2035,9 @@ public:
     // clear
     void clear()
     {
-        SAFE_DELETE( initial );
-        SAFE_DELETE( transition );
-        SAFE_DELETE( emission );
+        CK_SAFE_DELETE( initial );
+        CK_SAFE_DELETE( transition );
+        CK_SAFE_DELETE( emission );
     }
 
     // init
@@ -2213,8 +2213,8 @@ public:
     t_CKINT generate( t_CKINT length, Chuck_Array4 & output_ )
     {
         // compute
-        t_CKINT state;
-        t_CKFLOAT r;
+        t_CKINT state = 0;
+        t_CKFLOAT r = 0;
         for( t_CKINT i = 0; i < length; i++ )
         {
             // state
@@ -2280,7 +2280,7 @@ CK_DLL_CTOR( HMM_ctor )
 CK_DLL_DTOR( HMM_dtor )
 {
     HMM_Object * hmm = (HMM_Object *)OBJ_MEMBER_UINT( SELF, HMM_offset_data );
-    SAFE_DELETE( hmm );
+    CK_SAFE_DELETE( hmm );
     OBJ_MEMBER_UINT( SELF, HMM_offset_data ) = 0;
 }
 
@@ -2335,12 +2335,12 @@ struct W2V_Dictionary
     ChaiVectorFast<t_CKFLOAT> maxs;
 
     W2V_Dictionary()
-        : key_to_index( NULL ),
-          index_to_key( NULL ),
-          word_vectors( NULL ),
-          dictionarySize( 0 ),
-          vectorLength( 0 ),
-          tree( NULL )
+      : dictionarySize( 0 ),
+        vectorLength( 0 ),
+        key_to_index( NULL ),
+        index_to_key( NULL ),
+        word_vectors( NULL ),
+        tree( NULL )
     { }
 
     // clear
@@ -2348,9 +2348,9 @@ struct W2V_Dictionary
     {
         dictionarySize = 0;
         vectorLength = 0;
-        SAFE_DELETE( key_to_index );
-        SAFE_DELETE( index_to_key );
-        SAFE_DELETE( word_vectors );
+        CK_SAFE_DELETE( key_to_index );
+        CK_SAFE_DELETE( index_to_key );
+        CK_SAFE_DELETE( word_vectors );
         kdtree_destroy( tree );
     }
 };
@@ -2852,7 +2852,7 @@ CK_DLL_CTOR( Word2Vec_ctor )
 CK_DLL_DTOR( Word2Vec_dtor )
 {
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
-    SAFE_DELETE( word2vec );
+    CK_SAFE_DELETE( word2vec );
     OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data ) = 0;
 }
 
@@ -3261,7 +3261,7 @@ public:
         }
 
         // clean up
-        SAFE_DELETE( input );
+        CK_SAFE_DELETE( input );
     }
 
 private:
@@ -3279,7 +3279,7 @@ CK_DLL_CTOR( PCA_ctor )
 CK_DLL_DTOR( PCA_dtor )
 {
     PCA_Object * pca = (PCA_Object *)OBJ_MEMBER_UINT( SELF, PCA_offset_data );
-    SAFE_DELETE( pca );
+    CK_SAFE_DELETE( pca );
     OBJ_MEMBER_UINT( SELF, PCA_offset_data ) = 0;
 }
 
@@ -3321,13 +3321,13 @@ public:
     void clear()
     {
         for( t_CKINT i = 0; i < weights.size(); i++ )
-            SAFE_DELETE( weights[i] );
+            CK_SAFE_DELETE( weights[i] );
         for( t_CKINT i = 0; i < biases.size(); i++ )
-            SAFE_DELETE( biases[i] );
+            CK_SAFE_DELETE( biases[i] );
         for( t_CKINT i = 0; i < activations.size(); i++ )
-            SAFE_DELETE( activations[i] );
+            CK_SAFE_DELETE( activations[i] );
         for( t_CKINT i = 0; i < gradients.size(); i++ )
-            SAFE_DELETE( gradients[i] );
+            CK_SAFE_DELETE( gradients[i] );
         units_per_layer.clear();
         activation_per_layer.clear();
         weights.clear();
@@ -3539,8 +3539,8 @@ public:
 //        ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
 //        ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
 //        train( *X, *Y, X->xDim(), 1e-3, 100 );
-//        SAFE_DELETE( X );
-//        SAFE_DELETE( Y );
+//        CK_SAFE_DELETE( X );
+//        CK_SAFE_DELETE( Y );
 //    }
 
     // train2
@@ -3549,8 +3549,8 @@ public:
         ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
         ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
         train( *X, *Y, X->xDim(), learning_rate, max_iterations );
-        SAFE_DELETE( X );
-        SAFE_DELETE( Y );
+        CK_SAFE_DELETE( X );
+        CK_SAFE_DELETE( Y );
     }
 
     // predict
@@ -3581,7 +3581,7 @@ public:
         output_.set_size( units_per_layer.back() );
         for( t_CKINT i = 0; i < units_per_layer.back(); i++ )
             output_.m_vector[i] = activations.back()->v( i );
-        SAFE_DELETE( input );
+        CK_SAFE_DELETE( input );
 
         return TRUE;
     }
@@ -3684,7 +3684,7 @@ public:
     {
         ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
         forward( *input );
-        SAFE_DELETE( input );
+        CK_SAFE_DELETE( input );
     }
 
     // backprop
@@ -3692,7 +3692,7 @@ public:
     {
         ChaiVectorFast<t_CKFLOAT> * output = chuck2chai( output_ );
         backprop( *output, learning_rate );
-        SAFE_DELETE( output );
+        CK_SAFE_DELETE( output );
     }
 
     // save
@@ -3830,7 +3830,7 @@ CK_DLL_CTOR( MLP_ctor )
 CK_DLL_DTOR( MLP_dtor )
 {
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
-    SAFE_DELETE( mlp );
+    CK_SAFE_DELETE( mlp );
     OBJ_MEMBER_UINT( SELF, MLP_offset_data ) = 0;
 }
 
@@ -4100,9 +4100,9 @@ public:
         // data
         example_ids.clear();
         // model
-        SAFE_DELETE( mlp );
-        SAFE_DELETE( knn );
-        SAFE_DELETE( svm );
+        CK_SAFE_DELETE( mlp );
+        CK_SAFE_DELETE( knn );
+        CK_SAFE_DELETE( svm );
         // system
         connected_inputs.clear();
     }
@@ -4509,7 +4509,7 @@ public:
             {
                 if( models[i].model_type == g_mt_mlp )
                 {
-                    SAFE_DELETE( models[i].mlp );
+                    CK_SAFE_DELETE( models[i].mlp );
                     models[i].mlp = new MLP_Object();
                     // init
                     vector<t_CKUINT> units_per_layer;
@@ -5828,7 +5828,7 @@ CK_DLL_CTOR( Wekinator_ctor )
 CK_DLL_DTOR( Wekinator_dtor )
 {
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
-    SAFE_DELETE( wekinator );
+    CK_SAFE_DELETE( wekinator );
     OBJ_MEMBER_UINT( SELF, Wekinator_offset_data ) = 0;
 }
 
@@ -6565,7 +6565,7 @@ static void kdnode_free( struct kdnode * node )
 static t_CKINT coord_cmp( double * c1, double * c2, t_CKINT dim )
 {
     t_CKINT i;
-    double ret;
+    double ret = 0;
     for( i = 0; i < dim; i++ )
     {
         ret = *c1++ - *c2++;

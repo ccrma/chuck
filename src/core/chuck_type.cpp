@@ -112,11 +112,11 @@ Chuck_Env::Chuck_Env( )
     // lock from being deleted
     global_context.lock();
     // make reference
-    context = &global_context; SAFE_ADD_REF(context);
+    context = &global_context; CK_SAFE_ADD_REF(context);
     // make name
     context->filename = "@[global]";
     // remember
-    global_nspc = global_context.nspc; SAFE_ADD_REF(global_nspc);
+    global_nspc = global_context.nspc; CK_SAFE_ADD_REF(global_nspc);
     // deprecated stuff
     deprecated.clear(); deprecate_level = 1;
     // zero out
@@ -235,29 +235,29 @@ void Chuck_Env::cleanup()
 
     // unlock each internal object type | 1.5.0.0 (ge) added
     // 1.5.0.1 (ge) re-ordered: parent dependencies are cleaned up later
-    SAFE_UNLOCK_DELETE(t_void);
-    SAFE_UNLOCK_DELETE(t_int);
-    SAFE_UNLOCK_DELETE(t_float);
-    SAFE_UNLOCK_DELETE(t_time);
-    SAFE_UNLOCK_DELETE(t_dur);
-    SAFE_UNLOCK_DELETE(t_complex);
-    SAFE_UNLOCK_DELETE(t_polar);
-    SAFE_UNLOCK_DELETE(t_vec3);
-    SAFE_UNLOCK_DELETE(t_vec4);
-    SAFE_UNLOCK_DELETE(t_fileio);
-    SAFE_UNLOCK_DELETE(t_chout);
-    SAFE_UNLOCK_DELETE(t_cherr);
-    SAFE_UNLOCK_DELETE(t_io);
-    SAFE_UNLOCK_DELETE(t_dac);
-    SAFE_UNLOCK_DELETE(t_adc);
-    SAFE_UNLOCK_DELETE(t_ugen);
-    SAFE_UNLOCK_DELETE(t_uanablob);
-    SAFE_UNLOCK_DELETE(t_uana);
-    SAFE_UNLOCK_DELETE(t_function);
-    SAFE_UNLOCK_DELETE(t_string);
-    SAFE_UNLOCK_DELETE(t_shred);
-    SAFE_UNLOCK_DELETE(t_event);
-    SAFE_UNLOCK_DELETE(t_array);
+    CK_SAFE_UNLOCK_DELETE(t_void);
+    CK_SAFE_UNLOCK_DELETE(t_int);
+    CK_SAFE_UNLOCK_DELETE(t_float);
+    CK_SAFE_UNLOCK_DELETE(t_time);
+    CK_SAFE_UNLOCK_DELETE(t_dur);
+    CK_SAFE_UNLOCK_DELETE(t_complex);
+    CK_SAFE_UNLOCK_DELETE(t_polar);
+    CK_SAFE_UNLOCK_DELETE(t_vec3);
+    CK_SAFE_UNLOCK_DELETE(t_vec4);
+    CK_SAFE_UNLOCK_DELETE(t_fileio);
+    CK_SAFE_UNLOCK_DELETE(t_chout);
+    CK_SAFE_UNLOCK_DELETE(t_cherr);
+    CK_SAFE_UNLOCK_DELETE(t_io);
+    CK_SAFE_UNLOCK_DELETE(t_dac);
+    CK_SAFE_UNLOCK_DELETE(t_adc);
+    CK_SAFE_UNLOCK_DELETE(t_ugen);
+    CK_SAFE_UNLOCK_DELETE(t_uanablob);
+    CK_SAFE_UNLOCK_DELETE(t_uana);
+    CK_SAFE_UNLOCK_DELETE(t_function);
+    CK_SAFE_UNLOCK_DELETE(t_string);
+    CK_SAFE_UNLOCK_DELETE(t_shred);
+    CK_SAFE_UNLOCK_DELETE(t_event);
+    CK_SAFE_UNLOCK_DELETE(t_array);
 
     // Type and Object types go last, as every other ChucK_Type are also these
     // t_class and t_object have mutual dependencies, e.g.,
@@ -267,11 +267,11 @@ void Chuck_Env::cleanup()
     // part 1: save the parent reference
     Chuck_Type * skip = t_object->type_ref != NULL ? t_object->type_ref->parent : NULL;
     // free the Type type
-    SAFE_UNLOCK_DELETE(t_class);
+    CK_SAFE_UNLOCK_DELETE(t_class);
     // part 2: break the dependency manually | 1.5.0.1 (ge) added
     t_object->type_ref = skip;
     // finally, free the Object type
-    SAFE_UNLOCK_DELETE(t_object);
+    CK_SAFE_UNLOCK_DELETE(t_object);
 }
 
 
@@ -319,8 +319,8 @@ void Chuck_Env::load_user_namespace()
     user_nspc = new Chuck_Namespace;
     user_nspc->name = "[user]";
     user_nspc->parent = global_nspc;
-    SAFE_ADD_REF(global_nspc);
-    SAFE_ADD_REF(user_nspc);
+    CK_SAFE_ADD_REF(global_nspc);
+    CK_SAFE_ADD_REF(user_nspc);
 }
 
 
@@ -332,8 +332,8 @@ void Chuck_Env::load_user_namespace()
 //-----------------------------------------------------------------------------
 void Chuck_Env::clear_user_namespace()
 {
-    if (user_nspc) SAFE_RELEASE(user_nspc->parent);
-    SAFE_RELEASE(user_nspc);
+    if (user_nspc) CK_SAFE_RELEASE(user_nspc->parent);
+    CK_SAFE_RELEASE(user_nspc);
     load_user_namespace();
     this->reset();
 }
@@ -563,7 +563,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     env->global()->value.add( "true", new Chuck_Value( env->t_int, "true", new t_CKINT(1), TRUE ) );
     env->global()->value.add( "false", new Chuck_Value( env->t_int, "false", new t_CKINT(0), TRUE ) );
     env->global()->value.add( "maybe", new Chuck_Value( env->t_int, "maybe", new t_CKFLOAT(.5), FALSE ) );
-    env->global()->value.add( "pi", new Chuck_Value( env->t_float, "pi", new t_CKFLOAT(ONE_PI), TRUE ) );
+    env->global()->value.add( "pi", new Chuck_Value( env->t_float, "pi", new t_CKFLOAT(CK_ONE_PI), TRUE ) );
     env->global()->value.add( "global", new Chuck_Value( env->t_class, "global", env->global(), TRUE ) );
     env->global()->value.add( "chout", new Chuck_Value( env->t_io, "chout", new Chuck_IO_Chout( carrier ), TRUE ) );
     env->global()->value.add( "cherr", new Chuck_Value( env->t_io, "cherr", new Chuck_IO_Cherr( carrier ), TRUE ) );
@@ -674,7 +674,7 @@ void type_engine_shutdown( Chuck_Env * env )
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
 
     // shut it down
-    SAFE_DELETE( env );
+    CK_SAFE_DELETE( env );
 
     // log
     EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
@@ -1511,7 +1511,7 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp )
             // set the return type
             curr->func_call.ret_type = curr->type;
             // add reference | 1.5.0.5
-            SAFE_ADD_REF( curr->func_call.ret_type );
+            CK_SAFE_ADD_REF( curr->func_call.ret_type );
         break;
 
         case ae_exp_dot_member:
@@ -4199,7 +4199,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     if( !ret )
     {
         // delete the class definition
-        SAFE_RELEASE( class_def->type );
+        CK_SAFE_RELEASE( class_def->type );
         // set the thing to NULL
         the_class = NULL;
     }
@@ -4762,7 +4762,7 @@ Chuck_Context::~Chuck_Context()
     // the type system, since many things have been added to it
     if( has_error )
     {
-        SAFE_DELETE( nspc );
+        CK_SAFE_DELETE( nspc );
 
         // delete the types - can't do this since the type system and vm still use
         // for( t_CKINT i = 0; i < new_types.size(); i++ )
@@ -5351,13 +5351,13 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // allocate namespace for type
     type->info = new Chuck_Namespace;
     // add reference
-    SAFE_ADD_REF(type->info);
+    CK_SAFE_ADD_REF(type->info);
     // name it
     type->info->name = type->name;
     // set the parent namespace
     type->info->parent = where;
     // add reference
-    SAFE_ADD_REF(type->info->parent);
+    CK_SAFE_ADD_REF(type->info->parent);
 
     // if pre constructor
     if( pre_ctor != 0 )
@@ -5407,7 +5407,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // set the owner namespace
     type->owner = where;
     // add reference
-    SAFE_ADD_REF(type->owner);
+    CK_SAFE_ADD_REF(type->owner);
     // check if primitive
     if( !isprim( env, type ) ) // 1.3.5.3 (primitives already have size!)
     {
@@ -5420,12 +5420,12 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // make type
     type_type = env->t_class->copy( env );
     type_type->actual_type = type;
-    // SAFE_REF_ASSIGN( type_type->actual_type, type );
+    // CK_SAFE_REF_ASSIGN( type_type->actual_type, type );
 
     // make value
     value = new Chuck_Value( type_type, type->name );
     value->owner = where;
-    // SAFE_REF_ASSIGN( value->owner, where );
+    // CK_SAFE_REF_ASSIGN( value->owner, where );
     value->is_const = TRUE;
     value->is_member = FALSE;
 
@@ -5442,7 +5442,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     if( doc != NULL) type->doc = doc;
 
     // ref count
-    SAFE_ADD_REF(type);
+    CK_SAFE_ADD_REF(type);
     // type->add_ref();
 
     return type;
@@ -5496,7 +5496,7 @@ error:
     // error
     EM_error2( 0, "...during import of class '%s'", name );
     // free
-    SAFE_DELETE( type );
+    CK_SAFE_DELETE( type );
 
 cleanup:
     // cleanup
@@ -6057,7 +6057,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
     // 1.4.2.0 (ge) | added
-    SAFE_ADD_REF(t);
+    CK_SAFE_ADD_REF(t);
     // set the id
     t->xid = te_array;
     // set the name
@@ -6073,7 +6073,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     {
         Chuck_Type * new_parent = new_array_element_type( env, base_curr, depth, owner_nspc );
         t_curr->parent = new_parent;
-        SAFE_ADD_REF(t_curr->parent );
+        CK_SAFE_ADD_REF(t_curr->parent );
 
         base_curr = base_curr->parent;
         t_curr = t_curr->parent;
@@ -6081,7 +6081,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // ???
     t_curr->parent = array_parent;
     // add reference
-    SAFE_ADD_REF(t_curr->parent);
+    CK_SAFE_ADD_REF(t_curr->parent);
 
     // is a ref
     t->size = array_parent->size;
@@ -6092,15 +6092,15 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // set the base type
     t->array_type = base_type;
     // add reference
-    SAFE_ADD_REF(t->array_type);
+    CK_SAFE_ADD_REF(t->array_type);
     // set the namesapce
     t->info = array_parent->info;
     // add reference
-    SAFE_ADD_REF(t->info);
+    CK_SAFE_ADD_REF(t->info);
     // set owner
     t->owner = owner_nspc;
     // add reference
-    SAFE_ADD_REF(t->owner);
+    CK_SAFE_ADD_REF(t->owner);
 
     // return the type
     return t;
@@ -6132,17 +6132,17 @@ Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
     // set the array type
     if (base_type->array_type != NULL) {
       t->array_type = base_type->array_type;
-      SAFE_ADD_REF(t->array_type);
+      CK_SAFE_ADD_REF(t->array_type);
     }
     // set the namespace
     if (base_type->info != NULL) {
       t->info = base_type->info;
-      SAFE_ADD_REF(t->info);
+      CK_SAFE_ADD_REF(t->info);
     }
     // set owner
     t->owner = owner_nspc;
     // add reference
-    SAFE_ADD_REF(t->owner);
+    CK_SAFE_ADD_REF(t->owner);
 
     // return the type
     return t;
@@ -6305,7 +6305,7 @@ a_Arg_List partial_deep_copy_args( a_Arg_List list )
     // need var_decl by not type_decl
     copy = new_arg_list( NULL, var_decl, list->line, list->where );
     // set type and add reference
-    copy->type = list->type; SAFE_ADD_REF( copy->type );
+    copy->type = list->type; CK_SAFE_ADD_REF( copy->type );
 
     // go down the list
     copy->next = partial_deep_copy_args( list->next );
@@ -6334,9 +6334,9 @@ a_Func_Def partial_deep_copy_fn( a_Func_Def f )
                                     f->line,
                                     f->where );
     // copy ret_type and reference count
-    copy->ret_type = f->ret_type; SAFE_ADD_REF( copy->ret_type );
+    copy->ret_type = f->ret_type; CK_SAFE_ADD_REF( copy->ret_type );
     // copy ck_func and reference count
-    copy->ck_func = f->ck_func; SAFE_ADD_REF( copy->ck_func );
+    copy->ck_func = f->ck_func; CK_SAFE_ADD_REF( copy->ck_func );
 
     // copy DL func pointers
     copy->dl_func_ptr = f->dl_func_ptr;
@@ -7234,12 +7234,12 @@ void Chuck_Type::reset()
     {
         // TODO: uncomment this, fix it to behave correctly
         // release references
-        // SAFE_RELEASE(parent);
-        // SAFE_RELEASE(array_type);
-        SAFE_RELEASE(info);
-        // SAFE_RELEASE(owner);
-        // SAFE_RELEASE(func);
-        // SAFE_RELEASE(ugen_info);
+        // CK_SAFE_RELEASE(parent);
+        // CK_SAFE_RELEASE(array_type);
+        CK_SAFE_RELEASE(info);
+        // CK_SAFE_RELEASE(owner);
+        // CK_SAFE_RELEASE(func);
+        // CK_SAFE_RELEASE(ugen_info);
     }
 }
 
@@ -7263,10 +7263,10 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     this->size = rhs.size;
     this->is_copy = TRUE;
     this->array_depth = rhs.array_depth;
-    this->array_type = rhs.array_type; // SAFE_ADD_REF(this->array_type);
-    this->func = rhs.func; // SAFE_ADD_REF(this->func);
-    this->info = rhs.info; SAFE_ADD_REF(this->info);
-    this->owner = rhs.owner; // SAFE_ADD_REF(this->owner);
+    this->array_type = rhs.array_type; // CK_SAFE_ADD_REF(this->array_type);
+    this->func = rhs.func; // CK_SAFE_ADD_REF(this->func);
+    this->info = rhs.info; CK_SAFE_ADD_REF(this->info);
+    this->owner = rhs.owner; // CK_SAFE_ADD_REF(this->owner);
 
     return *this;
 }
@@ -7821,15 +7821,15 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
 
 
 //-----------------------------------------------------------------------------
-// name: dump()
+// name: dump_obj()
 // desc: generate object state; output to console | 1.4.1.1 (ge)
 //-----------------------------------------------------------------------------
-void Chuck_Type::dump( Chuck_Object * obj )
+void Chuck_Type::dump_obj( Chuck_Object * obj )
 {
     // the info
     string output;
     // get it
-    this->dump( obj, output );
+    this->dump_obj( obj, output );
     // print it
     CK_STDCERR << output << CK_STDENDL;
 }
@@ -7838,10 +7838,10 @@ void Chuck_Type::dump( Chuck_Object * obj )
 
 
 //-----------------------------------------------------------------------------
-// name: dump()
+// name: dump_obj()
 // desc: generate object state; output to string | 1.4.1.1 (ge)
 //-----------------------------------------------------------------------------
-void Chuck_Type::dump( Chuck_Object * obj, std::string & output )
+void Chuck_Type::dump_obj( Chuck_Object * obj, std::string & output )
 {
     // TODO
 }

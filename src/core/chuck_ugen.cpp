@@ -254,20 +254,20 @@ void Chuck_UGen::done()
     fa_done( m_dest_uana_list, m_dest_uana_cap );
 
     // reclaim
-    SAFE_DELETE_ARRAY( m_sum_v );
-    SAFE_DELETE_ARRAY( m_current_v );
+    CK_SAFE_DELETE_ARRAY( m_sum_v );
+    CK_SAFE_DELETE_ARRAY( m_current_v );
 
     // more reclaim (added 1.3.0.0)
-    SAFE_DELETE_ARRAY( m_multi_chan );
+    CK_SAFE_DELETE_ARRAY( m_multi_chan );
     // TODO: m_multi_chan, break ref count loop
 
     // SPENCERTODO: is this okay??? (added 1.3.0.0)
-    SAFE_DELETE( m_inlet );
-    SAFE_DELETE( m_outlet );
+    CK_SAFE_DELETE( m_inlet );
+    CK_SAFE_DELETE( m_outlet );
 
     // clean up array (added 1.3.0.0)
-    SAFE_DELETE_ARRAY( m_multi_in_v );
-    SAFE_DELETE_ARRAY( m_multi_out_v );
+    CK_SAFE_DELETE_ARRAY( m_multi_in_v );
+    CK_SAFE_DELETE_ARRAY( m_multi_out_v );
 }
 
 
@@ -280,8 +280,8 @@ void Chuck_UGen::done()
 t_CKBOOL Chuck_UGen::alloc_v( t_CKUINT size )
 {
     // reclaim
-    SAFE_DELETE_ARRAY( m_sum_v );
-    SAFE_DELETE_ARRAY( m_current_v );
+    CK_SAFE_DELETE_ARRAY( m_sum_v );
+    CK_SAFE_DELETE_ARRAY( m_current_v );
 
     // save block size as max block size (added 1.3.0.0)
     m_max_block_size = size;
@@ -331,8 +331,8 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
         assert(m_max_block_size >= 0);
         t_CKINT block_size = m_max_block_size == 0 ? 1 : m_max_block_size;
 
-        SAFE_DELETE_ARRAY(m_multi_in_v);
-        SAFE_DELETE_ARRAY(m_multi_out_v);
+        CK_SAFE_DELETE_ARRAY(m_multi_in_v);
+        CK_SAFE_DELETE_ARRAY(m_multi_out_v);
         // allocate a frame for input and output from the tick function (add 1.3.0.0)
         m_multi_in_v = new SAMPLE[m_multi_chan_size*block_size];
         m_multi_out_v = new SAMPLE[m_multi_chan_size*block_size];

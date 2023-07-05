@@ -215,7 +215,7 @@ public:
 
     ~CircularBuffer()
     {
-        SAFE_DELETE_ARRAY( m_elements );
+        CK_SAFE_DELETE_ARRAY( m_elements );
         // if(m_elements != NULL)
         // {
         //    delete[] m_elements;
@@ -431,7 +431,7 @@ void XCircleBuffer<T>::init( long length )
     if( m_buffer )
     {
         // delete array - should call destructors and zero out variable
-        SAFE_DELETE_ARRAY( m_buffer );
+        CK_SAFE_DELETE_ARRAY( m_buffer );
         // zero out
         m_length = m_readIndex = m_writeIndex = m_numElements = 0;
     }

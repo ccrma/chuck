@@ -5767,7 +5767,7 @@ void BandedWG :: setFrequency(MY_FLOAT frequency)
     //  CK_STDCERR << CK_STDENDL;
 
     // set the bandpass filter resonances
-    radius = 1.0 - ONE_PI * 32 / Stk::sampleRate(); //freakency * modes[i] / Stk::sampleRate()/32;
+    radius = 1.0 - CK_ONE_PI * 32 / Stk::sampleRate(); //freakency * modes[i] / Stk::sampleRate()/32;
     if ( radius < 0.0 ) radius = 0.0;
     bandpass[i].setResonance(freakency * modes[i], radius, true);
 
@@ -5791,7 +5791,7 @@ void BandedWG :: setStrikePosition(MY_FLOAT position)
   // 1.4.1.0 (prc)
   strikePosition = position; /***** REPAIRATHON2021 HACK *****/
   for (int i=0; i<MAX_BANDED_MODES; i++) { /***** REPAIRATHON2021 HACKS *****/
-    outGains[i] = fabs(sin((i+1)*ONE_PI*strikePosition)); /***** REPAIRATHON2021 HACKS *****/
+    outGains[i] = fabs(sin((i+1)*CK_ONE_PI*strikePosition)); /***** REPAIRATHON2021 HACKS *****/
     if (strikePosition == 0.0) outGains[i] = 1.0; // AVOID (Override) EDGE CASES
     if (strikePosition == 1.0) outGains[i] = 1.0; // WHERE GAINS WOULD COME OUT ZERO
   }
@@ -6141,7 +6141,7 @@ void BiQuad :: setA2(MY_FLOAT a2)
 void BiQuad :: setResonance(MY_FLOAT frequency, MY_FLOAT radius, bool normalize)
 {
   a[2] = radius * radius;
-  a[1] = -2.0 * radius * cos(TWO_PI * frequency / Stk::sampleRate());
+  a[1] = -2.0 * radius * cos(CK_TWO_PI * frequency / Stk::sampleRate());
 
   if ( normalize ) {
     // Use zeros at +- 1 and normalize the filter peak gain.
@@ -6155,7 +6155,7 @@ void BiQuad :: setNotch(MY_FLOAT frequency, MY_FLOAT radius)
 {
   // This method does not attempt to normalize the filter gain.
   b[2] = radius * radius;
-  b[1] = (MY_FLOAT) -2.0 * radius * cos(TWO_PI * (double) frequency / Stk::sampleRate());
+  b[1] = (MY_FLOAT) -2.0 * radius * cos(CK_TWO_PI * (double) frequency / Stk::sampleRate());
 }
 
 void BiQuad :: setEqualGainZeroes()
@@ -6257,7 +6257,7 @@ void Blit :: setFrequency( MY_FLOAT frequency )
 #endif
 
   p_ = Stk::sampleRate() / frequency;
-  rate_ = ONE_PI / p_;
+  rate_ = CK_ONE_PI / p_;
   this->updateHarmonics();
 }
 
@@ -6307,7 +6307,7 @@ MY_FLOAT Blit :: tick( void )
   }
 
   phase_ += rate_;
-  if ( phase_ >= ONE_PI ) phase_ -= ONE_PI;
+  if ( phase_ >= CK_ONE_PI ) phase_ -= CK_ONE_PI;
 
   return output;
 }
@@ -6361,7 +6361,7 @@ void BlitSaw :: setFrequency( MY_FLOAT frequency )
 
   p_ = Stk::sampleRate() / frequency;
   C2_ = 1 / p_;
-  rate_ = ONE_PI * C2_;
+  rate_ = CK_ONE_PI * C2_;
   this->updateHarmonics();
 }
 
@@ -6431,7 +6431,7 @@ MY_FLOAT BlitSaw :: tick( void )
   state_ = output * 0.995;
 
   phase_ += rate_;
-  if ( phase_ >= ONE_PI ) phase_ -= ONE_PI;
+  if ( phase_ >= CK_ONE_PI ) phase_ -= CK_ONE_PI;
 
   return output;
 }
@@ -6495,7 +6495,7 @@ void BlitSquare :: setFrequency( MY_FLOAT frequency )
   // waveform at half the blit frequency. Thus, we need to scale the
   // frequency value here by 0.5. (GPS, 2006).
   p_ = 0.5 * Stk::sampleRate() / frequency;
-  rate_ = ONE_PI / p_;
+  rate_ = CK_ONE_PI / p_;
   this->updateHarmonics();
 }
 
@@ -6541,7 +6541,7 @@ MY_FLOAT BlitSquare :: tick( void )
   MY_FLOAT denominator = sin( phase_ );
   if ( fabs( denominator )  < std::numeric_limits<MY_FLOAT>::epsilon() ) {
     // Inexact comparison safely distinguishes betwen *close to zero*, and *close to PI*.
-    if ( phase_ < 0.1f || phase_ > TWO_PI - 0.1f )
+    if ( phase_ < 0.1f || phase_ > CK_TWO_PI - 0.1f )
       m_boutput = a_;
     else
       m_boutput = -a_;
@@ -6558,7 +6558,7 @@ MY_FLOAT BlitSquare :: tick( void )
   dcbState_ = m_boutput;
 
   phase_ += rate_;
-  if ( phase_ >= TWO_PI ) phase_ -= TWO_PI;
+  if ( phase_ >= CK_TWO_PI ) phase_ -= CK_TWO_PI;
 
   return m_output;
 }
@@ -6815,8 +6815,8 @@ BlowHole :: BlowHole(MY_FLOAT lowestFrequency)
   double r_rh = 0.0015;    // register vent radius
   te = 1.4 * r_rh;         // effective length of the open hole
   double xi = 0.0;         // series resistance term
-  double zeta = 347.23 + 2*ONE_PI*pow(r_b,2)*xi/1.1769;
-  double psi = 2*ONE_PI*pow(r_b,2)*te / (ONE_PI*pow(r_rh,2));
+  double zeta = 347.23 + 2*CK_ONE_PI*pow(r_b,2)*xi/1.1769;
+  double psi = 2*CK_ONE_PI*pow(r_b,2)*te / (CK_ONE_PI*pow(r_rh,2));
   rh_coeff = (zeta - 2 * Stk::sampleRate() * psi) / (zeta + 2 * Stk::sampleRate() * psi);
   rh_gain = -347.23 / (zeta + 2 * Stk::sampleRate() * psi);
   vent = new PoleZero;
@@ -7541,17 +7541,17 @@ Chorus :: Chorus(MY_FLOAT baseDelay)
 
 Chorus :: ~Chorus()
 {
-  SAFE_DELETE( delayLine[0] );
-  SAFE_DELETE( delayLine[1] );
-  SAFE_DELETE( mods[0] );
-  SAFE_DELETE( mods[1] );
+  CK_SAFE_DELETE( delayLine[0] );
+  CK_SAFE_DELETE( delayLine[1] );
+  CK_SAFE_DELETE( mods[0] );
+  CK_SAFE_DELETE( mods[1] );
 }
 
 // chuck
 void Chorus :: set(MY_FLOAT baseDelay, MY_FLOAT depth)
 {
-  SAFE_DELETE( delayLine[0] );
-  SAFE_DELETE( delayLine[1] );
+  CK_SAFE_DELETE( delayLine[0] );
+  CK_SAFE_DELETE( delayLine[1] );
 
   delayLine[0] = new DelayL((long) baseDelay, (long) (baseDelay + baseDelay * depth) + 2);
   // delayLine[0] = new DelayL((long) baseDelay, (long) (baseDelay + baseDelay * 1.414 * depth) + 2);
@@ -10650,10 +10650,10 @@ bool Mandolin :: setBodyIR( const char * path, bool isRaw )
 Mandolin :: ~Mandolin()
 {
 //    for( int i=0; i<12; i++ )
-//        SAFE_DELETE( soundfile[i] );
+//        CK_SAFE_DELETE( soundfile[i] );
 
     // chuck: all the soundfiles are the same object, only delete one of them
-    SAFE_DELETE(soundfile[0]);
+    CK_SAFE_DELETE(soundfile[0]);
     for( int i=1; i<12; i++ )
         soundfile[i] = NULL;
 }
@@ -11481,7 +11481,7 @@ void ModalBar :: setStrikePosition(MY_FLOAT position)
   }
 
   // Hack only first three modes.
-  MY_FLOAT temp2 = position * ONE_PI;
+  MY_FLOAT temp2 = position * CK_ONE_PI;
   MY_FLOAT temp = sin(temp2);
   this->setModeGain(0, 0.12 * temp);
 
@@ -14641,7 +14641,7 @@ int Shakers :: setFreqAndReson(int which, MY_FLOAT theFreq, MY_FLOAT reson) {
     center_freqs[which] = theFreq;
     t_center_freqs[which] = theFreq;
     coeffs[which][1] = reson * reson;
-    coeffs[which][0] = -reson * 2.0 * cos(theFreq * TWO_PI / Stk::sampleRate());
+    coeffs[which][0] = -reson * 2.0 * cos(theFreq * CK_TWO_PI / Stk::sampleRate());
     return 1;
   }
   else return 0;
@@ -15146,7 +15146,7 @@ MY_FLOAT Shakers :: tick()
         for (i=0;i<nFreqs;i++) {
           if (freqalloc[i]) {
             temp_rand = t_center_freqs[i] * (1.0 + (freq_rand[i] * noise_tick()));
-            coeffs[i][0] = -resons[i] * 2.0 * cos(temp_rand * TWO_PI / Stk::sampleRate());
+            coeffs[i][0] = -resons[i] * 2.0 * cos(temp_rand * CK_TWO_PI / Stk::sampleRate());
           }
         }
         }
@@ -15260,7 +15260,7 @@ void Shakers :: controlChange(int number, MY_FLOAT value)
         temp = center_freqs[i] * pow (1.015,value-64);
       t_center_freqs[i] = temp;
 
-      coeffs[i][0] = -resons[i] * 2.0 * cos(temp * TWO_PI / Stk::sampleRate());
+      coeffs[i][0] = -resons[i] * 2.0 * cos(temp * CK_TWO_PI / Stk::sampleRate());
       coeffs[i][1] = resons[i]*resons[i];
     }
   }
@@ -15312,19 +15312,19 @@ MY_FLOAT Shakers :: wuter_tick() {
   if (gains[0] >  0.001) {
     center_freqs[0]  *= WUTR_FREQ_SWEEP;
     coeffs[0][0] = -resons[0] * 2.0 *
-      cos(center_freqs[0] * TWO_PI / Stk::sampleRate());
+      cos(center_freqs[0] * CK_TWO_PI / Stk::sampleRate());
   }
   gains[1] *= resons[1];
   if (gains[1] > 0.001) {
     center_freqs[1] *= WUTR_FREQ_SWEEP;
     coeffs[1][0] = -resons[1] * 2.0 *
-      cos(center_freqs[1] * TWO_PI / Stk::sampleRate());
+      cos(center_freqs[1] * CK_TWO_PI / Stk::sampleRate());
   }
   gains[2] *= resons[2];
   if (gains[2] > 0.001) {
     center_freqs[2] *= WUTR_FREQ_SWEEP;
     coeffs[2][0] = -resons[2] * 2.0 *
-      cos(center_freqs[2] * TWO_PI / Stk::sampleRate());
+      cos(center_freqs[2] * CK_TWO_PI / Stk::sampleRate());
   }
 
   sndLevel *= soundDecay;        // Each (all) event(s)
@@ -16002,7 +16002,7 @@ void StifKarp :: setStretch(MY_FLOAT stretch)
     biQuad[i]->setB0( coefficient );
     biQuad[i]->setB2( 1.0 );
 
-    coefficient = -2.0 * temp * cos(TWO_PI * freq / Stk::sampleRate());
+    coefficient = -2.0 * temp * cos(CK_TWO_PI * freq / Stk::sampleRate());
     biQuad[i]->setA1( coefficient );
     biQuad[i]->setB1( coefficient );
 
@@ -16642,12 +16642,12 @@ void TwoPole :: setA2(MY_FLOAT a2)
 void TwoPole :: setResonance(MY_FLOAT frequency, MY_FLOAT radius, bool normalize)
 {
   a[2] = radius * radius;
-  a[1] = (MY_FLOAT) -2.0 * radius * cos(TWO_PI * frequency / Stk::sampleRate());
+  a[1] = (MY_FLOAT) -2.0 * radius * cos(CK_TWO_PI * frequency / Stk::sampleRate());
 
   if ( normalize ) {
     // Normalize the filter gain ... not terribly efficient.
-    MY_FLOAT real = 1 - radius + (a[2] - radius) * cos(TWO_PI * 2 * frequency / Stk::sampleRate());
-    MY_FLOAT imag = (a[2] - radius) * sin(TWO_PI * 2 * frequency / Stk::sampleRate());
+    MY_FLOAT real = 1 - radius + (a[2] - radius) * cos(CK_TWO_PI * 2 * frequency / Stk::sampleRate());
+    MY_FLOAT imag = (a[2] - radius) * sin(CK_TWO_PI * 2 * frequency / Stk::sampleRate());
     b[0] = sqrt( pow(real, 2) + pow(imag, 2) );
   }
 }
@@ -16740,7 +16740,7 @@ void TwoZero :: setB2(MY_FLOAT b2)
 void TwoZero :: setNotch(MY_FLOAT frequency, MY_FLOAT radius)
 {
   b[2] = radius * radius;
-  b[1] = (MY_FLOAT) -2.0 * radius * cos(TWO_PI * (double) frequency / Stk::sampleRate());
+  b[1] = (MY_FLOAT) -2.0 * radius * cos(CK_TWO_PI * (double) frequency / Stk::sampleRate());
 
   // Normalize the filter gain.
   if (b[1] > 0.0) // Maximum at z = 0.
@@ -18164,7 +18164,7 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
         if( strstr(fileName, "special:sinewave") )
         {
             for (unsigned int j=0; j<bufferSize; j++)
-                data[j] = (SHRT_MAX) * sin(2*ONE_PI*j/bufferSize);
+                data[j] = (SHRT_MAX) * sin(2*CK_ONE_PI*j/bufferSize);
         }
         else
         {
@@ -19222,7 +19222,7 @@ WvOut :: ~WvOut()
 
   // 1.5.0.1 (ge) using macro
   // if (data) delete [] data;
-  SAFE_DELETE_ARRAY( data );
+  CK_SAFE_DELETE_ARRAY( data );
 }
 
 void WvOut :: init()
@@ -21857,7 +21857,7 @@ struct Brass_
 
    ~Brass_()
    {
-       SAFE_DELETE( imp );
+       CK_SAFE_DELETE( imp );
    }
 }; */
 
@@ -22361,7 +22361,7 @@ CK_DLL_CTOR( Flute_ctor )
 CK_DLL_DTOR( Flute_dtor )
 {
     Flute * f = (Flute *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    SAFE_DELETE(f);
+    CK_SAFE_DELETE(f);
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = 0;
 }
 
@@ -23046,7 +23046,7 @@ CK_DLL_CTOR( Sitar_ctor )
 CK_DLL_DTOR( Sitar_dtor )
 {
     Sitar * s = (Sitar *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    SAFE_DELETE(s);
+    CK_SAFE_DELETE(s);
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = 0;
 }
 
@@ -23118,7 +23118,7 @@ CK_DLL_CTOR( Saxofony_ctor )
 CK_DLL_DTOR( Saxofony_dtor )
 {
     Saxofony * d = (Saxofony *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
-    SAFE_DELETE(d);
+    CK_SAFE_DELETE(d);
     OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data) = 0;
 }
 
@@ -24191,7 +24191,7 @@ CK_DLL_CTOR( ADSR_ctor )
 {
     // TODO: fix this horrid thing
     Envelope * e = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    SAFE_DELETE(e);
+    CK_SAFE_DELETE(e);
 
     OBJ_MEMBER_UINT(SELF, Envelope_offset_data) = (t_CKUINT)new ADSR;
 }
@@ -28604,7 +28604,7 @@ CK_DLL_CTOR( JetTabl_ctor )
 CK_DLL_DTOR( JetTabl_dtor )
 {
     JetTabl * j = (JetTabl *)OBJ_MEMBER_UINT(SELF, JetTabl_offset_data);
-    SAFE_DELETE(j);
+    CK_SAFE_DELETE(j);
     OBJ_MEMBER_UINT(SELF, JetTabl_offset_data) = 0;
 }
 
@@ -28634,7 +28634,7 @@ CK_DLL_CTOR( Mesh2D_ctor ) {
 
 CK_DLL_DTOR( Mesh2D_dtor ) {
     Mesh2D * m = (Mesh2D *)OBJ_MEMBER_UINT(SELF, Mesh2D_offset_data);
-    SAFE_DELETE(m);
+    CK_SAFE_DELETE(m);
     OBJ_MEMBER_UINT(SELF, Mesh2D_offset_data) = 0;
 }
 
@@ -28728,14 +28728,14 @@ CK_DLL_CTOR( MidiFileIn_ctor )
 CK_DLL_DTOR( MidiFileIn_dtor )
 {
     stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
-    SAFE_DELETE(f);
+    CK_SAFE_DELETE(f);
     OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data) = 0;
 }
 
 CK_DLL_MFUN( MidiFileIn_open )
 {
     stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
-    SAFE_DELETE(f);
+    CK_SAFE_DELETE(f);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
 
     try
@@ -28755,7 +28755,7 @@ CK_DLL_MFUN( MidiFileIn_open )
 CK_DLL_MFUN( MidiFileIn_close )
 {
     stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
-    SAFE_DELETE(f);
+    CK_SAFE_DELETE(f);
     OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data) = 0;
 }
 

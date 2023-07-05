@@ -58,7 +58,7 @@ struct Chuck_Instr
 {
 public:
     Chuck_Instr();
-    virtual ~Chuck_Instr() { SAFE_DELETE(m_codestr); }
+    virtual ~Chuck_Instr() { CK_SAFE_DELETE(m_codestr); }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred ) = 0;

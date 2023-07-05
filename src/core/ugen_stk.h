@@ -6410,13 +6410,13 @@ class Blit : public BLT
   /*!
     Set the phase of the signal, in the range 0 to 1.
   */
-  virtual void setPhase( MY_FLOAT phase ) { phase_ = ONE_PI * phase; }
+  virtual void setPhase( MY_FLOAT phase ) { phase_ = CK_ONE_PI * phase; }
 
   //! Get the current phase of the signal.
   /*!
     Get the phase of the signal, in the range [0 to 1.0).
   */
-  MY_FLOAT getPhase() const { return phase_ / ONE_PI; }
+  MY_FLOAT getPhase() const { return phase_ / CK_ONE_PI; }
 
   //! Set the impulse train rate in terms of a frequency in Hz.
   virtual void setFrequency( MY_FLOAT frequency );
@@ -6497,7 +6497,7 @@ class BlitSaw : public BLT
   /*!
     Set the phase of the signal, in the range 0 to 1.
   */
-  virtual void setPhase( MY_FLOAT phase ) { phase_ = ONE_PI * phase; }
+  virtual void setPhase( MY_FLOAT phase ) { phase_ = CK_ONE_PI * phase; }
 
   //! Set the sawtooth oscillator rate in terms of a frequency in Hz.
   virtual void setFrequency( MY_FLOAT frequency );
@@ -6588,13 +6588,13 @@ class BlitSquare : public BLT
   /*!
     Set the phase of the signal, in the range 0 to 1.
   */
-  virtual void setPhase( MY_FLOAT phase ) { phase_ = ONE_PI * phase; }
+  virtual void setPhase( MY_FLOAT phase ) { phase_ = CK_ONE_PI * phase; }
 
   //! Get the current phase of the signal.
   /*!
     Get the phase of the signal, in the range [0 to 1.0).
   */
-  MY_FLOAT getPhase() const { return phase_ / ONE_PI; }
+  MY_FLOAT getPhase() const { return phase_ / CK_ONE_PI; }
 
   //! Set the impulse train rate in terms of a frequency in Hz.
   virtual void setFrequency( MY_FLOAT frequency );

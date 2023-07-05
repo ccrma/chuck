@@ -376,12 +376,12 @@ t_CKBOOL Chuck_VM::shutdown()
 
     // REFACTOR-2017: clean up after my global variables
     m_globals_manager->cleanup_global_variables();
-    SAFE_DELETE( m_globals_manager );
+    CK_SAFE_DELETE( m_globals_manager );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
-    SAFE_DELETE( m_shreduler );
+    CK_SAFE_DELETE( m_shreduler );
 
     #ifndef __DISABLE_HID__
     // log
@@ -398,11 +398,11 @@ t_CKBOOL Chuck_VM::shutdown()
     // log
     EM_log( CK_LOG_SYSTEM, "freeing msg/reply/event buffers..." );
     // free the msg buffer
-    SAFE_DELETE( m_msg_buffer );
+    CK_SAFE_DELETE( m_msg_buffer );
     // free the reply buffer
-    SAFE_DELETE( m_reply_buffer );
+    CK_SAFE_DELETE( m_reply_buffer );
     // free the event buffer
-    SAFE_DELETE( m_event_buffer );
+    CK_SAFE_DELETE( m_event_buffer );
 
     // log
     EM_log( CK_LOG_SEVERE, "clearing shreds..." );
@@ -428,9 +428,9 @@ t_CKBOOL Chuck_VM::shutdown()
     // log
     EM_log( CK_LOG_SYSTEM, "freeing special ugens..." );
     // go
-    SAFE_RELEASE( m_dac );
-    SAFE_RELEASE( m_adc );
-    SAFE_RELEASE( m_bunghole );
+    CK_SAFE_RELEASE( m_dac );
+    CK_SAFE_RELEASE( m_adc );
+    CK_SAFE_RELEASE( m_bunghole );
 
     // set state
     m_init = FALSE;
@@ -947,7 +947,7 @@ done:
         m_reply_buffer->put( &msg, 1 );
     }
     else
-        SAFE_DELETE(msg);
+        CK_SAFE_DELETE(msg);
 
     return retval;
 }
@@ -1152,7 +1152,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // TODO: remove shred from event, with synchronization (still necessary with dump?)
     // if( shred->event ) shred->event->remove( shred );
     // OLD: shred->release();
-    this->dump( shred );
+    this->dump_shred( shred );
     shred = NULL;
     if( dec ) m_num_shreds--;
     if( !m_num_shreds ) m_shred_id = 0;
@@ -1193,10 +1193,10 @@ t_CKBOOL Chuck_VM::abort_current_shred( )
 
 
 //-----------------------------------------------------------------------------
-// name: dump()
+// name: dump_shred()
 // desc: place a shred into the "dump" to be later released
 //-----------------------------------------------------------------------------
-void Chuck_VM::dump( Chuck_VM_Shred * shred )
+void Chuck_VM::dump_shred( Chuck_VM_Shred * shred )
 {
     // log
     EM_log( CK_LOG_FINER, "dumping shred (id==%d | ptr==%p)", shred->xid,
@@ -1227,7 +1227,7 @@ void Chuck_VM::release_dump( )
 
     // iterate through dump
     for( t_CKUINT i = 0; i < m_shred_dump.size(); i++ )
-        SAFE_RELEASE( m_shred_dump[i] );
+        CK_SAFE_RELEASE( m_shred_dump[i] );
 
     // clear the dump
     m_shred_dump.clear();
@@ -1296,7 +1296,7 @@ Chuck_VM_Code::~Chuck_VM_Code()
             delete instr[i];
 
         // free the array
-        SAFE_DELETE_ARRAY( instr );
+        CK_SAFE_DELETE_ARRAY( instr );
     }
 
     num_instr = 0;
@@ -1360,7 +1360,7 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 
     // free the stack
     stack -= VM_STACK_OFFSET;
-    SAFE_DELETE_ARRAY( stack );
+    CK_SAFE_DELETE_ARRAY( stack );
     sp = sp_max = NULL;
 
     // set the flag to false
@@ -1522,12 +1522,12 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     m_parent_objects.clear();
 
     // reclaim the stacks
-    SAFE_DELETE( mem );
-    SAFE_DELETE( reg );
+    CK_SAFE_DELETE( mem );
+    CK_SAFE_DELETE( reg );
     base_ref = NULL;
 
     // delete temp pointer space
-    // SAFE_DELETE_ARRAY( obj_array );
+    // CK_SAFE_DELETE_ARRAY( obj_array );
     // obj_array_size = 0;
 
     // TODO: is this right?
@@ -1547,7 +1547,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         }
 
         m_serials->clear();
-        SAFE_DELETE(m_serials);
+        CK_SAFE_DELETE(m_serials);
     }
     #endif
 
@@ -1898,7 +1898,7 @@ t_CKBOOL Chuck_VM_Shreduler::remove_blocked( Chuck_VM_Shred * shred )
         shred->event->remove( shred );
         // but, we still have to release the event afterward
         // to signify that the shred is done using the event
-        SAFE_RELEASE( event_to_release );
+        CK_SAFE_RELEASE( event_to_release );
     }
 
     return TRUE;
@@ -2506,7 +2506,7 @@ void Chuck_VM_Status::clear()
 {
     for( t_CKUINT i = 0; i < list.size(); i++ )
     {
-        SAFE_DELETE( list[i] );
+        CK_SAFE_DELETE( list[i] );
     }
 
     list.clear();
@@ -2859,7 +2859,7 @@ void Chuck_VM_Debug::insert( Chuck_VM_Object * obj )
     m_objects_map[key][obj] = obj;
 }
 
-// insert into object map
+// remove from object map
 void Chuck_VM_Debug::remove( Chuck_VM_Object * obj )
 {
     // map key

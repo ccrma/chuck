@@ -62,7 +62,7 @@ void all_detach();
 void usage();
 void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
-void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
+void cb( SAMPLE * in, SAMPLE * out, t_CKUINT numFrames,
          t_CKUINT numInChans, t_CKUINT numOutChans, void * data );
 
 // C functions
@@ -151,7 +151,7 @@ int chuck_main( int argc, const char ** argv )
 // name: cb()
 // desc: audio callback
 //-----------------------------------------------------------------------------
-void cb( t_CKSAMPLE * in, t_CKSAMPLE * out, t_CKUINT numFrames,
+void cb( SAMPLE * in, SAMPLE * out, t_CKUINT numFrames,
          t_CKUINT numInChans, t_CKUINT numOutChans, void * data )
 {
     // TODO: check channel numbers
@@ -351,10 +351,10 @@ t_CKBOOL global_cleanup()
     ChucK::globalCleanup();
     
     // delete the chuck
-    SAFE_DELETE( the_chuck );
+    CK_SAFE_DELETE( the_chuck );
 
     // delete shell and set to NULL | 1.4.1.0
-    if( g_enable_shell ) SAFE_DELETE( g_shell );
+    if( g_enable_shell ) CK_SAFE_DELETE( g_shell );
 
     // wait for the shell, if it is running
     // does the VM reset its priority to normal before exiting?
@@ -979,7 +979,7 @@ t_CKBOOL go( int argc, const char ** argv )
         // no vm is needed, just start running the shell now
         g_shell->run();
         // clean up
-        SAFE_DELETE( g_shell );
+        CK_SAFE_DELETE( g_shell );
         // done
         exit( 0 );
     }

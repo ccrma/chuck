@@ -167,7 +167,7 @@ ChucK::~ChucK()
     // decrement the numChucKs
     o_numVMs--;
     // clean up the carrier
-    SAFE_DELETE( m_carrier );
+    CK_SAFE_DELETE( m_carrier );
 }
 
 
@@ -557,7 +557,7 @@ t_CKBOOL ChucK::initCompiler()
         // make c++ string
         cwd = std::string(cstr_cwd);
         // reclaim memory from getcwd
-        SAFE_FREE(cstr_cwd);
+        CK_SAFE_FREE(cstr_cwd);
         // add trailing "/"
         cwd += '/';
         // deferring this step until later, and only for Windows
@@ -930,8 +930,8 @@ t_CKBOOL ChucK::shutdown()
     // ensure we have a carrier
     if( m_carrier != NULL )
     {
-        SAFE_RELEASE( m_carrier->chout );
-        SAFE_RELEASE( m_carrier->cherr );
+        CK_SAFE_RELEASE( m_carrier->chout );
+        CK_SAFE_RELEASE( m_carrier->cherr );
     }
     // relock
     Chuck_VM_Object::lock_all();
@@ -940,8 +940,8 @@ t_CKBOOL ChucK::shutdown()
     if( m_carrier != NULL )
     {
         // clean up vm, compiler
-        SAFE_DELETE( m_carrier->vm );
-        SAFE_DELETE( m_carrier->compiler );
+        CK_SAFE_DELETE( m_carrier->vm );
+        CK_SAFE_DELETE( m_carrier->compiler );
         m_carrier->env = NULL;
     }
 

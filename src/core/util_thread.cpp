@@ -297,9 +297,9 @@ XWriteThread::XWriteThread(size_t data_buffer_size, size_t msg_buffer_size)
 //-----------------------------------------------------------------------------
 XWriteThread::~XWriteThread()
 {
-    SAFE_DELETE( m_msg_buffer );
-    SAFE_DELETE( m_data_buffer );
-    SAFE_DELETE_ARRAY( m_thread_buffer );
+    CK_SAFE_DELETE( m_msg_buffer );
+    CK_SAFE_DELETE( m_data_buffer );
+    CK_SAFE_DELETE_ARRAY( m_thread_buffer );
 }
 
 
