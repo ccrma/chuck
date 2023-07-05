@@ -16252,16 +16252,9 @@ void Stk :: swap64(unsigned char *ptr)
 
 void Stk :: sleep(unsigned long milliseconds)
 {
-#if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
-  #ifndef __CHUNREAL_ENGINE__
-    Sleep( (DWORD)milliseconds );
-  #else
-    // 1.5.0.0 (ge) | #chunreal
-    #define usleep(x) FPlatformProcess::Sleep( x/1000.0f <= 0 ? .001 : x/1000.0f );
-  #endif // #ifndef __UNREAL_ENGINE__
-#else
-  usleep( (unsigned int)(milliseconds * 1000.0) ); // 1.4.2.0 (ge) | changed cast to unsigned int to clear a warning
-#endif // #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+    // 1.4.2.0 (ge) | changed cast to unsigned int to clear a warning
+    // 1.5.0.5 (ge and eito) call usleep resolved elsewhere
+    usleep( (unsigned int)(milliseconds * 1000.0) );
 }
 
 void Stk :: handleError( const char *message, StkError::TYPE type )

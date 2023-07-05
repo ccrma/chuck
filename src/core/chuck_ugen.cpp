@@ -1243,7 +1243,7 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
                 }
 
                 // mono mixdown
-                m_current_v[i] = multi/m_multi_chan_size;
+                m_current_v[f] = multi/m_multi_chan_size;
             }
 
             // save as last
