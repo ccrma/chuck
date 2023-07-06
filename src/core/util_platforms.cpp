@@ -398,12 +398,12 @@ size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
 void ck_usleep( t_CKUINT microseconds )
 {
 #if defined(__PLATFORM_WIN32__) && !defined(usleep)
-    #ifndef __CHUNREAL_ENGINE__
-        #define usleep(x) Sleep((x / 1000 <= 0 ? 1 : x / 1000) )
-    #else
-        // 1.5.0.0 (ge) | #chunreal
-        #define usleep(x) FPlatformProcess::Sleep( x/1000000.0f <= 0 ? .001 : x/1000000.0f );
-    #endif // #ifndef __UNREAL_ENGINE__
+  #ifndef __CHUNREAL_ENGINE__
+    Sleep( x / 1000 <= 0 ? 1 : x / 1000 );
+  #else
+    // 1.5.0.0 (ge) | #chunreal
+    FPlatformProcess::Sleep( x/1000000.0f <= 0 ? .001 : x/1000000.0f );
+  #endif // #ifndef __UNREAL_ENGINE__
 #else
     // call system usleep
     usleep( (useconds_t)microseconds );
