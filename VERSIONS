@@ -50,6 +50,8 @@ ChucK VERSIONS log
 - (updated) examples/machine/eval.ck -- updated to reflect the above
 - (added) examples/machine/eval-global.ck -- shows the new Machine.eval()
   in action to synchronously modify a shared global variable
+- (added) examples/machine/version.ck -- ever wonder which chuck language
+  version you are currently using?
 - (added) scientific notations for floating point
   <<< 123e4 >>>; // prints 1230000.000000 :(float)
 - (added) hexidecimal float literals
