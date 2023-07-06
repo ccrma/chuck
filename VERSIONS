@@ -4,9 +4,9 @@ ChucK VERSIONS log
 
 1.5.0.5 (July 2023)
 ---
-- (added) color TTY support for command-line chuck is here! chuck in
-  color! compiler errors, probes, logs, on-the-fly programm (OTF), and 
-  other messages are now output in color, when chuck detects it is 
+- (added) color TTY support for command-line chuck is here! ChucK in
+  color! compiler errors, probes, logs, on-the-fly programming (OTF),
+  and other messages are now output in color, when chuck detects it is 
   outputting to a TTY (e.g., interactive terminal).
 - (added) color TTY can can be explicitly enabled/disabled using
   --color and --no-color when running chuck on the command line
