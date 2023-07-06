@@ -44,29 +44,30 @@
 //-----------------------------------------------------------------------------
 // define, defaults, forward references
 //-----------------------------------------------------------------------------
-#define NUM_CHANNELS_DEFAULT         2       // number of channels
-#define NUM_BUFFERS_DEFAULT          8       // number buffers
 // sample rate defaults by platform
-#if defined(__PLATFORM_LINUX__)
-  #define SAMPLE_RATE_DEFAULT      48000
-  #define BUFFER_SIZE_DEFAULT        256
-#elif defined(__PLATFORM_MACOSX__)
-  #define SAMPLE_RATE_DEFAULT      44100
-  #define BUFFER_SIZE_DEFAULT        256
-#else
-  #define SAMPLE_RATE_DEFAULT      44100
-  #define BUFFER_SIZE_DEFAULT        512
+#if defined(__PLATFORM_LINUX__)         // linux
+  #define CK_SAMPLE_RATE_DEFAULT        48000
+  #define CK_BUFFER_SIZE_DEFAULT        256
+#elif defined(__PLATFORM_MACOSX__)      // macOS
+  #define CK_SAMPLE_RATE_DEFAULT        44100
+  #define CK_BUFFER_SIZE_DEFAULT        256
+#else                                   // windows & everywhere else
+  #define CK_SAMPLE_RATE_DEFAULT        44100
+  #define CK_BUFFER_SIZE_DEFAULT        512
 #endif
 
+// number of channels
+#define CK_NUM_CHANNELS_DEFAULT         2
+// number buffers
+#define CK_NUM_BUFFERS_DEFAULT          8
 
 
-
+//-----------------------------------------------------------------------------
 // audio callback definition
+//-----------------------------------------------------------------------------
 typedef void (* f_audio_cb)( SAMPLE * input, SAMPLE * output,
     t_CKUINT numFrames, t_CKUINT numInChans, t_CKUINT numOutChans,
     void * userData );
-
-
 
 
 // real-time watch dog

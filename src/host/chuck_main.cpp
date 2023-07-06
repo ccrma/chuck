@@ -483,10 +483,10 @@ void * shell_cb( void * p )
 t_CKBOOL go( int argc, const char ** argv )
 {
     t_CKBOOL vm_halt = TRUE;
-    t_CKINT srate = SAMPLE_RATE_DEFAULT;
+    t_CKINT srate = CK_SAMPLE_RATE_DEFAULT;
     t_CKBOOL force_srate = FALSE; // added 1.3.1.2
-    t_CKINT buffer_size = BUFFER_SIZE_DEFAULT;
-    t_CKINT num_buffers = NUM_BUFFERS_DEFAULT;
+    t_CKINT buffer_size = CK_BUFFER_SIZE_DEFAULT;
+    t_CKINT num_buffers = CK_NUM_BUFFERS_DEFAULT;
     t_CKINT dac = 0;
     t_CKINT adc = 0;
     std::string dac_name = ""; // added 1.3.0.0
