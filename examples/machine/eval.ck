@@ -1,12 +1,14 @@
 // name: eval.ck
-// desc: use Machine.eval to run-time compile and run string as code
-//       this enables chuck to generate more code to run!
+// desc: use Machine.eval() to compile and run code from a string;
+//       this as enables chuck to generate code to run at run-time;
 //       powerful! perilous!
 //
-// version: need chuck-1.5.0.5 or higher
-//          first introduced in 1.5.0.0; behavior was changed
-//          in 1.5.0.5 to run immediately, yielding the current
-//          shred
+// version: requires chuck-1.5.0.5 or higher
+//          Machine.eval() was first introduced in 1.5.0.0;
+//          the operation semantics was changed in 1.5.0.5 for
+//          Machine eval to run immediately, and automatically
+//          yielding the current shred to give the eval'ed code
+//          a chance to run -- all this without advancing time
 //
 // uncomment this to print out info about Machine:
 // Machine.help();
