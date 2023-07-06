@@ -399,10 +399,10 @@ void ck_usleep( t_CKUINT microseconds )
 {
 #if defined(__PLATFORM_WIN32__) && !defined(usleep)
   #ifndef __CHUNREAL_ENGINE__
-    Sleep( x / 1000 <= 0 ? 1 : x / 1000 );
+    Sleep( microseconds / 1000 <= 0 ? 1 : microseconds / 1000 );
   #else
     // 1.5.0.0 (ge) | #chunreal
-    FPlatformProcess::Sleep( x/1000000.0f <= 0 ? .001 : x/1000000.0f );
+    FPlatformProcess::Sleep( microseconds/1000000.0f <= 0 ? .001 : microseconds/1000000.0f );
   #endif // #ifndef __UNREAL_ENGINE__
 #else
     // call system usleep
