@@ -12,12 +12,13 @@ ChucK VERSIONS log
   --color and --no-color when running chuck on the command line
 - (added) color TTY support for --verbose --probe and --chugin-probe
   ===
-- (added) code highlighting when reporting compiler errors
+- (added) chuck compiler now highlights code when reporting 
+  compiler errors, pinpointing the error location
   ```
   terminal> chuck test/06-Errors/error-no-memb2.ck
     error-no-memb2.ck:3:5: error: class 'SinOsc' has no member 'test'
     [3] foo.test();
-          ^
+            ^
   terminal> chuck test/06-Errors/error-syntax-1.ck
     error-syntax-1.ck:5:12: syntax error
     [5] */ it @ is not ! valid => syntax!
@@ -56,7 +57,10 @@ ChucK VERSIONS log
 - (updated) chugins with errors during query are no longer loaded,
   and is more clearly reported (LOG level -v3 or above)
 - (updated) more robust parsing of code literals
-- (updated, developer)
+- (updated, developer) repaying ancient debt -- AST tree cleanup
+- (updated, developer) reworking chuck_vm_debug system
+- (updated, developer) renaming global names CK_* or ck_* to minimize 
+  conflict when using chuck-core as component
 
 
 1.5.0.4 (June 2023)
