@@ -211,6 +211,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_ex( QUERY, "machine/intsize.ck" );
     QUERY->add_ex( QUERY, "machine/is-realtime.ck" );
     QUERY->add_ex( QUERY, "machine/machine-shred.ck" );
+    QUERY->add_ex( QUERY, "machine/version.ck" );
     QUERY->add_ex( QUERY, "book/digital-artists/chapter9/DrumMachine" );
     QUERY->add_ex( QUERY, "book/digital-artists/chapter9/SmartMandolin/initialize.ck" );
 
