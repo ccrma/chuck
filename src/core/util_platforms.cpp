@@ -392,6 +392,28 @@ size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
 
 
 //-----------------------------------------------------------------------------
+// name: ck_usleep()
+// desc: usleep in microseconds
+//-----------------------------------------------------------------------------
+void ck_usleep( t_CKUINT microseconds )
+{
+#if defined(__PLATFORM_WIN32__) && !defined(usleep)
+    #ifndef __CHUNREAL_ENGINE__
+        #define usleep(x) Sleep((x / 1000 <= 0 ? 1 : x / 1000) )
+    #else
+        // 1.5.0.0 (ge) | #chunreal
+        #define usleep(x) FPlatformProcess::Sleep( x/1000000.0f <= 0 ? .001 : x/1000000.0f );
+    #endif // #ifndef __UNREAL_ENGINE__
+#else
+    // call system usleep
+    usleep( (useconds_t)microseconds );
+#endif
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 #if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
 //-----------------------------------------------------------------------------
 #include <sys/types.h>

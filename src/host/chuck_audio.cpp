@@ -37,6 +37,7 @@
 #include "chuck_errmsg.h"
 #include "util_string.h"
 #include "util_thread.h"
+#include "util_platforms.h"
 #include <limits.h>
 #include "rtmidi.h"
 
@@ -596,7 +597,7 @@ static unsigned int __stdcall watch_dog( void * )
         }
         
         // advance time
-        usleep( 40000 );
+        ck_usleep( 40000 );
     }
     
     // log
@@ -644,7 +645,7 @@ t_CKBOOL ChuckAudio::watchdog_stop()
     // stop things
     g_do_watchdog = FALSE;
     // wait a bit | TODO: is this needed?
-    usleep( 100000 );
+    ck_usleep( 100000 );
     // delete watchdog thread | TODO: is this safe?
     CK_SAFE_DELETE( g_watchdog_thread );
     

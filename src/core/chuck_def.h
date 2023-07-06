@@ -187,17 +187,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 //#define __PLATFORM_LINUX__
 #endif
 
-// unsleep( microseconds )
 #ifdef __PLATFORM_WIN32__
-#ifndef usleep
-  #ifndef __CHUNREAL_ENGINE__
-    #define usleep(x) Sleep((x / 1000 <= 0 ? 1 : x / 1000) )
-  #else
-    // 1.5.0.0 (ge) | #chunreal
-    #define usleep(x) FPlatformProcess::Sleep( x/1000000.0f <= 0 ? .001 : x/1000000.0f );
-  #endif // #ifndef __UNREAL_ENGINE__
-#endif // #ifndef usleep
-
 // 1.4.2.0 (ge and spencer) | added for legacy windows, as part of switch to snprintf
 // https://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
 #if defined(_MSC_VER) && _MSC_VER < 1900

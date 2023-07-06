@@ -33,10 +33,8 @@
 //-----------------------------------------------------------------------------
 #include "util_thread.h"
 #include "util_buffers.h"
+#include "util_platforms.h"
 #include "chuck_errmsg.h"
-#ifndef __PLATFORM_WIN32__
-#include <unistd.h> // usleep
-#endif
 
 
 
@@ -485,7 +483,7 @@ unsigned XWriteThread::write_cb(void * _thiss)
             }
         }
 
-        usleep(1000);
+        ck_usleep(1000);
     }
 
     delete _this;

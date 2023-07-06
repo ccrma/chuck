@@ -138,7 +138,7 @@ int chuck_main( int argc, const char ** argv )
         // we got here possibly because global_cleanup() is underway on
         // another thread; wait a bit and give actual cleaner a chance to
         // finish | 1.5.0.4 (ge) added
-        usleep( 50000 );
+        ck_usleep( 50000 );
     }
     
     return 0;
@@ -285,7 +285,7 @@ extern "C" void signal_int( int sig_num )
         // we got here possibly because global_cleanup() is underway on
         // another thread; wait a bit and give actual cleaner a chance to
         // finish | 1.5.0.4 (ge) added
-        usleep( 50000 );
+        ck_usleep( 50000 );
     }
 
     // exit with code
@@ -360,7 +360,7 @@ t_CKBOOL global_cleanup()
     // does the VM reset its priority to normal before exiting?
     //if( g_enable_shell )
     //    while( g_shell != NULL )
-    //        usleep(10000);
+    //        ck_usleep(10000);
 
     // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
     // things don't work so good on windows...
@@ -1324,7 +1324,7 @@ t_CKBOOL go( int argc, const char ** argv )
             if( hook ) {
                 hook->m_hook( hook->m_bindle );
             } else {
-                usleep( 10000 );
+                ck_usleep( 10000 );
             }
         }
         else // silent mode

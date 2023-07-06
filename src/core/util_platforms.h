@@ -70,6 +70,9 @@ t_CKUINT ck_ttywidth_default();
 // abstraction for getline, c edition
 size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );
 
+// sleep
+void ck_usleep( t_CKUINT microseconds );
+
 
 
 

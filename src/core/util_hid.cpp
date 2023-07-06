@@ -30,6 +30,7 @@
 // date: summer 2006
 //-----------------------------------------------------------------------------
 #include "util_hid.h"
+#include "util_platforms.h"
 #include "chuck_errmsg.h"
 #include "hidio_sdl.h"
 
@@ -2746,12 +2747,12 @@ static unsigned int __stdcall sms_loop( void * )
                 SMSManager::z = TiltSensor_data.data.macbookpro.z;
             }
             // wait
-            usleep( SMSManager::wait_time );
+            ck_usleep( SMSManager::wait_time );
         }
         else
         {
             // wait
-            usleep( 1000 );
+            ck_usleep( 1000 );
         }
     }
 
@@ -3679,11 +3680,11 @@ t_CKINT WiiRemote::control_init()
 
     enable_peripherals( FALSE, TRUE, TRUE, TRUE );
 
-    usleep( 1000 );
+    ck_usleep( 1000 );
     enable_leds( ( num % 4 ) == 0, ( ( num - 1 ) % 4 ) == 0,
                  ( ( num - 2 ) % 4 ) == 0, ( ( num - 3 ) % 4 ) == 0 );
 
-    usleep( 1000 );
+    ck_usleep( 1000 );
     enable_speaker( FALSE );
 
     HidMsg msg;
@@ -4244,27 +4245,27 @@ void WiiRemote::initialize_ir_sensor()
 
     unsigned char en0[] = { 0x01 };
     write_memory( en0, 1, 0x04b00030 );
-    //usleep(10000);
+    //ck_usleep(10000);
 
     unsigned char en[] = { 0x08 };
     write_memory( en, 1, 0x04b00030 );
-    //usleep(10000);
+    //ck_usleep(10000);
 
     unsigned char sensitivity_block1[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00, 0xc0 };
     write_memory( sensitivity_block1, 9, 0x04b00000 );
-    //usleep(10000);
+    //ck_usleep(10000);
 
     unsigned char sensitivity_block2[] = { 0x40, 0x00 };
     write_memory( sensitivity_block2, 2, 0x04b0001a );
-    //usleep(10000);
+    //ck_usleep(10000);
 
     unsigned char mode[] = { 0x03 };
     write_memory( mode, 1, 0x04b00033 );
-    // usleep(10000);
+    //ck_usleep(10000);
 
     unsigned char what[] = { 0x08 };
     write_memory( what, 1, 0x04b00030 );
-    //usleep(10000);
+    //ck_usleep(10000);
 }
 
 void WiiRemote::enable_extension( t_CKBOOL enable )
@@ -4850,7 +4851,7 @@ static void (*g_wait_function)() = NULL;
 
 static void Hid_wait_usleep()
 {
-    usleep( 10 );
+    ck_usleep( 10 );
 }
 
 static void Hid_wait_event()

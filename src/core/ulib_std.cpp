@@ -31,11 +31,14 @@
 //-----------------------------------------------------------------------------
 #include "ulib_std.h"
 #include "util_buffers.h"
+#include "util_math.h"
+#include "util_string.h"
+#include "util_platforms.h"
+
 #ifndef __DISABLE_PROMPTER__
 #include "util_console.h"
 #endif
-#include "util_math.h"
-#include "util_string.h"
+
 #ifndef __DISABLE_THREADS__
 #include "util_thread.h"
 #endif
@@ -937,7 +940,7 @@ static unsigned int __stdcall kb_loop( void * )
         }
 
         // wait
-        usleep( 5000 );
+        ck_usleep( 5000 );
     }
 
     return 0;
@@ -1245,7 +1248,7 @@ void * le_cb( void * p )
     {
         // wait
         while( g_le_wait )
-            usleep( 10000 );
+            ck_usleep( 10000 );
 
         // REFACTOR-2017: TODO Ge:
         // I removed the check here for if there are no more vms running

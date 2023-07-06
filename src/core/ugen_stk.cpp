@@ -46,6 +46,7 @@
 #include "chuck_io.h"
 #include "chuck_oo.h"
 #include "util_math.h"
+#include "util_platforms.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -16253,8 +16254,8 @@ void Stk :: swap64(unsigned char *ptr)
 void Stk :: sleep(unsigned long milliseconds)
 {
     // 1.4.2.0 (ge) | changed cast to unsigned int to clear a warning
-    // 1.5.0.5 (ge and eito) call usleep resolved elsewhere
-    usleep( (unsigned int)(milliseconds * 1000.0) );
+    // 1.5.0.5 (ge and eito) call ck_usleep resolved elsewhere
+    ck_usleep( (unsigned int)(milliseconds * 1000.0) );
 }
 
 void Stk :: handleError( const char *message, StkError::TYPE type )

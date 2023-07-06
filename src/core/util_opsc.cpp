@@ -35,6 +35,7 @@
 //chuck networking code
 #include "util_network.h"
 #include "util_thread.h"
+#include "util_platforms.h"
 
 #include "chuck_errmsg.h"
 #include "chuck_vm.h"
@@ -1156,7 +1157,7 @@ UDP_Port_Listener::~UDP_Port_Listener()
 {
     //CK_FPRINTF_STDERR( "port listener destructor\n" );
     close();
-    // usleep( 10 );    // do we need this ?
+    // ck_usleep( 10 );    // do we need this ?
     delete m_in;
     delete m_mutex;
     delete m_thread;
@@ -1231,7 +1232,7 @@ THREAD_RETURN (THREAD_TYPE udp_port_listener_thread)( void * data )
     int mLen;
     do {
         mLen = upl->recv_mesg();
-        usleep( 10 );
+        ck_usleep( 10 );
     } while( mLen != 0 );
 
     EM_log( CK_LOG_INFO, "UDP_Port_Listener:: receive loop terminated...\n" );
@@ -1716,7 +1717,7 @@ THREAD_RETURN (THREAD_TYPE osc_recv_thread)( void * data )
 
     do {
         oscar->recv_mesg();
-        usleep( 10 );
+        ck_usleep( 10 );
     }while( true );
 
     return (THREAD_RETURN)0;

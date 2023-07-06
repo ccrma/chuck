@@ -886,7 +886,7 @@ t_CKBOOL ChucK::shutdown()
         // wait for it to stop...
         while( m_carrier->vm->running() )
         {
-            usleep(1000);
+            ck_usleep(1000);
         }
     }
 

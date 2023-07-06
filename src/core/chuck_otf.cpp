@@ -681,7 +681,7 @@ void * otf_cb( void * p )
         {
             if( carrier->vm )
                 EM_log( CK_LOG_INFO, "[chuck]: socket error during accept()..." );
-            usleep( 40000 );
+            ck_usleep( 40000 );
             // ck_close( client );  don't close NULL client
             continue;
         }
@@ -693,7 +693,7 @@ void * otf_cb( void * p )
         if( n != sizeof(msg) )
         {
             EM_error2( 0, "0-length packet..." );
-            usleep( 40000 );
+            ck_usleep( 40000 );
             ck_close( client );
             continue;
         }
@@ -730,7 +730,7 @@ void * otf_cb( void * p )
             }
             else
             {
-                usleep( 10000 );
+                ck_usleep( 10000 );
             }
         }
 
@@ -779,6 +779,6 @@ void uh( )
     {
         int n = (int)(ck_random() / (float)CK_RANDOM_MAX * poop_size);
         printf( "%s\n", poop[n] );
-        usleep( (unsigned int)(ck_random() / (float)CK_RANDOM_MAX * 2000000) / 10 );
+        ck_usleep( (unsigned int)(ck_random() / (float)CK_RANDOM_MAX * 2000000) / 10 );
     }
 }

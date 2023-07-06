@@ -34,6 +34,7 @@
 #include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
+#include "util_platforms.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
@@ -57,6 +58,7 @@
 #endif // __PLATFORM_WIN32__
 #include <fcntl.h>
 #include <math.h>
+#include <stdint.h> // 1.5.0.5
 
 #include <iomanip>
 #include <sstream>
@@ -75,9 +77,6 @@ typedef DWORD uint32_t;
 #endif
 #endif
 
-#ifdef __PLATFORM_LINUX__
-#include <stdint.h>
-#endif
 
 // global
 static Chuck_String * g_newline = new Chuck_String();
@@ -4341,7 +4340,7 @@ void Chuck_IO_Serial::read_cb()
         if(m_asyncResponses.numElements() > 0)
             queue_broadcast(m_event_buffer);
 
-        usleep(100);
+        ck_usleep(100);
     }
 
     m_write_thread->wait(-1);
@@ -4383,7 +4382,7 @@ void Chuck_IO_Serial::write_cb()
         }
 
         // todo: replace with semaphore?
-        usleep(100);
+        ck_usleep(100);
     }
 
     delete[] tmp_writethread_buf;
