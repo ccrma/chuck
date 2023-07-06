@@ -211,6 +211,8 @@ endif
 NOTES=AUTHORS DEVELOPERS INSTALL LICENSE QUICKSTART README.md THANKS VERSIONS
 # where to put the newly constructed distribution
 DIST_DIR=chuck-$(CK_VERSION)
+# root directory where the above is found
+DIST_ROOT=..
 
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
@@ -236,11 +238,13 @@ $(CXXOBJS_HOST): %.o: %.cpp
 	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
+# ASSUME: done from chuck/src/
 clean:
-	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} $(OBJS) \
-        $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
-	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c \
-        $(COREDIR)/chuck.yy.c $(DIST_DIR){,.tgz,.zip} Release Debug
+	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} \
+	$(OBJS) $(patsubst %.o,%.d,$(OBJS))*~ $(COREDIR)/chuck.output \
+	$(COREDIR)/chuck.tab.h $(COREDIR)/chuck.tab.c $(COREDIR)/chuck.yy.c \
+	$(DIST_ROOT)/$(DIST_DIR) $(DIST_ROOT)/$(DIST_DIR){,.tgz,.zip} \
+	Release Debug
 
 
 ############################### RUN TEST #######################################
@@ -255,7 +259,7 @@ test:
 
 .PHONY: src-dist
 src-dist:
-# clean out old dists
+# clean out old dists (ASSUME: done from chuck)
 	rm -rf $(DIST_DIR) $(DIST_DIR){.tgz,.zip}
 # create directories
 	mkdir $(DIST_DIR) $(DIST_DIR)/src $(DIST_DIR)/examples
