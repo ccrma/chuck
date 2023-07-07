@@ -1218,9 +1218,12 @@ t_CKBOOL ChucK::start()
 
 //-----------------------------------------------------------------------------
 // name: run()
-// desc: run engine (call from host callback)
+// desc: run ChucK and synthesize audio for `numFrames`
+//       `input`: the incoming input array of audio samples
+//       `output`: the outgoing output array of audio samples
+//       `numFrames` : the number of audio frames to run
 //-----------------------------------------------------------------------------
-void ChucK::run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
+void ChucK::run( const SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
 {
     // make sure we started...
     if( !m_started ) this->start();
@@ -1228,6 +1231,7 @@ void ChucK::run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
     // call the callback
     m_carrier->vm->run( numFrames, input, output );
 }
+
 
 
 

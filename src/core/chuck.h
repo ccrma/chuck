@@ -133,8 +133,15 @@ public:
     t_CKBOOL start();
 
 public:
-    // run engine (call from callback)
-    void run( SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
+    // run ChucK and synthesize audio for `numFrames`...
+    //     (NOTE this function is often called from audio callback)
+    // `input`: the incoming input array of audio samples
+    //        input array size expected to == `numFrames` * number-of-input-chanels, as initialized in setParam(CHUCK_PARAM_INPUT_CHANNELS, ...)
+    // `output`: the outgoing output array of audio samples
+    //         output array size expected to == `numFrames` * number-of-output-chanels, as initialized in setParam(CHUCK_PARAM_OUTPUT_CHANNELS, ...)
+    // `numFrames` : the number of audio frames to run
+    //             each audio frame corresponds to one point in time, and contains values for every audio channel
+    void run( const SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
 
 public:
     // is initialized
