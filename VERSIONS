@@ -2,6 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.6 (July 2023)
+---
+- (fixed, high priority) VM replace print crash
+- (updated) VM operation message colors
+
+
 1.5.0.5 (July 2023)
 ---
 - (added) color TTY support for command-line chuck is here! ChucK in
@@ -274,7 +280,7 @@ miniAudicle
   Linux
 - (fixed) miniAudicle linux compilation using Qt6
     |- FYI: needs qscintilla-qt6-devel and qscintilla-qt6)
-  [Many thanks to Fernando Lopez-Lezcano and Nils Tonnätt]
+  [Many thanks to Fernando Lopez-Lezcano and Nils Tonn??tt]
 
 
 1.5.0.0 (May 2023)
