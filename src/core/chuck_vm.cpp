@@ -587,7 +587,10 @@ t_CKBOOL Chuck_VM::compute()
 
 //-----------------------------------------------------------------------------
 // name: run()
-// desc: ...
+// desc: run VM and compute the next N frames of audio
+//       `N` : the number of audio frames to run
+//       `input`: the incoming input array of audio samples
+//       `output`: the outgoing output array of audio samples
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
 {
