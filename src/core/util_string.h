@@ -174,10 +174,11 @@ public:
     static std::string bold( const std::string & text );
     // transform text; make color, with optional bold attribute
     static std::string green( const std::string & text, t_CKBOOL bold = FALSE );
-    static std::string yellow( const std::string & text, t_CKBOOL bold = FALSE );
-    static std::string red( const std::string & text, t_CKBOOL bold = FALSE );
-    static std::string blue( const std::string & text, t_CKBOOL bold = FALSE );
     static std::string orange( const std::string & text, t_CKBOOL bold = FALSE );
+    static std::string blue( const std::string & text, t_CKBOOL bold = FALSE );
+    static std::string red( const std::string & text, t_CKBOOL bold = FALSE );
+    static std::string yellow( const std::string & text, t_CKBOOL bold = FALSE );
+    static std::string magenta( const std::string & text, t_CKBOOL bold = FALSE );
 
 public:
     // terminal codes; use with TC::set()

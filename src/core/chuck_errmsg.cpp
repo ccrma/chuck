@@ -709,6 +709,31 @@ void EM_print2orange( const char * message, ... )
 
 
 //-----------------------------------------------------------------------------
+// name: EM_print2magenta()
+// format: like EM_error() minus the error and the line
+//-----------------------------------------------------------------------------
+void EM_print2magenta( const char * message, ... )
+{
+    va_list ap;
+
+    // print
+    CK_FPRINTF_STDERR( "[%s]:", *the_filename ? mini(the_filename) : "chuck" );
+    CK_FPRINTF_STDERR( " " );
+
+    // print
+    va_start( ap, message );
+    CK_VFPRINTF_STDERR( TC::magenta(message,true).c_str(), ap );
+    va_end( ap );
+
+    // flush
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_log()
 // desc: output log message at a particular log level
 //-----------------------------------------------------------------------------

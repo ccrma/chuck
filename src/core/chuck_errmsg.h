@@ -94,6 +94,8 @@ void EM_print2green( c_constr, ... );
 void EM_print2blue( c_constr, ... );
 // orange edition
 void EM_print2orange( c_constr, ... );
+// magenta edition
+void EM_print2magenta( c_constr, ... );
 
 // clear last error message
 void EM_reset_msg();

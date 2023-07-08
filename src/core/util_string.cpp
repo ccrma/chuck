@@ -1109,16 +1109,10 @@ std::string TC::green( const std::string & text, t_CKBOOL bold )
     return TC::set(FG_GREEN) + (bold?TC::bold():"") + text + TC::reset();
 }
 
-std::string TC::yellow( const std::string & text, t_CKBOOL bold )
+std::string TC::orange( const std::string & text, t_CKBOOL bold )
 {
     if( globalBypass || !isEnabled ) return text;
-    return TC::set(FG_YELLOW) + (bold?TC::bold():"") + text + TC::reset();
-}
-
-std::string TC::red( const std::string & text, t_CKBOOL bold )
-{
-    if( globalBypass || !isEnabled ) return text;
-    return TC::set(FG_RED) + (bold?TC::bold():"") + text + TC::reset();
+    return std::string( "\033[38;5;208m" ) + (bold?TC::bold():"") + text + TC::reset();
 }
 
 std::string TC::blue( const std::string & text, t_CKBOOL bold )
@@ -1127,10 +1121,22 @@ std::string TC::blue( const std::string & text, t_CKBOOL bold )
     return std::string( "\033[38;5;39m" ) + (bold?TC::bold():"") + text + TC::reset();
 }
 
-std::string TC::orange( const std::string & text, t_CKBOOL bold )
+std::string TC::red( const std::string & text, t_CKBOOL bold )
 {
     if( globalBypass || !isEnabled ) return text;
-    return std::string( "\033[38;5;208m" ) + (bold?TC::bold():"") + text + TC::reset();
+    return TC::set(FG_RED) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::yellow( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return TC::set(FG_YELLOW) + (bold?TC::bold():"") + text + TC::reset();
+}
+
+std::string TC::magenta( const std::string & text, t_CKBOOL bold )
+{
+    if( globalBypass || !isEnabled ) return text;
+    return std::string( "\033[38;5;170m" ) + (bold?TC::bold():"") + text + TC::reset();
 }
 
 // set custom color

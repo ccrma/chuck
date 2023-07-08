@@ -789,7 +789,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         // replace
         if( m_shreduler->remove( out ) && m_shreduler->shredule( shred ) )
         {
-            EM_print2green( 0, "(VM) replacing shred %i (%s) with %i (%s)...",
+            EM_print2blue( "(VM) replacing shred %i (%s) with %i (%s)...",
                             out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
             this->free( out, TRUE, FALSE );
             retval = shred->xid;
@@ -801,7 +801,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         else
         {
-            EM_print2green( 0, "(VM) shreduler replacing shred %i...", out->xid );
+            EM_print2blue( "(VM) shreduler replacing shred %i...", out->xid );
             shred->release();
             retval = 0;
             goto done;
@@ -824,7 +824,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                 xid--;
             if( xid >= 0 )
             {
-                EM_print2green( "(VM) removing recent shred: %i (%s)...",
+                EM_print2orange( "(VM) removing recent shred: %i (%s)...",
                                 xid, mini(shred->name.c_str()) );
                 this->free( shred, TRUE );
                 retval = xid;
@@ -851,7 +851,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
                 retval = 0;
                 goto done;
             }
-            EM_print2green( "(VM) removing shred: %i (%s)...", msg->param, mini(shred->name.c_str()) );
+            EM_print2orange( "(VM) removing shred: %i (%s)...", msg->param, mini(shred->name.c_str()) );
             this->free( shred, TRUE );
             retval = msg->param;
         }
@@ -859,14 +859,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_REMOVEALL )
     {
         // print
-        EM_print2green( "(VM) removing all (%i) shreds...", m_num_shreds );
+        EM_print2magenta( "(VM) removing all (%i) shreds...", m_num_shreds );
         // remove all shreds
         this->removeAll();
     }
     else if( msg->type == MSG_CLEARVM ) // added 1.3.2.0
     {
         // print
-        EM_print2green( "(VM) removing all shreds and resetting type system" );
+        EM_print2magenta( "(VM) removing all shreds and resetting type system" );
         // first, remove all shreds
         this->removeAll();
         // next, clear user type system
@@ -895,7 +895,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == MSG_EXIT )
     {
-        EM_print2green( "(VM) EXIT received...." );
+        EM_print2magenta( "(VM) EXIT received...." );
         // close file handles and clean up
         // REFACTOR-2017: TODO all_detach function
         // all_detach();
@@ -924,8 +924,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     else if( msg->type == MSG_TIME )
     {
         float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        EM_print2green  ( "(VM) earth time: %s", timestamp_formatted().c_str() );
-        EM_print2green  ( "(VM) chuck time: %.0f::samp (now)", m_shreduler->now_system );
+        EM_print2magenta  ( "(VM) earth time: %s", timestamp_formatted().c_str() );
+        EM_print2magenta  ( "(VM) chuck time: %.0f::samp (now)", m_shreduler->now_system );
         EM_print2vanilla( "%22.6f::second since VM start", m_shreduler->now_system / srate );
         EM_print2vanilla( "%22.6f::minute", m_shreduler->now_system / srate / 60.0f );
         EM_print2vanilla( "%22.6f::hour", m_shreduler->now_system / srate / 60.0f / 60.0f );
@@ -936,7 +936,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     {
         t_CKUINT n = m_shreduler->highest();
         m_shred_id = n;
-        EM_print2green( "(VM) -- resetting shred id to %lu...", m_shred_id + 1 );
+        EM_print2blue( "(VM) -- resetting shred id to %lu...", m_shred_id + 1 );
     }
 
 done:
@@ -2451,7 +2451,7 @@ void Chuck_VM_Shreduler::status()
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    EM_print2green( "(VM) status | # of shreds in VM: %ld", m_status.list.size() );
+    EM_print2magenta( "(VM) status | # of shreds in VM: %ld", m_status.list.size() );
     EM_print2vanilla( "             earth time: %s", timestamp_formatted().c_str() );
     EM_print2vanilla( "             chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
 
