@@ -1,7 +1,7 @@
 COREDIR=core
 HOSTDIR=host
 RTAUDIODIR=RtAudio
-CK_VERSION=1.5.0.6-dev
+CK_VERSION=1.5.0.6
 
 
 ########################## DEFAULT MAKE TARGET #################################
