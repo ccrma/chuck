@@ -29,7 +29,7 @@ endif
 
 
 ############################## MAKE EMSCRIPTEN #################################
-EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
+EMSCRIPTENSRCS=host-web/chuck_emscripten.cpp \
     core/chuck.cpp core/chuck_absyn.cpp core/chuck_carrier.cpp \
     core/chuck_compile.cpp core/chuck_dl.cpp core/chuck_emit.cpp \
     core/chuck_errmsg.cpp core/chuck_frame.cpp core/chuck_globals.cpp \
@@ -47,10 +47,10 @@ EMSCRIPTENSRCS=host_web/chuck_emscripten.cpp \
 
 
 .PHONY: emscripten web
-emscripten: host_web/webchuck/js/webchuck.js
-web: host_web/webchuck/js/webchuck.js
+emscripten: host-web/webchuck/js/webchuck.js
+web: host-web/webchuck/js/webchuck.js
 
-host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
+host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
 	-Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
 	-D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
@@ -59,11 +59,11 @@ host_web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	-D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
 	-D__CHUCK_USE_PLANAR_BUFFERS__ -D__OLDSCHOOL_RANDOM__ \
 	-Wformat=0 \
-	$(EMSCRIPTENSRCS) -o host_web/webchuck/js/webchuck.js \
+	$(EMSCRIPTENSRCS) -o host-web/webchuck/js/webchuck.js \
 	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
 	-s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
 	-s ALLOW_MEMORY_GROWTH=1 \
-	-s --extern-post-js host_web/chucknode-postjs.js \
+	-s --extern-post-js host-web/chucknode-postjs.js \
 	-s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
 
 
