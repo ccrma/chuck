@@ -159,15 +159,15 @@ private:
 
     static std::map<int, OscInServer *> s_oscIn;
 
-#ifdef WIN32
+#ifdef _WIN32
     static unsigned int __stdcall s_server_cb(void *data)
 #else
     static void *s_server_cb(void *data)
-#endif // WIN32
+#endif // _WIN32
     {
         OscInServer * _this = (OscInServer *) data;
 
-#ifdef WIN32
+#ifdef _WIN32
         return (t_CKINT)_this->server_cb();
 #else
         return _this->server_cb();

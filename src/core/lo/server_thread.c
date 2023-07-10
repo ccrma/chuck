@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef WIN32
+#ifdef _WIN32
  /* Define to 1 if you have the timespec struct.
     pthread is going to import time.h and then complain that
 	it wants to redefine something already found in time.h.
@@ -28,7 +28,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else

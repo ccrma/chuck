@@ -28,13 +28,13 @@ typedef __int64 int64_t;
 typedef __int32 int32_t;
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <pthread.h>
 #else
 #ifndef HAVE_PTHREAD_H
 typedef void * pthread_t;
 #endif
-#endif // WIN32
+#endif // _WIN32
 
 #include "lo_osc_types.h"
 

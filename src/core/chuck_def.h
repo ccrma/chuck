@@ -205,21 +205,21 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(__APPLE__) && defined(__MACH__)
 //-------------------------------------------
   #ifndef __PLATFORM_APPLE__
-  #define __PLATFORM_APPLE__
+  #define __PLATFORM_APPLE__ 1
   #endif
 
   // get information about the target sub-platform
   #include <TargetConditionals.h>
   #if TARGET_OS_MAC == 1
     #if TARGET_OS_IPHONE == 0
-      #define __PLATFORM_MACOS__ // macOS
+      #define __PLATFORM_MACOS__ 1 // macOS
     #else // TARGET_OS_IPHONE not 0
-      #define __PLATFORM_IOS__ // iOS, tvOS, or watchOS device
+      #define __PLATFORM_IOS__ 1 // iOS, tvOS, or watchOS device
       // even more information within iOS
       #if TARGET_OS_EMBEDDED == 1
-        #define __PLATFORM_IOS_DEVICE__ // device actual
+        #define __PLATFORM_IOS_DEVICE__ 1 // device actual
       #else // TARGET_OS_EMBEDDED not 1
-        #define __PLATFORM_IOS_SIMULATOR__ // simulator
+        #define __PLATFORM_IOS_SIMULATOR__ 1 // simulator
       #endif
     #endif
   #else // TARGET_OS_MAC not 1
@@ -238,7 +238,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(__linux__)
 //-------------------------------------------
   #ifndef __PLATFORM_LINUX__
-  #define __PLATFORM_LINUX__
+  #define __PLATFORM_LINUX__ 1
   #endif
 //-------------------------------------------
 #endif // defined(__linux__)
@@ -253,12 +253,12 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(_WIN32) || defined(_WIN64)
 //-------------------------------------------
   #ifndef __PLATFORM_WINDOWS__
-  #define __PLATFORM_WINDOWS__
+  #define __PLATFORM_WINDOWS__ 1
   #endif
 
   // legacy; new code should use __PLATFORM_WINDOWS__
   #ifndef __PLATFORM_WIN32__
-  #define __PLATFORM_WIN32__
+  #define __PLATFORM_WIN32__ 1
   #endif
 //-------------------------------------------
 #endif // defined(_WIN32) || defined(_WIN64)
@@ -271,10 +271,10 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(__CYGWIN__)
 //-------------------------------------------
   #ifndef __PLATFORM_CYGWIN__
-  #define __PLATFORM_CYGWIN
+  #define __PLATFORM_CYGWIN__ 1
   #endif
   #ifndef __WINDOWS_PTHREAD__
-  #define __WINDOWS_PTHREAD__
+  #define __WINDOWS_PTHREAD__ 1
   #endif
 //-------------------------------------------
 #endif // defined(__CYGWIN__)
@@ -287,7 +287,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(__EMSCRIPTEN__)
 //-------------------------------------------
   #ifndef __PLATFORM_EMSCRIPTEN__
-  #define __PLATFORM_EMSCRIPTEN__
+  #define __PLATFORM_EMSCRIPTEN__ 1
   #endif
 //-------------------------------------------
 #endif // defined(__EMSCRIPTEN__)
@@ -301,7 +301,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #if defined(__ANDROID__)
 //-------------------------------------------
   #ifndef __PLATFORM_ANDROID__
-  #define __PLATFORM_ANDROID__
+  #define __PLATFORM_ANDROID__ 1
   #endif
 //-------------------------------------------
 #endif // defined(__ANDROID__)

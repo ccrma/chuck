@@ -25,16 +25,16 @@
 extern "C" {
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <pthread.h>
-#endif // WIN32
+#endif // _WIN32
 
 #include "lo_osc_types.h"
 
