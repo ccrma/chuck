@@ -41,7 +41,7 @@ extern "C" {
 #endif
 
 // 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
     double round( double a );
     double trunc( double a );
@@ -69,9 +69,9 @@ void ck_randomize();
 //-----------------------------------------------------------------------------
 #else // __OLDSCHOOL_RANDOM__ (enable only for compatibility pre-c++11)
 //-----------------------------------------------------------------------------
-  #ifndef __PLATFORM_WIN32__
+  #ifndef __PLATFORM_WINDOWS__
     #define CK_RANDOM_MAX 0x7fffffff
-  #else // __PLATFORM_WIN32__
+  #else // __PLATFORM_WINDOWS__
     #define CK_RANDOM_MAX RAND_MAX
   #endif
 //-----------------------------------------------------------------------------

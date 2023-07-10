@@ -38,7 +38,7 @@
 #include "util_string.h"
 #include <signal.h>
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
   #include <windows.h>
 #else
   #include <unistd.h>
@@ -105,10 +105,10 @@ t_CKUINT g_num_vms_running = 0;
 
 
 // priority stuff
-#if defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_APPLE__)
 t_CKINT g_priority = XThreadUtil::get_max_priority(); // was 80
 t_CKINT g_priority_low = XThreadUtil::get_min_priority(); // was 60
-#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
+#elif defined(__PLATFORM_WINDOWS__) && !defined(__WINDOWS_PTHREAD__)
 t_CKINT g_priority = THREAD_PRIORITY_HIGHEST;
 t_CKINT g_priority_low = THREAD_PRIORITY_HIGHEST;
 #else
@@ -177,39 +177,60 @@ static void version()
     string platform = "";
     // binary architecture string;
     string archs = "";
+    // print space
+    bool space = false;
 
-#if defined(__PLATFORM_WIN32__)
-    #if defined(__WINDOWS_ASIO__) && defined(__WINDOWS_DS__)
-        platform = "microsoft windows + DS + ASIO";
-    #elif defined(__WINDOWS_ASIO__)
-        platform = "microsoft windows + ASIO";
-    #elif defined(__WINDOWS_DS__)
-        platform = "microsoft windows + DS";
-    #else
-        platform = "microsoft windows + (?)";
-    #endif
-#elif defined(__LINUX_ALSA__)
-    platform = "linux (alsa)";
-#elif defined(__LINUX_OSS__)
-    platform = "linux (oss)";
-#elif defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
-    platform = "linux (jack)";
-#elif defined(__LINUX_PULSE__)
-    platform = "linux (pulse)";
-#elif defined(__MACOSX_CORE__) && defined(__LITTLE_ENDIAN__)
-    platform = "macOS";
-#elif defined(__MACOSX_CORE__)
-    platform = "macOS (powerpc)";
-#else
-    platform = "unspecified platform";
+#if defined(__PLATFORM_WINDOWS__)
+    platform = "microsoft windows (";
+#elif defined(__PLATFORM_LINUX__)
+    platform = "linux (";
+#elif defined(__PLATFORM_APPLE__)
+    platform = "macOS (";
+#elif defined(__PLATFORM_EMSCRIPTEN__)
+    platform = "web";
 #endif
 
+// windows related
+#if defined(__WINDOWS_DS__)
+    platform += string(space ? "+" : "") + "DirectSound"; space = true;
+#endif
+#if defined(__WINDOWS_ASIO__)
+    platform += string(space ? "+" : "") + "ASIO"; space = true;
+#endif
+#if defined(__WINDOWS_WASAPI__)
+    platform += string(space ? "+" : "") + "WASAPI"; space = true;
+#endif
+
+// linux related
+#if defined(__LINUX_ALSA__)
+    platform += string(space ? "+" : "") + "ALSA"; space = true;
+#endif
+#if defined(__LINUX_OSS__)
+    platform += string(space ? "+" : "") + "OSS"; space = true;
+#endif
+#if defined(__LINUX_PULSE__)
+    platform += string(space ? "+" : "") + "PulseAudio"; space = true;
+#endif
+
+// linux / neutral
+#if defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
+    platform += string(space ? "+" : "") + "JACK"; space = true;
+#endif
+
+// mac
+#if defined(__MACOSX_CORE__)
+    platform += string(space ? "+" : "") + "CoreAudio"; space = true;
+#endif
+
+    // close the parenthesis
+    platform += ")";
+
 // check for universal binary
-#if defined(__MACOSX_UB__)
+#if defined(__MACOS_UB__)
     archs = " [universal binary]";
 #endif
 
-    CK_FPRINTF_STDERR( "   %s : %ld-bit%s\n", platform.c_str(), machine_intsize(), archs.c_str() );
+    CK_FPRINTF_STDERR( "   %s | %ld-bit%s\n", platform.c_str(), machine_intsize(), archs.c_str() );
     CK_FPRINTF_STDERR( "   http://chuck.cs.princeton.edu/\n" );
     CK_FPRINTF_STDERR( "   http://chuck.stanford.edu/\n\n" );
 }
@@ -364,7 +385,7 @@ t_CKBOOL global_cleanup()
 
     // REFACTOR-2017 TODO: Cancel otf, le_cb threads? Does this happen in ~ChucK()?
     // things don't work so good on windows...
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
 //    if( g_tid_otf ) pthread_cancel( g_tid_otf );
 //    if( g_tid_whatever ) pthread_cancel( g_tid_whatever );
 #else
@@ -560,9 +581,9 @@ t_CKBOOL go( int argc, const char ** argv )
 
 #if defined(__DISABLE_WATCHDOG__)
     do_watchdog = FALSE;
-#elif defined(__MACOSX_CORE__)
+#elif defined(__PLATFORM_APPLE__)
     do_watchdog = TRUE;
-#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
+#elif defined(__PLATFORM_WINDOWS__) && !defined(__WINDOWS_PTHREAD__)
     do_watchdog = TRUE;
 #else
     do_watchdog = FALSE;
@@ -1168,7 +1189,7 @@ t_CKBOOL go( int argc, const char ** argv )
     //------------------------- CLI RELATED SETUP -----------------------------
     // catch SIGINT
     signal( SIGINT, signal_int );
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     // catch SIGPIPE
     signal( SIGPIPE, signal_pipe );
 #endif
@@ -1302,7 +1323,7 @@ t_CKBOOL go( int argc, const char ** argv )
     if( g_enable_shell )
     {
         // start shell on separate thread | REFACTOR-2017: per-VM?!?
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_tid_shell, NULL, shell_cb, g_shell );
 #else
         g_tid_shell = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)shell_cb, g_shell, 0, 0 );

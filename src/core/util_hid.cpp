@@ -72,7 +72,7 @@ const t_CKUINT CK_HID_TABLET_ROTATION = 16;
 const t_CKUINT CK_HID_MULTITOUCH_TOUCH = 17;
 const t_CKUINT CK_HID_MSG_COUNT = 18;
 
-#if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 #pragma mark OS X General HID support
 
 /* TODO: ***********************************************************************
@@ -2714,7 +2714,7 @@ t_CKINT SMSManager::y = 0;
 t_CKINT SMSManager::z = 0;
 
 
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
 static void * sms_loop( void * )
 #else
 static unsigned int __stdcall sms_loop( void * )
@@ -4821,7 +4821,7 @@ const char * WiiRemote_name( int wr )
 #endif // __CK_HID_WIIREMOTE__
 }
 
-#elif ( defined( __PLATFORM_WIN32__ ) || defined( __WINDOWS_PTHREAD__ ) ) && !defined( USE_RAWINPUT )
+#elif ( defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__) ) && !defined( USE_RAWINPUT )
 /*****************************************************************************
 Windows general HID support
 *****************************************************************************/
@@ -6261,7 +6261,7 @@ const char * Mouse_name( int m )
     return mice->at( m )->name;
 }
 
-#elif defined( __PLATFORM_WIN32__ ) || defined( __WINDOWS_PTHREAD__ ) && defined( USE_RAWINPUT )
+#elif defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__) && defined( USE_RAWINPUT )
 
 void Joystick_init()
 {
@@ -7785,7 +7785,7 @@ const char * Keyboard_name( int k )
 
 #pragma mark Hid graveyard
 /***** empty functions for stuff that isn't yet cross platform *****/
-#ifndef __PLATFORM_MACOSX__
+#ifndef __PLATFORM_APPLE__
 /*** empty functions for Mac-only stuff ***/
 
 int Joystick_count_elements( int js, int type ) { return -1; }

@@ -38,7 +38,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
  #include <unistd.h>
  #include <sys/param.h>
  #include <sys/types.h>
@@ -168,7 +168,7 @@ void tokenize_string( string str, vector< string > & tokens)
 // desc: replacement for broken tmpnam() on Windows Vista + 7
 // file_path should be at least MAX_PATH characters.
 //-----------------------------------------------------------------------------
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 
 #include <windows.h>
 
@@ -561,7 +561,7 @@ void Chuck_Shell::continue_code( string & in )
     {
         char buf[16];
         scope++;
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
         snprintf( buf, 16, "code %2d> ", (int)scope );
 #else
         snprintf( buf, 16, "code %2ld> ", (long)scope);
@@ -574,7 +574,7 @@ void Chuck_Shell::continue_code( string & in )
     {
         char buf[16];
         scope--;
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
         snprintf( buf, 16, "code %2d> ", (int)scope );
 #else
         snprintf( buf, 16, "code %2ld> ", (long)scope);
@@ -600,7 +600,7 @@ void Chuck_Shell::continue_code( string & in )
 void Chuck_Shell::do_code( string & code, string & out, string command )
 {
     // open a temporary file
-#if defined(__PLATFORM_LINUX__) || defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_LINUX__) || defined(__PLATFORM_APPLE__)
     char tmp_dir[] = "/tmp";
     char * tmp_filepath = new char [32];
     // 1.4.1.0: changed chuck_file.XXXXXX to chuck_shell.XXXXXX
@@ -655,11 +655,11 @@ void Chuck_Shell::do_code( string & code, string & out, string command )
     //    ;
 
     // delete the file
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     unlink( tmp_filepath );
 #else
     DeleteFile( tmp_filepath );
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 
 #if defined(__PLATFORM_LINUX__)
     delete[] tmp_filepath;
@@ -1365,7 +1365,7 @@ t_CKINT Chuck_Shell::Command_Exit::execute( vector< string > & argv,
 t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
                                           string & out )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 
     if( argv.size() == 0 )
     {
@@ -1481,7 +1481,7 @@ t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
 
 
 
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
     return 0;
 }
 
@@ -1495,7 +1495,7 @@ t_CKINT Chuck_Shell::Command_Ls::execute( vector< string > & argv,
 t_CKINT Chuck_Shell::Command_Cd::execute( vector< string > & argv,
                                           string & out )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     if( argv.size() < 1 )
     {
         if( chdir( getenv( "HOME" ) ) )
@@ -1518,7 +1518,7 @@ t_CKINT Chuck_Shell::Command_Cd::execute( vector< string > & argv,
             out += "cd: error: command failed\n";
     }
 
-#endif //__PLATFORM_WIN32__
+#endif //__PLATFORM_WINDOWS__
     return 0;
 }
 
@@ -1532,7 +1532,7 @@ t_CKINT Chuck_Shell::Command_Cd::execute( vector< string > & argv,
 t_CKINT Chuck_Shell::Command_Pwd::execute( vector< string > & argv,
                                            string & out )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     char * cwd = getcwd( NULL, 0 );
     out += string( cwd ) + "\n";
     free( cwd );
@@ -1886,11 +1886,11 @@ t_CKINT Chuck_Shell::Command_VMAdd::execute( vector< string > & argv,
 
     caller->vms.push_back( caller->current_vm->copy() );
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     snprintf( buf, 16, "%lu", caller->vms.size() - 1 );
 #else
     snprintf( buf, 16, "%lu", (long)caller->vms.size() - 1 );
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 
     out += caller->current_vm->fullname() + " saved as VM " + buf + "\n";
 
@@ -1986,11 +1986,11 @@ t_CKINT Chuck_Shell::Command_VMList::execute( vector< string > & argv,
     {
         if( caller->vms[i] != NULL )
         {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
             snprintf( buf, 32, "%lu", i );
 #else
             snprintf( buf, 32, "%lu", (long)i );
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
             out += string( "VM " ) + buf + ": " +
                    caller->vms[i]->fullname() + "\n";
         }

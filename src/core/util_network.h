@@ -36,7 +36,7 @@
 #ifndef __UTIL_NETWORK_H__
 #define __UTIL_NETWORK_H__
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

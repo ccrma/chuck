@@ -7924,7 +7924,7 @@ psf_log_syserr (SF_PRIVATE *psf, int error)
 } /* psf_log_syserr */
 
 //XXX formerly OS_IS_WIN32
-#elif	__PLATFORM_WIN32__
+#elif	__PLATFORM_WINDOWS__
 
 /* Win32 file i/o functions implemented using native Win32 API */
 
@@ -8089,7 +8089,7 @@ psf_fseek (SF_PRIVATE *psf, sf_count_t offset, int whence)
 		} ;
 
 	lDistanceToMove = (DWORD) (offset & 0xFFFFFFFF) ;
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 	lDistanceToMoveHigh = (DWORD) (0xFFFFFFFF & (offset >> 32)) ;
 #else
     lDistanceToMoveHigh = 0;
@@ -8330,7 +8330,7 @@ psf_ftruncate (SF_PRIVATE *psf, sf_count_t len)
 		return 1 ;
 
 	lDistanceToMoveLow = (DWORD) (len & 0xFFFFFFFF) ;
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 	lDistanceToMoveHigh = (DWORD) ((len >> 32) & 0xFFFFFFFF) ;
 #else
     lDistanceToMoveHigh = 0;

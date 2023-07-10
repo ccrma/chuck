@@ -37,15 +37,14 @@
 #include "chuck_globals.h" // added 1.4.1.0 (jack)
 #include "chuck_errmsg.h"
 #include "chuck.h"
-#include "util_string.h"
+#include "ugen_xxx.h"
+#include "util_buffers.h"
 #include "util_platforms.h"
+#include "util_string.h"
 
 #ifndef __DISABLE_SERIAL__
 #include "chuck_io.h"
 #endif
-
-#include "ugen_xxx.h"
-#include "util_buffers.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"  // 1.4.0.0
@@ -59,17 +58,7 @@
 #include <algorithm>
 using namespace std;
 
-#if defined(__PLATFORM_WIN32__)
-  #ifndef __CHUNREAL_ENGINE__
-    #include <windows.h>
-  #else
-    // 1.5.0.0 (ge) | #chunreal
-    #include "Windows/MinWindows.h"
-  #endif // #ifndef __CHUNREAL_ENGINE__
-#else
-  #include <unistd.h>
-  #include <pthread.h>
-#endif // #if defined(__PLATFORM_WIN32__)
+
 
 
 //-----------------------------------------------------------------------------

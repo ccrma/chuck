@@ -47,7 +47,7 @@
 #include <typeinfo>
 using namespace std;
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
   #include "dirent_win32.h"
 #endif
 
@@ -3039,7 +3039,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
 
     /* ATODO: Ge's code
      // windows sucks for being creative in the wrong places
-     #ifdef __PLATFORM_WIN32__
+     #ifdef __PLATFORM_WINDOWS__
      // if( flags ^ Chuck_IO::TRUNCATE && flags | Chuck_IO::READ ) nMode |= ios::nocreate;
      m_io.open( path.c_str(), nMode );
      #else

@@ -135,7 +135,7 @@ public:
     static void probeHidIn();
     static void probeHidOut();
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     static void * cb_hid_input( void * );
 #else
     static unsigned __stdcall cb_hid_input( void * );

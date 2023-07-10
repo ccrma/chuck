@@ -47,11 +47,11 @@ using namespace std;
 
 
 
-#if defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_APPLE__)
 char g_default_chugin_path[] = "/usr/local/lib/chuck:/Library/Application Support/ChucK/chugins:~/Library/Application Support/ChucK/chugins:~/.chuck/lib";
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
 char g_default_chugin_path[] = "C:\\Windows\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins;C:\\Program Files (x86)\\ChucK\\chugins;C:\\Users\\%USERNAME%\\Documents\\ChucK\\chugins";
-#else // Linux/Cygwin
+#else // Linux / Cygwin
 char g_default_chugin_path[] = "/usr/local/lib/chuck:~/.chuck/lib";
 #endif
 
@@ -1529,7 +1529,7 @@ array4_push_back(ck_array4_push_back)
 
 
 // windows
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
 extern "C"
 {
 #ifndef __CHUNREAL_ENGINE__

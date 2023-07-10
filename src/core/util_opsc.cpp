@@ -47,7 +47,7 @@ using namespace std;
 
 // FROM PLATFORM.H -UDP TRANSMITTER / RECEIVER
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
 // 2022 QTSIN added winsock2.h and wsw2tcpip.h
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -68,7 +68,7 @@ using namespace std;
 #define snprintf _snprintf
 #endif
 
-#if defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_APPLE__)
 #define SOCKET int
 #define SOCKADDR_IN struct sockaddr_in
 #elif !defined(SOCKADDR_IN)
@@ -951,7 +951,7 @@ static int OSC_WritePadding(char *dest, int i)
 
 // FROM PLATFORM.H -UDP TRANSMITTER / RECEIVER
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
 #include <winsock.h>
 #else
 #include <sys/types.h>
@@ -964,7 +964,7 @@ static int OSC_WritePadding(char *dest, int i)
 #include <netdb.h>
 #endif
 
-#ifdef __MACOSX_CORE__
+#ifdef __PLATFORM_APPLE__
 #define SOCKET int
 #define SOCKADDR_IN struct sockaddr_in
 #endif

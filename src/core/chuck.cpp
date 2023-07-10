@@ -52,13 +52,13 @@
 #include "util_string.h"
 #include "ugen_stk.h"
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #else
 #include <direct.h>      // added 1.3.0.0
-#endif // #ifndef __PLATFORM_WIN32__
+#endif // #ifndef __PLATFORM_WINDOWS__
 
 
 
@@ -77,15 +77,15 @@
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT      ""
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
 #define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT "0"
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 // 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
 // redundant with g_default_chugin_path, which already contains
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
-#else // __PLATFORM_WIN32__
+#else // __PLATFORM_WINDOWS__
 // 1.4.1.0 (ge) changed to ""; "C:\\Program Files\\ChucK\\chugins"
 // redundant with g_default_chugin_path, which already contains
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
 #define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT "1"
@@ -591,7 +591,7 @@ t_CKBOOL ChucK::initCompiler()
             workingDir = cwd + workingDir;
         }
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
         // normalize path separators, only for windows; in case UNIX-style paths contains actual backslashes
         workingDir = normalize_directory_separator(workingDir);
 #endif
@@ -846,7 +846,7 @@ t_CKBOOL ChucK::initOTF()
         }
         else
         {
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
             pthread_create( &m_carrier->otf_thread, NULL, otf_cb, m_carrier );
 #else
             m_carrier->otf_thread = CreateThread( NULL, 0,
@@ -904,7 +904,7 @@ t_CKBOOL ChucK::shutdown()
         // stop otf thread
         if( m_carrier->otf_thread )
         {
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
             pthread_cancel( m_carrier->otf_thread );
 #else
             CloseHandle( m_carrier->otf_thread ); // doesn't cancel thread

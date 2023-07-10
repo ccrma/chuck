@@ -48,7 +48,7 @@
 #if defined(__PLATFORM_LINUX__)         // linux
   #define CK_SAMPLE_RATE_DEFAULT        48000
   #define CK_BUFFER_SIZE_DEFAULT        256
-#elif defined(__PLATFORM_MACOSX__)      // macOS
+#elif defined(__PLATFORM_APPLE__)      // macOS
   #define CK_SAMPLE_RATE_DEFAULT        44100
   #define CK_BUFFER_SIZE_DEFAULT        256
 #else                                   // windows & everywhere else

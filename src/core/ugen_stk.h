@@ -95,7 +95,7 @@ t_CKBOOL  stk_detach( Chuck_Carrier * carrier );
 // versions higher than 4.1.2 and replaced with the variable
 // "StkFloat".
 //typedef double StkFloat;
-//#if defined(__PLATFORM_WIN32__) || 
+//#if defined(__PLATFORM_WINDOWS__) || 
 //  #pragma deprecated(MY_FLOAT)
 //#else
 //  typedef StkFloat MY_FLOAT __attribute__ ((deprecated));
@@ -304,10 +304,10 @@ typedef double FLOAT64;
 
 #define ONE_OVER_128 (MY_FLOAT) 0.0078125
 
-#if defined(__WINDOWS_PTHREAD__)
+#if defined(__PLATFORM_CYGWIN__)
   #define __OS_WINDOWS_CYGWIN__
   #define __STK_REALTIME__
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
   #define __OS_WINDOWS__
   #define __STK_REALTIME__
 #elif defined(__PLATFORM_LINUX__)
@@ -316,7 +316,7 @@ typedef double FLOAT64;
 #elif defined(__IRIX_AL__)
   #define __OS_IRIX__
   #define __STK_REALTIME__
-#elif defined(__MACOSX_CORE__)
+#elif defined(__PLATFORM_APPLE__)
   #define __OS_MACOSX__
   #define __STK_REALTIME__
 #endif

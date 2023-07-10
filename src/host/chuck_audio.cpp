@@ -41,7 +41,7 @@
 #include <limits.h>
 #include "rtmidi.h"
 
-#if (defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__))
+#if (defined(__PLATFORM_WINDOWS__) && !defined(__WINDOWS_PTHREAD__))
   #include <windows.h>
   #include <sys/timeb.h>
 #else
@@ -61,9 +61,9 @@
 // real-time watch dog
 t_CKBOOL g_do_watchdog = FALSE;
 // countermeasure
-#ifdef __MACOSX_CORE__
+#ifdef __PLATFORM_APPLE__
 t_CKUINT g_watchdog_countermeasure_priority = 10;
-#elif defined(__PLATFORM_WIN32__) && !defined(__WINDOWS_PTHREAD__)
+#elif defined(__PLATFORM_WINDOWS__) && !defined(__WINDOWS_PTHREAD__)
 t_CKUINT g_watchdog_countermeasure_priority = THREAD_PRIORITY_LOWEST;
 #else
 t_CKUINT g_watchdog_countermeasure_priority = 0;
@@ -142,6 +142,10 @@ static RtAudio::Api driverNameToApi( const char * driver )
         if( driverLower == "pulse" )
             api = RtAudio::LINUX_PULSE;
     #endif
+    #if defined(__LINUX_OSS__)
+        if( driverLower == "oss" )
+            api = RtAudio::LINUX_OSS;
+    #endif
     #if defined(__UNIX_JACK__)
         if( driverLower == "jack" )
             api = RtAudio::UNIX_JACK;
@@ -167,14 +171,16 @@ static RtAudio::Api driverNameToApi( const char * driver )
     // case of linux, which drivers chuck is being compiled with.
     if( api == RtAudio::UNSPECIFIED )
     {
-    #if defined(__PLATFORM_WIN32__)
+    #if defined(__PLATFORM_WINDOWS__)
         // traditional chuck default behavior:
         // DirectSound is most general albeit high-latency
         api = RtAudio::WINDOWS_DS;
-    #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_PULSE__)
-        api = RtAudio::LINUX_PULSE;
     #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_ALSA__)
         api = RtAudio::LINUX_ALSA;
+    #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_PULSE__)
+        api = RtAudio::LINUX_PULSE;
+    #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_OSS__)
+        api = RtAudio::LINUX_OSS;
     #elif defined(__PLATFORM_LINUX__) && defined(__UNIX_JACK__)
         api = RtAudio::UNIX_JACK;
     #elif defined(__MACOSX_CORE__)
@@ -506,7 +512,7 @@ ChuckAudioDriverInfo ChuckAudio::getDriverInfo( t_CKUINT n )
 //-----------------------------------------------------------------------------
 static t_CKFLOAT get_current_time( t_CKBOOL fresh = TRUE )
 {
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     struct _timeb t;
     _ftime(&t);
     return t.time + t.millitm/1000.0;
@@ -533,7 +539,7 @@ static t_CKFLOAT g_watchdog_time = 0;
 // name: watch_dog()
 // desc: this sniff out possible non-time advancing infinite loops
 //-----------------------------------------------------------------------------
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
 static void * watch_dog( void * )
 #else
 static unsigned int __stdcall watch_dog( void * )
@@ -1120,7 +1126,7 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
     // priority boost
     if( !m_go && XThreadUtil::our_priority != 0x7fffffff )
     {
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
         g_tid_synthesis = pthread_self();
 #else
         // must duplicate for handle to be usable by other threads

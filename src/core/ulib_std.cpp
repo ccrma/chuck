@@ -52,7 +52,7 @@
 #include <time.h>
 #include <math.h>
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
   #ifndef __CHUNREAL_ENGINE__
     #include <windows.h>
   #else
@@ -71,7 +71,7 @@ int setenv( const char *n, const char *v, int i )
 }
 #else
   #include <unistd.h>
-#endif // #ifdef __PLATFORM_WIN32__
+#endif // #ifdef __PLATFORM_WINDOWS__
 
 // for ConsoleInput and StringTokenizer
 #include <sstream>
@@ -579,7 +579,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     type_engine_import_class_end( env );
 
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
     // begin class (Cereal)
     if( !type_engine_import_class_begin( env, "Cereal", "Object",
                                          env->global(), Cereal_ctor ) )
@@ -914,7 +914,7 @@ XThread * KBHitManager::the_thread;
 #define BUFFER_SIZE 1024
 
 
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
 static void * kb_loop( void * )
 #else
 static unsigned int __stdcall kb_loop( void * )
@@ -1224,7 +1224,7 @@ void le_cleanup()
     if( g_le_thread )
     {
         // cancel thread
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
         pthread_cancel( g_le_thread );
 #else
         CloseHandle( g_le_thread );
@@ -1288,7 +1288,7 @@ LineEvent::LineEvent( Chuck_Event * SELF )
     // launch the cb
     if( !g_le_launched )
     {
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
         pthread_create( &g_le_thread, NULL, le_cb, NULL );
 #else
         g_le_thread = CreateThread( NULL, 0, (LPTHREAD_START_ROUTINE)le_cb, NULL, 0, 0 );
@@ -1830,7 +1830,7 @@ CK_DLL_MFUN( VCR_name )
 }
 
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 
 
 // jeff's cereal

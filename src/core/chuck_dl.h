@@ -154,14 +154,14 @@ namespace Chuck_DL_Api { struct Api; }
 
 
 // chuck dll export linkage and calling convention
-#if defined (__PLATFORM_WIN32__)
+#if defined (__PLATFORM_WINDOWS__)
   #define CK_DLL_LINKAGE extern "C" __declspec( dllexport )
 #else
   #define CK_DLL_LINKAGE extern "C"
 #endif
 
 // calling convention of functions provided by chuck to the dll
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
   #define CK_DLL_CALL    _cdecl
 #else
   #define CK_DLL_CALL
@@ -737,16 +737,16 @@ private:
 
 
 // dlfcn interface
-#if defined(__MACOSX_CORE__)
+#if defined(__PLATFORM_APPLE__)
 #include <AvailabilityMacros.h>
 #endif
 
 // dlfcn interface, panther or below
-#if defined(__MACOSX_CORE__) && MAC_OS_X_VERSION_MAX_ALLOWED <= 1030
+#if defined(__PLATFORM_APPLE__) && MAC_OS_X_VERSION_MAX_ALLOWED <= 1030
 
 #error ChucK not support on Mac OS X 10.3 or lower
 
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
 
           #ifdef __cplusplus
           extern "C" {

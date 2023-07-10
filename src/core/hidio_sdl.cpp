@@ -37,7 +37,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_vm.h"
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #include <unistd.h>
 #else
 #include "chuck_def.h"
@@ -532,9 +532,9 @@ void HidInManager::init()
         msg_buffer = new CBufferSimple;
         msg_buffer->initialize( 1000, sizeof( HidMsg ) );
 
-#ifndef __MACOSX_CORE__
+#ifndef __PLATFORM_APPLE__
         Hid_init();
-#endif // __MACOSX_CORE__
+#endif
 
         for( size_t j = 0; j < CK_HID_DEV_COUNT; j++ )
         {
@@ -542,7 +542,7 @@ void HidInManager::init()
                 default_drivers[j].init();
         }
 
-#ifdef __MACOSX_CORE__
+#ifdef __PLATFORM_APPLE__
         // start thread
         if( the_thread == NULL )
         {
@@ -993,13 +993,13 @@ extern "C" void push_message( HidMsg msg )
 // name: cb_hid_input
 // desc: call back
 //-----------------------------------------------------------------------------
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 void * HidInManager::cb_hid_input( void * stuff )
 #else
 unsigned __stdcall HidInManager::cb_hid_input( void * stuff )
 #endif
 {
-#ifdef __MACOSX_CORE__
+#ifdef __PLATFORM_APPLE__
     Hid_init();
 #endif
 

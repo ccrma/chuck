@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 
   #ifndef __CHUNREAL_ENGINE__
     #include <windows.h> // for win32_tmpfile()
@@ -53,7 +53,7 @@
   #include <unistd.h>
   #include <sys/ioctl.h>
 
-#endif // #ifdef __PLATFORM_WIN32__
+#endif // #ifdef __PLATFORM_WINDOWS__
 
 
 
@@ -105,7 +105,7 @@ FILE * ck_openFileAutoExt( std::string & filenameMutable,
 // name: win32_tmpfile()
 // desc: replacement for broken tmpfile() on Windows Vista + 7
 //-----------------------------------------------------------------------------
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 FILE * win32_tmpfile()
 {
     char tmp_path[MAX_PATH];
@@ -132,7 +132,7 @@ FILE * win32_tmpfile()
 
     return file;
 }
-#endif // #ifdef __PLATFORM_WIN32__
+#endif // #ifdef __PLATFORM_WINDOWS__
 
 
 
@@ -143,7 +143,7 @@ FILE * win32_tmpfile()
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_configANSI_ESCcodes()
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #else
     // get stderr handle; do this first as chuck tends to write to stderr
     HANDLE winStderr = GetStdHandle( STD_ERROR_HANDLE );
@@ -175,7 +175,7 @@ t_CKBOOL ck_configANSI_ESCcodes()
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_isatty( int fd )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     return isatty( fd ) != 0;
 #else
     return _isatty( fd ) != 0;
@@ -187,7 +187,7 @@ t_CKBOOL ck_isatty( int fd )
 t_CKBOOL ck_isatty()
 {
     // let's test stderr, since much of chuck operates over it
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     return ck_isatty( fileno(stderr) );
 #else
     return ck_isatty( _fileno(stderr) );
@@ -208,7 +208,7 @@ t_CKUINT ck_ttywidth()
     // return default if not TTY
     if( !ck_isatty() ) return g_ttywidth_default;
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     struct winsize w;
     if( ioctl( fileno(stderr), TIOCGWINSZ, &w ) != 0 ) { goto error; }
     return w.ws_col;
@@ -269,7 +269,7 @@ FILE * android_tmpfile()
 FILE * ck_tmpfile()
 {
     FILE * fd = NULL;
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     fd = win32_tmpfile();
 #elif defined (__ANDROID__)
     fd = android_tmpfile();
@@ -298,7 +298,7 @@ t_CKBOOL ck_isdir( const std::string & path )
 
 
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 //-----------------------------------------------------------------------------
 // name: win32_getline()
 // desc: C getline using a FILE descriptor
@@ -381,7 +381,7 @@ size_t win32_getline( char ** lineptr, size_t * n, FILE * stream )
 //-----------------------------------------------------------------------------
 size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     return getline( lineptr, n, stream );
 #else
     return win32_getline( lineptr, n, stream );
@@ -397,7 +397,7 @@ size_t ck_getline( char ** lineptr, size_t * n, FILE * stream )
 //-----------------------------------------------------------------------------
 void ck_usleep( t_CKUINT microseconds )
 {
-#if defined(__PLATFORM_WIN32__) && !defined(usleep)
+#if defined(__PLATFORM_WINDOWS__) && !defined(usleep)
   #ifndef __CHUNREAL_ENGINE__
     Sleep( microseconds / 1000 <= 0 ? 1 : microseconds / 1000 );
   #else
@@ -414,7 +414,7 @@ void ck_usleep( t_CKUINT microseconds )
 
 
 //-----------------------------------------------------------------------------
-#if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 //-----------------------------------------------------------------------------
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -576,7 +576,7 @@ static void testUpTime()
 */
 
 
-#endif // #if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#endif // #if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 
 
 

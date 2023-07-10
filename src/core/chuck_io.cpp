@@ -48,14 +48,14 @@
 #include "util_serial.h"
 #endif
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #include <sys/select.h>
 #include <poll.h>
 #include <termios.h>
 #include <unistd.h>
 #else
 #include <io.h>
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 #include <fcntl.h>
 #include <math.h>
 #include <stdint.h> // 1.5.0.5
@@ -67,7 +67,7 @@
 using namespace std;
 
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
 // ge: this needed in earlier/some versions of windows
@@ -3013,7 +3013,7 @@ Chuck_IO_Serial::~Chuck_IO_Serial()
 
 t_CKBOOL Chuck_IO_Serial::ready()
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     struct pollfd pollfds;
     pollfds.fd = m_fd;
     pollfds.events = POLLIN;
@@ -4140,7 +4140,7 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
 {
     // binary
     int size = 1;
-    int num = r.m_num;
+    t_CKUINT num = r.m_num;
     t_CKUINT val = 0;
 
     if(size*num > m_tmp_buf_max)
@@ -4190,7 +4190,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
     assert(sizeof(t_CKSINGLE) == 4);
 
-    int num = r.m_num;
+    t_CKUINT num = r.m_num;
 
     if(size*num > m_tmp_buf_max)
     {
@@ -4224,7 +4224,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     // binary
     int size = 4; // SPENCERTODO: should these be based on arch (64 bit)?
 
-    int num = r.m_num;
+    t_CKUINT num = r.m_num;
 
     if(size*num > m_tmp_buf_max)
     {

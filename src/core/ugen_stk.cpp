@@ -16239,7 +16239,7 @@ void Stk :: swap64(unsigned char *ptr)
   *(ptr+1) = val;
 }
 
-#if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+#if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WINDOWS__))
   #ifndef __CHUNREAL_ENGINE__
     #include <windows.h> // for win32_tmpfile()
   #else
@@ -16249,7 +16249,7 @@ void Stk :: swap64(unsigned char *ptr)
   #endif // #ifndef __CHUNREAL_ENGINE__
 #else
   #include <unistd.h>
-#endif // #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WIN32__))
+#endif // #if (defined(__OS_WINDOWS__) || defined(__PLATFORM_WINDOWS__))
 
 void Stk :: sleep(unsigned long milliseconds)
 {

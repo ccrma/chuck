@@ -32,7 +32,7 @@
 #include "util_serial.h"
 #include "chuck_errmsg.h"
 
-#if defined(__MACOSX_CORE__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
@@ -185,7 +185,7 @@ cleanup:
     return devices;
 }
 
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
 
 #include <windows.h>
 
@@ -253,4 +253,4 @@ vector<string> SerialIOManager::availableSerialDevices()
 }
 
 
-#endif /* __MACOSX_CORE__ */
+#endif // __PLATFORM_APPLE__

@@ -48,7 +48,7 @@
 
 
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
   #include <dirent.h>
 #else
   struct DIR;

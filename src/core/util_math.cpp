@@ -71,11 +71,11 @@ void ck_randomize() { ck_srandom( g_ck_rd() ); }
 // name: ck_random() and ck_srandom()
 // desc: chuck wrappers for random number generators | 1.4.2.0 (ge)
 //-----------------------------------------------------------------------------
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
   t_CKINT ck_random() { return random(); }
   t_CKFLOAT ck_random_f() { return random() / (t_CKFLOAT)CK_RANDOM_MAX; }
   void ck_srandom( unsigned s ) { srandom( s ); }
-#else // __PLATFORM_WIN32__
+#else // __PLATFORM_WINDOWS__
   t_CKINT ck_random() { return rand(); }
   t_CKFLOAT ck_random_f() { return rand() / (t_CKFLOAT)CK_RANDOM_MAX; }
   void ck_srandom( unsigned s ) { srand( s ); }
@@ -89,7 +89,7 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 
 
 // windows / visual c++
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
 //-----------------------------------------------------------------------------
 // name: round()
@@ -111,7 +111,7 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
       return (double)(long)a;
   }
 #endif // __CK_MATH_DEFINE_ROUND_TRUNC
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 
 
 
@@ -122,7 +122,7 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 //-----------------------------------------------------------------------------
 double ck_remainder( double a, double b )
 {
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     t_CKINT div = a/b;
     return a - b*div;
 #else
