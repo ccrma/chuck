@@ -159,19 +159,19 @@ private:
 
     static std::map<int, OscInServer *> s_oscIn;
 
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
     static unsigned int __stdcall s_server_cb(void *data)
 #else
     static void *s_server_cb(void *data)
-#endif // _WIN32
+#endif // __PLATFORM_WINDOWS__
     {
         OscInServer * _this = (OscInServer *) data;
 
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
         return (t_CKINT)_this->server_cb();
 #else
         return _this->server_cb();
-#endif
+#endif // __PLATFORM_WINDOWS__
     }
 
     static void s_err_handler(int num, const char *msg, const char *where)

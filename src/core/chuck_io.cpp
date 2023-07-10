@@ -4534,7 +4534,7 @@ t_CKBOOL Chuck_IO_Serial::open( const std::string & path, t_CKINT flags, t_CKUIN
 
     m_cfd = fdopen(fd, "a+");
     m_iomode = MODE_ASYNC;
-#ifndef _WIN32
+#ifndef __PLATFORM_WINDOWS__
     fcntl(m_fd, F_SETFL, O_NONBLOCK);
 #endif
     m_eof = FALSE;
@@ -4557,7 +4557,7 @@ void Chuck_IO_Serial::close()
     else
     {
         m_do_exit = TRUE;
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
         m_read_thread->wait(-1, TRUE);
         close_int();
 #else
@@ -4901,7 +4901,7 @@ void Chuck_IO_Serial::write( t_CKINT val, t_CKINT flags )
         if( m_flags & Chuck_IO::TYPE_ASCII )
         {
             // TODO: don't use m_tmp_buf (thread safety?)
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
             _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%li", (long)val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
@@ -5002,7 +5002,7 @@ void Chuck_IO_Serial::write( t_CKFLOAT val, t_CKINT flags )
 
         if( m_flags & Chuck_IO::TYPE_ASCII )
         {
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
             _snprintf((char *)m_tmp_buf, m_tmp_buf_max, "%f", val);
             m_tmp_buf[m_tmp_buf_max - 1] = '\0'; // force NULL terminator -- see http://www.di-mgt.com.au/cprog.html#snprintf
 #else
@@ -5134,7 +5134,7 @@ void Chuck_IO_Serial::start_read_thread()
     if(m_read_thread == NULL)
     {
         m_read_thread = new XThread();
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
         m_read_thread->start((unsigned int (__stdcall *)(void*))shell_read_cb, this);
 #else
         m_read_thread->start(shell_read_cb, this);
@@ -5315,7 +5315,7 @@ Chuck_String * Chuck_IO_Serial::getString()
 
 t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
 {
-#ifndef _WIN32
+#ifndef __PLATFORM_WINDOWS__
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(m_fd, &fds);
@@ -5472,7 +5472,7 @@ error:
     r.m_val = 0;
     r.m_status = Chuck_IO_Serial::Request::RQ_STATUS_FAILURE;
 
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
     HANDLE hFile = (HANDLE) _get_osfhandle(m_fd);
     DWORD error;
     ClearCommError(hFile, &error, NULL);
@@ -5715,7 +5715,7 @@ void Chuck_IO_Serial::read_cb()
     m_do_read_thread = TRUE;
 
     m_write_thread = new XThread;
-#ifdef _WIN32
+#ifdef __PLATFORM_WINDOWS__
     m_read_thread->start((unsigned int (__stdcall *)(void*))shell_write_cb, this);
 #else
     m_write_thread->start(shell_write_cb, this);
@@ -5847,7 +5847,7 @@ void Chuck_IO_Serial::write_cb()
 
 t_CKBOOL Chuck_IO_Serial::setBaudRate( t_CKUINT rate )
 {
-#ifndef _WIN32
+#ifndef __PLATFORM_WINDOWS__
     // set serial IO baud rate
     struct termios tios;
     tcgetattr(m_fd, &tios);
@@ -5944,7 +5944,7 @@ error:
 
 t_CKUINT Chuck_IO_Serial::getBaudRate()
 {
-#ifndef _WIN32
+#ifndef __PLATFORM_WINDOWS__
     // set serial IO baud rate
     struct termios tios;
     tcgetattr(m_fd, &tios);
