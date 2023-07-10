@@ -88,7 +88,6 @@ Hid Probe
 
 *******************************************************************************/
 
-
 #include <mach/mach.h>
 #include <mach/mach_error.h>
 #include <IOKit/IOKitLib.h>
@@ -1451,7 +1450,12 @@ void Hid_init2()
     CFDictionarySetValue( hidMatchDictionary,
                           CFSTR( kIOHIDPrimaryUsagePageKey ), refCF );*/
 
+    // 1.5.0.7 (ge) updated kIOMasterPortDefault (deprecated as of macOS 12) to kIOMainPortDefault
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < 120000 // before macOS 12
     newDeviceNotificationPort = IONotificationPortCreate( kIOMasterPortDefault );
+#else
+    newDeviceNotificationPort = IONotificationPortCreate( kIOMainPortDefault );
+#endif
 
     result = IOServiceAddMatchingNotification( newDeviceNotificationPort,
                                                kIOFirstMatchNotification,
@@ -2820,7 +2824,12 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
 
     CFMutableDictionaryRef matchingDictionary = IOServiceMatching( servMatch );
 
+    // 1.5.0.7 (ge) updated kIOMasterPortDefault to kIOMainPortDefault
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < 120000 // before macOS 12
     result = IOServiceGetMatchingServices( kIOMasterPortDefault, matchingDictionary, &iterator );
+#else
+    result = IOServiceGetMatchingServices( kIOMainPortDefault, matchingDictionary, &iterator );
+#endif
 
     if( result != KERN_SUCCESS )
         return 0;

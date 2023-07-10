@@ -2,10 +2,10 @@
 current:
 	@echo "[chuck build]: please use one of the following configurations:"
 	@echo "   make linux-alsa, make linux-jack, make linux-pulse, linux-all,"
-	@echo "   make mac, make mac-ub, make cygwin, or make win32"
+	@echo "   make mac, make mac-ub, make cygwin, make win32, or make vanilla"
 
-.PHONY: mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl test
-mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa cygwin osx-rl: chuck-core
+.PHONY: mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa vanilla cygwin osx-rl test
+mac mac-ub osx linux-all linux linux-pulse linux-jack linux-alsa vanilla cygwin osx-rl: chuck-core
 
 win32:
 	make -f makefile.win32
@@ -62,6 +62,10 @@ endif
 
 ifneq (,$(strip $(filter linux-alsa,$(MAKECMDGOALS))))
 include makefile.x/makefile.alsa
+endif
+
+ifneq (,$(strip $(filter vanilla,$(MAKECMDGOALS))))
+include makefile.x/makefile.vanilla
 endif
 
 ifneq (,$(strip $(filter cygwin,$(MAKECMDGOALS))))
