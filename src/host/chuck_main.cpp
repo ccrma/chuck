@@ -175,55 +175,57 @@ static void version()
     
     // platform string
     string platform = "";
+    // drivers string
+    string drivers = "";
     // binary architecture string;
     string archs = "";
     // print space
-    bool space = false;
+    t_CKINT space = 0;
 
 #if defined(__PLATFORM_WINDOWS__)
-    platform = "microsoft windows (";
+    platform = "microsoft windows";
 #elif defined(__PLATFORM_LINUX__)
-    platform = "linux (";
+    platform = "linux";
 #elif defined(__PLATFORM_APPLE__)
-    platform = "macOS (";
+    platform = "macOS";
 #elif defined(__PLATFORM_EMSCRIPTEN__)
     platform = "web";
 #endif
 
 // windows related
 #if defined(__WINDOWS_DS__)
-    platform += string(space ? "+" : "") + "DirectSound"; space = true;
+    drivers += string(space ? "/" : "") + "DirectSound"; space++;
 #endif
 #if defined(__WINDOWS_ASIO__)
-    platform += string(space ? "+" : "") + "ASIO"; space = true;
+    drivers += string(space ? "/" : "") + "ASIO"; space++;
 #endif
 #if defined(__WINDOWS_WASAPI__)
-    platform += string(space ? "+" : "") + "WASAPI"; space = true;
+    drivers += string(space ? "/" : "") + "WASAPI"; space++;
 #endif
 
 // linux related
 #if defined(__LINUX_ALSA__)
-    platform += string(space ? "+" : "") + "ALSA"; space = true;
+    drivers += string(space ? " / " : "") + "ALSA"; space++;
 #endif
 #if defined(__LINUX_OSS__)
-    platform += string(space ? "+" : "") + "OSS"; space = true;
+    drivers += string(space ? " / " : "") + "OSS"; space++;
 #endif
 #if defined(__LINUX_PULSE__)
-    platform += string(space ? "+" : "") + "PulseAudio"; space = true;
+    drivers += string(space ? " / " : "") + "PulseAudio"; space++;
 #endif
 
 // linux / neutral
 #if defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
-    platform += string(space ? "+" : "") + "JACK"; space = true;
+    drivers += string(space ? " / " : "") + "JACK"; space++;
 #endif
 
 // mac
 #if defined(__MACOSX_CORE__)
-    platform += string(space ? "+" : "") + "CoreAudio"; space = true;
+    drivers += string(space ? " / " : "") + "CoreAudio"; space++;
 #endif
-
-    // close the parenthesis
-    platform += ")";
+    
+    // no drivers
+    if( space == 0 ) drivers = "(none)";
 
 // check for universal binary
 #if defined(__MACOS_UB__)
@@ -231,6 +233,7 @@ static void version()
 #endif
 
     CK_FPRINTF_STDERR( "   %s | %ld-bit%s\n", platform.c_str(), machine_intsize(), archs.c_str() );
+    CK_FPRINTF_STDERR( "   audio driver%s: %s\n", space>1 ? "s" : "", drivers.c_str() );
     CK_FPRINTF_STDERR( "   http://chuck.cs.princeton.edu/\n" );
     CK_FPRINTF_STDERR( "   http://chuck.stanford.edu/\n\n" );
 }
