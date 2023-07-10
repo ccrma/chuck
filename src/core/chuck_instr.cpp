@@ -35,6 +35,7 @@
 #include "chuck_vm.h"
 #include "chuck_ugen.h"
 #include "chuck_dl.h"
+#include "chuck_io.h"
 #include "chuck_errmsg.h"
 #include "chuck_globals.h" // added 1.4.1.0
 #include "util_math.h"

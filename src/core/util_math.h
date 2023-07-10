@@ -41,14 +41,14 @@ extern "C" {
 #endif
 
 // 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
     double round( double a );
     double trunc( double a );
 #endif
 #endif
 
-// 1.4.1.0 (ge) need this since __WINDOWS_MODERN__ can be defined but remainder still not found (VC++ 2010)
+// 1.4.1.0 (ge) need this since remainder still not found (VC++ 2010)
 double ck_remainder( double a, double b );
 
 
@@ -69,9 +69,9 @@ void ck_randomize();
 //-----------------------------------------------------------------------------
 #else // __OLDSCHOOL_RANDOM__ (enable only for compatibility pre-c++11)
 //-----------------------------------------------------------------------------
-  #ifndef __PLATFORM_WIN32__
+  #ifndef __PLATFORM_WINDOWS__
     #define CK_RANDOM_MAX 0x7fffffff
-  #else // __PLATFORM_WIN32__
+  #else // __PLATFORM_WINDOWS__
     #define CK_RANDOM_MAX RAND_MAX
   #endif
 //-----------------------------------------------------------------------------

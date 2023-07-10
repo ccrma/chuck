@@ -45,7 +45,7 @@
 #include <signal.h>
 #include <time.h>
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 #include <unistd.h>
 #else // 2022 QTSIN
 #include <winsock2.h>
@@ -662,7 +662,7 @@ void * otf_cb( void * p )
 
     // catch SIGINT
     // signal( SIGINT, signal_int );
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     // catch SIGPIPE
 // REFACTOR 2017: TODO register global signal_pipe function
 //    signal( SIGPIPE, signal_pipe );

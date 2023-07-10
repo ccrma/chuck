@@ -217,7 +217,7 @@ endif
 ifneq (,$(strip $(filter mac-ub,$(MAKECMDGOALS))))
 ARCHOPTS=-arch arm64 -arch x86_64
 ARCH_ARGS=MAC_UB=true
-CFLAGS+=-D__MACOSX_UB__
+CFLAGS+=-D__MACOS_UB__
 endif
 
 

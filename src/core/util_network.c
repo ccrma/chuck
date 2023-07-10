@@ -39,7 +39,7 @@
 #include "chuck_errmsg.h"
 #include <stdio.h>
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
 // 2022 QTSIN changed from winsock.h to winsock2.h
 #include <winsock2.h>
 #else
@@ -56,7 +56,7 @@
 
 
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 static WSADATA g_wsd;
 static int g_init = 0;
 #endif
@@ -89,7 +89,7 @@ ck_socket ck_udp_create( )
 {
     ck_socket sock = NULL;
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     // winsock init
     if( g_init == 0 )
         if( WSAStartup( MAKEWORD(1,1), &(g_wsd) ) != 0 && 
@@ -122,7 +122,7 @@ ck_socket ck_tcp_create( int flags )
     ck_socket sock = (ck_socket)checked_malloc( sizeof( struct ck_socket_ ) );
     int nd = 1; int ru = 1;
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     // winsock init
     if( g_init == 0 )
         if( WSAStartup( MAKEWORD(1,1), &(g_wsd) ) != 0 &&
@@ -173,7 +173,7 @@ t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
     t_CKINT ret;
     struct hostent * host;
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     memset( &sock->sock_in, 0, sizeof(struct sockaddr_in) );
 #else
     bzero( &sock->sock_in, sizeof(struct sockaddr_in) );
@@ -191,7 +191,7 @@ t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
     }
     else
     {
-#if defined( __PLATFORM_WIN32__ ) || defined( __ANDROID__ )
+#if defined( __PLATFORM_WINDOWS__ ) || defined( __ANDROID__ )
         memcpy( (char *)&sock->sock_in.sin_addr, host->h_addr, host->h_length );
 #else
         bcopy( host->h_addr, (char *)&sock->sock_in.sin_addr, host->h_length );
@@ -218,7 +218,7 @@ t_CKBOOL ck_bind( ck_socket sock, int port )
 {
     int ret;
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     memset( &sock->sock_in, 0,  sizeof(struct sockaddr_in) );
 #else
     bzero( &sock->sock_in, sizeof(struct sockaddr_in) );
@@ -291,7 +291,7 @@ ck_socket ck_accept( ck_socket sock )
     client->prot = SOCK_STREAM;
     setsockopt( client->sock, IPPROTO_TCP, TCP_NODELAY, (const char *)&nd, sizeof(nd) );
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     g_init++;
 #endif
     
@@ -445,7 +445,7 @@ void ck_close( ck_socket sock )
 {
     if( !sock ) return;
     
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     closesocket( sock->sock );
 #else
     close( sock->sock );
@@ -453,7 +453,7 @@ void ck_close( ck_socket sock )
 
     free( sock );
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     // uncount
     g_init--;
 

@@ -41,7 +41,7 @@
 
 
 // 'C' specification necessary for windows to link properly
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
   extern "C" a_Program g_program;
 #else
   extern a_Program g_program;

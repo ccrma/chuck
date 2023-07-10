@@ -33,7 +33,7 @@
 #include "util_string.h"
 #include "chuck_errmsg.h"
 
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #ifndef __CHUNREAL_ENGINE__
   #include <windows.h>
 #else
@@ -41,7 +41,7 @@
   // unreal engine on windows disallows including windows.h
   #include "Windows/MinWindows.h"
 #endif // #ifndef __CHUNREAL_ENGINE__
-#endif // #ifdef __PLATFORM_WIN32__
+#endif // #ifdef __PLATFORM_WINDOWS__
 
 #include <time.h>
 #include <limits.h>
@@ -343,9 +343,9 @@ t_CKBOOL extract_args( const string & token,
 
     // ignore second character as arg separator if its : on Windows
     t_CKBOOL ignoreSecond = FALSE;
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     ignoreSecond = TRUE;
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 
     // detect
     t_CKBOOL scan = FALSE;
@@ -473,7 +473,7 @@ done:
 //-----------------------------------------------------------------------------
 // path expansion using wordexp and glob on UNIX systems
 //-----------------------------------------------------------------------------
-#if !defined(__PLATFORM_WIN32__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(__CHIP_MODE__)
+#if !defined(__PLATFORM_WINDOWS__) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !defined(__CHIP_MODE__)
 
 #include <wordexp.h>
 //-----------------------------------------------------------------------------
@@ -567,7 +567,7 @@ std::string globTildePath( const std::string & path )
 //
 //    return result;
 //}
-#endif // not __PLATFORM_WIN32__ && __EMSCRIPTEN__ && __ANDROID__ && __CHIP_MODE__
+#endif // not __PLATFORM_WINDOWS__ && __EMSCRIPTEN__ && __ANDROID__ && __CHIP_MODE__
 
 
 
@@ -575,8 +575,7 @@ std::string globTildePath( const std::string & path )
 //-----------------------------------------------------------------------------
 // path expansion using homemade duct tape on Windows
 //-----------------------------------------------------------------------------
-#ifdef __PLATFORM_WIN32__
-
+#if defined(__PLATFORM_WINDOWS__)
 //-----------------------------------------------------------------------------
 // name: getUserNameWindows()
 // desc: get the user name on windows
@@ -660,7 +659,7 @@ std::string expandFilePathWindows( const string & path )
     // done
     return exp;
 }
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 
 
 
@@ -671,7 +670,7 @@ std::string expandFilePathWindows( const string & path )
 //-----------------------------------------------------------------------------
 std::string get_full_path( const std::string & fp )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
 
     char buf[PATH_MAX];
     char * result = realpath(fp.c_str(), buf);
@@ -711,7 +710,7 @@ std::string get_full_path( const std::string & fp )
     else
         return normalize_directory_separator(buf);
 
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 }
 
 
@@ -726,7 +725,7 @@ std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists )
 #if defined(__EMSCRIPTEN__) || defined(__ANDROID__) || defined(__CHIP_MODE__)
     // no expansion in Emscripten (webchuck) or Android or iOS
     return fp;
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
     // 1.5.0.4 (ge) added
     return expandFilePathWindows( fp );
 #else
@@ -751,7 +750,7 @@ std::string extract_filepath_dir(std::string &filepath)
 {
     char path_separator = '/';
     
-//#ifdef __PLATFORM_WIN32__
+//#ifdef __PLATFORM_WINDOWS__
 //    path_separator = '\\';
 //#else
 //    path_separator = '/';
@@ -830,7 +829,7 @@ string dir_go_up( const string & dir, t_CKINT numUp )
 //-----------------------------------------------------------------------------
 void parse_path_list( std::string & str, std::list<std::string> & lst )
 {
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
     const char separator = ';';
 #else
     const char separator = ':';
@@ -858,7 +857,7 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 //-----------------------------------------------------------------------------
 std::string normalize_directory_separator( const std::string & filepath )
 {
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     std::string new_filepath = filepath;
     t_CKINT len = new_filepath.size();
     for(int i = 0; i < len; i++)
@@ -868,7 +867,7 @@ std::string normalize_directory_separator( const std::string & filepath )
     return new_filepath;
 #else
     return filepath;
-#endif // __PLATFORM_WIN32__
+#endif // __PLATFORM_WINDOWS__
 }
 
 
@@ -881,7 +880,7 @@ std::string normalize_directory_separator( const std::string & filepath )
 //-----------------------------------------------------------------------------
 t_CKBOOL is_absolute_path( const std::string & path )
 {
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     // a little more involved in windows: [letter]:[/ or \]
     if( path.length() >= 3 && path[1] == ':' && ( path[2] == '\\' || path[2] == '/' ) )
     {

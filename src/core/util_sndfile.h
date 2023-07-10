@@ -118,7 +118,10 @@
 
 #define VERSION "1.0.10"
 
-#ifdef __MACOSX_CORE__
+// 1.5.0.7 (ge) since this file does not...
+// include chuck_def.h, directly check platform macros
+
+#if     defined(__APPLE__) // macOS
 #define CPU_CLIPS_POSITIVE 1
 #ifdef __LITTLE_ENDIAN__
 #define CPU_IS_BIG_ENDIAN 0
@@ -136,7 +139,7 @@
 #define TYPEOF_SF_COUNT_T off_t
 #endif
 
-#if     defined(__PLATFORM_WIN32__) //Dev Studio
+#if     defined(_WIN32) // windows
 #define CPU_CLIPS_POSITIVE 0
 #define CPU_IS_BIG_ENDIAN 0
 #define CPU_IS_LITTLE_ENDIAN 1
@@ -151,7 +154,7 @@
 #define TYPEOF_SF_COUNT_T off_t
 #endif
 
-#if     defined (__WINDOWS_PTHREAD__) //Cygwin
+#if     defined (__CYGWIN__) // cygwin
 #define CPU_CLIPS_POSITIVE 0
 #define CPU_IS_BIG_ENDIAN 0
 #define CPU_IS_LITTLE_ENDIAN 1
@@ -162,11 +165,12 @@
 #define TYPEOF_SF_COUNT_T off_t
 #endif
 
-#ifdef __LINUX_ALSA__
-#define HAVE_ALSA_ASOUNDLIB_H
-#endif
+// 1.5.0.7 (ge) commented out, not used
+// #ifdef __LINUX_ALSA__
+// #define HAVE_ALSA_ASOUNDLIB_H
+// #endif
 
-#if defined(__PLATFORM_LINUX__)
+#if defined(__linux__) // Linux
 #define CPU_CLIPS_POSITIVE 0
 #define CPU_IS_BIG_ENDIAN 0
 #define CPU_IS_LITTLE_ENDIAN 1
@@ -184,7 +188,7 @@
 #define HAVE_LRINT 1
 #endif
 
-#ifdef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__ // web assembly
 #define CPU_CLIPS_POSITIVE 1
 #define CPU_IS_BIG_ENDIAN 0
 #define CPU_IS_LITTLE_ENDIAN 1
@@ -203,7 +207,7 @@
 // in the microsoft vc6 compiler...
 // and other ms win32 specialteez.
 
-#ifdef __PLATFORM_WIN32__
+#ifdef _WIN32
 
 #define C_INLINE __inline
 #define SF_COUNT_MAX 0x7FFFFFFFFFFFFFFF
@@ -2496,7 +2500,7 @@ extern word gsm_FAC [8] ;
     #define __USE_ISOC99    1
 
 
-#elif ( defined (WIN32) || defined (_WIN32) || defined(__PLATFORM_WIN32__) || defined(__LITTLE_ENDIAN__) )
+#elif ( defined (WIN32) || defined (_WIN32) || defined(__PLATFORM_WINDOWS__) || defined(__LITTLE_ENDIAN__) )
 
     #undef      HAVE_LRINT_REPLACEMENT
     #define     HAVE_LRINT_REPLACEMENT  1
@@ -2507,7 +2511,8 @@ extern word gsm_FAC [8] ;
     */
 
 // ge: some versions of windows have them
-#ifndef __WINDOWS_MODERN__
+// 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+#ifdef __WINDOWS_OLDSCHOOL__ // was: #ifndef __WINDOWS_MODERN__
     __inline long int
     lrint (double flt)
     {   int intgr ;

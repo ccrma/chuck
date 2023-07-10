@@ -2687,11 +2687,11 @@ CK_DLL_MFUN( string_parent )
     Chuck_String * str = (Chuck_String *) SELF;
 
     string::size_type i = str->str().rfind('/', str->str().length()-2);
-#ifdef WIN32
+#ifdef __PLATFORM_WINDOWS__
     // SPENCERTODO: make this legit on windows
     if(i == string::npos)
         i = str->str().rfind('\\', str->str().length()-2);
-#endif // WIN32
+#endif // __PLATFORM_WINDOWS__
 
     Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
 

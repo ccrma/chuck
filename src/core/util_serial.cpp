@@ -32,12 +32,14 @@
 #include "util_serial.h"
 #include "chuck_errmsg.h"
 
-#if defined(__MACOSX_CORE__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/serial/IOSerialKeys.h>
 #include <IOKit/IOBSD.h>
+
+#include <Availability.h> // 1.5.0.7 (ge) added; __MAC_OS_X_VERSION_MIN_REQUIRED
 
 using namespace std;
 
@@ -47,7 +49,7 @@ vector<string> SerialIOManager::availableSerialDevices()
 
     io_iterator_t serialIterator = 0; // NULL;
     kern_return_t kernResult;
-    mach_port_t masterPort;
+    mach_port_t mainPort;
     CFMutableDictionaryRef classesToMatch = NULL;
 
     io_object_t serialObject;
@@ -56,18 +58,31 @@ vector<string> SerialIOManager::availableSerialDevices()
     CFStringRef dialinCFKeyName = CFStringCreateWithCString(kCFAllocatorDefault, kIODialinDeviceKey, kCFStringEncodingUTF8);
 
     // ge: changed NULL to 0 below to get rid of warning 1.3.2.0
-    if((kernResult = IOMasterPort(0, &masterPort)) != KERN_SUCCESS)
+    // ge: updated kIOMasterPort (deprecated as of macOS 12) to kIOMainPort 1.5.0.7
+#if __MAC_OS_X_VERSION_MIN_REQUIRED <= 120000 // before macOS 12
+    if( (kernResult = IOMasterPort(0, &mainPort)) != KERN_SUCCESS )
+#else
+    if( (kernResult = IOMainPort(0, &mainPort)) != KERN_SUCCESS )
+#endif
     {
         EM_log(CK_LOG_WARNING, "[SerialIOManager] IOMasterPort returned %d\n", kernResult);
         goto error;
     }
+
+// curious about how the version macro above works?
+// in src/core/ try `make mac` (uses OS target, e.g., 1090) vs. `make vanilla` (uses current version 130000)
+// uncomment the next three lines to print the preprocessor value at compile time
+//#define STRING2(x) #x
+//#define STRING(x) STRING2(x)
+//#pragma message ("__MAC_OS_X_VERSION_MIN_REQUIRED = " STRING(__MAC_OS_X_VERSION_MIN_REQUIRED))
+
     if((classesToMatch = IOServiceMatching(kIOSerialBSDServiceValue)) == NULL)
     {
         EM_log(CK_LOG_WARNING, "[SerialIOManager] IOServiceMatching returned NULL\n" );
         goto error;
     }
     CFDictionarySetValue(classesToMatch, CFSTR(kIOSerialBSDTypeKey), CFSTR(kIOSerialBSDAllTypes));
-    kernResult = IOServiceGetMatchingServices(masterPort, classesToMatch, &serialIterator);
+    kernResult = IOServiceGetMatchingServices(mainPort, classesToMatch, &serialIterator);
     classesToMatch = NULL;
     if(kernResult != KERN_SUCCESS)
     {
@@ -185,7 +200,7 @@ cleanup:
     return devices;
 }
 
-#elif defined(__PLATFORM_WIN32__)
+#elif defined(__PLATFORM_WINDOWS__)
 
 #include <windows.h>
 
@@ -253,4 +268,4 @@ vector<string> SerialIOManager::availableSerialDevices()
 }
 
 
-#endif /* __MACOSX_CORE__ */
+#endif // __PLATFORM_APPLE__

@@ -1,6 +1,8 @@
 
-
-#if defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)
+#if defined(__APPLE__) || defined(__linux__)
+// 1.5.0.7 (ge) since this is in the lo/ sub-directory,
+// and does not include chuck_def.h, directly check platform macros
+// #if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__)
 
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
@@ -102,7 +104,7 @@
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-#else // WIN32
+#else // _WIN32
 
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
@@ -197,4 +199,4 @@
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-#endif // defined(__MACOSX_CORE__) || defined(__PLATFORM_LINUX__)
+#endif // defined(__APPLE__) || defined(__linux__)

@@ -699,7 +699,7 @@ CK_DLL_SFUN( max_impl )
 CK_DLL_SFUN( isinf_impl )
 {
     t_CKFLOAT x = GET_CK_FLOAT(ARGS);
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     RETURN->v_int = !_finite( x );
 #else
     RETURN->v_int = isinf( x );
@@ -710,7 +710,7 @@ CK_DLL_SFUN( isinf_impl )
 CK_DLL_SFUN( isnan_impl )
 {
     t_CKFLOAT x = GET_CK_FLOAT(ARGS);
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
     RETURN->v_int = _isnan( x );
 #else
     RETURN->v_int = isnan( x );

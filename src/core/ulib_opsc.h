@@ -31,13 +31,11 @@
 //         Perry R. Cook (prc@cs.princeton.edu)
 // date: Spring 2005
 //-----------------------------------------------------------------------------
-
 #ifndef __ULIB_OPSC_H__
 #define __ULIB_OPSC_H__
 
 #include "chuck_def.h"
 #include "chuck_dl.h"
-#include "chuck_oo.h"
 
 DLL_QUERY opensoundcontrol_query ( Chuck_DL_Query* query );
 

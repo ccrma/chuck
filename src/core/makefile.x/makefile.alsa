@@ -1,5 +1,5 @@
 
-CFLAGS+= -D__LINUX_ALSA__ -D__PLATFORM_LINUX__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
+CFLAGS+= -D__LINUX_ALSA__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 
 ifneq ($(CHUCK_DEBUG),)
 CFLAGS+= -g

@@ -1,0 +1,5 @@
+# compile chuck core "vanilla" -- no extra flags, no linking...
+# just compile object files
+
+CFLAGS+=
+LDFLAGS+=

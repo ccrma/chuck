@@ -37,7 +37,7 @@
 
 #include <string.h>
 #include <sys/stat.h>
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
   #include "dirent_win32.h"
 #endif
 

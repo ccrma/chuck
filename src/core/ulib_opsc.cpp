@@ -35,7 +35,8 @@
 // lo.h ----> lo_osc_types.h needs to import <cstdint> before running itself,
 // but ONLY when compiling this file, and NOT when compiling liblo .c files
 // so, set a flag | REFACTOR-2017
-#ifdef __PLATFORM_WIN32__
+#include "chuck_def.h" // to pick up platform macros
+#ifdef __PLATFORM_WINDOWS__
 #define ULIB_OPSC_CPP
 #endif
 
@@ -45,16 +46,16 @@
 #include "lo/lo.h"
 #endif
 
+// on windows, the above must remain above these includes, else winsock errors
 #include "ulib_opsc.h"
+#include "chuck_compile.h"
+#include "chuck_instr.h"
 #include "chuck_type.h"
 #include "chuck_vm.h"
-#include "chuck_compile.h"
-#include "chuck_dl.h"
-#include "util_opsc.h"
-#include "chuck_instr.h"
-#include "util_thread.h"
 #include "util_buffers.h"
+#include "util_opsc.h"
 #include "util_string.h"
+#include "util_thread.h"
 
 
 #if _MSC_VER
@@ -158,19 +159,19 @@ private:
 
     static std::map<int, OscInServer *> s_oscIn;
 
-#ifdef WIN32
+#ifdef __PLATFORM_WINDOWS__
     static unsigned int __stdcall s_server_cb(void *data)
 #else
     static void *s_server_cb(void *data)
-#endif // WIN32
+#endif // __PLATFORM_WINDOWS__
     {
         OscInServer * _this = (OscInServer *) data;
 
-#ifdef WIN32
+#ifdef __PLATFORM_WINDOWS__
         return (t_CKINT)_this->server_cb();
 #else
         return _this->server_cb();
-#endif
+#endif // __PLATFORM_WINDOWS__
     }
 
     static void s_err_handler(int num, const char *msg, const char *where)
@@ -1738,6 +1739,6 @@ CK_DLL_MFUN( osc_recv_new_address_type )
 }
 
 // No longer compiling ulib_opsc.cpp | REFACTOR-2017
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #undef ULIB_OPSC_CPP
 #endif

@@ -91,7 +91,7 @@ void io_addhistory( const char * addme )
 
 // code thanks to Luke Lin (wdlin@CCCA.NCTU.edu.tw)
 // kb hit
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
   #include <string.h>
   #include <termios.h>
   static struct termios g_save;
@@ -112,7 +112,7 @@ t_CKBOOL kb_initscr()
 {
     if( g_init ) return FALSE;
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     struct termios term;
     if( tcgetattr(0, &term) == -1 )
     { 
@@ -144,7 +144,7 @@ void kb_endwin()
 {
     if( !g_init ) return;
 
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     tcsetattr( 0, TCSADRAIN, &g_save );
 #endif
 
@@ -155,7 +155,7 @@ void kb_endwin()
 // hit
 t_CKINT kb_hit()
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     long ifkeyin;
     char c;
     ifkeyin = read( 0, &c, 1 );
@@ -174,7 +174,7 @@ t_CKINT kb_hit()
 // get
 t_CKINT kb_getch()
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     return g_c;
 #else
     return (t_CKINT)::getch();

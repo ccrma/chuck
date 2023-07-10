@@ -34,11 +34,11 @@
 
 #include "chuck_oo.h"
 #include "chuck_dl.h"
-#ifndef __DISABLE_SERIAL__
-#include "util_thread.h"
-#endif
 #include "util_buffers.h"
+
 #include <list>
+#include <fstream>
+#include <sstream> // REFACTOR-2017: for custom output
 
 
 
@@ -65,6 +65,270 @@ t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_serialio( Chuck_Env * env );
 #endif
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO
+// desc: base Chuck IO class
+//-----------------------------------------------------------------------------
+struct Chuck_IO : public Chuck_Event
+{
+public:
+    Chuck_IO();
+    virtual ~Chuck_IO();
+
+public:
+    // meta
+    virtual t_CKBOOL good() = 0;
+    virtual void close() = 0;
+    virtual void flush() = 0;
+    virtual t_CKINT mode() = 0;
+    virtual void mode( t_CKINT flag ) = 0;
+
+    // reading
+    virtual Chuck_String * readLine() = 0;
+    virtual t_CKINT readInt( t_CKINT flags ) = 0;
+    virtual t_CKFLOAT readFloat() = 0;
+    virtual t_CKFLOAT readFloat( t_CKINT flags ) = 0;
+    virtual t_CKBOOL readString( std::string & str ) = 0;
+    virtual t_CKBOOL eof() = 0;
+
+    // writing
+    virtual void write( const std::string & val ) = 0;
+    virtual void write( t_CKINT val ) = 0;
+    virtual void write( t_CKINT val, t_CKINT flags ) = 0;
+    virtual void write( t_CKFLOAT val ) = 0;
+    virtual void write( t_CKFLOAT val, t_CKINT flags ) = 0;
+
+public:
+    // type | moved to IO in 1.5.0.0 (ge)
+    static const t_CKINT TYPE_ASCII;
+    static const t_CKINT TYPE_BINARY;
+    // datatype
+    static const t_CKINT INT8;
+    static const t_CKINT INT16;
+    static const t_CKINT INT24; // 1.5.0.1 (ge) added
+    static const t_CKINT INT32;
+    static const t_CKINT INT64; // 1.5.0.1 (ge) added
+    // 1.5.0.1 (ge) added SINT and UINT type flags
+    static const t_CKINT SINT8;
+    static const t_CKINT SINT16;
+    static const t_CKINT SINT24;
+    static const t_CKINT SINT32;
+    static const t_CKINT SINT64;
+    static const t_CKINT UINT8;
+    static const t_CKINT UINT16;
+    static const t_CKINT UINT24;
+    static const t_CKINT UINT32;
+    static const t_CKINT UINT64;
+    // 1.5.0.1 (ge) added FLOAT type flags
+    static const t_CKINT FLOAT32;
+    static const t_CKINT FLOAT64;
+    // flags | moved to IO in 1.5.0.0 (ge)
+    static const t_CKINT FLAG_READ_WRITE;
+    static const t_CKINT FLAG_READONLY;
+    static const t_CKINT FLAG_WRITEONLY;
+    static const t_CKINT FLAG_APPEND;
+    // asynchronous I/O members
+    static const t_CKINT MODE_SYNC;
+    static const t_CKINT MODE_ASYNC;
+
+    Chuck_Event * m_asyncEvent;
+#ifndef __DISABLE_THREADS__
+    XThread * m_thread;
+#endif
+    struct async_args
+    {
+        Chuck_IO_File * fileio_obj;
+        void * RETURN; // actually a Chuck_DL_Return
+        t_CKINT intArg;
+        t_CKFLOAT floatArg;
+        std::string stringArg;
+    };
+};
+
+
+
+// #ifndef __DISABLE_FILEIO__
+
+#ifndef __PLATFORM_WINDOWS__
+#include <dirent.h>
+#else
+struct DIR;
+#endif
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_File
+// desc: Chuck File IO class
+//-----------------------------------------------------------------------------
+struct Chuck_IO_File : public Chuck_IO
+{
+public:
+    // REFACTOR-2017
+    Chuck_IO_File( Chuck_VM * vm );
+    virtual ~Chuck_IO_File();
+
+public:
+    // meta
+    virtual t_CKBOOL open( const std::string & path, t_CKINT flags );
+    virtual t_CKBOOL good();
+    virtual void close();
+    virtual void flush();
+    virtual t_CKINT mode();
+    virtual void mode( t_CKINT flag );
+    virtual t_CKINT size();
+
+    // seeking
+    virtual void seek( t_CKINT pos );
+    virtual t_CKINT tell();
+
+    // directories
+    virtual t_CKINT isDir();
+    virtual Chuck_Array4 * dirList();
+
+    // reading
+    // virtual Chuck_String * read( t_CKINT length );
+    virtual Chuck_String * readLine();
+    virtual t_CKINT readInt( t_CKINT flags );
+    virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
+    virtual t_CKBOOL readString( std::string & str );
+    virtual t_CKBOOL eof();
+
+    // reading -- async
+    /* TODO: doesn't look like asynchronous reads will work
+     static THREAD_RETURN ( THREAD_TYPE read_thread ) ( void *data );
+     static THREAD_RETURN ( THREAD_TYPE readLine_thread ) ( void *data );
+     static THREAD_RETURN ( THREAD_TYPE readInt_thread ) ( void *data );
+     static THREAD_RETURN ( THREAD_TYPE readFloat_thread ) ( void *data );
+     */
+
+     // writing
+    virtual void write( const std::string & val );
+    virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
+    virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
+
+#ifndef __DISABLE_THREADS__
+    // writing -- async
+    static THREAD_RETURN( THREAD_TYPE writeStr_thread ) (void * data);
+    static THREAD_RETURN( THREAD_TYPE writeInt_thread ) (void * data);
+    static THREAD_RETURN( THREAD_TYPE writeFloat_thread ) (void * data);
+#endif
+
+protected:
+    // open flags
+    t_CKINT m_flags;
+    // I/O mode
+    t_CKINT m_iomode;
+    // file stream
+    std::fstream m_io;
+    // directory pointer
+    DIR * m_dir;
+    // directory location
+    long m_dir_start;
+    // path
+    std::string m_path;
+    // vm and shred
+    Chuck_VM * m_vmRef;
+};
+// #endif // __DISABLE_FILEIO__
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Chout
+// desc: Chuck console IO out
+//-----------------------------------------------------------------------------
+struct Chuck_IO_Chout : public Chuck_IO
+{
+public:
+    Chuck_IO_Chout( Chuck_Carrier * carrier );
+    virtual ~Chuck_IO_Chout();
+
+public:
+    // meta
+    virtual t_CKBOOL good();
+    virtual void close();
+    virtual void flush();
+    virtual t_CKINT mode();
+    virtual void mode( t_CKINT flag );
+
+    // reading
+    virtual Chuck_String * readLine();
+    virtual t_CKINT readInt( t_CKINT flags );
+    virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
+    virtual t_CKBOOL readString( std::string & str );
+    virtual t_CKBOOL eof();
+
+    // writing
+    virtual void write( const std::string & val );
+    virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
+    virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
+
+public: // REFACTOR-2017
+    // set callback
+    void set_output_callback( void (*fp)(const char *) );
+
+private:
+    // callback
+    void (*m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_IO_Cherr
+// desc: Chuck console IO err
+//-----------------------------------------------------------------------------
+struct Chuck_IO_Cherr : public Chuck_IO
+{
+public:
+    Chuck_IO_Cherr( Chuck_Carrier * carrier );
+    virtual ~Chuck_IO_Cherr();
+
+public:
+    // meta
+    virtual t_CKBOOL good();
+    virtual void close();
+    virtual void flush();
+    virtual t_CKINT mode();
+    virtual void mode( t_CKINT flag );
+
+    // reading
+    virtual Chuck_String * readLine();
+    virtual t_CKINT readInt( t_CKINT flags );
+    virtual t_CKFLOAT readFloat();
+    virtual t_CKFLOAT readFloat( t_CKINT flags );
+    virtual t_CKBOOL readString( std::string & str );
+    virtual t_CKBOOL eof();
+
+    // writing
+    virtual void write( const std::string & val );
+    virtual void write( t_CKINT val );
+    virtual void write( t_CKINT val, t_CKINT flags );
+    virtual void write( t_CKFLOAT val );
+    virtual void write( t_CKFLOAT val, t_CKINT flags );
+
+public:
+    // set callback | REFACTOR-2017
+    void set_output_callback( void (*fp)(const char *) );
+
+private:
+    // callback
+    void (*m_callback)(const char *);
+    // intermediate line storage
+    std::stringstream m_buffer;
+};
 
 
 

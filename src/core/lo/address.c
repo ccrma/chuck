@@ -26,7 +26,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
@@ -97,7 +97,7 @@ lo_address lo_address_new_from_url(const char *url)
 	a = lo_address_new_with_proto(protocol, host, port);
 	if(host) free(host);
 	if(port) free(port);
-#ifndef WIN32
+#ifndef _WIN32
     } else if (protocol == LO_UNIX) {
 	port = lo_url_get_path(url);
 	a = lo_address_new_with_proto(LO_UNIX, NULL, port);
@@ -149,7 +149,7 @@ static const char* get_protocol_name(int proto)
 	    return "udp";
 	case LO_TCP:
 	    return "tcp";
-#ifndef WIN32 
+#ifndef _WIN32
 	case LO_UNIX:
 	    return "unix";
 #endif

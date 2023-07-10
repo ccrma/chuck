@@ -34,7 +34,7 @@ double lo_timetag_diff(lo_timetag a, lo_timetag b)
 
 void lo_timetag_now(lo_timetag *t)
 {
-#ifdef WIN32
+#ifdef _WIN32
     /* 
         FILETIME is the time in units of 100 nsecs from 1601-Jan-01
         1601 and 1900 are 9435484800 seconds apart.

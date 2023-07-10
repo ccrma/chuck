@@ -72,7 +72,7 @@ const t_CKUINT CK_HID_TABLET_ROTATION = 16;
 const t_CKUINT CK_HID_MULTITOUCH_TOUCH = 17;
 const t_CKUINT CK_HID_MSG_COUNT = 18;
 
-#if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 #pragma mark OS X General HID support
 
 /* TODO: ***********************************************************************
@@ -87,7 +87,6 @@ Make Keyboard, Mouse dis/reattachment work *** DONE
 Hid Probe
 
 *******************************************************************************/
-
 
 #include <mach/mach.h>
 #include <mach/mach_error.h>
@@ -1451,7 +1450,12 @@ void Hid_init2()
     CFDictionarySetValue( hidMatchDictionary,
                           CFSTR( kIOHIDPrimaryUsagePageKey ), refCF );*/
 
+    // 1.5.0.7 (ge) updated kIOMasterPortDefault (deprecated as of macOS 12) to kIOMainPortDefault
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < 120000 // before macOS 12
     newDeviceNotificationPort = IONotificationPortCreate( kIOMasterPortDefault );
+#else
+    newDeviceNotificationPort = IONotificationPortCreate( kIOMainPortDefault );
+#endif
 
     result = IOServiceAddMatchingNotification( newDeviceNotificationPort,
                                                kIOFirstMatchNotification,
@@ -2714,7 +2718,7 @@ t_CKINT SMSManager::y = 0;
 t_CKINT SMSManager::z = 0;
 
 
-#if !defined(__PLATFORM_WIN32__) || defined(__WINDOWS_PTHREAD__)
+#if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
 static void * sms_loop( void * )
 #else
 static unsigned int __stdcall sms_loop( void * )
@@ -2820,7 +2824,12 @@ static int TiltSensor_test( int kernFunc, const char * servMatch, int dataType )
 
     CFMutableDictionaryRef matchingDictionary = IOServiceMatching( servMatch );
 
+    // 1.5.0.7 (ge) updated kIOMasterPortDefault to kIOMainPortDefault
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < 120000 // before macOS 12
     result = IOServiceGetMatchingServices( kIOMasterPortDefault, matchingDictionary, &iterator );
+#else
+    result = IOServiceGetMatchingServices( kIOMainPortDefault, matchingDictionary, &iterator );
+#endif
 
     if( result != KERN_SUCCESS )
         return 0;
@@ -4821,7 +4830,7 @@ const char * WiiRemote_name( int wr )
 #endif // __CK_HID_WIIREMOTE__
 }
 
-#elif ( defined( __PLATFORM_WIN32__ ) || defined( __WINDOWS_PTHREAD__ ) ) && !defined( USE_RAWINPUT )
+#elif ( defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__) ) && !defined( USE_RAWINPUT )
 /*****************************************************************************
 Windows general HID support
 *****************************************************************************/
@@ -4829,9 +4838,12 @@ Windows general HID support
 
 #include <windows.h>
 #include <winuser.h>
-#ifdef __WINDOWS_MODERN__ // REFACTOR-2017
+
+// 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+// previously: #ifdef __WINDOWS_MODERN__
+#ifndef __WINDOWS_OLDSCHOOL__ // REFACTOR-2017
 #define DIRECTINPUT_VERSION 0x0800
-#else
+#else // earlier windows
 #ifdef __USE_DINPUT8LIB__
 #define DIRECTINPUT_VERSION 0x0800
 #else
@@ -6261,7 +6273,7 @@ const char * Mouse_name( int m )
     return mice->at( m )->name;
 }
 
-#elif defined( __PLATFORM_WIN32__ ) || defined( __WINDOWS_PTHREAD__ ) && defined( USE_RAWINPUT )
+#elif defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__) && defined( USE_RAWINPUT )
 
 void Joystick_init()
 {
@@ -7785,7 +7797,7 @@ const char * Keyboard_name( int k )
 
 #pragma mark Hid graveyard
 /***** empty functions for stuff that isn't yet cross platform *****/
-#ifndef __PLATFORM_MACOSX__
+#ifndef __PLATFORM_APPLE__
 /*** empty functions for Mac-only stuff ***/
 
 int Joystick_count_elements( int js, int type ) { return -1; }

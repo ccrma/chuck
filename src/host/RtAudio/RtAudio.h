@@ -48,7 +48,7 @@
 
 #define RTAUDIO_VERSION "6.0.0beta1"
 
-#if defined _WIN32 || defined __CYGWIN__
+#if defined(_WIN32) || defined(__CYGWIN__)
   #if defined(RTAUDIO_EXPORT)
     #define RTAUDIO_DLL_PUBLIC __declspec(dllexport)
   #else

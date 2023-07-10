@@ -77,7 +77,7 @@ void ck_usleep( t_CKUINT microseconds );
 
 
 //-----------------------------------------------------------------------------
-#if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 //-----------------------------------------------------------------------------
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -124,7 +124,7 @@ ck_OSVersion ck_macOS_version();
 // get up time | replacement for UpTime()
 AbsoluteTime ck_macOS_uptime();
 
-#endif // #if defined(__PLATFORM_MACOSX__) && !defined(__CHIP_MODE__)
+#endif // #if defined(__PLATFORM_APPLE__) && !defined(__CHIP_MODE__)
 
 
 

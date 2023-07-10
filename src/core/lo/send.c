@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
@@ -47,11 +47,11 @@
 #define MSG_NOSIGNAL 0
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 int initWSock();
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define geterror() WSAGetLastError()
 #else
 #define geterror() errno
@@ -346,7 +346,7 @@ static int create_socket(lo_address a)
 	}
 	
     }
-#ifndef WIN32
+#ifndef _WIN32
     else if (a->protocol == LO_UNIX) {
 	struct sockaddr_un sa;
 
@@ -382,7 +382,7 @@ static int send_data(lo_address a, lo_server from, char *data, const size_t data
     int ret=0;
     int sock=-1;
 
-#ifdef WIN32
+#ifdef _WIN32
     if(!initWSock()) return -1;
 #endif
 

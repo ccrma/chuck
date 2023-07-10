@@ -57,13 +57,11 @@
 #include "ulib_opsc.h"
 #endif
 
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
   #include "dirent_win32.h"
 #endif
 
-//#if defined(__WINDOWS_PTHREAD__)
 #include <sys/stat.h>
-//#endif
 
 #include <string>
 #include <vector>
@@ -780,7 +778,7 @@ error:
 //-----------------------------------------------------------------------------
 t_CKBOOL getDirEntryAttribute( dirent * de, t_CKBOOL & isDirectory, t_CKBOOL & isRegular )
 {
-#if defined(__PLATFORM_WIN32__)
+#if defined(__PLATFORM_WINDOWS__)
     isDirectory = de->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
     isRegular = ((de->data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL) ||
                   (de->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) ||
@@ -846,9 +844,9 @@ static bool comp_func_chuginfileinfo( const ChuginFileInfo & a, const ChuginFile
 //-----------------------------------------------------------------------------
 static string format_dir_name_for_display( const string & path )
 {
-#ifndef __PLATFORM_WIN32__
+#ifndef __PLATFORM_WINDOWS__
     return path;
-#else // not __PLATFORM_WIN32__
+#else // __PLATFORM_WINDOWS__
     return expand_filepath( path );
 #endif
 }
@@ -916,7 +914,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
                 dirs2search.push_back( absolute_path );
             }
         }
-#ifdef __PLATFORM_MACOSX__
+#ifdef __PLATFORM_APPLE__
         else if( is_directory && extension_matches( de->d_name, extension ) )
         {
             // On macOS, a chugin can either be a regular file (a .dylib simply renamed to .chug)
@@ -935,7 +933,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
             // load directly
             chugins2load.push_back( ChuginFileInfo( de->d_name, subdirectory, true ) );
         }
-#endif // #ifdef __PLATFORM_MACOSX__
+#endif // #ifdef __PLATFORM_APPLE__
 
         // read next | 1.5.0.0 (ge) moved here due to #chunreal
         de = readdir( dir );

@@ -163,7 +163,9 @@ RtMidiOut :: RtMidiOut() : RtMidi()
 // API information found at:
 //   - http://developer. apple .com/audio/pdf/coreaudio.pdf
 
-#if defined(__MACOSX_CORE__)
+// 1.5.0.7 (ge) since this does not include chuck_def.h, directly check platform macros
+// previously: #if defined(__MACOSX_CORE__)
+#if defined(__APPLE__)
 
 // The CoreMIDI API is based on the use of a callback function for
 // MIDI input.  We convert the system specific time stamps to delta
@@ -779,7 +781,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   }
 }
 
-#endif  // __MACOSX_CORE__
+#endif // #if defined(__APPLE__)
 
 
 //*********************************************************************//
@@ -790,7 +792,9 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
 //   - http://www.alsa-project.org/documentation.php#Library
 
 // chuck
-#if defined(__LINUX_ALSASEQ__) || defined(__PLATFORM_LINUX__)
+// 1.5.0.7 (ge) since this does not include chuck_def.h, directly check platform macros
+// previously: #if defined(__LINUX_ALSASEQ__) || defined(__PLATFORM_LINUX__)
+#if defined(__linux__) // NOTE: requires ALSA for MIDI on Linux
 
 // The ALSA Sequencer API is based on the use of a callback function for
 // MIDI input.
@@ -1436,7 +1440,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_drain_output(data->seq);
 }
 
-#endif // __LINUX_ALSA__
+#endif // defined(__linux__)
 
 
 //*********************************************************************//
@@ -1847,8 +1851,10 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
 //  - http://msdn.microsoft.com/library/default.asp?url=/library/en-us/multimed/htm/_win32_midi_reference.asp
 
 // chuck
-#if defined(__PLATFORM_WIN32__)
-//#if defined(__WINDOWS_MM__)
+// 1.5.0.7 (ge) since this does not include chuck_def.h, directly check platform macros
+// before previously: #if defined(__WINDOWS_MM__)
+// previously: #if defined(__PLATFORM_WINDOWS__)
+#if defined(_WIN32)
 
 // The Windows MM API is based on the use of a callback function for
 // MIDI input.  We convert the system specific time stamps to delta
@@ -2236,7 +2242,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   }
 }
 
-#endif  // __WINDOWS_MM__
+#endif // defined(_WIN32)
 
 
 #if defined(__LINUX_OSS__)  // dummy

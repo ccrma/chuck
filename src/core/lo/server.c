@@ -34,7 +34,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define EADDRINUSE WSAEADDRINUSE
@@ -48,7 +48,7 @@
 #include <arpa/inet.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define geterror() WSAGetLastError()
 #else
 #define geterror() errno
@@ -84,7 +84,7 @@ static int lo_server_add_socket(lo_server s, int socket);
 static void lo_server_del_socket(lo_server s, int index, int socket);
 static int lo_server_join_multicast_group(lo_server s, const char *group);
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef gai_strerror
 // Copied from the Win32 SDK 
 
@@ -172,7 +172,7 @@ lo_server lo_server_new_with_proto_internal(const char *group,
 
 	// Set real protocol, if Default is requested
 	if (proto==LO_DEFAULT) {
-#ifndef WIN32
+#ifndef _WIN32
 		if (port && *port == '/') proto = LO_UNIX;
 		else 
 #endif
@@ -180,7 +180,7 @@ lo_server lo_server_new_with_proto_internal(const char *group,
 	}
 
 
-#ifdef WIN32
+#ifdef _WIN32
     if(!initWSock()) return NULL;
 #endif
     
@@ -213,7 +213,7 @@ lo_server lo_server_new_with_proto_internal(const char *group,
     } else if (proto == LO_TCP) {
 	hints.ai_socktype = SOCK_STREAM;
     } 
-#ifndef WIN32
+#ifndef _WIN32
     else if (proto == LO_UNIX) {
 
 	struct sockaddr_un sa;
@@ -298,7 +298,7 @@ lo_server lo_server_new_with_proto_internal(const char *group,
 
     /* Join multicast group if specified. */
     /* This must be done before bind() on POSIX, but after bind() Windows. */
-#ifndef WIN32
+#ifndef _WIN32
     if (group != NULL)
         if (lo_server_join_multicast_group(s, group))
             return NULL;
@@ -320,7 +320,7 @@ lo_server lo_server_new_with_proto_internal(const char *group,
     } while (!used && tries++ < 16);
 
     /* Join multicast group if specified (see above). */
-#ifdef WIN32
+#ifdef _WIN32
     if (group != NULL)
         if (lo_server_join_multicast_group(s, group))
             return NULL;
@@ -508,7 +508,7 @@ void *lo_server_recv_raw(lo_server s, size_t *size)
     int ret;
     void *data = NULL;
 
-#ifdef WIN32
+#ifdef _WIN32
     if(!initWSock()) return NULL;
 #endif
 
@@ -984,7 +984,7 @@ static void dispatch_method(lo_server s, const char *path,
 	    case EAI_NONAME:
 		lo_throw(s, err, "Cannot resolve", path);
 		break;
-#ifndef WIN32
+#ifndef _WIN32
 	    case EAI_SYSTEM:
 		lo_throw(s, err, strerror(err), path);
 		break;
@@ -1087,7 +1087,7 @@ static void dispatch_method(lo_server s, const char *path,
 
 		    tmp = malloc(strlen(it->path + len) + 1);
 		    strcpy(tmp, it->path + len);
-#if defined( WIN32 ) || defined( __ANDROID__ )
+#if defined( _WIN32 ) || defined( __ANDROID__ )
             sec = strchr(tmp,'/');
 #else
 		    sec = index(tmp, '/');
@@ -1292,7 +1292,7 @@ int lo_server_get_socket_fd(lo_server s)
 {
     if (s->protocol != LO_UDP &&
         s->protocol != LO_TCP 
-#ifndef WIN32
+#ifndef _WIN32
         && s->protocol != LO_UNIX
 #endif
     ) {
@@ -1344,7 +1344,7 @@ char *lo_server_get_url(lo_server s)
 
 	return buf;
     } 
-#ifndef WIN32
+#ifndef _WIN32
     else if (s->protocol == LO_UNIX) {
 	ret = snprintf(NULL, 0, "osc.unix:///%s", s->path);
 	if (ret <= 0) {

@@ -33,6 +33,7 @@
 #ifndef _OSC_H_INCLUDED_
 #define _OSC_H_INCLUDED_
 
+#include "chuck_def.h"
 
 // chuck high-style artistry
 // let's just cat included files into an enormous code-wad.
@@ -40,7 +41,7 @@
 
 
 // the included files were from the CNMAT OSC-Kit distrib.
-#ifdef __PLATFORM_WIN32__
+#ifdef __PLATFORM_WINDOWS__
 #define _WINSOCKAPI_
 #include <windows.h>
 #endif
