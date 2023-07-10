@@ -183,9 +183,9 @@ static void version()
     t_CKINT space = 0;
 
 #if defined(__PLATFORM_WINDOWS__)
-    platform = "microsoft windows";
+    platform = "Microsoft Windows";
 #elif defined(__PLATFORM_LINUX__)
-    platform = "linux";
+    platform = "Linux";
 #elif defined(__PLATFORM_APPLE__)
     platform = "macOS";
 #elif defined(__PLATFORM_EMSCRIPTEN__)
@@ -193,37 +193,37 @@ static void version()
 #endif
 
 // windows related
-#if defined(__WINDOWS_DS__)
-    drivers += string(space ? "/" : "") + "DirectSound"; space++;
-#endif
 #if defined(__WINDOWS_ASIO__)
-    drivers += string(space ? "/" : "") + "ASIO"; space++;
+    drivers += string( space ? " | " : "" ) + "ASIO"; space++;
+#endif
+#if defined(__WINDOWS_DS__)
+    drivers += string(space ? " | " : "") + "DirectSound"; space++;
 #endif
 #if defined(__WINDOWS_WASAPI__)
-    drivers += string(space ? "/" : "") + "WASAPI"; space++;
-#endif
-
-// linux related
-#if defined(__LINUX_ALSA__)
-    drivers += string(space ? " / " : "") + "ALSA"; space++;
-#endif
-#if defined(__LINUX_OSS__)
-    drivers += string(space ? " / " : "") + "OSS"; space++;
-#endif
-#if defined(__LINUX_PULSE__)
-    drivers += string(space ? " / " : "") + "PulseAudio"; space++;
-#endif
-
-// linux / neutral
-#if defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
-    drivers += string(space ? " / " : "") + "JACK"; space++;
+    drivers += string(space ? " | " : "") + "WASAPI"; space++;
 #endif
 
 // mac
 #if defined(__MACOSX_CORE__)
-    drivers += string(space ? " / " : "") + "CoreAudio"; space++;
+    drivers += string( space ? " | " : "" ) + "CoreAudio"; space++;
 #endif
-    
+
+// linux related
+#if defined(__LINUX_ALSA__)
+    drivers += string(space ? " | " : "") + "ALSA"; space++;
+#endif
+#if defined(__LINUX_OSS__)
+    drivers += string(space ? " | " : "") + "OSS"; space++;
+#endif
+#if defined(__LINUX_PULSE__)
+    drivers += string(space ? " | " : "") + "PulseAudio"; space++;
+#endif
+
+// linux / neutral
+#if defined(__LINUX_JACK__) || defined(__UNIX_JACK__)
+    drivers += string( space ? " | " : "" ) + "JACK"; space++;
+#endif
+
     // no drivers
     if( space == 0 ) drivers = "(none)";
 
