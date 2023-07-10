@@ -202,7 +202,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 // related macros: __MACOSX_CORE__ __CHIP_MODE__
 // NOTE: __CHIP_MODE__ is ChucK for iPhone; implies iOS
 //-------------------------------------------
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(__APPLE__) // && defined(__MACH__)
 //-------------------------------------------
   #ifndef __PLATFORM_APPLE__
   #define __PLATFORM_APPLE__

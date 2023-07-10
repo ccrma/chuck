@@ -2,6 +2,59 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.7 (July 2023)
+---
+- (update/fixed) now --version and --about command-line flags will
+  print all available audio drivers options:
+  ```
+  chuck version: 1.5.0.7-dev (chai)
+     macOS | 64-bit
+     audio driver: CoreAudio
+     http://chuck.cs.princeton.edu/
+     http://chuck.stanford.edu/
+  ```
+  ```
+  > chuck --version
+  chuck version: 1.5.0.7 (chai)
+     Linux | 64-bit
+     audio drivers: ALSA | PulseAudio | JACK
+     http://chuck.cs.princeton.edu/
+     http://chuck.stanford.edu/
+  ```
+  ```
+  > chuck --version
+  chuck version: 1.5.0.7 (chai)
+     Microsoft Windows | 64-bit
+     audio drivers: ASIO | DirectSound | WASAPI
+     http://chuck.cs.princeton.edu/
+     http://chuck.stanford.edu/
+  ```
+- (developer, updated) internal streamlining of chuck core, which is
+  now completely decoupled from knowledged of system audio I/O;
+  this makes chuck core cleaner, more portable, and easier to integrate
+  as a component
+- (developer, added) examples hosts code in C++ showing how to embed
+  ChucK core as a component inside a host C++ program:
+  src/host-examples/
+  example-1-minimal.cpp (no real-time audio)
+  example-2-audio.cpp (real-time audio)
+  example-3-globals.cpp (communication between C++ and ChucK)
+- (developer, added) chuck core can now be built without specifying
+  additional macros, added new core build flavor: 'vanilla'
+  ```
+  src/core> make vanilla
+  ```
+  Builds all source inside src/core, no flags and no linking
+  (The vanilla build is not intended for production but for development.)
+- (developer, updated) internal cleanup of platform macros:
+  __PLATFORM_APPLE__
+  __PLATFORM_LINUX__
+  __PLATFORM_WINDOWS__
+  __PLATFORM_EMSCRIPTEN__
+  __PLATFORM_ANDROID__
+  (with additional sub-platform macros)
+
+
 1.5.0.6 (July 2023)
 ---
 - (fixed, high priority) VM replace print crash
