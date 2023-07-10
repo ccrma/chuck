@@ -7923,8 +7923,9 @@ psf_log_syserr (SF_PRIVATE *psf, int error)
 	return ;
 } /* psf_log_syserr */
 
-//XXX formerly OS_IS_WIN32
-#elif	__PLATFORM_WINDOWS__
+// XXX formerly previously OS_IS_WIN32
+// 1.5.0.7 previously #elif __PLATFORM_WIN32__
+#elif defined(__PLATFORM_WINDOWS__)
 
 /* Win32 file i/o functions implemented using native Win32 API */
 

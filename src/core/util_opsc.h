@@ -33,6 +33,7 @@
 #ifndef _OSC_H_INCLUDED_
 #define _OSC_H_INCLUDED_
 
+#include "chuck_def.h"
 
 // chuck high-style artistry
 // let's just cat included files into an enormous code-wad.

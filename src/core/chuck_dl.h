@@ -62,19 +62,21 @@ extern char g_chugin_path_envvar[];
 
 
 
-// forward references
+// DL forward references
 struct Chuck_DL_Query;
 struct Chuck_DL_Class;
 struct Chuck_DL_Func;
 struct Chuck_DL_Value;
 struct Chuck_DL_Ctrl;
 union  Chuck_DL_Return;
+struct Chuck_DL_MainThreadHook;
 struct Chuck_DLL;
+namespace Chuck_DL_Api { struct Api; }
+
+// object forward references
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
-struct Chuck_DL_MainThreadHook;
-namespace Chuck_DL_Api { struct Api; }
 
 
 // param conversion - to extract values from ARGS to functions

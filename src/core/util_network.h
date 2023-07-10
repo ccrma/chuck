@@ -36,6 +36,8 @@
 #ifndef __UTIL_NETWORK_H__
 #define __UTIL_NETWORK_H__
 
+#include "chuck_def.h"
+
 #ifndef __PLATFORM_WINDOWS__
 #include <sys/types.h>
 #include <sys/socket.h>

@@ -207,7 +207,7 @@
 // in the microsoft vc6 compiler...
 // and other ms win32 specialteez.
 
-#ifdef __PLATFORM_WINDOWS__
+#ifdef _WIN32
 
 #define C_INLINE __inline
 #define SF_COUNT_MAX 0x7FFFFFFFFFFFFFFF

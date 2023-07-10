@@ -846,7 +846,7 @@ static string format_dir_name_for_display( const string & path )
 {
 #ifndef __PLATFORM_WINDOWS__
     return path;
-#else // not __PLATFORM_WINDOWS__
+#else // __PLATFORM_WINDOWS__
     return expand_filepath( path );
 #endif
 }
