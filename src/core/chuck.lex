@@ -51,11 +51,10 @@ IS          (u|U|l|L)*
 
 // check platforms
 #if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-// include freshly bison/flex-generated header
-#include "chuck.tab.h"
+#include "chuck.tab.h" // use fresh bison/flex-generated header
 #else
-// include the pre-generated (using `make chuck_yacc.h` and `make chuck_yacc.c` in core/)
-#include "chuck_yacc.h"
+#include "chuck_yacc.h" // use pre-generated header (no bison/flex needed)
+                        // created by `make chuck_yacc.h` and `make chuck_yacc.c` in core/
 #endif
 
 // globals
