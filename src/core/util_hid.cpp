@@ -4829,9 +4829,12 @@ Windows general HID support
 
 #include <windows.h>
 #include <winuser.h>
-#ifdef __WINDOWS_MODERN__ // REFACTOR-2017
+
+// 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+// previously: #ifdef __WINDOWS_MODERN__
+#ifndef __WINDOWS_OLDSCHOOL__ // REFACTOR-2017
 #define DIRECTINPUT_VERSION 0x0800
-#else
+#else // earlier windows
 #ifdef __USE_DINPUT8LIB__
 #define DIRECTINPUT_VERSION 0x0800
 #else

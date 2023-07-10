@@ -71,7 +71,8 @@ using namespace std;
 typedef BYTE uint8_t;
 typedef WORD uint16_t;
 // ge: this needed in earlier/some versions of windows
-#ifndef __WINDOWS_MODERN__
+// 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+#ifdef __WINDOWS_OLDSCHOOL__ // was: #ifndef __WINDOWS_MODERN__
 typedef __int32 int32_t; // 1.4.1.0 (ge) added
 typedef DWORD uint32_t;
 #endif

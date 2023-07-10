@@ -48,7 +48,7 @@ extern "C" {
 #endif
 #endif
 
-// 1.4.1.0 (ge) need this since __WINDOWS_MODERN__ can be defined but remainder still not found (VC++ 2010)
+// 1.4.1.0 (ge) need this since remainder still not found (VC++ 2010)
 double ck_remainder( double a, double b );
 
 

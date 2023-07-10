@@ -2511,7 +2511,8 @@ extern word gsm_FAC [8] ;
     */
 
 // ge: some versions of windows have them
-#ifndef __WINDOWS_MODERN__
+// 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+#ifdef __WINDOWS_OLDSCHOOL__ // was: #ifndef __WINDOWS_MODERN__
     __inline long int
     lrint (double flt)
     {   int intgr ;

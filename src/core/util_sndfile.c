@@ -8222,9 +8222,10 @@ psf_fclose (SF_PRIVATE *psf)
 	if (psf->do_not_close_descriptor)
 	{
 // ge: needed for some/earlier versions of windows
-#ifndef __WINDOWS_MODERN__
+        // 1.5.0.7 (ge) make "__WINDOWS_MODERN__" default
+        #ifdef __WINDOWS_OLDSCHOOL__ // was: #ifndef __WINDOWS_MODERN__
         (HANDLE)
-#endif
+        #endif
         psf->filedes = INVALID_HANDLE_VALUE ;
 		return 0 ;
 		} ;
