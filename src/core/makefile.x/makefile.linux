@@ -1,6 +1,5 @@
 # this builds chuck on Linux with all supported drivers
-CFLAGS+= -D__LINUX_ALSA__ -D__LINUX_PULSE__ -D__UNIX_JACK__ 
-CFLAGS+= -D__PLATFORM_LINUX__
+CFLAGS+= -D__LINUX_ALSA__ -D__LINUX_PULSE__ -D__UNIX_JACK__
 CFLAGS+= -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 CFLAGS+= $(shell pkg-config --cflags jack)
 

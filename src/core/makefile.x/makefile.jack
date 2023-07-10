@@ -1,5 +1,5 @@
 
-CFLAGS+= -D__UNIX_JACK__ -D__PLATFORM_LINUX__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
+CFLAGS+= -D__UNIX_JACK__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 CFLAGS+= $(shell pkg-config --cflags jack)
 
 ifneq ($(CHUCK_DEBUG),)
