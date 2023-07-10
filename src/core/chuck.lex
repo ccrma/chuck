@@ -1,12 +1,10 @@
 
-
 D           [0-9]
 L           [a-zA-Z_]
 H           [a-fA-F0-9]
 E           [Ee][+-]?{D}+
 FS          (f|F|l|L)
 IS          (u|U|l|L)*
-
 
 %{
 /*----------------------------------------------------------------------------
@@ -45,22 +43,20 @@ IS          (u|U|l|L)*
 //
 // date: Summer 2002
 //-----------------------------------------------------------------------------
-
-#include <stdlib.h>
-#include <string.h>
-#ifndef __PLATFORM_WINDOWS__
-#include <unistd.h>
-#endif
-#include "chuck_utils.h"
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"
 
-#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-  #include "chuck.tab.h"
-#else
-  #include "chuck_yacc.h"
-#endif
+#include <stdlib.h>
+#include <string.h>
 
+// check platforms
+#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+// include freshly bison/flex-generated header
+#include "chuck.tab.h"
+#else
+// include the pre-generated (using `make chuck_yacc.h` and `make chuck_yacc.c` in core/)
+#include "chuck_yacc.h"
+#endif
 
 // globals
 extern YYSTYPE yylval;

@@ -331,13 +331,12 @@
 //
 // date: Summer 2002
 //-----------------------------------------------------------------------------
+#include "chuck_absyn.h"
+#include "chuck_errmsg.h"
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-
-#include "chuck_utils.h"
-#include "chuck_errmsg.h"
-#include "chuck_absyn.h"
 
 // function
 int yylex( void );
@@ -371,7 +370,7 @@ a_Program g_program = NULL;
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 78 "chuck.y"
+#line 77 "chuck.y"
 {
     int pos;
     int ival;
@@ -398,7 +397,7 @@ typedef union YYSTYPE
     a_Vec vec_exp; // ge: added 1.3.5.3
 }
 /* Line 193 of yacc.c.  */
-#line 402 "chuck.tab.c"
+#line 401 "chuck.tab.c"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
@@ -423,7 +422,7 @@ typedef struct YYLTYPE
 
 
 /* Line 216 of yacc.c.  */
-#line 427 "chuck.tab.c"
+#line 426 "chuck.tab.c"
 
 #ifdef short
 # undef short
@@ -794,25 +793,25 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   203,   203,   204,   208,   209,   210,   214,   216,   218,
-     220,   225,   226,   227,   228,   232,   233,   237,   238,   243,
-     244,   245,   249,   253,   254,   258,   259,   263,   265,   267,
-     269,   274,   275,   276,   280,   281,   282,   283,   287,   288,
-     289,   293,   294,   298,   299,   308,   309,   314,   315,   319,
-     320,   324,   325,   329,   330,   331,   332,   334,   338,   339,
-     340,   341,   345,   347,   352,   354,   356,   358,   360,   362,
-     364,   369,   370,   374,   375,   379,   380,   384,   385,   390,
-     391,   396,   397,   402,   403,   407,   408,   409,   410,   411,
-     412,   413,   417,   418,   422,   423,   424,   428,   433,   438,
-     443,   444,   445,   446,   447,   448,   449,   450,   451,   452,
-     453,   454,   455,   456,   460,   461,   465,   466,   471,   472,
-     477,   478,   483,   484,   489,   490,   495,   496,   501,   502,
-     504,   509,   510,   512,   514,   516,   521,   522,   524,   529,
-     530,   532,   537,   538,   540,   542,   547,   548,   553,   554,
-     559,   560,   562,   564,   566,   568,   570,   572,   579,   580,
-     581,   582,   583,   584,   589,   590,   595,   596,   598,   600,
-     602,   604,   606,   612,   613,   614,   615,   616,   617,   618,
-     619,   620,   621,   622,   623
+       0,   202,   202,   203,   207,   208,   209,   213,   215,   217,
+     219,   224,   225,   226,   227,   231,   232,   236,   237,   242,
+     243,   244,   248,   252,   253,   257,   258,   262,   264,   266,
+     268,   273,   274,   275,   279,   280,   281,   282,   286,   287,
+     288,   292,   293,   297,   298,   307,   308,   313,   314,   318,
+     319,   323,   324,   328,   329,   330,   331,   333,   337,   338,
+     339,   340,   344,   346,   351,   353,   355,   357,   359,   361,
+     363,   368,   369,   373,   374,   378,   379,   383,   384,   389,
+     390,   395,   396,   401,   402,   406,   407,   408,   409,   410,
+     411,   412,   416,   417,   421,   422,   423,   427,   432,   437,
+     442,   443,   444,   445,   446,   447,   448,   449,   450,   451,
+     452,   453,   454,   455,   459,   460,   464,   465,   470,   471,
+     476,   477,   482,   483,   488,   489,   494,   495,   500,   501,
+     503,   508,   509,   511,   513,   515,   520,   521,   523,   528,
+     529,   531,   536,   537,   539,   541,   546,   547,   552,   553,
+     558,   559,   561,   563,   565,   567,   569,   571,   578,   579,
+     580,   581,   582,   583,   588,   589,   594,   595,   597,   599,
+     601,   603,   605,   611,   612,   613,   614,   615,   616,   617,
+     618,   619,   620,   621,   622
 };
 #endif
 
@@ -2175,918 +2174,918 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 203 "chuck.y"
+#line 202 "chuck.y"
     { (yyval.program) = g_program = new_program( (yyvsp[(1) - (1)].program_section), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 3:
-#line 204 "chuck.y"
+#line 203 "chuck.y"
     { (yyval.program) = g_program = append_program( (yyvsp[(1) - (2)].program), (yyvsp[(2) - (2)].program_section), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 4:
-#line 208 "chuck.y"
+#line 207 "chuck.y"
     { (yyval.program_section) = new_section_stmt( (yyvsp[(1) - (1)].stmt_list), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 5:
-#line 209 "chuck.y"
+#line 208 "chuck.y"
     { (yyval.program_section) = new_section_func_def( (yyvsp[(1) - (1)].func_def), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 6:
-#line 210 "chuck.y"
+#line 209 "chuck.y"
     { (yyval.program_section) = new_section_class_def( (yyvsp[(1) - (1)].class_def), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 7:
-#line 215 "chuck.y"
+#line 214 "chuck.y"
     { (yyval.class_def) = new_class_def( (yyvsp[(1) - (6)].ival), (yyvsp[(3) - (6)].id_list), NULL, (yyvsp[(5) - (6)].class_body), (yylsp[(1) - (6)]).first_line, (yylsp[(1) - (6)]).first_column ); ;}
     break;
 
   case 8:
-#line 217 "chuck.y"
+#line 216 "chuck.y"
     { (yyval.class_def) = new_class_def( (yyvsp[(1) - (7)].ival), (yyvsp[(3) - (7)].id_list), (yyvsp[(4) - (7)].class_ext), (yyvsp[(6) - (7)].class_body), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 9:
-#line 219 "chuck.y"
+#line 218 "chuck.y"
     { (yyval.class_def) = new_iface_def( (yyvsp[(1) - (6)].ival), (yyvsp[(3) - (6)].id_list), NULL, (yyvsp[(5) - (6)].class_body), (yylsp[(1) - (6)]).first_line, (yylsp[(1) - (6)]).first_column ); ;}
     break;
 
   case 10:
-#line 221 "chuck.y"
+#line 220 "chuck.y"
     { (yyval.class_def) = new_iface_def( (yyvsp[(1) - (7)].ival), (yyvsp[(3) - (7)].id_list), (yyvsp[(4) - (7)].class_ext), (yyvsp[(6) - (7)].class_body), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 11:
-#line 225 "chuck.y"
+#line 224 "chuck.y"
     { (yyval.class_ext) = new_class_ext( NULL, (yyvsp[(2) - (2)].id_list), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 12:
-#line 226 "chuck.y"
+#line 225 "chuck.y"
     { (yyval.class_ext) = new_class_ext( (yyvsp[(4) - (4)].id_list), (yyvsp[(2) - (4)].id_list), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 13:
-#line 227 "chuck.y"
+#line 226 "chuck.y"
     { (yyval.class_ext) = new_class_ext( (yyvsp[(2) - (2)].id_list), NULL, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 14:
-#line 228 "chuck.y"
+#line 227 "chuck.y"
     { (yyval.class_ext) = new_class_ext( (yyvsp[(2) - (4)].id_list), (yyvsp[(4) - (4)].id_list), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 15:
-#line 232 "chuck.y"
+#line 231 "chuck.y"
     { (yyval.class_body) = (yyvsp[(1) - (1)].class_body); ;}
     break;
 
   case 16:
-#line 233 "chuck.y"
+#line 232 "chuck.y"
     { (yyval.class_body) = NULL; ;}
     break;
 
   case 17:
-#line 237 "chuck.y"
+#line 236 "chuck.y"
     { (yyval.class_body) = new_class_body( (yyvsp[(1) - (1)].program_section), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 18:
-#line 238 "chuck.y"
+#line 237 "chuck.y"
     { (yyval.class_body) = prepend_class_body( (yyvsp[(1) - (2)].program_section), (yyvsp[(2) - (2)].class_body), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 19:
-#line 243 "chuck.y"
+#line 242 "chuck.y"
     { (yyval.program_section) = new_section_stmt( (yyvsp[(1) - (1)].stmt_list), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 20:
-#line 244 "chuck.y"
+#line 243 "chuck.y"
     { (yyval.program_section) = new_section_func_def( (yyvsp[(1) - (1)].func_def), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 21:
-#line 245 "chuck.y"
+#line 244 "chuck.y"
     { (yyval.program_section) = new_section_class_def( (yyvsp[(1) - (1)].class_def), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 22:
-#line 249 "chuck.y"
+#line 248 "chuck.y"
     { (yyval.class_ext) = new_class_ext( NULL, (yyvsp[(2) - (2)].id_list), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 23:
-#line 253 "chuck.y"
+#line 252 "chuck.y"
     { (yyval.id_list) = new_id_list( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column  /*, &@1 */ ); ;}
     break;
 
   case 24:
-#line 254 "chuck.y"
+#line 253 "chuck.y"
     { (yyval.id_list) = prepend_id_list( (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].id_list), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column  /*, &@1 */ ); ;}
     break;
 
   case 25:
-#line 258 "chuck.y"
+#line 257 "chuck.y"
     { (yyval.id_list) = new_id_list( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column  /*, &@1*/ ); ;}
     break;
 
   case 26:
-#line 259 "chuck.y"
+#line 258 "chuck.y"
     { (yyval.id_list) = prepend_id_list( (yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].id_list), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column  /*, &@1*/ ); ;}
     break;
 
   case 27:
-#line 264 "chuck.y"
+#line 263 "chuck.y"
     { (yyval.func_def) = new_func_def( (yyvsp[(1) - (8)].ival), (yyvsp[(2) - (8)].ival), (yyvsp[(3) - (8)].type_decl), (yyvsp[(4) - (8)].sval), (yyvsp[(6) - (8)].arg_list), (yyvsp[(8) - (8)].stmt), TRUE, (yylsp[(1) - (8)]).first_line, (yylsp[(1) - (8)]).first_column ); ;}
     break;
 
   case 28:
-#line 266 "chuck.y"
+#line 265 "chuck.y"
     { (yyval.func_def) = new_func_def( (yyvsp[(1) - (7)].ival), (yyvsp[(2) - (7)].ival), (yyvsp[(3) - (7)].type_decl), (yyvsp[(4) - (7)].sval), NULL, (yyvsp[(7) - (7)].stmt), TRUE, (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 29:
-#line 268 "chuck.y"
+#line 267 "chuck.y"
     { (yyval.func_def) = new_func_def( (yyvsp[(1) - (8)].ival), (yyvsp[(2) - (8)].ival), (yyvsp[(3) - (8)].type_decl), (yyvsp[(4) - (8)].sval), (yyvsp[(6) - (8)].arg_list), NULL, TRUE, (yylsp[(1) - (8)]).first_line, (yylsp[(1) - (8)]).first_column ); ;}
     break;
 
   case 30:
-#line 270 "chuck.y"
+#line 269 "chuck.y"
     { (yyval.func_def) = new_func_def( (yyvsp[(1) - (7)].ival), (yyvsp[(2) - (7)].ival), (yyvsp[(3) - (7)].type_decl), (yyvsp[(4) - (7)].sval), NULL, NULL, TRUE, (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 31:
-#line 274 "chuck.y"
+#line 273 "chuck.y"
     { (yyval.ival) = ae_key_public; ;}
     break;
 
   case 32:
-#line 275 "chuck.y"
+#line 274 "chuck.y"
     { (yyval.ival) = ae_key_private; ;}
     break;
 
   case 33:
-#line 276 "chuck.y"
+#line 275 "chuck.y"
     { (yyval.ival) = ae_key_private; ;}
     break;
 
   case 34:
-#line 280 "chuck.y"
+#line 279 "chuck.y"
     { (yyval.ival) = ae_key_func; ;}
     break;
 
   case 35:
-#line 281 "chuck.y"
+#line 280 "chuck.y"
     { (yyval.ival) = ae_key_public; ;}
     break;
 
   case 36:
-#line 282 "chuck.y"
+#line 281 "chuck.y"
     { (yyval.ival) = ae_key_protected; ;}
     break;
 
   case 37:
-#line 283 "chuck.y"
+#line 282 "chuck.y"
     { (yyval.ival) = ae_key_private; ;}
     break;
 
   case 38:
-#line 287 "chuck.y"
+#line 286 "chuck.y"
     { (yyval.ival) = ae_key_static; ;}
     break;
 
   case 39:
-#line 288 "chuck.y"
+#line 287 "chuck.y"
     { (yyval.ival) = ae_key_abstract; ;}
     break;
 
   case 40:
-#line 289 "chuck.y"
+#line 288 "chuck.y"
     { (yyval.ival) = ae_key_instance; ;}
     break;
 
   case 41:
-#line 293 "chuck.y"
+#line 292 "chuck.y"
     { (yyval.type_decl) = new_type_decl( new_id_list( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column /*, &@1*/ ), 0, (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 42:
-#line 294 "chuck.y"
+#line 293 "chuck.y"
     { (yyval.type_decl) = new_type_decl( new_id_list( (yyvsp[(1) - (2)].sval), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column /*, &@1*/ ), 1, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 43:
-#line 298 "chuck.y"
+#line 297 "chuck.y"
     { (yyval.type_decl) = new_type_decl( (yyvsp[(2) - (3)].id_list), 0, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 44:
-#line 299 "chuck.y"
+#line 298 "chuck.y"
     { (yyval.type_decl) = new_type_decl( (yyvsp[(2) - (4)].id_list), 1, (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 45:
-#line 308 "chuck.y"
+#line 307 "chuck.y"
     { (yyval.type_decl) = (yyvsp[(1) - (1)].type_decl); ;}
     break;
 
   case 46:
-#line 309 "chuck.y"
+#line 308 "chuck.y"
     { (yyval.type_decl) = (yyvsp[(1) - (1)].type_decl); ;}
     break;
 
   case 47:
-#line 314 "chuck.y"
+#line 313 "chuck.y"
     { (yyval.type_decl) = (yyvsp[(1) - (1)].type_decl); ;}
     break;
 
   case 48:
-#line 315 "chuck.y"
+#line 314 "chuck.y"
     { (yyval.type_decl) = add_type_decl_array( (yyvsp[(1) - (2)].type_decl), (yyvsp[(2) - (2)].array_sub), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 49:
-#line 319 "chuck.y"
+#line 318 "chuck.y"
     { (yyval.arg_list) = new_arg_list( (yyvsp[(1) - (2)].type_decl), (yyvsp[(2) - (2)].var_decl), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 50:
-#line 320 "chuck.y"
+#line 319 "chuck.y"
     { (yyval.arg_list) = prepend_arg_list( (yyvsp[(1) - (4)].type_decl), (yyvsp[(2) - (4)].var_decl), (yyvsp[(4) - (4)].arg_list), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 51:
-#line 324 "chuck.y"
+#line 323 "chuck.y"
     { (yyval.stmt_list) = new_stmt_list( (yyvsp[(1) - (1)].stmt), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 52:
-#line 325 "chuck.y"
+#line 324 "chuck.y"
     { (yyval.stmt_list) = append_stmt_list( (yyvsp[(1) - (2)].stmt_list), (yyvsp[(2) - (2)].stmt), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 53:
-#line 329 "chuck.y"
+#line 328 "chuck.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].stmt); ;}
     break;
 
   case 54:
-#line 330 "chuck.y"
+#line 329 "chuck.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].stmt); ;}
     break;
 
   case 55:
-#line 331 "chuck.y"
+#line 330 "chuck.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].stmt); ;}
     break;
 
   case 56:
-#line 332 "chuck.y"
+#line 331 "chuck.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].stmt); ;}
     break;
 
   case 57:
-#line 334 "chuck.y"
+#line 333 "chuck.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].stmt); ;}
     break;
 
   case 58:
-#line 338 "chuck.y"
+#line 337 "chuck.y"
     { (yyval.stmt) = new_stmt_from_return( NULL, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 59:
-#line 339 "chuck.y"
+#line 338 "chuck.y"
     { (yyval.stmt) = new_stmt_from_return( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 60:
-#line 340 "chuck.y"
+#line 339 "chuck.y"
     { (yyval.stmt) = new_stmt_from_break( (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 61:
-#line 341 "chuck.y"
+#line 340 "chuck.y"
     { (yyval.stmt) = new_stmt_from_continue( (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 62:
-#line 346 "chuck.y"
+#line 345 "chuck.y"
     { (yyval.stmt) = new_stmt_from_if( (yyvsp[(3) - (5)].exp), (yyvsp[(5) - (5)].stmt), NULL, (yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column ); ;}
     break;
 
   case 63:
-#line 348 "chuck.y"
+#line 347 "chuck.y"
     { (yyval.stmt) = new_stmt_from_if( (yyvsp[(3) - (7)].exp), (yyvsp[(5) - (7)].stmt), (yyvsp[(7) - (7)].stmt), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 64:
-#line 353 "chuck.y"
+#line 352 "chuck.y"
     { (yyval.stmt) = new_stmt_from_while( (yyvsp[(3) - (5)].exp), (yyvsp[(5) - (5)].stmt), (yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column ); ;}
     break;
 
   case 65:
-#line 355 "chuck.y"
+#line 354 "chuck.y"
     { (yyval.stmt) = new_stmt_from_do_while( (yyvsp[(5) - (7)].exp), (yyvsp[(2) - (7)].stmt), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 66:
-#line 357 "chuck.y"
+#line 356 "chuck.y"
     { (yyval.stmt) = new_stmt_from_for( (yyvsp[(3) - (6)].stmt), (yyvsp[(4) - (6)].stmt), NULL, (yyvsp[(6) - (6)].stmt), (yylsp[(1) - (6)]).first_line, (yylsp[(1) - (6)]).first_column ); ;}
     break;
 
   case 67:
-#line 359 "chuck.y"
+#line 358 "chuck.y"
     { (yyval.stmt) = new_stmt_from_for( (yyvsp[(3) - (7)].stmt), (yyvsp[(4) - (7)].stmt), (yyvsp[(5) - (7)].exp), (yyvsp[(7) - (7)].stmt), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 68:
-#line 361 "chuck.y"
+#line 360 "chuck.y"
     { (yyval.stmt) = new_stmt_from_until( (yyvsp[(3) - (5)].exp), (yyvsp[(5) - (5)].stmt), (yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column ); ;}
     break;
 
   case 69:
-#line 363 "chuck.y"
+#line 362 "chuck.y"
     { (yyval.stmt) = new_stmt_from_do_until( (yyvsp[(5) - (7)].exp), (yyvsp[(2) - (7)].stmt), (yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column ); ;}
     break;
 
   case 70:
-#line 365 "chuck.y"
+#line 364 "chuck.y"
     { (yyval.stmt) = new_stmt_from_loop( (yyvsp[(3) - (5)].exp), (yyvsp[(5) - (5)].stmt), (yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column ); ;}
     break;
 
   case 71:
-#line 369 "chuck.y"
+#line 368 "chuck.y"
     { (yyval.stmt) = new_stmt_from_code( NULL, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 72:
-#line 370 "chuck.y"
+#line 369 "chuck.y"
     { (yyval.stmt) = new_stmt_from_code( (yyvsp[(2) - (3)].stmt_list), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 73:
-#line 374 "chuck.y"
+#line 373 "chuck.y"
     { (yyval.stmt) = NULL; ;}
     break;
 
   case 74:
-#line 375 "chuck.y"
+#line 374 "chuck.y"
     { (yyval.stmt) = new_stmt_from_expression( (yyvsp[(1) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 75:
-#line 379 "chuck.y"
+#line 378 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 76:
-#line 380 "chuck.y"
+#line 379 "chuck.y"
     { (yyval.exp) = append_expression( (yyvsp[(1) - (3)].exp), (yyvsp[(3) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 77:
-#line 384 "chuck.y"
+#line 383 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 78:
-#line 386 "chuck.y"
+#line 385 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), (yyvsp[(2) - (3)].ival), (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 79:
-#line 390 "chuck.y"
+#line 389 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 80:
-#line 392 "chuck.y"
+#line 391 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), (yyvsp[(2) - (3)].ival), (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 81:
-#line 396 "chuck.y"
+#line 395 "chuck.y"
     { (yyval.array_sub) = new_array_sub( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 82:
-#line 398 "chuck.y"
+#line 397 "chuck.y"
     { (yyval.array_sub) = prepend_array_sub( (yyvsp[(4) - (4)].array_sub), (yyvsp[(2) - (4)].exp), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 83:
-#line 402 "chuck.y"
+#line 401 "chuck.y"
     { (yyval.array_sub) = new_array_sub( NULL, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 84:
-#line 403 "chuck.y"
+#line 402 "chuck.y"
     { (yyval.array_sub) = prepend_array_sub( (yyvsp[(1) - (3)].array_sub), NULL, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 85:
-#line 407 "chuck.y"
+#line 406 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 86:
-#line 408 "chuck.y"
+#line 407 "chuck.y"
     { (yyval.exp) = new_exp_decl( (yyvsp[(1) - (2)].type_decl), (yyvsp[(2) - (2)].var_decl_list), 0, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 87:
-#line 409 "chuck.y"
+#line 408 "chuck.y"
     { (yyval.exp) = new_exp_decl_external( (yyvsp[(2) - (3)].type_decl), (yyvsp[(3) - (3)].var_decl_list), 0, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 88:
-#line 410 "chuck.y"
+#line 409 "chuck.y"
     { (yyval.exp) = new_exp_decl_global( (yyvsp[(2) - (3)].type_decl), (yyvsp[(3) - (3)].var_decl_list), 0, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 89:
-#line 411 "chuck.y"
+#line 410 "chuck.y"
     { (yyval.exp) = new_exp_decl( (yyvsp[(2) - (3)].type_decl), (yyvsp[(3) - (3)].var_decl_list), 1, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 90:
-#line 412 "chuck.y"
+#line 411 "chuck.y"
     { (yyval.exp) = new_exp_decl( NULL, (yyvsp[(2) - (2)].var_decl_list), 0, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 91:
-#line 413 "chuck.y"
+#line 412 "chuck.y"
     { (yyval.exp) = new_exp_decl( NULL, (yyvsp[(3) - (3)].var_decl_list), 1, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 92:
-#line 417 "chuck.y"
+#line 416 "chuck.y"
     { (yyval.var_decl_list) = new_var_decl_list( (yyvsp[(1) - (1)].var_decl), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 93:
-#line 418 "chuck.y"
+#line 417 "chuck.y"
     { (yyval.var_decl_list) = prepend_var_decl_list( (yyvsp[(1) - (3)].var_decl), (yyvsp[(3) - (3)].var_decl_list), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 94:
-#line 422 "chuck.y"
+#line 421 "chuck.y"
     { (yyval.var_decl) = new_var_decl( (yyvsp[(1) - (1)].sval), NULL, (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 95:
-#line 423 "chuck.y"
+#line 422 "chuck.y"
     { (yyval.var_decl) = new_var_decl( (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].array_sub), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 96:
-#line 424 "chuck.y"
+#line 423 "chuck.y"
     { (yyval.var_decl) = new_var_decl( (yyvsp[(1) - (2)].sval), (yyvsp[(2) - (2)].array_sub), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 97:
-#line 429 "chuck.y"
+#line 428 "chuck.y"
     { (yyval.complex_exp) = new_complex( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 98:
-#line 434 "chuck.y"
+#line 433 "chuck.y"
     { (yyval.polar_exp) = new_polar( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 99:
-#line 439 "chuck.y"
+#line 438 "chuck.y"
     { (yyval.vec_exp) = new_vec( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 100:
-#line 443 "chuck.y"
+#line 442 "chuck.y"
     { (yyval.ival) = ae_op_chuck; ;}
     break;
 
   case 101:
-#line 444 "chuck.y"
+#line 443 "chuck.y"
     { (yyval.ival) = ae_op_at_chuck; ;}
     break;
 
   case 102:
-#line 445 "chuck.y"
+#line 444 "chuck.y"
     { (yyval.ival) = ae_op_plus_chuck; ;}
     break;
 
   case 103:
-#line 446 "chuck.y"
+#line 445 "chuck.y"
     { (yyval.ival) = ae_op_minus_chuck; ;}
     break;
 
   case 104:
-#line 447 "chuck.y"
+#line 446 "chuck.y"
     { (yyval.ival) = ae_op_times_chuck; ;}
     break;
 
   case 105:
-#line 448 "chuck.y"
+#line 447 "chuck.y"
     { (yyval.ival) = ae_op_divide_chuck; ;}
     break;
 
   case 106:
-#line 449 "chuck.y"
+#line 448 "chuck.y"
     { (yyval.ival) = ae_op_shift_right_chuck; ;}
     break;
 
   case 107:
-#line 450 "chuck.y"
+#line 449 "chuck.y"
     { (yyval.ival) = ae_op_shift_left_chuck; ;}
     break;
 
   case 108:
-#line 451 "chuck.y"
+#line 450 "chuck.y"
     { (yyval.ival) = ae_op_percent_chuck; ;}
     break;
 
   case 109:
-#line 452 "chuck.y"
+#line 451 "chuck.y"
     { (yyval.ival) = ae_op_unchuck; ;}
     break;
 
   case 110:
-#line 453 "chuck.y"
+#line 452 "chuck.y"
     { (yyval.ival) = ae_op_upchuck; ;}
     break;
 
   case 111:
-#line 454 "chuck.y"
+#line 453 "chuck.y"
     { (yyval.ival) = ae_op_s_and_chuck; ;}
     break;
 
   case 112:
-#line 455 "chuck.y"
+#line 454 "chuck.y"
     { (yyval.ival) = ae_op_s_or_chuck; ;}
     break;
 
   case 113:
-#line 456 "chuck.y"
+#line 455 "chuck.y"
     { (yyval.ival) = ae_op_s_xor_chuck; ;}
     break;
 
   case 114:
-#line 460 "chuck.y"
+#line 459 "chuck.y"
     { (yyval.ival) = ae_op_arrow_left; ;}
     break;
 
   case 115:
-#line 461 "chuck.y"
+#line 460 "chuck.y"
     { (yyval.ival) = ae_op_arrow_right; ;}
     break;
 
   case 116:
-#line 465 "chuck.y"
+#line 464 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 117:
-#line 467 "chuck.y"
+#line 466 "chuck.y"
     { (yyval.exp) = new_exp_from_if( (yyvsp[(1) - (5)].exp), (yyvsp[(3) - (5)].exp), (yyvsp[(5) - (5)].exp), (yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column ); ;}
     break;
 
   case 118:
-#line 471 "chuck.y"
+#line 470 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 119:
-#line 473 "chuck.y"
+#line 472 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_or, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 120:
-#line 477 "chuck.y"
+#line 476 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 121:
-#line 479 "chuck.y"
+#line 478 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_and, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 122:
-#line 483 "chuck.y"
+#line 482 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 123:
-#line 485 "chuck.y"
+#line 484 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_s_or, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 124:
-#line 489 "chuck.y"
+#line 488 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 125:
-#line 491 "chuck.y"
+#line 490 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_s_xor, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 126:
-#line 495 "chuck.y"
+#line 494 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 127:
-#line 497 "chuck.y"
+#line 496 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_s_and, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 128:
-#line 501 "chuck.y"
+#line 500 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 129:
-#line 503 "chuck.y"
+#line 502 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_eq, (yyvsp[(3) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 130:
-#line 505 "chuck.y"
+#line 504 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_neq, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 131:
-#line 509 "chuck.y"
+#line 508 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 132:
-#line 511 "chuck.y"
+#line 510 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_lt, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 133:
-#line 513 "chuck.y"
+#line 512 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_gt, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 134:
-#line 515 "chuck.y"
+#line 514 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_le, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 135:
-#line 517 "chuck.y"
+#line 516 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_ge, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 136:
-#line 521 "chuck.y"
+#line 520 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 137:
-#line 523 "chuck.y"
+#line 522 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_shift_left, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 138:
-#line 525 "chuck.y"
+#line 524 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_shift_right, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 139:
-#line 529 "chuck.y"
+#line 528 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 140:
-#line 531 "chuck.y"
+#line 530 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_plus, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 141:
-#line 533 "chuck.y"
+#line 532 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_minus, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 142:
-#line 537 "chuck.y"
+#line 536 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 143:
-#line 539 "chuck.y"
+#line 538 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_times, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 144:
-#line 541 "chuck.y"
+#line 540 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_divide, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 145:
-#line 543 "chuck.y"
+#line 542 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_percent, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 146:
-#line 547 "chuck.y"
+#line 546 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 147:
-#line 549 "chuck.y"
+#line 548 "chuck.y"
     { (yyval.exp) = new_exp_from_binary( (yyvsp[(1) - (3)].exp), ae_op_tilda, (yyvsp[(3) - (3)].exp), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 148:
-#line 553 "chuck.y"
+#line 552 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 149:
-#line 555 "chuck.y"
+#line 554 "chuck.y"
     { (yyval.exp) = new_exp_from_cast( (yyvsp[(3) - (3)].type_decl), (yyvsp[(1) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column, (yylsp[(2) - (3)]).first_column ); ;}
     break;
 
   case 150:
-#line 559 "chuck.y"
+#line 558 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 151:
-#line 561 "chuck.y"
+#line 560 "chuck.y"
     { (yyval.exp) = new_exp_from_unary( ae_op_plusplus, (yyvsp[(2) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 152:
-#line 563 "chuck.y"
+#line 562 "chuck.y"
     { (yyval.exp) = new_exp_from_unary( ae_op_minusminus, (yyvsp[(2) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 153:
-#line 565 "chuck.y"
+#line 564 "chuck.y"
     { (yyval.exp) = new_exp_from_unary( (yyvsp[(1) - (2)].ival), (yyvsp[(2) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 154:
-#line 567 "chuck.y"
+#line 566 "chuck.y"
     { (yyval.exp) = new_exp_from_unary( ae_op_typeof, (yyvsp[(2) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 155:
-#line 569 "chuck.y"
+#line 568 "chuck.y"
     { (yyval.exp) = new_exp_from_unary( ae_op_sizeof, (yyvsp[(2) - (2)].exp), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 156:
-#line 571 "chuck.y"
+#line 570 "chuck.y"
     { (yyval.exp) = new_exp_from_unary2( ae_op_new, (yyvsp[(2) - (2)].type_decl), NULL, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 157:
-#line 573 "chuck.y"
+#line 572 "chuck.y"
     { (yyval.exp) = new_exp_from_unary2( ae_op_new, (yyvsp[(2) - (3)].type_decl), (yyvsp[(3) - (3)].array_sub), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 158:
-#line 579 "chuck.y"
+#line 578 "chuck.y"
     { (yyval.ival) = ae_op_plus; ;}
     break;
 
   case 159:
-#line 580 "chuck.y"
+#line 579 "chuck.y"
     { (yyval.ival) = ae_op_minus; ;}
     break;
 
   case 160:
-#line 581 "chuck.y"
+#line 580 "chuck.y"
     { (yyval.ival) = ae_op_tilda; ;}
     break;
 
   case 161:
-#line 582 "chuck.y"
+#line 581 "chuck.y"
     { (yyval.ival) = ae_op_exclamation; ;}
     break;
 
   case 162:
-#line 583 "chuck.y"
+#line 582 "chuck.y"
     { (yyval.ival) = ae_op_times; ;}
     break;
 
   case 163:
-#line 584 "chuck.y"
+#line 583 "chuck.y"
     { (yyval.ival) = ae_op_spork; ;}
     break;
 
   case 165:
-#line 591 "chuck.y"
+#line 590 "chuck.y"
     { (yyval.exp) = new_exp_from_dur( (yyvsp[(1) - (3)].exp), (yyvsp[(3) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 166:
-#line 595 "chuck.y"
+#line 594 "chuck.y"
     { (yyval.exp) = (yyvsp[(1) - (1)].exp); ;}
     break;
 
   case 167:
-#line 597 "chuck.y"
+#line 596 "chuck.y"
     { (yyval.exp) = new_exp_from_array( (yyvsp[(1) - (2)].exp), (yyvsp[(2) - (2)].array_sub), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 168:
-#line 599 "chuck.y"
+#line 598 "chuck.y"
     { (yyval.exp) = new_exp_from_func_call( (yyvsp[(1) - (3)].exp), NULL, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 169:
-#line 601 "chuck.y"
+#line 600 "chuck.y"
     { (yyval.exp) = new_exp_from_func_call( (yyvsp[(1) - (4)].exp), (yyvsp[(3) - (4)].exp), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column ); ;}
     break;
 
   case 170:
-#line 603 "chuck.y"
+#line 602 "chuck.y"
     { (yyval.exp) = new_exp_from_member_dot( (yyvsp[(1) - (3)].exp), (yyvsp[(3) - (3)].sval), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column, (yylsp[(3) - (3)]).first_column ); ;}
     break;
 
   case 171:
-#line 605 "chuck.y"
+#line 604 "chuck.y"
     { (yyval.exp) = new_exp_from_postfix( (yyvsp[(1) - (2)].exp), ae_op_plusplus, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 172:
-#line 607 "chuck.y"
+#line 606 "chuck.y"
     { (yyval.exp) = new_exp_from_postfix( (yyvsp[(1) - (2)].exp), ae_op_minusminus, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
   case 173:
-#line 612 "chuck.y"
+#line 611 "chuck.y"
     { (yyval.exp) = new_exp_from_id( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 174:
-#line 613 "chuck.y"
+#line 612 "chuck.y"
     { (yyval.exp) = new_exp_from_int( (yyvsp[(1) - (1)].ival), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 175:
-#line 614 "chuck.y"
+#line 613 "chuck.y"
     { (yyval.exp) = new_exp_from_float( (yyvsp[(1) - (1)].fval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 176:
-#line 615 "chuck.y"
+#line 614 "chuck.y"
     { (yyval.exp) = new_exp_from_str( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 177:
-#line 616 "chuck.y"
+#line 615 "chuck.y"
     { (yyval.exp) = new_exp_from_char( (yyvsp[(1) - (1)].sval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 178:
-#line 617 "chuck.y"
+#line 616 "chuck.y"
     { (yyval.exp) = new_exp_from_array_lit( (yyvsp[(1) - (1)].array_sub), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 179:
-#line 618 "chuck.y"
+#line 617 "chuck.y"
     { (yyval.exp) = new_exp_from_complex( (yyvsp[(1) - (1)].complex_exp), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 180:
-#line 619 "chuck.y"
+#line 618 "chuck.y"
     { (yyval.exp) = new_exp_from_polar( (yyvsp[(1) - (1)].polar_exp), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 181:
-#line 620 "chuck.y"
+#line 619 "chuck.y"
     { (yyval.exp) = new_exp_from_vec( (yyvsp[(1) - (1)].vec_exp), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column ); ;}
     break;
 
   case 182:
-#line 621 "chuck.y"
+#line 620 "chuck.y"
     { (yyval.exp) = new_exp_from_hack( (yyvsp[(2) - (3)].exp), (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column ); ;}
     break;
 
   case 183:
-#line 622 "chuck.y"
+#line 621 "chuck.y"
     { (yyval.exp) = (yyvsp[(2) - (3)].exp); ;}
     break;
 
   case 184:
-#line 623 "chuck.y"
+#line 622 "chuck.y"
     { (yyval.exp) = new_exp_from_nil( (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column ); ;}
     break;
 
 
 /* Line 1267 of yacc.c.  */
-#line 3090 "chuck.tab.c"
+#line 3089 "chuck.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4013,7 +4012,7 @@ int yy_flex_debug = 0;
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "chuck.lex"
-#line 12 "chuck.lex"
+#line 10 "chuck.lex"
 /*----------------------------------------------------------------------------
     ChucK Concurrent, On-the-fly Audio Programming Language
       Compiler and Virtual Machine
@@ -4050,22 +4049,20 @@ char *yytext;
 //
 // date: Summer 2002
 //-----------------------------------------------------------------------------
-
-#include <stdlib.h>
-#include <string.h>
-#ifndef __PLATFORM_WIN32__
-#include <unistd.h>
-#endif
-#include "chuck_utils.h"
 #include "chuck_absyn.h"
 #include "chuck_errmsg.h"
 
-#if !defined(__PLATFORM_WIN32__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
-  #include "chuck.tab.h"
-#else
-  #include "chuck_yacc.h"
-#endif
+#include <stdlib.h>
+#include <string.h>
 
+// check platforms
+#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+// include freshly bison/flex-generated header
+#include "chuck.tab.h"
+#else
+// include the pre-generated (using `make chuck_yacc.h` and `make chuck_yacc.c` in core/)
+#include "chuck_yacc.h"
+#endif
 
 // globals
 extern YYSTYPE yylval;
@@ -4241,12 +4238,12 @@ long htol( c_str str )
     yycolumn += yyleng;
 
 
-#line 935 "chuck.yy.c"
+#line 933 "chuck.yy.c"
 /* float exponent | 1.5.0.5 (ge) */
 /* universal character name */
 /* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT_VAL
    https://web.iitd.ac.in/~sumeet/flex__bison.pdf */
-#line 940 "chuck.yy.c"
+#line 938 "chuck.yy.c"
 
 #define INITIAL 0
 
@@ -4455,10 +4452,10 @@ YY_DECL
 		}
 
 	{
-#line 250 "chuck.lex"
+#line 246 "chuck.lex"
 
 
-#line 1152 "chuck.yy.c"
+#line 1150 "chuck.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -4527,539 +4524,539 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 252 "chuck.lex"
+#line 248 "chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 253 "chuck.lex"
+#line 249 "chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 254 "chuck.lex"
+#line 250 "chuck.lex"
 { char c, c1; adjust(); block_comment_hack; continue; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 255 "chuck.lex"
+#line 251 "chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 256 "chuck.lex"
+#line 252 "chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 257 "chuck.lex"
+#line 253 "chuck.lex"
 { adjust(); a_newline(); continue; }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 258 "chuck.lex"
+#line 254 "chuck.lex"
 { adjust(); a_newline(); continue; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 260 "chuck.lex"
+#line 256 "chuck.lex"
 { adjust(); return PLUSPLUS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 261 "chuck.lex"
+#line 257 "chuck.lex"
 { adjust(); return MINUSMINUS; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 262 "chuck.lex"
+#line 258 "chuck.lex"
 { adjust(); return POUNDPAREN; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 263 "chuck.lex"
+#line 259 "chuck.lex"
 { adjust(); return PERCENTPAREN; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 264 "chuck.lex"
+#line 260 "chuck.lex"
 { adjust(); return ATPAREN; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 266 "chuck.lex"
+#line 262 "chuck.lex"
 { adjust(); return COMMA; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 267 "chuck.lex"
+#line 263 "chuck.lex"
 { adjust(); return COLON; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 268 "chuck.lex"
+#line 264 "chuck.lex"
 { adjust(); return DOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 269 "chuck.lex"
+#line 265 "chuck.lex"
 { adjust(); return PLUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 270 "chuck.lex"
+#line 266 "chuck.lex"
 { adjust(); return MINUS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 271 "chuck.lex"
+#line 267 "chuck.lex"
 { adjust(); return TIMES; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 272 "chuck.lex"
+#line 268 "chuck.lex"
 { adjust(); return DIVIDE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 273 "chuck.lex"
+#line 269 "chuck.lex"
 { adjust(); return PERCENT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 274 "chuck.lex"
+#line 270 "chuck.lex"
 { adjust(); return POUND; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 275 "chuck.lex"
+#line 271 "chuck.lex"
 { adjust(); return DOLLAR; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 277 "chuck.lex"
+#line 273 "chuck.lex"
 { adjust(); return COLONCOLON; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 278 "chuck.lex"
+#line 274 "chuck.lex"
 { adjust(); return EQ; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 279 "chuck.lex"
+#line 275 "chuck.lex"
 { adjust(); return NEQ; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 280 "chuck.lex"
+#line 276 "chuck.lex"
 { adjust(); return LT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 281 "chuck.lex"
+#line 277 "chuck.lex"
 { adjust(); return GT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 282 "chuck.lex"
+#line 278 "chuck.lex"
 { adjust(); return LE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 283 "chuck.lex"
+#line 279 "chuck.lex"
 { adjust(); return GE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 284 "chuck.lex"
+#line 280 "chuck.lex"
 { adjust(); return AND; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 285 "chuck.lex"
+#line 281 "chuck.lex"
 { adjust(); return OR; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 286 "chuck.lex"
+#line 282 "chuck.lex"
 { adjust(); return S_AND; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 287 "chuck.lex"
+#line 283 "chuck.lex"
 { adjust(); return S_OR; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 288 "chuck.lex"
+#line 284 "chuck.lex"
 { adjust(); return S_XOR; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 289 "chuck.lex"
+#line 285 "chuck.lex"
 { adjust(); return SHIFT_RIGHT; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 290 "chuck.lex"
+#line 286 "chuck.lex"
 { adjust(); return SHIFT_LEFT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 291 "chuck.lex"
+#line 287 "chuck.lex"
 { adjust(); return ASSIGN; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 292 "chuck.lex"
+#line 288 "chuck.lex"
 { adjust(); return LPAREN; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 293 "chuck.lex"
+#line 289 "chuck.lex"
 { adjust(); return RPAREN; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 294 "chuck.lex"
+#line 290 "chuck.lex"
 { adjust(); return LBRACK; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 295 "chuck.lex"
+#line 291 "chuck.lex"
 { adjust(); return RBRACK; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 296 "chuck.lex"
+#line 292 "chuck.lex"
 { adjust(); return LBRACE; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 297 "chuck.lex"
+#line 293 "chuck.lex"
 { adjust(); return RBRACE; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 298 "chuck.lex"
+#line 294 "chuck.lex"
 { adjust(); return SEMICOLON; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 299 "chuck.lex"
+#line 295 "chuck.lex"
 { adjust(); return QUESTION; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 300 "chuck.lex"
+#line 296 "chuck.lex"
 { adjust(); return EXCLAMATION; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 301 "chuck.lex"
+#line 297 "chuck.lex"
 { adjust(); return TILDA; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 302 "chuck.lex"
+#line 298 "chuck.lex"
 { adjust(); return FOR; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 303 "chuck.lex"
+#line 299 "chuck.lex"
 { adjust(); return WHILE; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 304 "chuck.lex"
+#line 300 "chuck.lex"
 { adjust(); return UNTIL; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 305 "chuck.lex"
+#line 301 "chuck.lex"
 { adjust(); return LOOP; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 306 "chuck.lex"
+#line 302 "chuck.lex"
 { adjust(); return CONTINUE; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 307 "chuck.lex"
+#line 303 "chuck.lex"
 { adjust(); return BREAK; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 308 "chuck.lex"
+#line 304 "chuck.lex"
 { adjust(); return IF; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 309 "chuck.lex"
+#line 305 "chuck.lex"
 { adjust(); return ELSE; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 310 "chuck.lex"
+#line 306 "chuck.lex"
 { adjust(); return DO; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 311 "chuck.lex"
+#line 307 "chuck.lex"
 { adjust(); return L_HACK; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 312 "chuck.lex"
+#line 308 "chuck.lex"
 { adjust(); return R_HACK; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 314 "chuck.lex"
+#line 310 "chuck.lex"
 { adjust(); return RETURN; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 316 "chuck.lex"
+#line 312 "chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 317 "chuck.lex"
+#line 313 "chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 318 "chuck.lex"
+#line 314 "chuck.lex"
 { adjust(); return NEW; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 319 "chuck.lex"
+#line 315 "chuck.lex"
 { adjust(); return CLASS; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 320 "chuck.lex"
+#line 316 "chuck.lex"
 { adjust(); return INTERFACE; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 321 "chuck.lex"
+#line 317 "chuck.lex"
 { adjust(); return EXTENDS; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 322 "chuck.lex"
+#line 318 "chuck.lex"
 { adjust(); return IMPLEMENTS; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 323 "chuck.lex"
+#line 319 "chuck.lex"
 { adjust(); return PUBLIC; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 324 "chuck.lex"
+#line 320 "chuck.lex"
 { adjust(); return PROTECTED; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 325 "chuck.lex"
+#line 321 "chuck.lex"
 { adjust(); return PRIVATE; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 326 "chuck.lex"
+#line 322 "chuck.lex"
 { adjust(); return STATIC; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 327 "chuck.lex"
+#line 323 "chuck.lex"
 { adjust(); return ABSTRACT; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 328 "chuck.lex"
+#line 324 "chuck.lex"
 { adjust(); return CONST; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 329 "chuck.lex"
+#line 325 "chuck.lex"
 { adjust(); return SPORK; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 330 "chuck.lex"
+#line 326 "chuck.lex"
 { adjust(); return TYPEOF; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 331 "chuck.lex"
+#line 327 "chuck.lex"
 { adjust(); return EXTERNAL; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 332 "chuck.lex"
+#line 328 "chuck.lex"
 { adjust(); return GLOBAL; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 334 "chuck.lex"
+#line 330 "chuck.lex"
 { adjust(); return CHUCK; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 335 "chuck.lex"
+#line 331 "chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 336 "chuck.lex"
+#line 332 "chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 337 "chuck.lex"
+#line 333 "chuck.lex"
 { adjust(); return UPCHUCK; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 338 "chuck.lex"
+#line 334 "chuck.lex"
 { adjust(); return AT_CHUCK; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 339 "chuck.lex"
+#line 335 "chuck.lex"
 { adjust(); return PLUS_CHUCK; }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 340 "chuck.lex"
+#line 336 "chuck.lex"
 { adjust(); return MINUS_CHUCK; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 341 "chuck.lex"
+#line 337 "chuck.lex"
 { adjust(); return TIMES_CHUCK; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 342 "chuck.lex"
+#line 338 "chuck.lex"
 { adjust(); return DIVIDE_CHUCK; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 343 "chuck.lex"
+#line 339 "chuck.lex"
 { adjust(); return S_AND_CHUCK; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 344 "chuck.lex"
+#line 340 "chuck.lex"
 { adjust(); return S_OR_CHUCK; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 345 "chuck.lex"
+#line 341 "chuck.lex"
 { adjust(); return S_XOR_CHUCK; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 346 "chuck.lex"
+#line 342 "chuck.lex"
 { adjust(); return SHIFT_RIGHT_CHUCK; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 347 "chuck.lex"
+#line 343 "chuck.lex"
 { adjust(); return SHIFT_LEFT_CHUCK; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 348 "chuck.lex"
+#line 344 "chuck.lex"
 { adjust(); return PERCENT_CHUCK; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 349 "chuck.lex"
+#line 345 "chuck.lex"
 { adjust(); return AT_SYM; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 350 "chuck.lex"
+#line 346 "chuck.lex"
 { adjust(); return ATAT_SYM; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 351 "chuck.lex"
+#line 347 "chuck.lex"
 { adjust(); return ARROW_RIGHT; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 352 "chuck.lex"
+#line 348 "chuck.lex"
 { adjust(); return ARROW_LEFT; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 354 "chuck.lex"
+#line 350 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 356 "chuck.lex"
+#line 352 "chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 357 "chuck.lex"
+#line 353 "chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 358 "chuck.lex"
+#line 354 "chuck.lex"
 { adjust(); yylval.ival=htol(yytext); return INT_VAL; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 360 "chuck.lex"
+#line 356 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 361 "chuck.lex"
+#line 357 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 362 "chuck.lex"
+#line 358 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 103:
 /* rule 103 can match eol */
 YY_RULE_SETUP
-#line 364 "chuck.lex"
+#line 360 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 	YY_BREAK
 case 104:
 /* rule 104 can match eol */
 YY_RULE_SETUP
-#line 365 "chuck.lex"
+#line 361 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 367 "chuck.lex"
+#line 363 "chuck.lex"
 { adjust(); EM_error( EM_tokPos, "illegal token" ); }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 369 "chuck.lex"
+#line 365 "chuck.lex"
 ECHO;
 	YY_BREAK
-#line 1753 "chuck.yy.c"
+#line 1751 "chuck.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -6076,7 +6073,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 369 "chuck.lex"
+#line 365 "chuck.lex"
 
 
 // older

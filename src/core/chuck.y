@@ -36,13 +36,12 @@
 //
 // date: Summer 2002
 //-----------------------------------------------------------------------------
+#include "chuck_absyn.h"
+#include "chuck_errmsg.h"
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-
-#include "chuck_utils.h"
-#include "chuck_errmsg.h"
-#include "chuck_absyn.h"
 
 // function
 int yylex( void );
