@@ -234,7 +234,19 @@ long htol( c_str str )
 
 %}
 
+/* generate line number */
 %option yylineno
+
+/* 1.5.0.7 (ge) added to remove dependecy on isatty() and unistd.h
+ without the above option, flex/bison will check isatty() to determine
+ whether it's getting its input from a TTY terminal input OR file/pipe,
+ and chooses a corresponding caching scheme. since chuck is passing
+ data to the parser either as a file or through a string buffer using
+ yy_scan_string(), chuck is never using using the parser for direct
+ TTY input. (FYI the opposite of this option is `%option interactive`
+ if neither `never-interactive` nor `interactive` is specified, bison
+ will test using isatty()) */
+%option never-interactive
 
 /* float exponent | 1.5.0.5 (ge) */
 EXP ([Ee][-+]?[0-9]+)
