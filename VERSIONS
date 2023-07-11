@@ -4,8 +4,10 @@ ChucK VERSIONS log
 
 1.5.0.7 (July 2023)
 ---
+- (note) this patch release contains general internal maintenance for 
+  developers; it also accompanies a critical bug fix in miniAudicle
 - (update/fixed) now --version and --about command-line flags will
-  print all available audio drivers options:
+  correctly print all available audio drivers options, e.g.,
   ```
   chuck version: 1.5.0.7-dev (chai)
      macOS | 64-bit
