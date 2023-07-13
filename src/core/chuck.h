@@ -24,15 +24,25 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck.h
-// desc: chuck engine header; VM + compiler + state; independent of audio I/O
-//       REFACTOR-2017
+// desc: interface for ChucK core: compiler + virtual machine + synthesis
+//       |- possible to instantiate multiple ChucK instances
+//       |- each ChucK instance contains a fully functioning ChucK runtime
+//       |- the ChucK class interface is primary point of integration between
+//          ChucK core and ChucK hosts (e.g., command-line ChucK,
+//          miniAudicle, WebChucK, Chunity, Chunreal, and any C++ program
+//          using ChucK core as a component).
+//       |- see src/host-examples/ for sample integration code for ChucK core
+//       |- see chuck, miniAudicle, WebChucK, Chunity etc. for their
+//          respective integration of ChucK core
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-// date: fall 2017
+//   date: fall 2017
 //
 // additional authors:
 //       Jack Atherton (lja@ccrma.stanford.edu)
 //       Spencer Salazar (spencer@ccrma.stanford.edu)
+//
+// (part of The Big Refactor of 2017; codename `numchucks`; #REFACTOR-2017)
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_H__
 #define __CHUCK_H__
@@ -40,18 +50,19 @@
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
+#include "chuck_carrier.h"
+#include "util_math.h"
+#include "util_string.h"
+#include <string>
+#include <map>
 
 #ifndef __DISABLE_SHELL__
 #include "chuck_shell.h"
 #endif
 
-#include "chuck_carrier.h"
 #ifndef __DISABLE_OTF_SERVER
 #include "ulib_machine.h"
 #endif
-
-#include "util_math.h"
-#include "util_string.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
@@ -61,15 +72,9 @@
 #include "midiio_rtmidi.h"
 #endif
 
-#include <string>
-#include <map>
-
-
-
-
 // ChucK version string -- retrieve using ChucK::version()
 // 1.5.0.0 (ge) | moved here for at-a-glance visibility (e.g., for chugins)
-#define CHUCK_VERSION_STRING                "1.5.0.8-dev (chai)"
+#define CHUCK_VERSION_STRING                    "1.5.0.8-dev (chai)"
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
 #define CHUCK_PARAM_SAMPLE_RATE                 "SAMPLE_RATE"
@@ -109,47 +114,68 @@ public:
 
 public:
     // set parameter by name
-    // -- all params should have reasonable defaults
+    //   |- (in general, parameters have reasonable defaults)
     t_CKBOOL setParam( const std::string & name, t_CKINT value );
     t_CKBOOL setParamFloat( const std::string & name, t_CKFLOAT value );
     t_CKBOOL setParam( const std::string & name, const std::string & value );
     t_CKBOOL setParam( const std::string & name, const std::list< std::string > & value );
-    // get params
+    // get parameter by type
     t_CKINT getParamInt( const std::string & key );
     t_CKFLOAT getParamFloat( const std::string & key );
     std::string getParamString( const std::string & key );
+    // if a parameter is actually a list of value
     std::list< std::string > getParamStringList( const std::string & key );
 
 public:
-    // compile a file -> chuck bytecode -> spork as new shred(s)
+    // initialize ChucK (using params)
+    t_CKBOOL init();
+    // explicit start (optionally -- implicitly called as needed from run())
+    t_CKBOOL start();
+
+public:
+    // compile a file -> generate chuck bytecode -> spork as new shred(s)
     // returns ID of the new shred (or of the first new shred, if count > 1)
     // returns 0 if unsuccessful or no shreds sporked
     t_CKUINT compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
-    // compile code/text -> chuck bytecode -> spork as new shred(s)
+    // compile code/text -> genereate chuck bytecode -> spork as new shred(s)
     // returns ID of the new shred (or of the first new shred, if count > 1)
     // returns 0 if unsuccessful or no shreds sporked
     t_CKUINT compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1, t_CKBOOL immediate = TRUE );
 
 public:
-    // initialize ChucK (using params)
-    t_CKBOOL init();
-    // explicit start (optionally -- done as neede from run())
-    t_CKBOOL start();
-
-public:
     // run ChucK and synthesize audio for `numFrames`...
-    //     (NOTE this function is often called from audio callback)
+    //   |- (NOTE this function is often called from audio callback)
     // `input`: the incoming input array of audio samples
-    //        input array size expected to == `numFrames` * number-of-input-chanels, as initialized in setParam(CHUCK_PARAM_INPUT_CHANNELS, ...)
+    //   |- input array size expected to == `numFrames` * number-of-input-chanels, as initialized in setParam(CHUCK_PARAM_INPUT_CHANNELS, ...)
     // `output`: the outgoing output array of audio samples
-    //         output array size expected to == `numFrames` * number-of-output-chanels, as initialized in setParam(CHUCK_PARAM_OUTPUT_CHANNELS, ...)
+    //   |- output array size expected to == `numFrames` * number-of-output-chanels, as initialized in setParam(CHUCK_PARAM_OUTPUT_CHANNELS, ...)
     // `numFrames` : the number of audio frames to run
-    //             each audio frame corresponds to one point in time, and contains values for every audio channel
+    //   |- each audio frame corresponds to one point in time, and contains values for every audio channel
     void run( const SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
 
 public:
-    // is initialized
+    // get globals (needed to access Globals Manager)
+    //   |- useful for communication between C++ and ChucK using chuck global variables
+    Chuck_Globals_Manager * globals();
+
+public:
+    // get VM (use with care)
+    Chuck_VM * vm() { return m_carrier->vm; }
+    // get compiler (use with care)
+    Chuck_Compiler * compiler() { return m_carrier->compiler; }
+    // is the VM running
+    t_CKBOOL vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
+    // is this ChucK instance initialized
     t_CKBOOL isInit() { return m_init; }
+
+public:
+    // set whether chuck will generate color output for its messages
+    // this will set the corresponding parameter as well
+    void toggleGlobalColorTextoutput( t_CKBOOL onOff );
+
+public:
+    // probe chugins (print info on all chugins as seen under current config)
+    void probeChugins(); // 1.5.0.4 (ge) added
 
 public:
     // additional native chuck bindings/types (use with extra caution)
@@ -160,35 +186,13 @@ public:
     Chuck_DL_MainThreadHook * getMainThreadHook();
 
 public:
-    // get globals (needed to access Globals Manager)
-    Chuck_Globals_Manager * globals();
-
-public:
-    // get VM (dangerous)
-    Chuck_VM * vm() { return m_carrier->vm; }
-    // get compiler (dangerous)
-    Chuck_Compiler * compiler() { return m_carrier->compiler; }
-    // is the VM running
-    t_CKBOOL vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
-
-public:
     // global callback functions: replace printing to command line with a callback function
     t_CKBOOL setChoutCallback( void (* callback)(const char *) );
     t_CKBOOL setCherrCallback( void (* callback)(const char *) );
+    // static I/O redirects, for alternate printing of chuck oputput and system message
+    // e.g., miniAudicle console, Unity console, etc.
     static t_CKBOOL setStdoutCallback( void (* callback)(const char *) );
     static t_CKBOOL setStderrCallback( void (* callback)(const char *) );
-
-public:
-    // global initialization for all instances (called once at beginning)
-    static t_CKBOOL globalInit();
-    // global cleanup for all instances (called once at end)
-    static void globalCleanup();
-    // flag for global init
-    static t_CKBOOL o_isGlobalInit;
-
-protected:
-    // shutdown
-    t_CKBOOL shutdown();
 
 public: // static functions
     // chuck version
@@ -208,6 +212,18 @@ public: // static functions
     // use with care: if true, this enables system() calls from code
     static t_CKBOOL enableSystemCall;
 
+public:
+    // global cleanup for all instances
+    //   |- (called once at end when all instances done, usually by host)
+    static void globalCleanup();
+
+protected:
+    // global initialization for all instances
+    //   |- (called once at beginning internally by ChucK)
+    static t_CKBOOL globalInit();
+    // flag for global init
+    static t_CKBOOL o_isGlobalInit;
+
 protected:
     // chuck version
     static const char VERSION[];
@@ -225,15 +241,8 @@ protected:
     t_CKBOOL initChugins();
     // init OTF programming system
     t_CKBOOL initOTF();
-
-public:
-    // probe chugins (print info on all chugins as seen under current config)
-    void probeChugins(); // 1.5.0.4 (ge) added
-
-public:
-    // set whether chuck will generate color output for its messages
-    // this will set the corresponding parameter as well
-    void toggleGlobalColorTextoutput( t_CKBOOL onOff );
+    // shutdown
+    t_CKBOOL shutdown();
 
 protected:
     // core elements: compiler, VM, etc.
@@ -253,4 +262,4 @@ protected:
 
 
 
-#endif
+#endif // #ifndef __CHUCK_H__

@@ -24,15 +24,25 @@
 
 //-----------------------------------------------------------------------------
 // file: chuck.cpp
-// desc: chuck engine chasis; VM + compiler + state; independent of audio I/O
-//       REFACTOR-2017
+// desc: interface for ChucK core: compiler + virtual machine + synthesis
+//       |- possible to instantiate multiple ChucK instances
+//       |- each ChucK instance contains a fully functioning ChucK runtime
+//       |- the ChucK class interface is primary point of integration between
+//          ChucK core and ChucK hosts (e.g., command-line ChucK,
+//          miniAudicle, WebChucK, Chunity, Chunreal, and any C++ program
+//          using ChucK core as a component).
+//       |- see src/host-examples/ for sample integration code for ChucK core
+//       |- see chuck, miniAudicle, WebChucK, Chunity etc. for their
+//          respective integration of ChucK core
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-// date: fall 2017
+//   date: fall 2017
 //
 // additional authors:
 //       Jack Atherton (lja@ccrma.stanford.edu)
 //       Spencer Salazar (spencer@ccrma.stanford.edu)
+//
+// (part of The Big Refactor of 2017; codename `numchucks`; #REFACTOR-2017)
 //-----------------------------------------------------------------------------
 #include "chuck.h"
 #include "chuck_errmsg.h"
