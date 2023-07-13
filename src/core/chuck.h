@@ -121,10 +121,14 @@ public:
     std::list< std::string > getParamStringList( const std::string & key );
 
 public:
-    // compile a file (can be called anytime)
-    t_CKBOOL compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
-    // compile code directly
-    t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1, t_CKBOOL immediate = TRUE );
+    // compile a file -> chuck bytecode -> spork as new shred
+    // returns ID of the new shred (or of the first new shred, if count > 1)
+    // returns 0 if unsuccessful or no shreds sporked
+    t_CKUINT compileFile( const std::string & path, const std::string & argsTogether, t_CKINT count = 1 );
+    // compile code/text -> chuck bytecode -> spork as new shred
+    // returns ID of the new shred (or of the first new shred, if count > 1)
+    // returns 0 if unsuccessful or no shreds sporked
+    t_CKUINT compileCode( const std::string & code, const std::string & argsTogether, t_CKINT count = 1, t_CKBOOL immediate = TRUE );
 
 public:
     // initialize ChucK (using params)

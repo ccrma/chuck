@@ -964,9 +964,11 @@ t_CKBOOL ChucK::shutdown()
 
 //-----------------------------------------------------------------------------
 // name: compileFile()
-// desc: compile a file (can be called anytime)
+// desc: compile a file -> chuck bytecode -> spork as new shred
+//       returns ID of the new shred (or of the first new shred, if count > 1)
+//       returns 0 if unsuccessful or no shreds sporked
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::compileFile( const std::string & path,
+t_CKUINT ChucK::compileFile( const std::string & path,
                              const std::string & argsTogether,
                              t_CKINT count )
 {
@@ -975,7 +977,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     {
         // error
         EM_error2( 0, "compileFile() invoked before initialization..." );
-        return false;
+        return 0;
     }
 
     std::string filename;
@@ -984,6 +986,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     Chuck_VM_Shred * shred = NULL;
     std::string thePath;
     std::string full_path;
+    t_CKUINT retval = 0;
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
@@ -1060,6 +1063,8 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
 
         // add args
         shred->args = args;
+        // get the id of the first shred
+        if( !retval ) retval = shred->xid;
         // decrement count
         count--;
     }
@@ -1070,14 +1075,14 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return true;
+    return retval;
 
 error: // 1.5.0.0 (ge) added
 
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return false;
+    return 0;
 }
 
 
@@ -1085,9 +1090,11 @@ error: // 1.5.0.0 (ge) added
 
 //-----------------------------------------------------------------------------
 // name: compileCode()
-// desc: compile code directly
+// desc: compile code/text -> chuck bytecode -> spork as new shred
+//       returns ID of the new shred (or of the first new shred, if count > 1)
+//       returns 0 if unsuccessful or no shreds sporked
 //-----------------------------------------------------------------------------
-t_CKBOOL ChucK::compileCode( const std::string & code,
+t_CKUINT ChucK::compileCode( const std::string & code,
                              const std::string & argsTogether,
                              t_CKINT count, t_CKBOOL immediate )
 {
@@ -1096,7 +1103,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     {
         // error
         EM_error2( 0, "compileCode() invoked before initialization..." );
-        return false;
+        return 0;
     }
 
     std::vector<std::string> args;
@@ -1104,6 +1111,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     Chuck_VM_Shred * shred = NULL;
     std::string workingDir;
     std::string full_path;
+    t_CKUINT retval = 0;
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
@@ -1150,7 +1158,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
             count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count-- )
+    while( count > 0 ) // 1.5.0.0 (ge) | added changed to check for > 0, in case of negative count
     {
 #ifndef __EMSCRIPTEN__
         // spork | 1.5.0.5 (ge) added immediate arg defaulting to TRUE
@@ -1162,6 +1170,10 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
 #endif
         // add args
         shred->args = args;
+        // get the id of the first shred
+        if( !retval ) retval = shred->xid;
+        // decrement count
+        count--;
     }
 
     // pop indent
@@ -1170,14 +1182,14 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return true;
+    return retval;
 
 error: // 1.5.0.0 (ge) added
 
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return false;
+    return 0;
 }
 
 
