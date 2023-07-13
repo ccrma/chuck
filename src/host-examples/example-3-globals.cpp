@@ -119,8 +119,6 @@ void error_cb( RtAudioErrorType type, const std::string &errorText )
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // host program entry point
 //-----------------------------------------------------------------------------
@@ -143,10 +141,7 @@ int main( int argc, char ** argv )
     // set hint so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, TRUE );
     // turn on logging to see what ChucK is up to; higher == more info
-    // chuck->setLogLevel( 3 );
-
-    // a char
-    char c;
+    // the_chuck->setLogLevel( 3 );
 
     // initialize real-time audio
     if( !init_realtime_audio( the_chuck->getParamInt( CHUCK_PARAM_SAMPLE_RATE ),
@@ -182,8 +177,8 @@ int main( int argc, char ** argv )
         // print
         cerr << "press [CTRL-C] to quit" << endl;
         cerr << "press [ENTER] to signal next note" << endl;;
-        // get a char
-        cin.get(c);
+        // get a character
+        char c; cin.get(c);
 
         // signal the event in ChucK
         // NOTE: this is using CamelCase version (calling from outside of audio thread)

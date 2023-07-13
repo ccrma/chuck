@@ -96,8 +96,6 @@ void error_cb( RtAudioErrorType type, const std::string & errorText )
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // host program entry point
 //-----------------------------------------------------------------------------
@@ -120,8 +118,14 @@ int main( int argc, char ** argv )
     // set hint so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, TRUE );
     // turn on logging to see what ChucK is up to; higher == more info
-    // chuck->setLogLevel( 3 );
+    // the_chuck->setLogLevel( 3 );
     
+    // debug print -- uncomment to see flow
+    // cerr << "[example-2-audio]: initializing real-time audio..." << endl;
+    // cerr << "[example-2-audio]: (will use default audio devices)" << endl;
+    // name of file to run
+    string filename = "ck/test-2-audio.ck";
+
     // initialize real-time audio
     if( !init_realtime_audio( the_chuck->getParamInt( CHUCK_PARAM_SAMPLE_RATE ),
                               the_chuck->getParamInt( CHUCK_PARAM_INPUT_CHANNELS ),
@@ -189,7 +193,7 @@ t_CKBOOL init_realtime_audio( t_CKINT sampleRate,
         cerr << "[real-time audio]: no audio device found!" << endl;
         return FALSE;
     }
-    
+
     // set error callback
     the_rtaudio->setErrorCallback( error_cb );
 

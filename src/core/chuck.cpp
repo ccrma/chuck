@@ -975,12 +975,20 @@ t_CKBOOL ChucK::shutdown()
 //-----------------------------------------------------------------------------
 // name: compileFile()
 // desc: compile a file -> chuck bytecode -> spork as new shred
+//       `argsTogether` is appended to `path` as additional arguments
+//       the format of `argsTogether` is ':'-separated items e.g., "1:foo:5"
+//       NOTE: `path` could have arguments already, e.g., "program.ck:5.5:bar"
+//       if `immediate` == TRUE, the new shred(s) is shreduled immediately
+//           (on the calling thread)
+//       if `immediate` == FALSE, the new shreds(s) is queued and shreduled on
+//           the next time step (by the VM compute/audio thread)
+//       `count` specifies how many instances of the new shred to spork
 //       returns ID of the new shred (or of the first new shred, if count > 1)
 //       returns 0 if unsuccessful or no shreds sporked
 //-----------------------------------------------------------------------------
 t_CKUINT ChucK::compileFile( const std::string & path,
                              const std::string & argsTogether,
-                             t_CKINT count )
+                             t_CKINT count, t_CKBOOL immediate )
 {
     // sanity check
     if( !m_carrier->compiler )
@@ -1065,9 +1073,10 @@ t_CKUINT ChucK::compileFile( const std::string & path,
     {
         #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
-        shred = m_carrier->vm->spork( code, NULL, FALSE );
+        shred = m_carrier->vm->spork( code, NULL, immediate );
         #else
         // spork (in emscripten, need to spork immediately so can get shred id)
+        // 1.5.0.8 (ge) now shred has ID regardless of immediate flag
         shred = m_carrier->vm->spork( code, NULL, TRUE );
         #endif
 
@@ -1101,6 +1110,12 @@ error: // 1.5.0.0 (ge) added
 //-----------------------------------------------------------------------------
 // name: compileCode()
 // desc: compile code/text -> chuck bytecode -> spork as new shred
+//       `argsTogether` is appended to `path` as arguments
+//       the format of `argsTogether` is ':'-separated items e.g., "1:foo:5"
+//       if `immediate` == TRUE, the new shred(s) is shreduled immediately
+//           (on the calling thread)
+//       if `immediate` == FALSE, the new shreds(s) is queued and shreduled on
+//           the next time step (on the VM compute/audio thread)
 //       returns ID of the new shred (or of the first new shred, if count > 1)
 //       returns 0 if unsuccessful or no shreds sporked
 //-----------------------------------------------------------------------------
@@ -1176,6 +1191,7 @@ t_CKUINT ChucK::compileCode( const std::string & code,
         shred = m_carrier->vm->spork( vm_code, NULL, immediate );
 #else
         // spork (in emscripten, need to spork immediately so can get shred id)
+        // 1.5.0.8 (ge) now shred has ID regardless of immediate flag
         shred = m_carrier->vm->spork( vm_code, NULL, TRUE );
 #endif
         // add args

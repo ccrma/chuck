@@ -621,8 +621,11 @@ vm_stop:
     // after the initial stoppage; calling stop after resets m_is_running
     if( m_is_running ) EM_log( CK_LOG_SYSTEM, "stopping virtual machine..." );
 
-    // stop, 1.3.5.3
+    // stop | 1.3.5.3
     this->stop();
+
+    // clear | 1.5.0.8
+    m_input_ref = NULL; m_output_ref = NULL;
 
     return TRUE;
 }
@@ -1015,12 +1018,24 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     // set the base ref for global
     if( parent ) shred->base_ref = shred->parent->base_ref;
     else shred->base_ref = shred->mem;
+
+    // get shred ID | 1.5.0.8 (ge) moved here so all shreds have IDs earlier
+    // previously: only immediate-mode shreds were assigned IDs in this method
+    // (via the other spork() function) and non-immediate shreds were returned
+    // with ID 0 (their ID assignment would have been deferred)
+    // presently: the shred created and returned by this function will be
+    // assigned an ID regardless of the immediate flag
+    shred->xid = next_id();
+
+    // check whether to start running immediately at current time step
+    // (this is more timely, but should be only used if called on same
+    // thread as VM compute() / the audio thread)
     if( immediate )
     {
         // spork it
         this->spork( shred );
     }
-    else
+    else // or be sporked later (by compute() on the next time step)
     {
         // spork it later
         Chuck_Global_Request spork_request;
@@ -1049,8 +1064,8 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     shred->start = m_shreduler->now_system;
     // set the now
     shred->now = shred->wake_time = m_shreduler->now_system;
-    // set the id
-    shred->xid = next_id();
+    // set the id, if one hasn't been assigned yet | 1.5.0.8 (ge) add check
+    if( !shred->xid ) shred->xid = next_id();
     // add ref
     shred->add_ref();
     // add it to the parent
