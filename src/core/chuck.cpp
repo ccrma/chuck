@@ -674,8 +674,6 @@ t_CKBOOL ChucK::initChugins()
         // load external libs | 1.5.0.4 (ge) enabled recursive search
         if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, TRUE ) )
         {
-            // pop indent level
-            EM_poplog();
             // clean up
             goto error;
         }
@@ -983,19 +981,23 @@ t_CKBOOL ChucK::shutdown()
 //       if `immediate` == FALSE, the new shreds(s) is queued and shreduled on
 //           the next time step (by the VM compute/audio thread)
 //       `count` specifies how many instances of the new shred to spork
-//       returns ID of the new shred (or of the first new shred, if count > 1)
-//       returns 0 if unsuccessful or no shreds sporked
+//       returns TRUE if compilation successful (even if count == 0)
+//       returns FALSE if compilation unsuccessful
 //-----------------------------------------------------------------------------
-t_CKUINT ChucK::compileFile( const std::string & path,
+t_CKBOOL ChucK::compileFile( const std::string & path,
                              const std::string & argsTogether,
-                             t_CKINT count, t_CKBOOL immediate )
+                             t_CKUINT count, t_CKBOOL immediate,
+                             std::vector<t_CKUINT> * shredIDs)
 {
+    // clear | 1.5.0.8
+    if( shredIDs ) shredIDs->clear();
+
     // sanity check
     if( !m_carrier->compiler )
     {
         // error
         EM_error2( 0, "compileFile() invoked before initialization..." );
-        return 0;
+        return FALSE;
     }
 
     std::string filename;
@@ -1004,7 +1006,6 @@ t_CKUINT ChucK::compileFile( const std::string & path,
     Chuck_VM_Shred * shred = NULL;
     std::string thePath;
     std::string full_path;
-    t_CKUINT retval = 0;
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
@@ -1069,7 +1070,7 @@ t_CKUINT ChucK::compileFile( const std::string & path,
            count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count > 0 ) // 1.5.0.0 (ge) | added changed to check for > 0, in case of negative count
+    while( count > 0 )
     {
         #ifndef __EMSCRIPTEN__
         // spork (for now, spork_immediate arg is always false)
@@ -1082,26 +1083,27 @@ t_CKUINT ChucK::compileFile( const std::string & path,
 
         // add args
         shred->args = args;
-        // get the id of the first shred
-        if( !retval ) retval = shred->xid;
+        // append the new ID | 1.5.0.8
+        if( shredIDs ) shredIDs->push_back( shred->xid );
         // decrement count
         count--;
     }
 
     // pop indent
     EM_poplog();
-
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return retval;
+    return TRUE;
 
 error: // 1.5.0.0 (ge) added
 
+    // pop indent
+    EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return 0;
+    return FALSE;
 }
 
 
@@ -1116,19 +1118,23 @@ error: // 1.5.0.0 (ge) added
 //           (on the calling thread)
 //       if `immediate` == FALSE, the new shreds(s) is queued and shreduled on
 //           the next time step (on the VM compute/audio thread)
-//       returns ID of the new shred (or of the first new shred, if count > 1)
-//       returns 0 if unsuccessful or no shreds sporked
+//       returns TRUE if compilation successful (even if count == 0)
+//       returns FALSE if compilation unsuccessful
 //-----------------------------------------------------------------------------
-t_CKUINT ChucK::compileCode( const std::string & code,
+t_CKBOOL ChucK::compileCode( const std::string & code,
                              const std::string & argsTogether,
-                             t_CKINT count, t_CKBOOL immediate )
+                             t_CKUINT count, t_CKBOOL immediate,
+                             std::vector<t_CKUINT> * shredIDs )
 {
+    // clear | 1.5.0.8
+    if( shredIDs ) shredIDs->clear();
+
     // sanity check
     if( !m_carrier->compiler )
     {
         // error
         EM_error2( 0, "compileCode() invoked before initialization..." );
-        return 0;
+        return FALSE;
     }
 
     std::vector<std::string> args;
@@ -1136,7 +1142,6 @@ t_CKUINT ChucK::compileCode( const std::string & code,
     Chuck_VM_Shred * shred = NULL;
     std::string workingDir;
     std::string full_path;
-    t_CKUINT retval = 0;
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
@@ -1183,7 +1188,7 @@ t_CKUINT ChucK::compileCode( const std::string & code,
             count == 1 ? "instance" : "instances" );
 
     // spork it
-    while( count > 0 ) // 1.5.0.0 (ge) | added changed to check for > 0, in case of negative count
+    while( count > 0 )
     {
 #ifndef __EMSCRIPTEN__
         // spork | 1.5.0.5 (ge) added immediate arg defaulting to TRUE
@@ -1196,26 +1201,27 @@ t_CKUINT ChucK::compileCode( const std::string & code,
 #endif
         // add args
         shred->args = args;
-        // get the id of the first shred
-        if( !retval ) retval = shred->xid;
+        // append the new ID | 1.5.0.8
+        if( shredIDs ) shredIDs->push_back( shred->xid );
         // decrement count
         count--;
     }
 
     // pop indent
     EM_poplog();
-
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return retval;
+    return TRUE;
 
 error: // 1.5.0.0 (ge) added
 
+    // pop indent
+    EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = te_originUnknown;
 
-    return 0;
+    return FALSE;
 }
 
 

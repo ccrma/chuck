@@ -138,17 +138,21 @@ public:
     // `count` specifies how many instances of the new shred to spork
     // if `immediate` == TRUE, the new shred(s) is shreduled immediately (on the calling thread)
     // if `immediate` == FALSE, the new shreds(s) is queued and shreduled on the next time step (on the VM compute/audio thread)
-    // returns ID of the new shred (or of the first new shred, if count > 1)
-    // returns 0 if unsuccessful or no shreds sporked
-    t_CKUINT compileFile( const std::string & path, const std::string & argsTogether = "", t_CKINT count = 1, t_CKBOOL immediate = FALSE );
+    // if `shredIDS` is not NULL, it will be filled with the ID(s) of the new resulting shreds
+    // returns TRUE if compilation successful (even if count == 0)
+    // returns FALSE if compilation unsuccessful
+    t_CKBOOL compileFile( const std::string & path, const std::string & argsTogether = "",
+                          t_CKUINT count = 1, t_CKBOOL immediate = FALSE, std::vector<t_CKUINT> * shredIDs = NULL );
     // compile code/text -> genereate chuck bytecode -> spork as new shred(s)
     // `argsTogether` is appended to `path` as arguments, separated by ':' e.g., "1:foo:bar"
     // `count` specifies how many instances of the new shred to spork
     // if `immediate` == TRUE, the new shred(s) is shreduled immediately (on the calling thread)
     // if `immediate` == FALSE, the new shreds(s) is queued and shreduled on the next time step (on the VM compute/audio thread)
-    // returns ID of the new shred (or of the first new shred, if count > 1)
-    // returns 0 if unsuccessful or no shreds sporked
-    t_CKUINT compileCode( const std::string & code, const std::string & argsTogether = "", t_CKINT count = 1, t_CKBOOL immediate = FALSE );
+    // if `shredIDS` is not NULL, it will be filled with the ID(s) of the new resulting shreds
+    // returns TRUE if compilation successful (even if count == 0)
+    // returns FALSE if compilation unsuccessful
+    t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether = "",
+                          t_CKUINT count = 1, t_CKBOOL immediate = FALSE, std::vector<t_CKUINT> * shredIDs = NULL );
 
 public:
     // run ChucK and synthesize audio for `numFrames`...
