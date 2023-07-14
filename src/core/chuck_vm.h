@@ -629,19 +629,27 @@ struct Chuck_Msg
     t_CKUINT replyB;
     void * replyC;
 
+    // argument array pointer
     std::vector<std::string> * args;
 
     Chuck_Msg() : args(NULL) { clear(); }
     ~Chuck_Msg() { CK_SAFE_DELETE( args ); }
 
     // added 1.3.0.0
-    void clear() { CK_SAFE_DELETE( args ); memset( this, 0, sizeof(*this) ); }
-
-    void set( const std::vector<std::string> & vargs )
+    void clear() { CK_SAFE_DELETE( args ); memset( this, 0, sizeof(Chuck_Msg) ); }
+    // copy in args
+    void set( const std::vector<std::string> * vargs )
     {
+        // clean up existing args
         CK_SAFE_DELETE(args);
-        args = new std::vector<std::string>;
-        (*args) = vargs;
+        // check
+        if( vargs )
+        {
+            // instantiate new
+            args = new std::vector<std::string>;
+            // copy
+            (*args) = *vargs;
+        }
     }
 };
 

@@ -1072,14 +1072,10 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     // spork it
     while( count > 0 )
     {
-        #ifndef __EMSCRIPTEN__
-        // spork (for now, spork_immediate arg is always false)
+        // spork shred from code; shredule immediately or deferred;
+        // as of 1.5.0.8, spork allocates the shred ID regardless...
+        // previously for emscripten `immediate` => TRUE; this is no longer necessary
         shred = m_carrier->vm->spork( code, NULL, immediate );
-        #else
-        // spork (in emscripten, need to spork immediately so can get shred id)
-        // 1.5.0.8 (ge) now shred has ID regardless of immediate flag
-        shred = m_carrier->vm->spork( code, NULL, TRUE );
-        #endif
 
         // add args
         shred->args = args;
@@ -1190,15 +1186,11 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     // spork it
     while( count > 0 )
     {
-#ifndef __EMSCRIPTEN__
-        // spork | 1.5.0.5 (ge) added immediate arg defaulting to TRUE
-        // previously the immediate flag was always FALSE
+        // spork shred from code; shredule immediately or deferred;
+        // as of 1.5.0.8, spork allocates the shred ID regardless...
+        // previously for emscripten `immediate` => TRUE; this is no longer necessary
         shred = m_carrier->vm->spork( vm_code, NULL, immediate );
-#else
-        // spork (in emscripten, need to spork immediately so can get shred id)
-        // 1.5.0.8 (ge) now shred has ID regardless of immediate flag
-        shred = m_carrier->vm->spork( vm_code, NULL, TRUE );
-#endif
+
         // add args
         shred->args = args;
         // append the new ID | 1.5.0.8

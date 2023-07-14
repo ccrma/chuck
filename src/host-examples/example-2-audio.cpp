@@ -149,6 +149,9 @@ int main( int argc, char ** argv )
         goto done;
     }
     
+    // print out the last VM shred id (should be the shred we just compiled)
+    // cerr << "VM: latest shred ID: " << the_chuck->vm()->last_id() << endl;
+
     // start real-time audio
     if( !start_realtime_audio() )
     { goto cleanup; }
