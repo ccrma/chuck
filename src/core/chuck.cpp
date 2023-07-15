@@ -211,6 +211,7 @@ std::map< std::string, ck_param_type> ck_param_types;
 //-----------------------------------------------------------------------------
 void ChucK::initDefaultParams()
 {
+    m_params[CHUCK_PARAM_VERSION] = CHUCK_VERSION_STRING;
     m_params[CHUCK_PARAM_SAMPLE_RATE] = CHUCK_PARAM_SAMPLE_RATE_DEFAULT;
     m_params[CHUCK_PARAM_INPUT_CHANNELS] = CHUCK_PARAM_INPUT_CHANNELS_DEFAULT;
     m_params[CHUCK_PARAM_OUTPUT_CHANNELS] = CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT;
@@ -231,6 +232,7 @@ void ChucK::initDefaultParams()
     m_params[CHUCK_PARAM_TTY_COLOR] = CHUCK_PARAM_TTY_COLOR_DEFAULT;
     m_params[CHUCK_PARAM_TTY_WIDTH_HINT] = CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT;
 
+    ck_param_types[CHUCK_PARAM_VERSION]                  = ck_param_string;
     ck_param_types[CHUCK_PARAM_SAMPLE_RATE]              = ck_param_int;
     ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]           = ck_param_int;
     ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS]          = ck_param_int;
@@ -250,6 +252,22 @@ void ChucK::initDefaultParams()
     ck_param_types[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = ck_param_int;
     ck_param_types[CHUCK_PARAM_TTY_COLOR]                = ck_param_int;
     ck_param_types[CHUCK_PARAM_TTY_WIDTH_HINT]           = ck_param_int;
+
+    // add read-only
+    m_readOnly[CHUCK_PARAM_VERSION]                      = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: readOnlyParam()
+// desc: check read-only
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::readOnlyParam( const std::string & name )
+{
+    // check
+    return m_readOnly.find(toupper(name)) != m_readOnly.end();
 }
 
 
@@ -261,6 +279,9 @@ void ChucK::initDefaultParams()
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
 {
+    // check read-only
+    if( readOnlyParam(name) ) return FALSE;
+
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_int )
     {
         // check and set
@@ -296,6 +317,9 @@ t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 {
+    // check read-only
+    if( readOnlyParam(name) ) return FALSE;
+
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_float )
     {
         std::ostringstream s;
@@ -318,6 +342,9 @@ t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, const std::string & value )
 {
+    // check read-only
+    if( readOnlyParam(name) ) return FALSE;
+
     if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_string )
     {
         m_params[name] = value;
@@ -338,6 +365,9 @@ t_CKBOOL ChucK::setParam( const std::string & name, const std::string & value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, const std::list< std::string > & value )
 {
+    // check read-only
+    if( readOnlyParam(name) ) return FALSE;
+
     if( m_listParams.count( name ) > 0 &&
         ck_param_types[name] == ck_param_string_list )
     {

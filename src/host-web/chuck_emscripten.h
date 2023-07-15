@@ -94,9 +94,20 @@ extern "C"
     bool EMSCRIPTEN_KEEPALIVE setCherrCallback( unsigned int chuckID, void (* callback)(const char *) );
     bool EMSCRIPTEN_KEEPALIVE setStdoutCallback( void (* callback)(const char *) );
     bool EMSCRIPTEN_KEEPALIVE setStderrCallback( void (* callback)(const char *) );
+
     // data
     bool EMSCRIPTEN_KEEPALIVE setDataDir( const char * dir );
+
     // log
     bool EMSCRIPTEN_KEEPALIVE setLogLevel( unsigned int level );
+
+    // set param
+    bool EMSCRIPTEN_KEEPALIVE setParamInt( unsigned int chuckID, const char * key, t_CKINT val );
+    bool EMSCRIPTEN_KEEPALIVE setParamFloat( unsigned int chuckID, const char * key, t_CKFLOAT val );
+    bool EMSCRIPTEN_KEEPALIVE setParamString( unsigned int chuckID, const char * key, const char * val );
+    // get param
+    t_CKINT EMSCRIPTEN_KEEPALIVE getParamInt( unsigned int chuckID, const char * key );
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getParamFloat( unsigned int chuckID, const char * key );
+    const char * EMSCRIPTEN_KEEPALIVE getParamString( unsigned int chuckID, const char * key );
 
 } // extern "C"

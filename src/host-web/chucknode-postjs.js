@@ -1,9 +1,10 @@
-// ------------------------------------------------------------------------ //
-// ------------------------------------------------------------------------ //
-// ------------------------------------------------------------------------ //
-// ------------------------------------------------------------------------ //
-// ------------------------- wasm-audio-helper.js ------------------------- //
-
+//-----------------------------------------------------------------------------
+// name: chucknode-post.js.cpp
+// desc: emscripten binding agent for web assembly compilation / js code
+//
+// author: Jack Atherton
+// date: created 4/19/17
+//-------------------------- wasm-audio-helper.js -----------------------------
 /**
  * Copyright 2018 Google LLC
  *
@@ -19,6 +20,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+//-----------------------------------------------------------------------------
 
 // Basic byte unit of WASM heap. (16 bit = 2 bytes)
 const BYTES_PER_UNIT = Uint16Array.BYTES_PER_ELEMENT;
@@ -295,10 +297,8 @@ var globalInit = false;
 var globalPromise = undefined;
 var chucks = {};
 
-var setDataDir, setLogLevel, initChuckInstance,
-
-    clearChuckInstance, clearGlobals, cleanupChuckInstance,
-    cleanRegisteredChucks, 
+var setDataDir, setLogLevel, initChuckInstance, clearChuckInstance,
+    clearGlobals, cleanupChuckInstance, cleanRegisteredChucks,
     
     runChuckCode, runChuckCodeWithReplacementDac, runChuckFile,
     runChuckFileWithReplacementDac, runChuckFileWithArgs,
@@ -342,7 +342,13 @@ var setDataDir, setLogLevel, initChuckInstance,
     // note: anything using arrays cannot use cwrap. called manually with heap manipulation below
     //  setGlobalFloatArray = Module.cwrap( 'setGlobalFloatArray', 'number', ['number', 'string', 'array', 'number'] );
     getGlobalFloatArray, setGlobalFloatArrayValue, getGlobalFloatArrayValue,
-    setGlobalAssociativeFloatArrayValue, getGlobalAssociativeFloatArrayValue;
+    setGlobalAssociativeFloatArrayValue, getGlobalAssociativeFloatArrayValue,
+
+    // set chuck VM parameters (do not confuse these with chuck globals)
+    // 1.5.0.8 (ge) added | see core/chuck.h for parameters names
+    setParamInt, setParamFloat, setParamString,
+    getParamInt, getParamFloat, getParamString;
+
 
 var initGlobals = function( Module )
 {
@@ -352,9 +358,7 @@ var initGlobals = function( Module )
 
     // initialize a VM
     initChuckInstance = Module.cwrap( 'initChuckInstance', 'number', ['number', 'number', 'number', 'number'] );
-    
-    
-    
+
     // cleanup 
     clearChuckInstance = Module.cwrap( 'clearChuckInstance', 'number', ['number'] );
     clearGlobals = Module.cwrap( 'clearGlobals', 'number', ['number'] );
@@ -425,6 +429,14 @@ var initGlobals = function( Module )
     getGlobalFloatArrayValue = Module.cwrap( 'getGlobalFloatArrayValue', 'number', ['number', 'string', 'number'] );
     setGlobalAssociativeFloatArrayValue = Module.cwrap( 'setGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string', 'number'] );
     getGlobalAssociativeFloatArrayValue = Module.cwrap( 'getGlobalAssociativeFloatArrayValue', 'number', ['number', 'string', 'string'] );
+
+    // set and get VM params | 1.5.0.8 (ge) added
+    setParamInt = Module.cwrap( 'setParamInt', 'number', ['number', 'string', 'number'] );
+    setParamFloat = Module.cwrap( 'setParamFloat', 'number', ['number', 'string', 'number'] );
+    setParamString = Module.cwrap( 'setParamString', 'number', ['number', 'string', 'string'] );
+    getParamInt = Module.cwrap( 'getParamInt', 'number', ['number', 'string'] );
+    getParamFloat = Module.cwrap( 'getParamFloat', 'number', ['number', 'string'] );
+    getParamString = Module.cwrap( 'getParamString', 'string', ['number', 'string'] );
 
     // set data dir to "/" for embedded files
     setDataDir( "/" );
@@ -906,6 +918,29 @@ class ChuckNode extends AudioWorkletProcessor
             case 'getGlobalAssociativeFloatArrayValue':
                 var result = getGlobalAssociativeFloatArrayValue( this.myID, event.data.variable, event.data.key );
                 this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
+                break;
+        // ==================== VM Param Functions ======================
+            // 1.5.0.8 (ge) added
+            case 'setParamInt':
+                setParamInt( this.myID, event.data.name, event.data.value );
+                break;
+            case 'getParamInt':
+                var result = getParamInt( this.myID, event.data.name );
+                this.port.postMessage( { type: "intCallback", callback: event.data.callback, result: result } );
+                break;
+            case 'setParamFloat':
+                setParamFloat( this.myID, event.data.name, event.data.value );
+                break;
+            case 'getParamFloat':
+                var result = getParamFloat( this.myID, event.data.name );
+                this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
+                break;
+            case 'setParamString':
+                setParamString( this.myID, event.data.name, event.data.value );
+                break;
+            case 'getParamString':
+                var result = getParamString( this.myID, event.data.name );
+                this.port.postMessage( { type: "stringCallback", callback: event.data.callback, result: result } );
                 break;
         // ==================== VM Functions ====================== //
             case 'clearChuckInstance':

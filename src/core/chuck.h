@@ -77,6 +77,7 @@
 #define CHUCK_VERSION_STRING                    "1.5.0.8-dev (chai)"
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
+#define CHUCK_PARAM_VERSION                     "VERSION"
 #define CHUCK_PARAM_SAMPLE_RATE                 "SAMPLE_RATE"
 #define CHUCK_PARAM_INPUT_CHANNELS              "INPUT_CHANNELS"
 #define CHUCK_PARAM_OUTPUT_CHANNELS             "OUTPUT_CHANNELS"
@@ -245,6 +246,8 @@ protected:
 protected:
     // initialize default params
     void initDefaultParams();
+    // check read-only
+    t_CKBOOL readOnlyParam( const std::string & name );
     // init VM
     t_CKBOOL initVM();
     // init compiler
@@ -263,6 +266,8 @@ protected:
     std::map<std::string, std::string> m_params;
     // chuck list params
     std::map< std::string, std::list<std::string> > m_listParams;
+    // read-only
+    std::map< std::string, t_CKBOOL > m_readOnly;
     // did user init?
     t_CKBOOL m_init;
     // did user start?

@@ -845,4 +845,78 @@ extern "C"
     }
 
 
+    // set param
+    bool EMSCRIPTEN_KEEPALIVE setParamInt( unsigned int chuckID, const char * key, t_CKINT val )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->setParam( key, val );
+        }
+
+        return false;
+    }
+
+    bool EMSCRIPTEN_KEEPALIVE setParamFloat( unsigned int chuckID, const char * key, t_CKFLOAT val )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->setParam( key, val );
+        }
+        return false;
+    }
+
+    bool EMSCRIPTEN_KEEPALIVE setParamString( unsigned int chuckID, const char * key, const char * val )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->setParam( key, val );
+        }
+        return false;
+    }
+
+    // get param
+    t_CKINT EMSCRIPTEN_KEEPALIVE getParamInt( unsigned int chuckID, const char * key )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->getParamInt( key );
+        }
+        return false;
+    }
+
+    t_CKFLOAT EMSCRIPTEN_KEEPALIVE getParamFloat( unsigned int chuckID, const char * key )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->getParamFloat( key );
+        }
+        return false;
+    }
+
+    const char * EMSCRIPTEN_KEEPALIVE getParamString( unsigned int chuckID, const char * key )
+    {
+        // hopefully this is ok | assume not reentrant code
+        static std::string theStr;
+
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            theStr = chuck_instances[chuckID]->getParamString( key );
+            // return persistent storage | the recipient should not hold on to the char *
+            return theStr.c_str();
+        }
+        return "";
+    }
+
 } // extern "C"
