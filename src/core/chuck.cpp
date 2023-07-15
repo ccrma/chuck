@@ -86,7 +86,7 @@
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT        "1"
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT      ""
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
-#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT "0"
+#define CHUCK_PARAM_IS_REALTIME_AUDIO_HINT_DEFAULT "0"
 #ifndef __PLATFORM_WINDOWS__
 // 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
 // redundant with g_default_chugin_path, which already contains
@@ -183,78 +183,56 @@ ChucK::~ChucK()
 
 
 
-// REFACTOR-2017: TODO Ge: Implementation of this?
-//-----------------------------------------------------------------------------
-// name: ck_param_type
-// desc: enum for type of param (int, float, string)
-//-----------------------------------------------------------------------------
-enum ck_param_type
-{
-    ck_param_int, ck_param_float, ck_param_string, ck_param_string_list
-};
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: ck_param_types
-// desc: storage for types of param (int, float, string)
-//-----------------------------------------------------------------------------
-std::map< std::string, ck_param_type> ck_param_types;
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: initDefaultParams()
 // desc: initialize default params
 //-----------------------------------------------------------------------------
 void ChucK::initDefaultParams()
 {
-    m_params[CHUCK_PARAM_VERSION] = CHUCK_VERSION_STRING;
-    m_params[CHUCK_PARAM_SAMPLE_RATE] = CHUCK_PARAM_SAMPLE_RATE_DEFAULT;
-    m_params[CHUCK_PARAM_INPUT_CHANNELS] = CHUCK_PARAM_INPUT_CHANNELS_DEFAULT;
-    m_params[CHUCK_PARAM_OUTPUT_CHANNELS] = CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT;
-    m_params[CHUCK_PARAM_VM_ADAPTIVE] = CHUCK_PARAM_VM_ADAPTIVE_DEFAULT;
-    m_params[CHUCK_PARAM_VM_HALT] = CHUCK_PARAM_VM_HALT_DEFAULT;
-    m_params[CHUCK_PARAM_OTF_ENABLE] = CHUCK_PARAM_OTF_ENABLE_DEFAULT;
-    m_params[CHUCK_PARAM_OTF_PORT] = CHUCK_PARAM_OTF_PORT_DEFAULT;
-    m_params[CHUCK_PARAM_DUMP_INSTRUCTIONS] = CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT;
-    m_params[CHUCK_PARAM_AUTO_DEPEND] = CHUCK_PARAM_AUTO_DEPEND_DEFAULT;
-    m_params[CHUCK_PARAM_DEPRECATE_LEVEL] = CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT;
-    m_params[CHUCK_PARAM_WORKING_DIRECTORY] = CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT;
-    m_params[CHUCK_PARAM_CHUGIN_DIRECTORY] = CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT;
-    m_params[CHUCK_PARAM_CHUGIN_ENABLE] = CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT;
-    m_listParams[CHUCK_PARAM_USER_CHUGINS] = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
-    m_listParams[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
-    m_params[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO] = CHUCK_PARAM_HINT_IS_REALTIME_AUDIO_DEFAULT;
-    m_params[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT;
-    m_params[CHUCK_PARAM_TTY_COLOR] = CHUCK_PARAM_TTY_COLOR_DEFAULT;
-    m_params[CHUCK_PARAM_TTY_WIDTH_HINT] = CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT;
+    initParam( CHUCK_PARAM_VERSION, CHUCK_VERSION_STRING, ck_param_string, TRUE );
+    initParam( CHUCK_PARAM_SAMPLE_RATE, CHUCK_PARAM_SAMPLE_RATE_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_INPUT_CHANNELS, CHUCK_PARAM_INPUT_CHANNELS_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_OUTPUT_CHANNELS, CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_VM_ADAPTIVE, CHUCK_PARAM_VM_ADAPTIVE_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_VM_HALT, CHUCK_PARAM_VM_HALT_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_OTF_ENABLE, CHUCK_PARAM_OTF_ENABLE_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_OTF_PORT, CHUCK_PARAM_OTF_PORT_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_AUTO_DEPEND, CHUCK_PARAM_AUTO_DEPEND_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_DEPRECATE_LEVEL, CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_WORKING_DIRECTORY, CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT, ck_param_string );
+    initParam( CHUCK_PARAM_CHUGIN_DIRECTORY, CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT, ck_param_string );
+    initParam( CHUCK_PARAM_CHUGIN_ENABLE, CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, CHUCK_PARAM_IS_REALTIME_AUDIO_HINT_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR, CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_TTY_COLOR, CHUCK_PARAM_TTY_COLOR_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_TTY_WIDTH_HINT, CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT, ck_param_int );
 
-    ck_param_types[CHUCK_PARAM_VERSION]                  = ck_param_string;
-    ck_param_types[CHUCK_PARAM_SAMPLE_RATE]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_INPUT_CHANNELS]           = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OUTPUT_CHANNELS]          = ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_ADAPTIVE]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_VM_HALT]                  = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_ENABLE]               = ck_param_int;
-    ck_param_types[CHUCK_PARAM_OTF_PORT]                 = ck_param_int;
-    ck_param_types[CHUCK_PARAM_DUMP_INSTRUCTIONS]        = ck_param_int;
-    ck_param_types[CHUCK_PARAM_AUTO_DEPEND]              = ck_param_int;
-    ck_param_types[CHUCK_PARAM_DEPRECATE_LEVEL]          = ck_param_int;
-    ck_param_types[CHUCK_PARAM_WORKING_DIRECTORY]        = ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_DIRECTORY]         = ck_param_string;
-    ck_param_types[CHUCK_PARAM_CHUGIN_ENABLE]            = ck_param_int;
-    ck_param_types[CHUCK_PARAM_USER_CHUGINS]             = ck_param_string_list;
-    ck_param_types[CHUCK_PARAM_USER_CHUGIN_DIRECTORIES]  = ck_param_string_list;
-    ck_param_types[CHUCK_PARAM_HINT_IS_REALTIME_AUDIO]   = ck_param_int;
-    ck_param_types[CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR] = ck_param_int;
-    ck_param_types[CHUCK_PARAM_TTY_COLOR]                = ck_param_int;
-    ck_param_types[CHUCK_PARAM_TTY_WIDTH_HINT]           = ck_param_int;
+    // initialize list params manually (take care to use tolower())
+    m_listParams[tolower(CHUCK_PARAM_USER_CHUGINS)]            = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
+    m_listParams[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_WORKING_DIRECTORY)]      = ck_param_string;
+    m_param_types[tolower(CHUCK_PARAM_CHUGIN_DIRECTORY)]       = ck_param_string;
+}
 
-    // add read-only
-    m_readOnly[CHUCK_PARAM_VERSION]                      = TRUE;
+
+
+
+//-----------------------------------------------------------------------------
+// name: initParam()
+// desc: internal helper -- initialize a param
+//-----------------------------------------------------------------------------
+void ChucK::initParam( const std::string & name, const std::string & value,
+                       ck_param_type typeEnum, t_CKBOOL isReadOnly )
+{
+    // get lowercase version
+    std::string n = tolower(name);
+    // insert into map
+    m_params[n] = value;
+    // remember type
+    m_param_types[n] = typeEnum;
+    // read only?
+    if( isReadOnly ) m_readOnly[n] = isReadOnly;
 }
 
 
@@ -262,12 +240,47 @@ void ChucK::initDefaultParams()
 
 //-----------------------------------------------------------------------------
 // name: readOnlyParam()
-// desc: check read-only
+// desc: internal helper -- check read-only
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::readOnlyParam( const std::string & name )
 {
     // check
-    return m_readOnly.find(toupper(name)) != m_readOnly.end();
+    return m_readOnly.find(tolower(name)) != m_readOnly.end();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: matchParam()
+// desc: internal helper -- match parameter name (case-insensitive)
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::matchParam( const std::string & lhs, const std::string & rhs )
+{
+    // return lower-case equal
+    return tolower(lhs) == tolower(rhs);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: enactParam()
+// desc: enact processing, as needed, for certain params
+//-----------------------------------------------------------------------------
+void ChucK::enactParam( const std::string & name, t_CKINT value )
+{
+    // check and set
+    if( matchParam(name,CHUCK_PARAM_TTY_COLOR) )
+    {
+        // set the global override switch
+        TC::globalDisableOverride( !value );
+    }
+    else if( matchParam(name,CHUCK_PARAM_TTY_WIDTH_HINT) )
+    {
+        // set default
+        ck_ttywidth_setdefault( value );
+    }
 }
 
 
@@ -279,27 +292,17 @@ t_CKBOOL ChucK::readOnlyParam( const std::string & name )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     // check read-only
-    if( readOnlyParam(name) ) return FALSE;
-
-    if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_int )
+    if( readOnlyParam(key) ) return FALSE;
+    // check key
+    if( m_params.count(key) > 0 && m_param_types[key] == ck_param_int )
     {
-        // check and set
-        if( name == CHUCK_PARAM_TTY_COLOR )
-        {
-            // set the global override switch
-            TC::globalDisableOverride( !value );
-        }
-        else if( name == CHUCK_PARAM_TTY_WIDTH_HINT )
-        {
-            // set default
-            ck_ttywidth_setdefault( value );
-        }
-
+        // enact processing, as needed
+        enactParam( key, value );
         // insert into map
-        std::ostringstream s;
-        s << value;
-        m_params[name] = s.str();
+        m_params[key] = itoa(value);
         return TRUE;
     }
     else
@@ -317,14 +320,15 @@ t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     // check read-only
-    if( readOnlyParam(name) ) return FALSE;
-
-    if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_float )
+    if( readOnlyParam(key) ) return FALSE;
+    // check
+    if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_float )
     {
-        std::ostringstream s;
-        s << value;
-        m_params[name] = s.str();
+        // insert into map
+        m_params[key] = ftoa( value, 32 );
         return TRUE;
     }
     else
@@ -342,12 +346,14 @@ t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, const std::string & value )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     // check read-only
-    if( readOnlyParam(name) ) return FALSE;
-
-    if( m_params.count( name ) > 0 && ck_param_types[name] == ck_param_string )
+    if( readOnlyParam(key) ) return FALSE;
+    // check
+    if( m_params.count(key) > 0 && m_param_types[key] == ck_param_string )
     {
-        m_params[name] = value;
+        m_params[key] = value;
         return TRUE;
     }
     else
@@ -365,13 +371,15 @@ t_CKBOOL ChucK::setParam( const std::string & name, const std::string & value )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::setParam( const std::string & name, const std::list< std::string > & value )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     // check read-only
-    if( readOnlyParam(name) ) return FALSE;
-
-    if( m_listParams.count( name ) > 0 &&
-        ck_param_types[name] == ck_param_string_list )
+    if( readOnlyParam(key) ) return FALSE;
+    // check
+    if( m_listParams.count( key ) > 0 &&
+        m_param_types[key] == ck_param_string_list )
     {
-        m_listParams[name] = value;
+        m_listParams[key] = value;
         return TRUE;
     }
     else
@@ -387,10 +395,13 @@ t_CKBOOL ChucK::setParam( const std::string & name, const std::list< std::string
 // name: getParamInt()
 // desc: get an int param
 //-----------------------------------------------------------------------------
-t_CKINT ChucK::getParamInt( const std::string & key )
+t_CKINT ChucK::getParamInt( const std::string & name )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     t_CKINT result = 0;
-    if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_int )
+    // check
+    if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_int )
     {
         std::istringstream s( m_params[key] );
         s >> result;
@@ -405,10 +416,13 @@ t_CKINT ChucK::getParamInt( const std::string & key )
 // name: getParamFloat()
 // desc: get a float param
 //-----------------------------------------------------------------------------
-t_CKFLOAT ChucK::getParamFloat( const std::string & key )
+t_CKFLOAT ChucK::getParamFloat( const std::string & name )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
     t_CKFLOAT result = 0;
-    if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_float )
+    // check
+    if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_float )
     {
         std::istringstream s( m_params[key] );
         s >> result;
@@ -423,9 +437,12 @@ t_CKFLOAT ChucK::getParamFloat( const std::string & key )
 // name: getParamString()
 // desc: get a string param
 //-----------------------------------------------------------------------------
-std::string ChucK::getParamString( const std::string & key )
+std::string ChucK::getParamString( const std::string & name )
 {
-    if( m_params.count( key ) > 0 && ck_param_types[key] == ck_param_string )
+    // lower case for consistency
+    std::string key = tolower(name);
+    // check
+    if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_string )
     {
         return m_params[key];
     }
@@ -442,10 +459,13 @@ std::string ChucK::getParamString( const std::string & key )
 // name: getParamStringList()
 // desc: get a string param
 //-----------------------------------------------------------------------------
-std::list< std::string > ChucK::getParamStringList( const std::string & key )
+std::list< std::string > ChucK::getParamStringList( const std::string & name )
 {
+    // lower case for consistency
+    std::string key = tolower(name);
+    // check
     if( m_listParams.count( key ) > 0 &&
-        ck_param_types[key] == ck_param_string_list )
+        m_param_types[key] == ck_param_string_list )
     {
         return m_listParams[key];
     }

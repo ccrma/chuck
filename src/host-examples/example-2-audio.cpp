@@ -116,7 +116,7 @@ int main( int argc, char ** argv )
     // whether to halt the VM when there is no more shred running
     the_chuck->setParam( CHUCK_PARAM_VM_HALT, TRUE );
     // set hint so internally can advise things like async data writes etc.
-    the_chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, TRUE );
+    the_chuck->setParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, TRUE );
     // turn on logging to see what ChucK is up to; higher == more info
     // the_chuck->setLogLevel( 3 );
     

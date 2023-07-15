@@ -528,10 +528,17 @@ class ChuckNode extends AudioWorkletProcessor
                 self._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
                     self.outChannels, MAX_CHANNEL_COUNT);
 
+                // initialize chuck instance
+                // FYI this invokes `new ChucK()` + instance initialization on the C++ side
                 initChuckInstance( self.myID, self.srate, self.inChannels, self.outChannels );
+
+                // log
                 // setLogLevel( 10 );
+
+                // flag
                 self.haveInit = true;
-                
+
+                // invoke init callback
                 self.port.postMessage( { type: 'initCallback' } );
             }
         })( this ) );   

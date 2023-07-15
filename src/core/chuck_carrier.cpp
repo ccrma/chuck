@@ -47,5 +47,5 @@ t_CKBOOL Chuck_Carrier::hintIsRealtimeAudio()
     // check
     if( !chuck ) return FALSE;
     // get hint
-    return chuck->getParamInt( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO ) != 0;
+    return chuck->getParamInt( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT ) != 0;
 }

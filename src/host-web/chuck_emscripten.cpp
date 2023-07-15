@@ -719,7 +719,7 @@ extern "C"
 
             // default real-time audio is true | chuck-1.4.2.1 (ge) added
             // set hint, so internally can advise things like async data writes etc.
-            chuck->setParam( CHUCK_PARAM_HINT_IS_REALTIME_AUDIO, (t_CKINT)TRUE );
+            chuck->setParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, (t_CKINT)TRUE );
             
             // initialize and start
             chuck->init();

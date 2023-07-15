@@ -93,10 +93,13 @@
 #define CHUCK_PARAM_CHUGIN_DIRECTORY            "CHUGIN_DIRECTORY"
 #define CHUCK_PARAM_USER_CHUGINS                "USER_CHUGINS"
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES     "USER_CHUGIN_DIRECTORIES"
-#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO      "HINT_IS_REALTIME_AUDIO"
+#define CHUCK_PARAM_IS_REALTIME_AUDIO_HINT      "IS_REALTIME_AUDIO_HINT"
 #define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR "COMPILER_HIGHLIGHT_ON_ERROR"
 #define CHUCK_PARAM_TTY_COLOR                   "TTY_COLOR"
 #define CHUCK_PARAM_TTY_WIDTH_HINT              "TTY_WIDTH_HINT"
+
+// legacy compatibiity (new code should use newer version of these, on the right)
+#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO      CHUCK_PARAM_IS_REALTIME_AUDIO_HINT
 
 
 
@@ -244,10 +247,27 @@ protected:
     static t_CKUINT o_numVMs;
 
 protected:
-    // initialize default params
-    void initDefaultParams();
-    // check read-only
-    t_CKBOOL readOnlyParam( const std::string & name );
+    // core elements: compiler, VM, etc.
+    Chuck_Carrier * m_carrier;
+    // chuck params
+    std::map<std::string, std::string> m_params;
+    // chuck list params
+    std::map< std::string, std::list<std::string> > m_listParams;
+    // read-only
+    std::map< std::string, t_CKBOOL > m_readOnly;
+    // enum for type of param (int, float, string)
+    enum ck_param_type
+    { ck_param_int, ck_param_float, ck_param_string, ck_param_string_list };
+    // param types
+    std::map< std::string, ck_param_type> m_param_types;
+    // did user init?
+    t_CKBOOL m_init;
+    // did user start?
+    t_CKBOOL m_started;
+    // main thread "hook" (if there is a main thread)
+    Chuck_DL_MainThreadHook * m_hook;
+
+protected:
     // init VM
     t_CKBOOL initVM();
     // init compiler
@@ -259,21 +279,17 @@ protected:
     // shutdown
     t_CKBOOL shutdown();
 
-protected:
-    // core elements: compiler, VM, etc.
-    Chuck_Carrier * m_carrier;
-    // chuck params
-    std::map<std::string, std::string> m_params;
-    // chuck list params
-    std::map< std::string, std::list<std::string> > m_listParams;
-    // read-only
-    std::map< std::string, t_CKBOOL > m_readOnly;
-    // did user init?
-    t_CKBOOL m_init;
-    // did user start?
-    t_CKBOOL m_started;
-    // main thread "hook" (if there is a main thread)
-    Chuck_DL_MainThreadHook * m_hook;
+    // initialize default params
+    void initDefaultParams();
+    // check read-only
+    t_CKBOOL readOnlyParam( const std::string & name );
+    // init param helper
+    void initParam( const std::string & name, const std::string & value,
+                    ck_param_type typeEnum, t_CKBOOL isReadyOnly = FALSE );
+    // match param (case-insensitive)
+    t_CKBOOL matchParam( const std::string & lhs, const std::string & rhs );
+    // enact processing, as needed, for certain params
+    void enactParam( const std::string & name, t_CKINT value );
 };
 
 
