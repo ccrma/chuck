@@ -110,4 +110,7 @@ extern "C"
     t_CKFLOAT EMSCRIPTEN_KEEPALIVE getParamFloat( unsigned int chuckID, const char * key );
     const char * EMSCRIPTEN_KEEPALIVE getParamString( unsigned int chuckID, const char * key );
 
+    // get chuck time
+    t_CKTIME EMSCRIPTEN_KEEPALIVE getChuckNow( unsigned int chuckID );
+
 } // extern "C"

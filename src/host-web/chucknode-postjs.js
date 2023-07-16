@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// name: chucknode-post.js.cpp
+// name: chucknode-post.js
 // desc: emscripten binding agent for web assembly compilation / js code
 //
 // author: Jack Atherton
@@ -347,7 +347,10 @@ var setDataDir, setLogLevel, initChuckInstance, clearChuckInstance,
     // set chuck VM parameters (do not confuse these with chuck globals)
     // 1.5.0.8 (ge) added | see core/chuck.h for parameters names
     setParamInt, setParamFloat, setParamString,
-    getParamInt, getParamFloat, getParamString;
+    getParamInt, getParamFloat, getParamString,
+
+    // get current time | 1.5.0.8 (ge) added
+    getChuckNow;
 
 
 var initGlobals = function( Module )
@@ -437,6 +440,9 @@ var initGlobals = function( Module )
     getParamInt = Module.cwrap( 'getParamInt', 'number', ['number', 'string'] );
     getParamFloat = Module.cwrap( 'getParamFloat', 'number', ['number', 'string'] );
     getParamString = Module.cwrap( 'getParamString', 'string', ['number', 'string'] );
+
+    // get current time | 1.5.0.8
+    getChuckNow = Module.cwrap( 'getChuckNow', 'number', ['number'] );
 
     // set data dir to "/" for embedded files
     setDataDir( "/" );
@@ -950,6 +956,11 @@ class ChuckNode extends AudioWorkletProcessor
                 this.port.postMessage( { type: "stringCallback", callback: event.data.callback, result: result } );
                 break;
         // ==================== VM Functions ====================== //
+            case 'now': // can use either name
+            case 'getChuckNow':
+                var result = getChuckNow( this.myID );
+                this.port.postMessage( { type: "floatCallback", callback: event.data.callback, result: result } );
+                break;
             case 'clearChuckInstance':
                 clearChuckInstance( this.myID );
                 break;

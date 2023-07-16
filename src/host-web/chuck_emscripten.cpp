@@ -919,4 +919,16 @@ extern "C"
         return "";
     }
 
+    // get chuck time
+    t_CKTIME EMSCRIPTEN_KEEPALIVE getChuckNow( unsigned int chuckID )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            return chuck_instances[chuckID]->now();
+        }
+        return 0;
+    }
+
 } // extern "C"
