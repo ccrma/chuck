@@ -449,13 +449,13 @@ public: // run state; 1.3.5.3
     // run start
     t_CKBOOL start();
     // get run state
-    t_CKBOOL running();
+    t_CKBOOL running() const;
     // run stop
     t_CKBOOL stop();
-    // backdoor to access state directly (should be called from inside VM only)
-    t_CKBOOL & runningState() { return m_is_running; }
+    // const access state directly (should be called from inside VM only)
+    const t_CKBOOL & runningState() { return m_is_running; }
 
-public: // shreds
+public: // shredsuck
     // spork code as shred; if not immediate, enqueue for next sample
     // REFACTOR-2017: added immediate flag
     Chuck_VM_Shred * spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
@@ -463,9 +463,11 @@ public: // shreds
     // get reference to shreduler
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
-    t_CKUINT next_id( );
+    t_CKUINT next_id();
     // the last used spork ID
-    t_CKUINT last_id( );
+    t_CKUINT last_id() const;
+    // the current chuck time | 1.5.0.8
+    t_CKTIME now() const;
 
 public: // audio
     t_CKUINT srate() const;

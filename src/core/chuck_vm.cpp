@@ -461,7 +461,7 @@ t_CKBOOL Chuck_VM::start()
 // name: running()
 // desc: get run state
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::running()
+t_CKBOOL Chuck_VM::running() const
 {
     return m_is_running;
 }
@@ -966,7 +966,7 @@ t_CKUINT Chuck_VM::next_id( )
 // name: last_id()
 // desc: returns the last used shred id
 //-----------------------------------------------------------------------------
-t_CKUINT Chuck_VM::last_id( )
+t_CKUINT Chuck_VM::last_id( ) const
 {
     return m_shred_id;
 }
@@ -993,6 +993,18 @@ Chuck_VM_Shreduler * Chuck_VM::shreduler() const
 t_CKUINT Chuck_VM::srate() const
 {
     return m_srate; // 1.3.5.3; was: (t_CKUINT)Digitalio::sampling_rate();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: now() | 1.5.0.8 (ge) added
+// desc: get the current chuck time
+//-----------------------------------------------------------------------------
+t_CKTIME Chuck_VM::now() const
+{
+    return m_shreduler ? m_shreduler->now_system : 0;
 }
 
 
@@ -1644,7 +1656,7 @@ t_CKBOOL Chuck_VM_Shred::run( Chuck_VM * vm )
     instr = code->instr;
     is_running = TRUE;
     // pointer to running state
-    t_CKBOOL * loop_running = &(vm_ref->runningState());
+    const t_CKBOOL * loop_running = &(vm_ref->runningState());
 
     // go!
     while( is_running && *loop_running && !is_abort )

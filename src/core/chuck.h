@@ -180,9 +180,11 @@ public:
     // get compiler (use with care)
     Chuck_Compiler * compiler() { return m_carrier->compiler; }
     // is the VM running
-    t_CKBOOL vm_running() { return m_carrier->vm && m_carrier->vm->running(); }
+    t_CKBOOL vm_running() const { return m_carrier->vm && m_carrier->vm->running(); }
     // is this ChucK instance initialized
-    t_CKBOOL isInit() { return m_init; }
+    t_CKBOOL isInit() const { return m_init; }
+    // get current chuck time
+    t_CKTIME now() const { return m_carrier->vm ? m_carrier->vm->now() : 0; }
 
 public:
     // set whether chuck will generate color output for its messages
