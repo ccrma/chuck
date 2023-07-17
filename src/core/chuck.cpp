@@ -209,10 +209,10 @@ void ChucK::initDefaultParams()
     initParam( CHUCK_PARAM_TTY_WIDTH_HINT, CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT, ck_param_int );
 
     // initialize list params manually (take care to use tolower())
-    m_listParams[tolower(CHUCK_PARAM_USER_CHUGINS)]            = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
-    m_listParams[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)] = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_WORKING_DIRECTORY)]      = ck_param_string;
-    m_param_types[tolower(CHUCK_PARAM_CHUGIN_DIRECTORY)]       = ck_param_string;
+    m_listParams[tolower(CHUCK_PARAM_USER_CHUGINS)]             = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_USER_CHUGINS)]            = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)]  = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)] = ck_param_string_list;
 }
 
 
