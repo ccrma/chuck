@@ -18171,7 +18171,7 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
             else if( strstr(fileName, "special:britestk") ) {
                 rawsize = britestk_size; rawdata = britestk_data;
             }
-            else if( strstr(fileName, "special:dope") ) {
+            else if( strstr(fileName, "special:doh") || strstr(fileName, "special:dope") ) {
                 rawsize = dope_size; rawdata = dope_data;
             }
             else if( strstr(fileName, "special:eee") ) {

@@ -62,8 +62,9 @@ doc.addGroup(
       "WvIn", "WaveLoop", "WvOut", "WvOut2", "StkInstrument", "BandedWG",
       "BlowBotl", "BlowHole", "Bowed", "Brass", "Clarinet", "Flute",
       "Mandolin", "ModalBar", "Moog", "Saxofony", "Shakers", "Sitar",
-      "StifKarp", "VoicForm", "FM", "BeeThree", "FMVoices", "HevyMetl",
-      "PercFlut", "Rhodey", "TubeBell", "Wurley" ],
+      "StifKarp", "VoicForm", "KrstlChr", "FM", "BeeThree", "FMVoices",
+      "HevyMetl", "HnkyTonk", "FrencHrn", "PercFlut", "Rhodey", "TubeBell",
+      "Wurley" ],
     // group name
     "Synthesis Toolkit (STK) UGens",
     // file name

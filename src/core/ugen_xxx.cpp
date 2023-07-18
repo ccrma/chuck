@@ -3423,7 +3423,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         else if( strstr(filename, "special:britestk") ) {
             rawsize = britestk_size; rawdata = britestk_data;
         }
-        else if( strstr(filename, "special:dope") ) {
+        else if( strstr(filename, "special:doh") || strstr(filename, "special:dope") ) {
             rawsize = dope_size; rawdata = dope_data;
         }
         else if( strstr(filename, "special:eee") ) {
