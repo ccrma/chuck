@@ -8,7 +8,7 @@
 //       needs chuck 1.4.1.0 or above
 
 // to learn more about HnkyTonk, uncomment this:
-// HnkyTonk.apropos();
+// HnkyTonk.help();
 
 // ugens!
 HnkyTonk h[8];

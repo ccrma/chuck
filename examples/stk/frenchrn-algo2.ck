@@ -13,7 +13,7 @@ FrencHrn f => NRev r => dac;
 0.07 => r.mix;
 
 // to learn more about FrencHrn, uncomment this:
-// f.apropos();
+// f.help();
 
 36 => Std.mtof => f.freq; // Play an unually low note
 1 => f.noteOn;  second => now;

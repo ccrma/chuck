@@ -7,8 +7,8 @@
 
 // array of krystal choir instruments
 KrstlChr c[7];
-// to learn more about FrencHrn, uncomment this:
-// KrstlChr.apropos();
+// to learn more about KrstlChr, uncomment this:
+// KrstlChr.help();
 
 Pan2 p[7];
 NRev r[2] => dac;
