@@ -2,6 +2,42 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.8 (July 2023)
+===
+- (note) this version adds engine support for a number of features in 
+  WebChucK and WebChucK IDE, including retrieving and display the chuck
+  now, along with a number of critical chuck parameters
+- (updated, documentation) STK classes HnkyTonk and FrencHrn now properly
+  included in the API reference, and with more examples
+    https://chuck.stanford.edu/doc/reference/ugens-stk.html#HnkyTonk
+    https://chuck.stanford.edu/doc/reference/ugens-stk.html#FrencHrn
+- (added, examples)
+    https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo1.ck
+    https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo3.ck
+    https://chuck.stanford.edu/doc/examples/stk/frenchrn-algo2.ck
+- (updated, developer) core VM code streamlined for cleaner operation
+  regarding shreds status, remove.all, and access to these from C++
+- (updated, developer) WebChucK API expansion including the following
+  methods available in javascript that calls down to ChucK core:
+    chuck.now()
+    void chuck.setParamInt( string, number )
+    void chuck.setParamFloat( string, number )
+    void chuck.setParamString( string, string )
+    number chuck.getParamInt( string )
+    number chuck.getParamFloat( string )
+    string chuck.getParamString( string )
+===
+WebChucK/IDE-- a number of UI updates with underlying VM support:
+    https://chuck.stanford.edu/ide/
+    https://chuck.stanford.edu/webchuck/
+===
+miniAudicle (macOS) critical install bug (which affects those who 
+installed chuck-1.5.0.5 through 1.5.0.7) is now addressed, if you are 
+experiencing strangeness with opening CK files, try this troubleshooting 
+recommendation:
+    https://chuck.stanford.edu/release/images/mA-install-duplicate.jpg
+
+
 1.5.0.7 (July 2023)
 ---
 - (note) this patch release contains general internal maintenance for 
