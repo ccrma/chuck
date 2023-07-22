@@ -26,7 +26,7 @@ me.yield();
 // signal e
 e.broadcast();
 
-// yield() to give others shreds a chance to receive event trigger
+// yield() again to give others shreds a chance to receive event trigger
 me.yield();
 
 <<< "success" >>>;

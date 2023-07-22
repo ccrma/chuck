@@ -170,7 +170,6 @@ Chuck_VM::Chuck_VM()
     m_carrier = NULL;
 
     // data
-    m_shreds = NULL;
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
@@ -368,6 +367,11 @@ t_CKBOOL Chuck_VM::shutdown()
     CK_SAFE_DELETE( m_globals_manager );
 
     // log
+    EM_log( CK_LOG_SEVERE, "removing shreds..." );
+    // removal all | 1.5.0.8 (ge) updated from previously non-functioning code
+    this->removeAll();
+
+    // log
     EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
     // free the shreduler
     CK_SAFE_DELETE( m_shreduler );
@@ -392,20 +396,6 @@ t_CKBOOL Chuck_VM::shutdown()
     CK_SAFE_DELETE( m_reply_buffer );
     // free the event buffer
     CK_SAFE_DELETE( m_event_buffer );
-
-    // log
-    EM_log( CK_LOG_SEVERE, "clearing shreds..." );
-    // terminate shreds
-    Chuck_VM_Shred * curr = m_shreds, * prev = NULL;
-    while( curr )
-    {
-        prev = curr;
-        curr = curr->next;
-        // release shred
-        prev->release();
-    }
-    m_shreds = NULL;
-    m_num_shreds = 0;
 
     // log
     EM_pushlog();
@@ -1119,7 +1109,10 @@ void Chuck_VM::removeAll()
     std::vector<Chuck_VM_Shred *> shreds;
 
     // get list from shreduler
-    m_shreduler->get_ready_shreds( shreds );
+    m_shreduler->get_all_shreds( shreds );
+
+    // before 1.5.0.8, was:
+    // m_shreduler->get_ready_shreds( shreds );
 
     // sort in descending ID order
     SortByID_GT byid;
