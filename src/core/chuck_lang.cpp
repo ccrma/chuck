@@ -2205,13 +2205,13 @@ CK_DLL_MFUN( shred_id )
 
 CK_DLL_MFUN( shred_yield )
 {
+    // get this shred pointer
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
-    Chuck_VM * vm = derhs->vm_ref;
-
     // yield the shred in question | 1.5.0.5 (ge) refactored to call yield()
     derhs->yield();
 
     // WAS:
+    // Chuck_VM * vm = derhs->vm_ref;
     // suspend
     // derhs->is_running = FALSE;
     // reshredule

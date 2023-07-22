@@ -16,12 +16,13 @@ fun int hi( Event e )
 // spork shred with e
 spork ~ hi( e );
 
-// allow time to pass to give the shred a chance to run
-1::ms => now;
+// yield() to let the sporked shreds run and wait on event
+me.yield();
 
 // signal e
 e.signal();
 
-// advance time to let the other shred run
-// (the parent shred will free the child shred)
-1::samp => now;
+// yield again to let the other shred run (and print success)
+me.yield();
+
+// FYI from here freeing the parent shred will free the child shred

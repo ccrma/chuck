@@ -187,6 +187,8 @@ public:
 
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );
+    // add get shred id | 1.5.0.8 (ge)
+    t_CKUINT get_id() const { return this->xid; }
 
     #ifndef __DISABLE_SERIAL__
     // HACK - spencer (added 1.3.2.0)
@@ -342,13 +344,13 @@ public:
     // destructor
     virtual ~Chuck_VM_Shreduler();
 
-public:
+public: // initialization and shutdown
     // initialize shreduler
     t_CKBOOL initialize();
     // shutdown shreduler
     t_CKBOOL shutdown();
 
-public: // shreduling
+public: // shreduling (shred interface part 1)
     // shredule a shred in the shreduler (equivalent to ADD)
     t_CKBOOL shredule( Chuck_VM_Shred * shred );
     // shredule a shred in the shreduler with a specific wake time
@@ -362,23 +364,60 @@ public: // shreduling
     // set adaptive mode and adaptive max block size
     void set_adaptive( t_CKUINT max_block_size );
 
-public: // high-level shred interface
+public: // remove, replace, status (shred interface part 2)
     // remove a shred from the shreduler
     t_CKBOOL remove( Chuck_VM_Shred * shred );
     // replace a shred with another shred
     t_CKBOOL replace( Chuck_VM_Shred * out, Chuck_VM_Shred * in );
-    // look a shred by ID
-    Chuck_VM_Shred * lookup( t_CKUINT xid );
-    // get ID of shred with the highest
-    t_CKUINT highest();
     // print status
-    void status( );
+    void status();
     // get status
     void status( Chuck_VM_Status * status );
-    // retrieve list of active shreds
-    void get_active_shreds( std::vector<Chuck_VM_Shred *> & shreds );
 
-public: // for event related shred queue
+public: // shred lookup and retrieval (shred interface part 3)
+    // look a shred by ID
+    Chuck_VM_Shred * lookup( t_CKUINT xid ) const;
+    // get ID of shred currently with the highest ID
+    t_CKUINT highest() const;
+
+    // retrieve the ready list of shreds in the shreduler
+    // NOTE shreds on the shreduler's ready list are sorted by
+    //      wake-up time (e.g., as specifiedy by `second => now`)
+    // NOTE the ready list DO NOT include shreds waiting on Events
+    //      waiting shreds are on the shreduler's blocked list
+    // NOTE the ready list does not include the shred currently
+    //      executing in the VM
+    void get_ready_shreds( std::vector<Chuck_VM_Shred *> & shreds,
+                           t_CKBOOL clearVector = TRUE ) const;
+    // retrieve list of active shred IDs
+    void get_ready_shred_ids( std::vector<t_CKUINT> & shredIDs,
+                              t_CKBOOL clearVector = TRUE ) const;
+
+    // retrieve the list of waiting shreds in the shreduler
+    // NOTE a waiting shred is on the shreduler's blocked list as long as
+    //      it is currently waiting on an Event (e.g., `event => now;`)
+    // NOTE the shreduler's blocked list is unsorted; FYI a sorted list of
+    //      shreds is maintained by each Event
+    void get_blocked_shreds( std::vector<Chuck_VM_Shred *> & shreds,
+                             t_CKBOOL clearVector = TRUE ) const;
+    // retrieve list of blocked shred IDs
+    void get_blocked_shred_ids( std::vector<t_CKUINT> & shredIDs,
+                                t_CKBOOL clearVector = TRUE ) const;
+
+    // get currently executing shred
+    // NOTE this can only be non-NULL during a Chuck_VM::compute() cycle
+    Chuck_VM_Shred * get_current_shred() const;
+
+    // retrieve all shreds currently in the shreduler; this includes the
+    // ready list, the blocked list, and the currently executing shred
+    void get_all_shreds( std::vector<Chuck_VM_Shred *> & shreds,
+                         t_CKBOOL clearVector = TRUE ) const;
+    // retrieve list of all shred IDs
+    void get_all_shred_ids( std::vector<t_CKUINT> & shredIDs,
+                            t_CKBOOL clearVector = TRUE ) const;
+
+public: // for event related shred queue (shred interface part 4)
+    // (should only be called from under the hood)
     t_CKBOOL add_blocked( Chuck_VM_Shred * shred );
     t_CKBOOL remove_blocked( Chuck_VM_Shred * shred );
 
@@ -466,6 +505,8 @@ public: // shredsuck
     t_CKUINT next_id();
     // the last used spork ID
     t_CKUINT last_id() const;
+    // reset ID to lowest current ID + 1; returns what next ID would be
+    t_CKUINT reset_id();
     // the current chuck time | 1.5.0.8
     t_CKTIME now() const;
 
