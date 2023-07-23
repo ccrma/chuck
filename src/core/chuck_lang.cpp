@@ -420,6 +420,7 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/event-extend.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "event/event-extend2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/event-x-bpm-1.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/event-x-bpm-2.ck" ) ) goto error;
 

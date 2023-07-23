@@ -30,15 +30,18 @@ spork ~ hi( e );
 spork ~ hi( e );
 spork ~ hi( e );
 
+// yield this shred to give sporked shreds a chance to run
+me.yield();
+
 // infinite time loop
 while( true )
 {
-    // advance time
-    1::second => now;
-
     // set data
     Math.random2( 0, 5 ) => e.value;
 
     // signal one waiting shred
     e.signal();
+
+    // advance time
+    1::second => now;
 }
