@@ -1045,6 +1045,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
+    if( !type_engine_import_add_ex( env, "array/array_append.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_argument.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_assign.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_associative.ck" ) ) goto error;
