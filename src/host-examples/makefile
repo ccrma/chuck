@@ -1,6 +1,11 @@
 ############################# COMPILER CONFIGURATION ###################################
-# what to build
-HOST_EXES=example-1-minimal example-2-audio example-3-globals
+# what to build (add additional examples here)
+HOST_EXES= \
+	example-1-minimal \
+	example-2-audio \
+	example-3-globals \
+	example-4-shreds
+
 # where to find top-level chuck
 CHUCK_DIR=../../../chuck
 

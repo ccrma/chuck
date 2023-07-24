@@ -649,7 +649,7 @@ void Chuck_VM::gc( )
 // name: queue_msg()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, int count )
+t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, t_CKINT count )
 {
     assert( count == 1 );
     m_msg_buffer->put( &msg, count );
@@ -663,7 +663,7 @@ t_CKBOOL Chuck_VM::queue_msg( Chuck_Msg * msg, int count )
 // name: queue_event()
 // desc: since 1.3.0.0 a buffer is passed in associated with each thread
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, int count,
+t_CKBOOL Chuck_VM::queue_event( Chuck_Event * event, t_CKINT count,
                                 CBufferSimple * buffer )
 {
     // sanity
@@ -730,14 +730,16 @@ Chuck_Msg * Chuck_VM::get_reply()
 
 //-----------------------------------------------------------------------------
 // name: process_msg()
-// desc: ...
+// desc: process a VM message; NOTE: assumes msg is dynamically allocated...
+//       and msg will be cleaned up by the VM
 // TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
 t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
 {
     t_CKUINT retval = 0xfffffff0;
 
-    if( msg->type == MSG_REPLACE )
+    // check message type
+    if( msg->type == CK_MSG_REPLACE )
     {
         Chuck_VM_Shred * out = m_shreduler->lookup( msg->param );
         if( !out )
@@ -792,7 +794,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
             goto done;
         }
     }
-    else if( msg->type == MSG_REMOVE )
+    else if( msg->type == CK_MSG_REMOVE )
     {
         if( msg->param == CK_NO_VALUE )
         {
@@ -841,14 +843,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
             retval = msg->param;
         }
     }
-    else if( msg->type == MSG_REMOVEALL )
+    else if( msg->type == CK_MSG_REMOVEALL )
     {
         // print
         EM_print2magenta( "(VM) removing all (%i) shreds...", m_num_shreds );
         // remove all shreds
         this->removeAll();
     }
-    else if( msg->type == MSG_CLEARVM ) // added 1.3.2.0
+    else if( msg->type == CK_MSG_CLEARVM ) // added 1.3.2.0
     {
         // print
         EM_print2magenta( "(VM) removing all shreds and resetting type system" );
@@ -859,12 +861,12 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         // 1.4.1.0 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
     }
-    else if( msg->type == MSG_CLEARGLOBALS ) // added chunity
+    else if( msg->type == CK_MSG_CLEARGLOBALS ) // added chunity
     {
         // clean up global variables without clearing the whole VM
         m_globals_manager->cleanup_global_variables();
     }
-    else if( msg->type == MSG_ADD )
+    else if( msg->type == CK_MSG_ADD )
     {
         t_CKUINT xid = 0;
         Chuck_VM_Shred * shred = NULL;
@@ -878,7 +880,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         retval = xid;
         goto done;
     }
-    else if( msg->type == MSG_EXIT )
+    else if( msg->type == CK_MSG_EXIT )
     {
         EM_print2magenta( "(VM) EXIT received...." );
         // close file handles and clean up
@@ -891,22 +893,20 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         // come again
         exit( 1 );
     }
-    else if( msg->type == MSG_STATUS )
+    else if( msg->type == CK_MSG_STATUS )
     {
         // fill in structure
-        if( msg->user && msg->reply )
+        if( msg->status )
         {
-            // cast
-            Chuck_VM_Status * status = (Chuck_VM_Status *)msg->user;
             // get it
-            m_shreduler->status( status );
+            m_shreduler->status( msg->status );
         }
         else
         {
             m_shreduler->status();
         }
     }
-    else if( msg->type == MSG_TIME )
+    else if( msg->type == CK_MSG_TIME )
     {
         float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
         EM_print2magenta( "(VM) earth time: %s", timestamp_formatted().c_str() );
@@ -917,7 +917,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         EM_print2vanilla( "%22.6f::day", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
         EM_print2vanilla( "%22.6f::week", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
-    else if( msg->type == MSG_RESET_ID )
+    else if( msg->type == CK_MSG_RESET_ID )
     {
         // reset ID to currently active shred ID + 1
         // could be helpful to keep shred ID #'s low, especially after a lot of sporks
@@ -926,13 +926,25 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
 
 done:
 
-    if( msg->reply )
+    // set return value
+    msg->replyA = retval;
+
+    // check reponse method
+    if( msg->reply_cb ) // 1.5.0.8 (ge) added
     {
-        msg->replyA = retval;
+        // call the callback
+        msg->reply_cb( msg );
+    }
+    else if( msg->reply_queue )
+    {
+        // put on reply queue
         m_reply_buffer->put( &msg, 1 );
     }
     else
+    {
+        // nothing further to be done; delete msg
         CK_SAFE_DELETE(msg);
+    }
 
     return retval;
 }

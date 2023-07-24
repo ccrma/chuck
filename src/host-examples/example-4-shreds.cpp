@@ -1,11 +1,10 @@
 //-----------------------------------------------------------------------------
-// file: example-2-audio.cpp
+// file: example-4-shreds.cpp
 // desc: Looking to integrate ChucK as a component inside another host program?
-//       Here is an example of using ChucK as a library, with real-time audio!
-//
-//       FYI generally speaking, this is how ChucK core is integrated
-//       into various host systems in the ChucK ecosystem -- including:
-//       command-line chuck, miniAudicle, webchuck, chunity, chunreal, etc.
+//       Here is an example of using ChucK as a library, with real-time audio
+//       and various shred-related operations from c++, including adding,
+//       removing last, and getting the current VM status including info about
+//       shreds
 //
 //       INITIALIZATION
 //         1. #include "chuck.h"
@@ -16,11 +15,16 @@
 //            chunk of audio to process / playback
 //         4. set ChucK parameters
 //         5. initialize and start the ChucK instance
-//         6. add code for ChucK to compile and run...
-//            using the_chuck->compileCode() or the_chuck->compileFile()
-//            (after starting real-time audio, this should only be done
-//            from the audio thread (same thread as the_chuck->run())
-//         7. start real-time audio
+//         6. start real-time audio
+//         7. use various parts of the API (see below) to work with
+//            ChucK shreds: adding (implictly done with compileCode() and
+//            compileFile()), removing previously added shreds, getting info
+//            on all shreds in the VM, and printing status info
+//
+//            NOTE: in general, this example uses thread-safe versions of
+//            the shreds API, which means these functions can be called from
+//            a thread other than the audio thread / the thread that calls
+//            ChucK::run(...).
 //
 //       RUNTIME
 //         ** from within the audio callback function -- audio_cb(...), set up
@@ -31,9 +35,11 @@
 //   date: Summer 2023
 //-----------------------------------------------------------------------------
 #include "chuck.h"
-#include "util_platforms.h" // for ck_usleep()
+#include "chuck_vm.h" // since we will reaching deeper into engine
+#include "util_platforms.h" // for ck_usleep() and ck_isatty()
 #include "RtAudio.h"
 
+#include <vector>
 #include <iostream>
 using namespace std;
 
@@ -68,8 +74,6 @@ t_CKBOOL start_realtime_audio();
 t_CKBOOL cleanup_realtime_audio();
 
 
-
-
 //-----------------------------------------------------------------------------
 // audio callback function (called by RtAudio)
 //-----------------------------------------------------------------------------
@@ -83,6 +87,59 @@ int audio_cb( void * outputBuffer, void * inputBuffer, unsigned int nBufferFrame
     the_chuck->run( input, output, nBufferFrames );
 
     return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// VM message callback function (called by chuck VM in response to queue_msg())
+//-----------------------------------------------------------------------------
+void vm_msg_cb( const Chuck_Msg * msg )
+{
+    // check the type
+    switch( msg->type )
+    {
+        // cases we'd like to handle
+        case CK_MSG_STATUS:
+        {
+            // get status info
+            Chuck_VM_Status * status = msg->status;
+            // verify
+            if( status )
+            {
+                // number shreds
+                cerr << "\n-------------------------------" << endl;
+                cerr << "printing from callback function" << endl;
+                cerr << "-------------------------------" << endl;
+                cerr << "# of shreds in VM: " << status->list.size() << endl;
+                // chuck time
+                cerr << "chuck time: " << status->now_system << "::samp ("
+                     << status->t_hour << "h"
+                     << status->t_minute << "m"
+                     << status->t_second << "s)" << endl;
+
+                // print status
+                if( status->list.size() ) cerr << "--------"  << endl;
+                for( t_CKUINT i = 0; i < status->list.size(); i++ )
+                {
+                    // get shred info
+                    Chuck_VM_Shred_Status * info = status->list[i];
+                    // print shred info
+                    cerr << "[shred] id: " << info->xid
+                         << " source: " << info->name.c_str()
+                         << " spork time: " << (status->now_system - info->start) / status->srate
+                         << " state: " << (!info->has_event ? "ACTIVE" : "(waiting on event)") << endl;
+                }
+                if( status->list.size() ) cerr << "--------"  << endl;
+
+                // clean up
+                CK_SAFE_DELETE( status );
+            }
+        }
+        break;
+    }
+    
+    // our responsibility to delete
+    CK_SAFE_DELETE( msg );
 }
 
 
@@ -113,16 +170,21 @@ int main( int argc, char ** argv )
     the_chuck->setParam( CHUCK_PARAM_INPUT_CHANNELS, 0 );
     // number of output channels
     the_chuck->setParam( CHUCK_PARAM_OUTPUT_CHANNELS, 2 );
-    // whether to halt the VM when there is no more shred running
-    the_chuck->setParam( CHUCK_PARAM_VM_HALT, TRUE );
+    // set to false so a VM without shreds will keep running
+    the_chuck->setParam( CHUCK_PARAM_VM_HALT, FALSE );
     // set hint so internally can advise things like async data writes etc.
     the_chuck->setParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, TRUE );
-    // turn on logging to see what ChucK is up to; higher == more info
-    // the_chuck->setLogLevel( 3 );
-    
-    // debug print -- uncomment to see flow
-    // cerr << "[example-2-audio]: initializing real-time audio..." << endl;
-    // cerr << "[example-2-audio]: (will use default audio devices)" << endl;
+    // turn on color output mode
+    the_chuck->setParam( CHUCK_PARAM_TTY_COLOR, ck_isatty() );
+
+    // shred id
+    t_CKUINT shredID = 0;
+    // our shred ID stack
+    vector<t_CKUINT> shredIDs;
+    // filename
+    string filename = "ck/test-4-shreds.ck";
+    // chuck msg pointer; for communicating with VM
+    Chuck_Msg * msg = NULL;
 
     // initialize real-time audio
     if( !init_realtime_audio( the_chuck->getParamInt( CHUCK_PARAM_SAMPLE_RATE ),
@@ -140,29 +202,114 @@ int main( int argc, char ** argv )
     // start ChucK VM and synthesis engine
     the_chuck->start();
 
-    // compile ChucK program from file (this can be called on-the-fly and repeatedly)
-    if( !the_chuck->compileFile( "ck/test-2-audio.ck", "", 1 ) )
-    {
-        // got error, baillng out...
-        goto done;
-    }
-    
-    // print out the last VM shred id (should be the shred we just compiled)
-    // cerr << "VM: latest shred ID: " << the_chuck->vm()->last_id() << endl;
-
     // start real-time audio
     if( !start_realtime_audio() )
     { goto cleanup; }
+    
+    // print
+    cerr << "-------------" << endl;
+    cerr << "chuck running...(press ctrl-c to quit)" << endl;
+    cerr << "-------------" << endl;
+
+    // wait a bit to give audio callback a chance to run some
+    ck_usleep( 200000 );
 
     // print
-    cerr << "chuck running...(press ctrl-c to quit)" << endl;
+    cerr << "type '+' or 'add' to add a shred" << endl;
+    cerr << "type '^' or 'status' to get VM info and print shred status" << endl;
+    cerr << "type '--' or 'remove.last' to remove last shred" << endl;
+    cerr << "type 'remove.all' to remove all shreds" << endl;
+    cerr << "type 'time' to print time" << endl;
+    cerr << "type 'exit' to exit" << endl;
+    cerr << "-------------------" << endl;
     
     // keep going as long as a shred is still running
     // (as long as CHUCK_PARAM_VM_HALT is set to TRUE)
     while( the_chuck->vm_running() )
     {
-        // wait a bit
-        ck_usleep( 10000 );
+        cerr << "enter a command > ";
+        // command
+        string command; getline( cin, command );
+
+        // check
+        if( command == "+" || command == "add" )
+        {
+            // compile file; FALSE means deferred spork -- thread-safe since
+            // we are on a different thread as the audio thread that is calling
+            // the_chuck->run(...)
+            the_chuck->compileFile( filename, "", 1, FALSE );
+            // get the id of the previously sporked shred
+            shredID = the_chuck->vm()->last_id();
+            // print out the last VM shred id (should be the shred we just compiled)
+            cerr << "adding shred '" << filename << "' with ID: " << shredID  << endl;
+            // push on stack
+            shredIDs.push_back( shredID );
+        }
+        else if( command == "--" || command == "remove" )
+        {
+            // if already added
+            if( !shredIDs.size() )
+            {
+                cerr << "no shred to remove!" << endl;
+                continue;
+            }
+            // create a message; VM will delete
+            msg = new Chuck_Msg;
+            // message type
+            msg->type = CK_MSG_REMOVE;
+            // signify no value (will remove last)
+            msg->param = shredIDs.back();
+            // queue on VM
+            the_chuck->vm()->queue_msg( msg );
+            // pop
+            shredIDs.pop_back();
+        }
+        else if( command == "^" || command == "status" )
+        {
+            // create a message, we will delete later on
+            msg = new Chuck_Msg;
+            // message type
+            msg->type = CK_MSG_STATUS;
+            // create a status info
+            msg->status = new Chuck_VM_Status();
+            // add callback function
+            msg->reply_cb = vm_msg_cb;
+            // queue msg in VM; reply will be received by the callback
+            the_chuck->vm()->queue_msg( msg );
+        }
+        else if( command == "status-2" )
+        {
+            // create a message; VM will delete
+            msg = new Chuck_Msg;
+            // message type
+            msg->type = CK_MSG_STATUS;
+            // is passed in without further argument
+            // this will cause VM to print shred status
+            // queue on VM
+            the_chuck->vm()->queue_msg( msg );
+        }
+        else if( command == "remove.all" )
+        {
+            // create a message; VM will delete
+            msg = new Chuck_Msg;
+            // message type
+            msg->type = CK_MSG_REMOVEALL;
+            // queue on VM
+            the_chuck->vm()->queue_msg( msg );
+        }
+        else if( command == "time" )
+        {
+            // create a message; VM will delete
+            msg = new Chuck_Msg;
+            // message type
+            msg->type = CK_MSG_TIME;
+            // queue on VM
+            the_chuck->vm()->queue_msg( msg );
+        }
+        else if( command == "exit" )
+        {
+            break;
+        }
     }
 
 cleanup:

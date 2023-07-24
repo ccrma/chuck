@@ -476,7 +476,7 @@ public:
     t_CKBOOL initialize( t_CKUINT srate, t_CKUINT dac_chan, t_CKUINT adc_chan,
                          t_CKUINT adaptive, t_CKBOOL halt );
     // initialize synthesis
-    t_CKBOOL initialize_synthesis( );
+    t_CKBOOL initialize_synthesis();
     // set carrier reference
     t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
     // shutdown VM
@@ -492,7 +492,7 @@ public: // run state; 1.3.5.3
     // run stop
     t_CKBOOL stop();
     // const access state directly (should be called from inside VM only)
-    const t_CKBOOL & runningState() { return m_is_running; }
+    const t_CKBOOL & runningState() const { return m_is_running; }
 
 public: // shredsuck
     // spork code as shred; if not immediate, enqueue for next sample
@@ -517,9 +517,9 @@ public: // running the machine
     // compute next N frames
     t_CKBOOL run( t_CKINT numFrames, const SAMPLE * input, SAMPLE * output );
     // compute all shreds for current time
-    t_CKBOOL compute( );
+    t_CKBOOL compute();
     // abort current running shred
-    t_CKBOOL abort_current_shred( );
+    t_CKBOOL abort_current_shred();
 
 public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
@@ -529,14 +529,19 @@ public: // garbage collection
     void gc( t_CKUINT amount );
 
 public: // VM message queue
-    t_CKBOOL queue_msg( Chuck_Msg * msg, int num_msg );
-    // CBufferSimple added 1.3.0.0 to fix uber-crash
-    t_CKBOOL queue_event( Chuck_Event * event, int num_msg, CBufferSimple * buffer = NULL );
-    // process a VM message
+    // queue message to process at next VM compute block (thread-safe but not synchronous)
+    // NOTE assumes msg is dynamically allocated using `new`; will be deleted by VM
+    // NOTE this defers the processing of the msg to the VM compute thread
+    t_CKBOOL queue_msg( Chuck_Msg * msg, t_CKINT num_msg = 1 );
+    // process a VM message immediately (synchronous but not thread-safe)
+    // NOTE assumes msg is dynamically allocated using `new`; will be deleted by VM
+    // NOTE this processes the msg immediately on calling thread
     t_CKUINT process_msg( Chuck_Msg * msg );
     // get reply from reply buffer
     Chuck_Msg * get_reply();
 
+    // CBufferSimple added 1.3.0.0 to fix uber-crash
+    t_CKBOOL queue_event( Chuck_Event * event, t_CKINT num_msg = 1, CBufferSimple * buffer = NULL );
     // added 1.3.0.0 to fix uber-crash
     CBufferSimple * create_event_buffer();
     void destroy_event_buffer( CBufferSimple * buffer );
@@ -633,20 +638,20 @@ protected:
 //-----------------------------------------------------------------------------
 enum Chuck_Msg_Type
 {
-    MSG_ADD = 1,
-    MSG_REMOVE,
-    MSG_REMOVEALL,
-    MSG_REPLACE,
-    MSG_STATUS,
-    MSG_PAUSE,
-    MSG_EXIT,
-    MSG_TIME,
-    MSG_RESET_ID,
-    MSG_DONE,
-    MSG_ABORT,
-    MSG_ERROR, // added 1.3.0.0
-    MSG_CLEARVM,
-    MSG_CLEARGLOBALS,
+    CK_MSG_ADD = 1,
+    CK_MSG_REMOVE,
+    CK_MSG_REMOVEALL,
+    CK_MSG_REPLACE,
+    CK_MSG_STATUS,
+    CK_MSG_PAUSE,
+    CK_MSG_EXIT,
+    CK_MSG_TIME,
+    CK_MSG_RESET_ID,
+    CK_MSG_DONE,
+    CK_MSG_ABORT,
+    CK_MSG_ERROR, // added 1.3.0.0
+    CK_MSG_CLEARVM,
+    CK_MSG_CLEARGLOBALS,
 };
 
 
@@ -660,14 +665,27 @@ typedef void (* ck_msg_func)( const Chuck_Msg * msg );
 //-----------------------------------------------------------------------------
 struct Chuck_Msg
 {
+    // type of message
     t_CKUINT type;
-    t_CKUINT param;
-    Chuck_VM_Code * code;
-    Chuck_VM_Shred * shred;
-    t_CKTIME when;
 
-    void * user;
-    ck_msg_func reply;
+    // messsage parameter, as applicable
+    t_CKUINT param;
+    // VM code pointer, as applicable
+    Chuck_VM_Code * code;
+    // VM shred pointer, as applicable
+    Chuck_VM_Shred * shred;
+    // time, as applicable
+    t_CKTIME when;
+    // pointer to status struct, as applicable
+    Chuck_VM_Status * status;
+
+    // reply callback
+    ck_msg_func reply_cb;
+    // if true, reply on queue
+    t_CKBOOL reply_queue;
+    // NOTE if both reply_cb and reply_queue is non-zero, reply_cb will take precedence
+
+    // reply arguments
     t_CKUINT replyA;
     t_CKUINT replyB;
     void * replyC;
@@ -675,11 +693,20 @@ struct Chuck_Msg
     // argument array pointer
     std::vector<std::string> * args;
 
+    // constructor
     Chuck_Msg() : args(NULL) { clear(); }
-    ~Chuck_Msg() { CK_SAFE_DELETE( args ); }
+    // destructor
+    ~Chuck_Msg() { clear(); }
 
     // added 1.3.0.0
-    void clear() { CK_SAFE_DELETE( args ); memset( this, 0, sizeof(Chuck_Msg) ); }
+    void clear()
+    {
+        // clean up existing args
+        CK_SAFE_DELETE(args);
+        // clear
+        memset( this, 0, sizeof(Chuck_Msg) );
+    }
+
     // copy in args
     void set( const std::vector<std::string> * vargs )
     {

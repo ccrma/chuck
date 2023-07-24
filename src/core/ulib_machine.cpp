@@ -66,7 +66,7 @@ CK_DLL_SFUN( machine_refcount_impl);
 
 //-----------------------------------------------------------------------------
 // name: machine_query()
-// desc: query entry point
+// desc: query entry point for Machine class library
 //-----------------------------------------------------------------------------
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 {
@@ -285,7 +285,7 @@ static Chuck_Compiler * the_compiler = NULL;
 static proc_msg_func the_func = NULL;
 //-----------------------------------------------------------------------------
 // name: machine_init()
-// desc: ...
+// desc: initialize Machine class library
 //-----------------------------------------------------------------------------
 t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 {
@@ -301,7 +301,7 @@ CK_DLL_SFUN( machine_add_impl )
     const char * v = GET_CK_STRING(ARGS)->str().c_str();
     Net_Msg msg;
 
-    msg.type = MSG_ADD;
+    msg.type = CK_MSG_ADD;
     strcpy( msg.buffer, v );
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
@@ -312,7 +312,7 @@ CK_DLL_SFUN( machine_remove_impl )
     t_CKINT v = GET_CK_INT(ARGS);
     Net_Msg msg;
 
-    msg.type = MSG_REMOVE;
+    msg.type = CK_MSG_REMOVE;
     msg.param = v;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
@@ -324,7 +324,7 @@ CK_DLL_SFUN( machine_replace_impl )
     const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
     Net_Msg msg;
 
-    msg.type = MSG_REPLACE;
+    msg.type = CK_MSG_REPLACE;
     msg.param = v;
     strcpy( msg.buffer, v2 );
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
@@ -335,7 +335,7 @@ CK_DLL_SFUN( machine_status_impl )
 {
     Net_Msg msg;
 
-    msg.type = MSG_STATUS;
+    msg.type = CK_MSG_STATUS;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
 }
 

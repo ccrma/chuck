@@ -6,7 +6,8 @@ ChucK VERSIONS log
 ===
 - (note) this version adds engine support for a number of features in 
   WebChucK and WebChucK IDE, including retrieving and display the chuck
-  now, along with a number of critical chuck parameters
+  now, along with a number of critical chuck parameters; updated ChucK
+  c++ integration API
 - (updated, documentation) STK classes HnkyTonk and FrencHrn now properly
   included in the API reference, and with more examples
     https://chuck.stanford.edu/doc/reference/ugens-stk.html#HnkyTonk
@@ -16,7 +17,13 @@ ChucK VERSIONS log
     https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo3.ck
     https://chuck.stanford.edu/doc/examples/stk/frenchrn-algo2.ck
 - (updated, developer) core VM code streamlined for cleaner operation
-  regarding shreds status, remove.all, and access to these from C++
+  regarding shreds status, remove.all, and access to these from C++;
+  can now use a callback function to get replies from VM queue_msg()
+- (updated, developer) re-worked ChucK::compileFile() and
+    ChucK::compileCode() to immediately make sporked shred ID available
+- (developer, added) a 4th example host code in C++ showing how to embed
+  ChucK core as a component inside a host C++ program and get shred info
+    example-4-shreds.cpp (working with shreds and VM msg queue)
 - (updated, developer) WebChucK API expansion including the following
   methods available in javascript that calls down to ChucK core:
     chuck.now()

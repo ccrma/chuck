@@ -157,7 +157,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     t_CKUINT ret = 0;
 
     // CK_FPRINTF_STDERR( "UDP message recv...\n" );
-    if( msg->type == MSG_REPLACE || msg->type == MSG_ADD )
+    if( msg->type == CK_MSG_REPLACE || msg->type == CK_MSG_ADD )
     {
         string filename;
         vector<string> args;
@@ -215,17 +215,17 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // set the flags for the command
         cmd->type = msg->type;
         cmd->code = code;
-        if( msg->type == MSG_REPLACE )
+        if( msg->type == CK_MSG_REPLACE )
             cmd->param = msg->param;
     }
-    else if( msg->type == MSG_STATUS || msg->type == MSG_REMOVE || msg->type == MSG_REMOVEALL
-             || msg->type == MSG_EXIT || msg->type == MSG_TIME || msg->type == MSG_RESET_ID
-             || msg->type == MSG_CLEARVM )
+    else if( msg->type == CK_MSG_STATUS || msg->type == CK_MSG_REMOVE || msg->type == CK_MSG_REMOVEALL
+             || msg->type == CK_MSG_EXIT || msg->type == CK_MSG_TIME || msg->type == CK_MSG_RESET_ID
+             || msg->type == CK_MSG_CLEARVM )
     {
         cmd->type = msg->type;
         cmd->param = msg->param;
     }
-    else if( msg->type == MSG_ABORT )
+    else if( msg->type == CK_MSG_ABORT )
     {
         // halt and clear current shred
         vm->abort_current_shred();
@@ -243,7 +243,10 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
 
     // immediate
     if( immediate )
+    {
+        // process message immediately
         ret = vm->process_msg( cmd );
+    }
     else
     {
         // queue message
@@ -430,7 +433,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         do {
             // log
             EM_log( CK_LOG_INFO, "sending file:args '%s' for ADD...", mini(argv[i]) );
-            msg.type = MSG_ADD;
+            msg.type = CK_MSG_ADD;
             msg.param = 1;
             tasks_done += otf_send_file( argv[i], msg, "add", dest );
             tasks_total++;
@@ -455,7 +458,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
             // log
             EM_log( CK_LOG_INFO, "requesting REMOVE of shred '%i'..." );
             msg.param = atoi( argv[i] );
-            msg.type = MSG_REMOVE;
+            msg.type = CK_MSG_REMOVE;
             otf_hton( &msg );
             ck_send( dest, (char *)&msg, sizeof(msg) );
         } while( ++i < argc );
@@ -469,7 +472,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         // log
         EM_log( CK_LOG_INFO, "requesting REMOVE LAST shred..." );
         msg.param = CK_NO_VALUE;
-        msg.type = MSG_REMOVE;
+        msg.type = CK_MSG_REMOVE;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         // log
@@ -497,7 +500,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting REPLACE shred '%i' with '%s'...", msg.param, mini(argv[i]) );
-        msg.type = MSG_REPLACE;
+        msg.type = CK_MSG_REPLACE;
         if( !otf_send_file( argv[i], msg, "replace", dest ) )
             goto error;
         EM_poplog();
@@ -507,7 +510,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting REMOVE ALL..." );
-        msg.type = MSG_REMOVEALL;
+        msg.type = CK_MSG_REMOVEALL;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -518,7 +521,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting CLEAR VM..." );
-        msg.type = MSG_CLEARVM;
+        msg.type = CK_MSG_CLEARVM;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -529,11 +532,11 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting EXIT..." );
-        msg.type = MSG_REMOVEALL;
+        msg.type = CK_MSG_REMOVEALL;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
-        msg.type = MSG_EXIT;
+        msg.type = CK_MSG_EXIT;
         msg.param = (i+1)<argc ? atoi(argv[++i]) : 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -544,7 +547,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting TIME..." );
-        msg.type = MSG_TIME;
+        msg.type = CK_MSG_TIME;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -555,7 +558,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting RESET ID..." );
-        msg.type = MSG_RESET_ID;
+        msg.type = CK_MSG_RESET_ID;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -566,7 +569,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting STATUS..." );
-        msg.type = MSG_STATUS;
+        msg.type = CK_MSG_STATUS;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -577,7 +580,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !(dest = otf_send_connect( host, port )) ) return 0;
         EM_pushlog();
         EM_log( CK_LOG_INFO, "requesting ABORT SHRED..." );
-        msg.type = MSG_ABORT;
+        msg.type = CK_MSG_ABORT;
         msg.param = 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
@@ -590,7 +593,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     }
 
     // send
-    msg.type = MSG_DONE;
+    msg.type = CK_MSG_DONE;
     otf_hton( &msg );
     // log
     EM_log( CK_LOG_INFO, "otf sending request..." );
@@ -632,7 +635,7 @@ error:
     // if sock was opened
     if( dest )
     {
-        msg.type = MSG_DONE;
+        msg.type = CK_MSG_DONE;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         ck_close( dest );
@@ -705,7 +708,7 @@ void * otf_cb( void * p )
             continue;
         }
 
-        while( msg.type != MSG_DONE )
+        while( msg.type != CK_MSG_DONE )
         {
             if( carrier->vm )
             {
@@ -713,7 +716,7 @@ void * otf_cb( void * p )
                 {
                     ret.param = FALSE;
                     strcpy( (char *)ret.buffer, EM_lasterror() );
-                    while( msg.type != MSG_DONE && n )
+                    while( msg.type != CK_MSG_DONE && n )
                     {
                         n = ck_recv( client, (char *)&msg, sizeof(msg) );
                         otf_ntoh( &msg );

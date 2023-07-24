@@ -43,7 +43,7 @@ struct Chuck_VM;
 struct Chuck_Compiler;
 
 
-// query
+// query for Machine class library
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY );
 
 #ifndef __DISABLE_OTF_SERVER__
