@@ -1,0 +1,8 @@
+size (before append): 0 
+size (after append): 8 
+size (after erase and popFront): 5 
+0 : 1 
+1 : 2 
+2 : 6 
+3 : 7 
+4 : 8 
