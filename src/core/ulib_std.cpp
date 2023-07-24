@@ -876,7 +876,7 @@ CK_DLL_SFUN( clamp_impl )
     t_CKINT max = GET_NEXT_INT(ARGS);
 
     if(v < min) RETURN->v_int = min;
-    else if( v > max) RETURN->v_int = max;
+    else if(v > max) RETURN->v_int = max;
     else RETURN->v_int = v;
 }
 

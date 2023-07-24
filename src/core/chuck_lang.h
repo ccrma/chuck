@@ -182,17 +182,18 @@ CK_DLL_MFUN( array_set_size );
 CK_DLL_MFUN( array_get_size );
 CK_DLL_MFUN( array_push_back );
 CK_DLL_MFUN( array_pop_back );
-CK_DLL_MFUN( array_pop_out );
 CK_DLL_MFUN( array_push_front );
 CK_DLL_MFUN( array_pop_front );
-CK_DLL_MFUN( array_find );
 CK_DLL_MFUN( array_erase );
+CK_DLL_MFUN( array_erase2 );
 CK_DLL_MFUN( array_clear );
 CK_DLL_MFUN( array_reset );
 CK_DLL_MFUN( array_zero );
 CK_DLL_MFUN( array_get_keys );
 CK_DLL_MFUN( array_reverse );
 CK_DLL_MFUN( array_shuffle );
+CK_DLL_MFUN( array_map_find );
+CK_DLL_MFUN( array_map_erase );
 
 
 //-----------------------------------------------------------------------------

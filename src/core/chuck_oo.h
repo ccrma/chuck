@@ -171,34 +171,68 @@ public:
 #define CHUCK_ARRAY32_DATAKIND kindof_VEC4 // 1.3.5.3
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
-// desc: native ChucK arrays (virtual base class)
+// desc: native ChucK array (virtual base class)
+//       NOTE due to certain specialized operations, e.g., Array4 is also
+//       used to hold and manage Object references, this class is currently
+//       not templated (and probably cannot be fully templated). For this
+//       reason, some functionalities that requires type-specific arguments
+//       (like get/set and insert) are not in the base class and are
+//       implemented in array subclasses
 //-----------------------------------------------------------------------------
 struct Chuck_Array : public Chuck_Object
 {
-    // functionality that we can keep in common...
-
 public:
+    // constructor
     Chuck_Array() : m_array_type(NULL) { }
+    // destructor
     virtual ~Chuck_Array();
 
-    virtual t_CKINT size( ) = 0; // const { return m_size; } // array size
-    virtual t_CKINT capacity( ) = 0; // const { return m_capacity; } // array capacity
-    virtual t_CKINT set_size( t_CKINT size ) = 0; // array size
-    virtual t_CKINT set_capacity( t_CKINT capacity ) = 0; // set
-    virtual t_CKINT data_type_size( ) = 0; // size of stored type (from type_ref)
-    virtual t_CKINT data_type_kind( ) = 0; // kind of stored type (from kindof)
-    virtual t_CKINT find( const std::string & key ) = 0; // find
-    virtual t_CKINT erase( const std::string & key ) = 0; // erase
-    virtual void clear( ) = 0; // clear
-    virtual void zero( t_CKUINT start, t_CKUINT end ) = 0; // zero
-    virtual void zero() = 0; // zero (all)
-    // get map keys | added (1.4.2.0) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys ) = 0;
+public: // interface common to all Chuck_Arary*
+    // get array size
+    virtual t_CKINT size() = 0;
+    // get array capacity
+    virtual t_CKINT capacity() = 0;
+    // set array size
+    virtual t_CKINT set_size( t_CKINT size ) = 0;
+    // set array capacity
+    virtual t_CKINT set_capacity( t_CKINT capacity ) = 0;
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() = 0;
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() = 0;
+    // clear
+    virtual void clear() = 0;
+    // zero out the array by region [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end ) = 0;
+    // zero out all elements
+    virtual void zero() = 0;
+
+    // pop the back of the array | 1.5.0.8 (ge) moved into common
+    virtual t_CKINT pop_back() = 0;
+    // pop the front of array | 1.5.0.8 (ge) added
+    virtual t_CKINT pop_front() = 0;
+    // erase | 1.5.0.8 (ge) was pop_out()
+    virtual t_CKINT erase( t_CKINT pos ) = 0;
+    // erase by range [begin,end) | 1.5.0.8 (ge) added
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end ) = 0;
+
     // reverse array order | added (1.5.0.0) azaday
     virtual void reverse() = 0;
     // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle() = 0;
 
+    // typed as Object array? | 1.5.0.8 (ge) moved to common
+    virtual t_CKBOOL contains_objects() { return FALSE; }
+
+public: // map-only operations
+    // get all keys in map | added (1.4.2.0) nshaheed
+    virtual void get_keys( std::vector<std::string> & keys ) = 0;
+    // (map only) test is key is in map | 1.5.0.8 (ge) was find()
+    virtual t_CKINT map_find( const std::string & key ) = 0;
+    // (map only) erase entry by key | 1.5.0.8 (ge) was erase()
+    virtual t_CKINT map_erase( const std::string & key ) = 0;
+
+public:
     Chuck_Type * m_array_type;
 };
 
@@ -207,7 +241,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array4
-// desc: native ChucK arrays (for 4-byte/8-byte int types)
+// desc: native ChucK arrays (for 4-byte/8-byte int, and Object references)
 //-----------------------------------------------------------------------------
 struct Chuck_Array4 : public Chuck_Array
 {
@@ -215,36 +249,74 @@ public:
     Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity = 8 );
     virtual ~Chuck_Array4();
 
-public:
+public: // specific to this class
+    // get address
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
+    // get value
     t_CKINT get( t_CKINT i, t_CKUINT * val );
     t_CKINT get( const std::string & key, t_CKUINT * val );
+    // set value
     t_CKINT set( t_CKINT i, t_CKUINT val );
     t_CKINT set( const std::string & key, t_CKUINT val );
-    t_CKINT push_back( t_CKUINT val );
-    t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKINT pos );
-    t_CKINT back( t_CKUINT * val ) const;
-    void    zero( t_CKUINT start, t_CKUINT end );
-    void    zero() { this->zero(0, m_vector.size()); }
 
-    virtual void    clear( );
-    virtual t_CKINT size( ) { return m_vector.size(); }
-    virtual t_CKINT capacity( ) { return m_vector.capacity(); }
+    // append value
+    t_CKINT push_back( t_CKUINT val );
+    // get value of last element
+    t_CKINT back( t_CKUINT * val ) const;
+    // prepend value | 1.5.0.8 (ge) added
+    // NOTE linear time O(n) operation
+    t_CKINT push_front( t_CKUINT val );
+    // get value of last element
+    t_CKINT front( t_CKUINT * val ) const;
+    // insert before position | 1.5.0.8 (ge)
+    // NOTE linear time O(n) operation
+    t_CKINT insert( t_CKINT pos, t_CKUINT val );
+
+public: // array interface implementation
+    // get array size
+    virtual t_CKINT size() { return m_vector.size(); }
+    // get array capacity
+    virtual t_CKINT capacity() { return m_vector.capacity(); }
+    // set array size
     virtual t_CKINT set_size( t_CKINT size );
+    // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
-    virtual t_CKINT find( const std::string & key );
-    virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY4_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY4_DATAKIND; }
-    virtual t_CKBOOL contains_objects( ) { return m_is_obj; } // 1.5.0.1 (ge) added
-    // get map keys | added (1.4.2.0) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.5.0.0) azaday
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAY4_DATASIZE; }
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY4_DATAKIND; }
+    // clear
+    virtual void clear();
+    // zero out the array by range [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end );
+    // zero out all elements
+    virtual void zero() { this->zero(0, m_vector.size()); }
+
+    // pop the back of the array
+    virtual t_CKINT pop_back();
+    // pop the front of array
+    virtual t_CKINT pop_front();
+    // pop out an element
+    virtual t_CKINT erase( t_CKINT pos );
+    // erase a range of elements [begin,end)
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end );
+
+    // reverse array order
     virtual void reverse();
-    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
+    // reverse array order
     virtual void shuffle();
+
+    // typed as Object array?
+    virtual t_CKBOOL contains_objects() { return m_is_obj; }
+
+public: // map only
+    // get all keys in map
+    virtual void get_keys( std::vector<std::string> & keys );
+    // (map only) test is key is in map
+    virtual t_CKINT map_find( const std::string & key );
+    // (map only) erase entry by key
+    virtual t_CKINT map_erase( const std::string & key );
 
 public:
     std::vector<t_CKUINT> m_vector;
@@ -270,35 +342,71 @@ public:
     Chuck_Array8( t_CKINT capacity = 8 );
     virtual ~Chuck_Array8();
 
-public:
+public: // specific to this class
+    // get address
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
+    // get value
     t_CKINT get( t_CKINT i, t_CKFLOAT * val );
     t_CKINT get( const std::string & key, t_CKFLOAT * val );
+    // set value
     t_CKINT set( t_CKINT i, t_CKFLOAT val );
     t_CKINT set( const std::string & key, t_CKFLOAT val );
-    t_CKINT push_back( t_CKFLOAT val );
-    t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKINT pos );
-    t_CKINT back( t_CKFLOAT * val ) const;
-    void    zero( t_CKUINT start, t_CKUINT end );
-    void    zero() { this->zero(0, m_vector.size()); }
 
-    virtual void    clear( );
-    virtual t_CKINT size( ) { return m_vector.size(); }
-    virtual t_CKINT capacity( ) { return m_vector.capacity(); }
+    // append value
+    t_CKINT push_back( t_CKFLOAT val );
+    // get value of last element
+    t_CKINT back( t_CKFLOAT * val ) const;
+    // prepend value | 1.5.0.8 (ge) added
+    // NOTE linear time O(n) operation
+    t_CKINT push_front( t_CKFLOAT val );
+    // get value of last element
+    t_CKINT front( t_CKFLOAT * val ) const;
+    // insert before position | 1.5.0.8 (ge)
+    // NOTE linear time O(n) operation
+    t_CKINT insert( t_CKINT pos, t_CKFLOAT val );
+
+public: // array interface implementation
+    // get array size
+    virtual t_CKINT size() { return m_vector.size(); }
+    // get array capacity
+    virtual t_CKINT capacity() { return m_vector.capacity(); }
+    // set array size
     virtual t_CKINT set_size( t_CKINT size );
+    // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
-    virtual t_CKINT find( const std::string & key );
-    virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY8_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY8_DATAKIND; }
-    // get map keys | added (1.4.2.0) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.5.0.0) azaday
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAY8_DATASIZE; }
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY8_DATAKIND; }
+    // clear
+    virtual void clear();
+    // zero out the array by range [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end );
+    // zero out all elements
+    virtual void zero() { this->zero(0, m_vector.size()); }
+
+    // pop the back of the array
+    virtual t_CKINT pop_back();
+    // pop the front of array
+    virtual t_CKINT pop_front();
+    // pop out an element
+    virtual t_CKINT erase( t_CKINT pos );
+    // erase a range of elements [begin,end)
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end );
+
+    // reverse array order
     virtual void reverse();
-    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
+    // reverse array order
     virtual void shuffle();
+
+public: // map only
+    // get all keys in map
+    virtual void get_keys( std::vector<std::string> & keys );
+    // (map only) test is key is in map
+    virtual t_CKINT map_find( const std::string & key );
+    // (map only) erase entry by key
+    virtual t_CKINT map_erase( const std::string & key );
 
 public:
     std::vector<t_CKFLOAT> m_vector;
@@ -320,35 +428,71 @@ public:
     Chuck_Array16( t_CKINT capacity = 8 );
     virtual ~Chuck_Array16();
 
-public:
+public: // specific to this class
+    // get address
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
+    // get value
     t_CKINT get( t_CKINT i, t_CKCOMPLEX * val );
     t_CKINT get( const std::string & key, t_CKCOMPLEX * val );
+    // set value
     t_CKINT set( t_CKINT i, const t_CKCOMPLEX & val );
     t_CKINT set( const std::string & key, const t_CKCOMPLEX & val );
-    t_CKINT push_back( const t_CKCOMPLEX & val );
-    t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKINT pos );
-    t_CKINT back( t_CKCOMPLEX * val ) const;
-    void    zero( t_CKUINT start, t_CKUINT end );
-    void    zero() { this->zero(0, m_vector.size()); }
 
-    virtual void    clear( );
-    virtual t_CKINT size( ) { return m_vector.size(); }
-    virtual t_CKINT capacity( ) { return m_vector.capacity(); }
+    // append value
+    t_CKINT push_back( const t_CKCOMPLEX & val );
+    // get value of last element
+    t_CKINT back( t_CKCOMPLEX * val ) const;
+    // prepend value | 1.5.0.8 (ge) added
+    // NOTE linear time O(n) operation
+    t_CKINT push_front( const t_CKCOMPLEX & val );
+    // get value of last element
+    t_CKINT front( t_CKCOMPLEX * val ) const;
+    // insert before position | 1.5.0.8 (ge)
+    // NOTE linear time O(n) operation
+    t_CKINT insert( t_CKINT pos, const t_CKCOMPLEX & val );
+
+public: // array interface implementation
+    // get array size
+    virtual t_CKINT size() { return m_vector.size(); }
+    // get array capacity
+    virtual t_CKINT capacity() { return m_vector.capacity(); }
+    // set array size
     virtual t_CKINT set_size( t_CKINT size );
+    // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
-    virtual t_CKINT find( const std::string & key );
-    virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY16_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY16_DATAKIND; }
-    // get map keys | added (1.4.2.0) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.5.0.0) azaday
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAY16_DATASIZE; }
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY16_DATAKIND; }
+    // clear
+    virtual void clear();
+    // zero out the array by range [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end );
+    // zero out all elements
+    virtual void zero() { this->zero(0, m_vector.size()); }
+
+    // pop the back of the array
+    virtual t_CKINT pop_back();
+    // pop the front of array
+    virtual t_CKINT pop_front();
+    // pop out an element
+    virtual t_CKINT erase( t_CKINT pos );
+    // erase a range of elements [begin,end)
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end );
+
+    // reverse array order
     virtual void reverse();
-    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
+    // reverse array order
     virtual void shuffle();
+
+public: // map only
+    // get all keys in map
+    virtual void get_keys( std::vector<std::string> & keys );
+    // (map only) test is key is in map
+    virtual t_CKINT map_find( const std::string & key );
+    // (map only) erase entry by key
+    virtual t_CKINT map_erase( const std::string & key );
 
 public:
     std::vector<t_CKCOMPLEX> m_vector;
@@ -370,35 +514,71 @@ public:
     Chuck_Array24( t_CKINT capacity = 8 );
     virtual ~Chuck_Array24();
 
-public:
+public: // specific to this class
+    // get address
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
+    // get value
     t_CKINT get( t_CKINT i, t_CKVEC3 * val );
     t_CKINT get( const std::string & key, t_CKVEC3 * val );
+    // set value
     t_CKINT set( t_CKINT i, const t_CKVEC3 & val );
     t_CKINT set( const std::string & key, const t_CKVEC3 & val );
-    t_CKINT push_back( const t_CKVEC3 & val );
-    t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
-    t_CKINT back( t_CKVEC3 * val ) const;
-    void    zero( t_CKUINT start, t_CKUINT end );
-    void    zero() { this->zero(0, m_vector.size()); }
 
-    virtual void    clear( );
-    virtual t_CKINT size( ) { return m_vector.size(); }
-    virtual t_CKINT capacity( ) { return m_vector.capacity(); }
+    // append value
+    t_CKINT push_back( const t_CKVEC3 & val );
+    // get value of last element
+    t_CKINT back( t_CKVEC3 * val ) const;
+    // prepend value | 1.5.0.8 (ge) added
+    // NOTE linear time O(n) operation
+    t_CKINT push_front( const t_CKVEC3 & val );
+    // get value of last element
+    t_CKINT front( t_CKVEC3 * val ) const;
+    // insert before position | 1.5.0.8 (ge)
+    // NOTE linear time O(n) operation
+    t_CKINT insert( t_CKINT pos, const t_CKVEC3 & val );
+
+public: // array interface implementation
+    // get array size
+    virtual t_CKINT size() { return m_vector.size(); }
+    // get array capacity
+    virtual t_CKINT capacity() { return m_vector.capacity(); }
+    // set array size
     virtual t_CKINT set_size( t_CKINT size );
+    // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
-    virtual t_CKINT find( const std::string & key );
-    virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY24_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY24_DATAKIND; }
-    // get map keys | added (1.4.2.0) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.5.0.0) azaday
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAY24_DATASIZE; }
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY24_DATAKIND; }
+    // clear
+    virtual void clear();
+    // zero out the array by range [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end );
+    // zero out all elements
+    virtual void zero() { this->zero(0, m_vector.size()); }
+
+    // pop the back of the array
+    virtual t_CKINT pop_back();
+    // pop the front of array
+    virtual t_CKINT pop_front();
+    // pop out an element
+    virtual t_CKINT erase( t_CKINT pos );
+    // erase a range of elements [begin,end)
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end );
+
+    // reverse array order
     virtual void reverse();
-    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
+    // reverse array order
     virtual void shuffle();
+
+public: // map only
+    // get all keys in map
+    virtual void get_keys( std::vector<std::string> & keys );
+    // (map only) test is key is in map
+    virtual t_CKINT map_find( const std::string & key );
+    // (map only) erase entry by key
+    virtual t_CKINT map_erase( const std::string & key );
 
 public:
     std::vector<t_CKVEC3> m_vector;
@@ -418,35 +598,71 @@ public:
     Chuck_Array32( t_CKINT capacity = 8 );
     virtual ~Chuck_Array32();
 
-public:
+public: // specific to this class
+    // get address
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
+    // get value
     t_CKINT get( t_CKINT i, t_CKVEC4 * val );
     t_CKINT get( const std::string & key, t_CKVEC4 * val );
+    // set value
     t_CKINT set( t_CKINT i, const t_CKVEC4 & val );
     t_CKINT set( const std::string & key, const t_CKVEC4 & val );
-    t_CKINT push_back( const t_CKVEC4 & val );
-    t_CKINT pop_back( );
-    t_CKINT pop_out( t_CKUINT pos );
-    t_CKINT back( t_CKVEC4 * val ) const;
-    void    zero( t_CKUINT start, t_CKUINT end );
-    void    zero() { this->zero(0, m_vector.size()); }
 
-    virtual void    clear( );
-    virtual t_CKINT size( ) { return m_vector.size(); }
-    virtual t_CKINT capacity( ) { return m_vector.capacity(); }
+    // append value
+    t_CKINT push_back( const t_CKVEC4 & val );
+    // get value of last element
+    t_CKINT back( t_CKVEC4 * val ) const;
+    // prepend value | 1.5.0.8 (ge) added
+    // NOTE linear time O(n) operation
+    t_CKINT push_front( const t_CKVEC4 & val );
+    // get value of last element
+    t_CKINT front( t_CKVEC4 * val ) const;
+    // insert before position | 1.5.0.8 (ge)
+    // NOTE linear time O(n) operation
+    t_CKINT insert( t_CKINT pos, const t_CKVEC4 & val );
+
+public: // array interface implementation
+    // get array size
+    virtual t_CKINT size() { return m_vector.size(); }
+    // get array capacity
+    virtual t_CKINT capacity() { return m_vector.capacity(); }
+    // set array size
     virtual t_CKINT set_size( t_CKINT size );
+    // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
-    virtual t_CKINT find( const std::string & key );
-    virtual t_CKINT erase( const std::string & key );
-    virtual t_CKINT data_type_size( ) { return CHUCK_ARRAY32_DATASIZE; }
-    virtual t_CKINT data_type_kind( ) { return CHUCK_ARRAY32_DATAKIND; }
-    // get map keys | added (1.4.1.2) nshaheed
-    virtual void get_keys( std::vector<std::string> & keys );
-    // reverse array order | added (1.5.0.0) azaday
+    // size of stored type (from type_ref)
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAY32_DATASIZE; }
+    // kind of stored type (from kindof)
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY32_DATAKIND; }
+    // clear
+    virtual void clear();
+    // zero out the array by range [start,end)
+    virtual void zero( t_CKUINT start, t_CKUINT end );
+    // zero out all elements
+    virtual void zero() { this->zero(0, m_vector.size()); }
+
+    // pop the back of the array
+    virtual t_CKINT pop_back();
+    // pop the front of array
+    virtual t_CKINT pop_front();
+    // pop out an element
+    virtual t_CKINT erase( t_CKINT pos );
+    // erase a range of elements [begin,end)
+    virtual t_CKINT erase( t_CKINT begin, t_CKINT end );
+
+    // reverse array order
     virtual void reverse();
-    // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
+    // reverse array order
     virtual void shuffle();
+
+public: // map only
+    // get all keys in map
+    virtual void get_keys( std::vector<std::string> & keys );
+    // (map only) test is key is in map
+    virtual t_CKINT map_find( const std::string & key );
+    // (map only) erase entry by key
+    virtual t_CKINT map_erase( const std::string & key );
 
 public:
     std::vector<t_CKVEC4> m_vector;

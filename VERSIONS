@@ -4,10 +4,22 @@ ChucK VERSIONS log
 
 1.5.0.8 (July 2023)
 ===
-- (note) this version adds engine support for a number of features in 
-  WebChucK and WebChucK IDE, including retrieving and display the chuck
-  now, along with a number of critical chuck parameters; updated ChucK
-  c++ integration API
+- (note) expanded/and updated array support; internally, this version
+  adds engine support for a number of features in WebChucK and
+  WebChucK IDE, including retrieving and display the chuck 'now', along
+  with a number of critical chuck parameters; updated ChucK c++ integration
+  API
+- (added) new array operations
+	void erase(int position)
+	    Remove element at 'position' from the array.
+	void erase(int begin, int end)
+	    Remove element(s) in the range [begin,end).
+	void popFront()
+	    Remove the first element of the array.
+  See full array API reference with examples:
+    https://chuck.stanford.edu/doc/reference/base.html#@array
+- (update) map-only function @array.find(string) has been renmed to
+    @array.isInMap(string) to avoid confusion with vector
 - (updated, documentation) STK classes HnkyTonk and FrencHrn now properly
   included in the API reference, and with more examples
     https://chuck.stanford.edu/doc/reference/ugens-stk.html#HnkyTonk
