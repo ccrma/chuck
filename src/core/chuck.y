@@ -356,6 +356,8 @@ loop_statement
             { $$ = new_stmt_from_for( $3, $4, NULL, $6, @1.first_line, @1.first_column ); }
         | FOR LPAREN expression_statement expression_statement expression RPAREN statement
             { $$ = new_stmt_from_for( $3, $4, $5, $7, @1.first_line, @1.first_column ); }
+        | FOR LPAREN expression COLON expression RPAREN statement
+            { $$ = new_stmt_from_foreach( $3, $5, $7, @1.first_line, @1.first_column ); }
         | UNTIL LPAREN expression RPAREN statement
             { $$ = new_stmt_from_until( $3, $5, @1.first_line, @1.first_column ); }
         | DO statement UNTIL LPAREN expression RPAREN SEMICOLON

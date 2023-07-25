@@ -3982,6 +3982,33 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_ForEach_Inc_And_Branch
+// desc: for( VAR: ARRAY ) increment VAR, test against ARRAY size; branch
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_ForEach_Inc_And_Branch : public Chuck_Instr_Branch_Op
+{
+public:
+    // constructor
+    Chuck_Instr_ForEach_Inc_And_Branch( t_CKUINT kind, t_CKUINT size )
+    { m_dataKind = kind; m_dataSize = size; this->set( 0 ); }
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+protected:
+    // type of VAR (will determine which array to operate on):
+    // kindof_INT
+    // kindof_FLOAT
+    // kindof_COMPLEX
+    // kindof_VEC3
+    // kindof_VEC4
+    t_CKUINT m_dataKind;
+    // size of VAR
+    t_CKUINT m_dataSize;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_in_int
 // desc: ...
 //-----------------------------------------------------------------------------

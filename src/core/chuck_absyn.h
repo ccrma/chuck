@@ -104,6 +104,7 @@ typedef struct a_Stmt_If_ * a_Stmt_If;
 typedef struct a_Stmt_While_ * a_Stmt_While;
 typedef struct a_Stmt_Until_ * a_Stmt_Until;
 typedef struct a_Stmt_For_ * a_Stmt_For;
+typedef struct a_Stmt_ForEach_ * a_Stmt_ForEach;
 typedef struct a_Stmt_Loop_ * a_Stmt_Loop;
 typedef struct a_Stmt_Switch_ * a_Stmt_Switch;
 typedef struct a_Stmt_Break_ * a_Stmt_Break;
@@ -151,6 +152,7 @@ a_Stmt new_stmt_from_do_while( a_Exp cond, a_Stmt body, uint32_t line, uint32_t 
 a_Stmt new_stmt_from_until( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_do_until( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_for( a_Stmt c1, a_Stmt c2, a_Exp c3, a_Stmt body, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_foreach( a_Exp iter, a_Exp array, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_loop( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_if( a_Exp cond, a_Stmt if_body, a_Stmt else_body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_switch( a_Exp exp, uint32_t line, uint32_t where );
@@ -236,6 +238,7 @@ void delete_stmt_from_code( a_Stmt stmt );
 void delete_stmt_from_while( a_Stmt stmt );
 void delete_stmt_from_until( a_Stmt stmt );
 void delete_stmt_from_for( a_Stmt stmt );
+void delete_stmt_from_foreach( a_Stmt stmt );
 void delete_stmt_from_loop( a_Stmt stmt );
 void delete_stmt_from_if( a_Stmt stmt );
 void delete_stmt_from_switch( a_Stmt stmt );
@@ -297,7 +300,8 @@ struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
 struct a_Var_Decl_ { S_Symbol xid; a_Array_Sub array; t_CKVALUE value;
-                     void * addr; t_CKTYPE ck_type; int ref; uint32_t line; uint32_t where; a_Exp self; };
+                     void * addr; t_CKTYPE ck_type; int ref; int force_ref;
+                     uint32_t line; uint32_t where; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
 struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;
                       int err_num; int err_pos; };
@@ -378,6 +382,7 @@ struct a_Exp_
 struct a_Stmt_While_ { int is_do; a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Until_ { int is_do; a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_For_ { a_Stmt c1; a_Stmt c2; a_Exp c3; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_ForEach_ { a_Exp theIter; a_Exp theArray; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Loop_ { a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Code_ { a_Stmt_List stmt_list; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_If_ { a_Exp cond; a_Stmt if_body; a_Stmt else_body; uint32_t line; uint32_t where; a_Stmt self; };
@@ -389,8 +394,8 @@ struct a_Stmt_Case_ { a_Exp exp; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_GotoLabel_ { S_Symbol name; uint32_t line; uint32_t where; a_Stmt self; };
 
 // enum values for stmt type
-typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_loop,
-               ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break,
+typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_foreach,
+               ae_stmt_loop, ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break,
                ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel
              } ae_Stmt_Type;
 
@@ -407,6 +412,7 @@ struct a_Stmt_
         struct a_Stmt_Until_ stmt_until;
         struct a_Stmt_Loop_ stmt_loop;
         struct a_Stmt_For_ stmt_for;
+        struct a_Stmt_ForEach_ stmt_foreach;
         struct a_Stmt_If_ stmt_if;
         struct a_Stmt_Switch_ stmt_switch;
         struct a_Stmt_Break_ stmt_break;

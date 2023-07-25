@@ -52,6 +52,7 @@ t_CKBOOL emit_engine_emit_stmt_list( Chuck_Emitter * emit, a_Stmt_List list );
 t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop = TRUE );
 t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt );
 t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt );
+t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt );
 t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt );
 t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt );
 t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt );
@@ -487,6 +488,10 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
             ret = emit_engine_emit_for( emit, &stmt->stmt_for );
             break;
 
+        case ae_stmt_foreach:  // for statement
+            ret = emit_engine_emit_foreach( emit, &stmt->stmt_foreach );
+            break;
+
         case ae_stmt_while:  // while statement
             if( stmt->stmt_while.is_do )
                 ret = emit_engine_emit_do_while( emit, &stmt->stmt_while );
@@ -768,6 +773,104 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
     if( stmt->c2 )
         // set the op's target
         op->set( emit->next_index() );
+
+    // stack of continue
+    while( emit->code->stack_cont.size() && emit->code->stack_cont.back() )
+    {
+        emit->code->stack_cont.back()->set( cont_index );
+        emit->code->stack_cont.pop_back();
+    }
+
+    // stack of break
+    while( emit->code->stack_break.size() && emit->code->stack_break.back() )
+    {
+        emit->code->stack_break.back()->set( emit->next_index() );
+        emit->code->stack_break.pop_back();
+    }
+
+    // pop stack
+    emit->pop_scope();
+    // pop continue stack
+    emit->code->stack_cont.pop_back();
+    // pop break stack
+    emit->code->stack_break.pop_back();
+
+    return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_emit_foreach() | 1.5.0.8 (ge) added
+// desc: emit instructions for( VAR : ARRAY )
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
+{
+    Chuck_Instr_ForEach_Inc_And_Branch * op = NULL;
+    t_CKUINT num_words = 0;
+    t_CKBOOL ret = TRUE;
+
+    // push the stack
+    emit->push_scope();
+
+    // emit the iter part
+    ret = emit_engine_emit_exp( emit, stmt->theIter );
+    if( !ret ) return FALSE;
+
+    // emit the array part
+    ret = emit_engine_emit_exp( emit, stmt->theArray );
+    if( !ret ) return FALSE;
+
+    // emit local state for tracking array index
+    emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
+
+    // the start index
+    t_CKUINT start_index = emit->next_index();
+
+    // TODO: init hidden foreach iterator
+    // TODO: set op to branch to beyond end of loop
+
+    // get data kind and size relevant to array
+    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type);
+    t_CKUINT dataSize = stmt->theIter->type->size;
+    // compare branch condition and increment loop counter
+    op = new Chuck_Instr_ForEach_Inc_And_Branch( dataKind, dataSize );
+    // emit the instruction
+    emit->append( op );
+
+    t_CKUINT cont_index = 0;
+    // mark the stack of continue
+    emit->code->stack_cont.push_back( NULL );
+    // mark the stack of break
+    emit->code->stack_break.push_back( NULL );
+
+    // added 1.3.1.1: new scope just for loop body
+    emit->push_scope();
+
+    // emit the body
+    ret = emit_engine_emit_stmt( emit, stmt->body );
+    if( !ret )
+        return FALSE;
+
+    // added 1.3.1.1: pop scope for loop body
+    emit->pop_scope();
+
+    // continue here
+    cont_index = emit->next_index();
+
+    // go back to do check the condition
+    emit->append( new Chuck_Instr_Goto( start_index ) );
+
+    // set the op's target
+    op->set( emit->next_index() );
+
+    // compute num words
+    num_words += stmt->theIter->type->size / sz_WORD; // iter size
+    num_words += sz_INT / sz_WORD; // our hidden counter size
+    num_words += sz_INT / sz_WORD; // array size
+    // clean up
+    emit->append( new Chuck_Instr_Reg_Pop_Word4( num_words ) );
 
     // stack of continue
     while( emit->code->stack_cont.size() && emit->code->stack_cont.back() )
@@ -4176,7 +4279,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         // is the variable a reference
         is_obj = isobj( emit->env, type );
         // do alloc or not
-        is_ref = decl->type->ref;
+        is_ref = var_decl->force_ref || decl->type->ref; // 1.5.0.8 (ge) added force_ref for foreach
         // not init
         is_init = FALSE;
         // is array

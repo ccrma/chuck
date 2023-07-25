@@ -245,6 +245,20 @@ a_Stmt new_stmt_from_for( a_Stmt c1, a_Stmt c2, a_Exp c3, a_Stmt body, uint32_t 
     return a;
 }
 
+a_Stmt new_stmt_from_foreach( a_Exp iter, a_Exp array, a_Stmt body, uint32_t lineNum, uint32_t posNum )
+{
+    a_Stmt a = (a_Stmt)checked_malloc( sizeof( struct a_Stmt_ ) );
+    a->s_type = ae_stmt_foreach;
+    a->stmt_foreach.theIter = iter;
+    a->stmt_foreach.theArray = array;
+    a->stmt_foreach.body = body;
+    a->line = lineNum; a->where = posNum;
+    a->stmt_foreach.line = lineNum; a->stmt_foreach.where = posNum;
+    a->stmt_foreach.self = a;
+
+    return a;
+}
+
 a_Stmt new_stmt_from_loop( a_Exp cond, a_Stmt body, uint32_t lineNum, uint32_t posNum )
 {
     a_Stmt a = (a_Stmt)checked_malloc( sizeof( struct a_Stmt_ ) );
@@ -1168,6 +1182,9 @@ void delete_stmt( a_Stmt stmt )
     case ae_stmt_for:
         delete_stmt_from_for( stmt );
         break;
+    case ae_stmt_foreach:
+        delete_stmt_from_foreach( stmt );
+        break;
     case ae_stmt_loop:
         delete_stmt_from_loop( stmt );
         break;
@@ -1226,6 +1243,14 @@ void delete_stmt_from_for( a_Stmt stmt )
     delete_stmt( stmt->stmt_for.c2 );
     delete_exp( stmt->stmt_for.c3 );
     delete_stmt( stmt->stmt_for.body );
+}
+
+void delete_stmt_from_foreach( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (foreach)...", (void *)stmt );
+    delete_exp( stmt->stmt_foreach.theIter );
+    delete_exp( stmt->stmt_foreach.theArray );
+    delete_stmt( stmt->stmt_foreach.body );
 }
 
 void delete_stmt_from_loop( a_Stmt stmt )

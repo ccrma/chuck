@@ -7456,6 +7456,104 @@ void Chuck_Instr_Pop_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 
 
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_ForEach_Inc_And_Branch
+// desc: for( VAR: ARRAY ) increment VAR, test against ARRAY size; branch
+//-----------------------------------------------------------------------------
+void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // --------
+    // output of VAR alloc (e.g., int or float or other)
+    // ARRAY to iterate over
+    // implicit loop counter
+    // --------
+    // ^ assume three things on the reg stack
+
+    // stack offset
+    t_CKUINT offset = (m_dataSize + sz_INT + sz_INT) / sz_INT;
+    t_CKUINT * sp = reg_sp-offset;
+
+    // get var address
+    t_CKUINT * pVar = (t_CKUINT *)(*sp);
+    // get array pointer
+    Chuck_Array * array = (Chuck_Array *)(*(reg_sp-2));
+    // loop counter pointer
+    t_CKINT * counter = (t_CKINT *)(reg_sp-1);
+
+    // branch if either NULL array, or counter reached array size
+    if( !array || val_(counter) >= array->size() )
+    {
+        shred->next_pc = m_jmp;
+    }
+    else
+    {
+        // set pVar to current element
+        switch( m_dataKind )
+        {
+            case kindof_INT:
+            {
+                // cast to specific array type
+                Chuck_Array4 * arr = (Chuck_Array4 *) array;
+                // get element
+                arr->get( *counter, pVar );
+                // is object
+                if( arr->contains_objects() && *pVar)
+                {
+                    // add ref, as this will be cleaned up at end of scope, hopefully
+                    ((Chuck_VM_Object *)(*pVar))->add_ref();
+                }
+                break;
+            }
+            case kindof_FLOAT:
+            {
+                // cast to specific array type
+                Chuck_Array8 * arr = (Chuck_Array8 *) array;
+                // get element
+                arr->get( *counter, (t_CKFLOAT *)pVar );
+                break;
+            }
+            case kindof_COMPLEX:
+            {
+                // cast to specific array type
+                Chuck_Array16 * arr = (Chuck_Array16 *) array;
+                // get element
+                arr->get( *counter, (t_CKCOMPLEX *)pVar );
+                break;
+            }
+            case kindof_VEC3:
+            {
+                // cast to specific array type
+                Chuck_Array24 * arr = (Chuck_Array24 *) array;
+                // get element
+                arr->get( *counter, (t_CKVEC3 *)pVar );
+                break;
+            }
+            case kindof_VEC4:
+            {
+                // cast to specific array type
+                Chuck_Array32 * arr = (Chuck_Array32 *) array;
+                // get element
+                arr->get( *counter, (t_CKVEC4 *)pVar );
+                break;
+            }
+            default:
+            {
+                // shouldn't get here
+                assert( FALSE );
+                break;
+            }
+        }
+
+        // increment counter
+        (*counter)++;
+    }
+}
+
+
+
+
 #pragma mark === IO ===
 
 

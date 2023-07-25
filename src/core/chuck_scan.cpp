@@ -51,6 +51,7 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list );
 t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt );
 t_CKBOOL type_engine_scan1_if( Chuck_Env * env, a_Stmt_If stmt );
 t_CKBOOL type_engine_scan1_for( Chuck_Env * env, a_Stmt_For stmt );
+t_CKBOOL type_engine_scan1_foreach( Chuck_Env * env, a_Stmt_ForEach stmt );
 t_CKBOOL type_engine_scan1_while( Chuck_Env * env, a_Stmt_While stmt );
 t_CKBOOL type_engine_scan1_until( Chuck_Env * env, a_Stmt_Until stmt );
 t_CKBOOL type_engine_scan1_loop( Chuck_Env * env, a_Stmt_Loop stmt );
@@ -88,6 +89,7 @@ t_CKBOOL type_engine_scan2_stmt_list( Chuck_Env * env, a_Stmt_List list );
 t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt );
 t_CKBOOL type_engine_scan2_if( Chuck_Env * env, a_Stmt_If stmt );
 t_CKBOOL type_engine_scan2_for( Chuck_Env * env, a_Stmt_For stmt );
+t_CKBOOL type_engine_scan2_foreach( Chuck_Env * env, a_Stmt_ForEach stmt );
 t_CKBOOL type_engine_scan2_while( Chuck_Env * env, a_Stmt_While stmt );
 t_CKBOOL type_engine_scan2_loop( Chuck_Env * env, a_Stmt_Loop stmt );
 t_CKBOOL type_engine_scan2_until( Chuck_Env * env, a_Stmt_Until stmt );
@@ -489,6 +491,14 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_foreach:
+            env->class_scope++;
+            env->curr->value.push();
+            ret = type_engine_scan1_foreach( env, &stmt->stmt_foreach );
+            env->curr->value.pop();
+            env->class_scope--;
+            break;
+
         case ae_stmt_while:
             env->class_scope++;
             env->curr->value.push();
@@ -607,6 +617,30 @@ t_CKBOOL type_engine_scan1_for( Chuck_Env * env, a_Stmt_For stmt )
 
     // check the post
     if( stmt->c3 && !type_engine_scan1_exp( env, stmt->c3 ) )
+        return FALSE;
+
+    // check body
+    if( !type_engine_scan1_stmt( env, stmt->body ) )
+        return FALSE;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan1_foreach()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan1_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
+{
+    // check the iter part
+    if( !type_engine_scan1_exp( env, stmt->theIter ) )
+        return FALSE;
+
+    // check the array part
+    if( !type_engine_scan1_exp( env, stmt->theArray ) )
         return FALSE;
 
     // check body
@@ -1536,6 +1570,14 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_foreach:
+            env->class_scope++;
+            env->curr->value.push();
+            ret = type_engine_scan2_foreach( env, &stmt->stmt_foreach );
+            env->curr->value.pop();
+            env->class_scope--;
+            break;
+
         case ae_stmt_while:
             env->class_scope++;
             env->curr->value.push();
@@ -1654,6 +1696,30 @@ t_CKBOOL type_engine_scan2_for( Chuck_Env * env, a_Stmt_For stmt )
 
     // check the post
     if( stmt->c3 && !type_engine_scan2_exp( env, stmt->c3 ) )
+        return FALSE;
+
+    // check body
+    if( !type_engine_scan2_stmt( env, stmt->body ) )
+        return FALSE;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan2_foreach()
+// desc: ...
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan2_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
+{
+    // check the iter part
+    if( !type_engine_scan2_exp( env, stmt->theIter ) )
+        return FALSE;
+
+    // check the array part
+    if( !type_engine_scan2_exp( env, stmt->theArray ) )
         return FALSE;
 
     // check body

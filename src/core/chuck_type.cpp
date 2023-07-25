@@ -57,6 +57,7 @@ t_CKBOOL type_engine_check_stmt_list( Chuck_Env * env, a_Stmt_List list );
 t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt );
 t_CKBOOL type_engine_check_if( Chuck_Env * env, a_Stmt_If stmt );
 t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt );
+t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt );
 t_CKBOOL type_engine_check_while( Chuck_Env * env, a_Stmt_While stmt );
 t_CKBOOL type_engine_check_until( Chuck_Env * env, a_Stmt_Until stmt );
 t_CKBOOL type_engine_check_loop( Chuck_Env * env, a_Stmt_Loop stmt );
@@ -1020,6 +1021,14 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
             env->class_scope--;
             break;
 
+        case ae_stmt_foreach:
+            env->class_scope++;
+            env->curr->value.push();
+            ret = type_engine_check_foreach( env, &stmt->stmt_foreach );
+            env->curr->value.pop();
+            env->class_scope--;
+            break;
+
         case ae_stmt_while:
             env->class_scope++;
             env->curr->value.push();
@@ -1186,6 +1195,123 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
     // check the post
     if( stmt->c3 && !type_engine_check_exp( env, stmt->c3 ) )
         return FALSE;
+
+    // for break and continue statement
+    env->breaks.push_back( stmt->self );
+
+    // check body
+    // TODO: restore break stack? (same for other loops)
+    if( !type_engine_check_stmt( env, stmt->body ) )
+        return FALSE;
+
+    // remove the loop from the stack
+    assert( env->breaks.size() && env->breaks.back() == stmt->self );
+    env->breaks.pop_back();
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_foreach() | 1.5.0.8 (ge) added
+// desc: type check for( VAR : ARRAY )
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
+{
+    // check the iter part
+    if( !type_engine_check_exp( env, stmt->theIter ) )
+        return FALSE;
+
+    // check the array part
+    if( !type_engine_check_exp( env, stmt->theArray ) )
+        return FALSE;
+
+    // iter type
+    Chuck_Type * t_iter = stmt->theIter->type;
+    Chuck_Type * t_array = stmt->theArray->type;
+
+    // make sure we have an array
+    if( !t_array->array_depth )
+    {
+        // error
+        EM_error2( stmt->theArray->where, "for( X : ARRAY ) expects ARRAY to be an array" );
+        return FALSE;
+    }
+
+    // make sure lhs is a decl
+    if( stmt->theIter->s_type != ae_exp_decl )
+    {
+        // type suggestion
+        string suggest = t_array->name + " x";
+        for( t_CKINT i = 0; i < t_array->array_depth-1; i++ ) suggest += "[]";
+
+        // error
+        EM_error2( stmt->theIter->where, "for( X : ARRAY ) expects X to be a declaration, e.g., '%s'", suggest.c_str() );
+        return FALSE;
+    }
+
+    // make sure lhs has the appropriate array depth
+    // NOTE to handle multiple-dimensional arrays:
+    if( stmt->theIter->decl.num_var_decls > 1 )
+    {
+        // error
+        EM_error2( stmt->theIter->where, "for( X : ARRAY ) X cannot declare more than one variable" );
+        return FALSE;
+    }
+
+    // check if VAR is itself an array
+    if( t_iter->array_depth > 0 )
+    {
+        // get var decl list
+        a_Var_Decl_List list = stmt->theIter->decl.var_decl_list;
+        // get var decl
+        a_Var_Decl decl = list->var_decl;
+
+        // make sure empty declaration []
+        if( decl->array && decl->array->exp_list != NULL)
+        {
+            // error
+            EM_error2( decl->array->exp_list->where, "for( X : ARRAY ) expects X to non-array or empty [] array declaration" );
+            return FALSE;
+        }
+
+        // make sure the type matches
+        if( !isa( t_iter->array_type, t_array->array_type ) )
+        {
+            // error
+            EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
+                       stmt->theIter->type->c_name(), stmt->theArray->type->c_name() );
+            return FALSE;
+        }
+    }
+    else
+    {
+        // make sure the type matches
+        if( !isa( t_iter, t_array->array_type ) )
+        {
+            // error
+            EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
+                       stmt->theIter->type->c_name(), stmt->theArray->type->c_name() );
+            return FALSE;
+        }
+    }
+
+    // difference in array depth
+    t_CKINT depth = t_array->array_depth - t_iter->array_depth;
+    // VAR array depth should always be one less
+    if( depth != 1 )
+    {
+        // error
+        EM_error2( stmt->theIter->where, "for( X : ARRAY ) X [%s] must have one less array dimension than ARRAY [%s]",
+                   stmt->theIter->type->c_name(), stmt->theArray->type->c_name() );
+        return FALSE;
+    }
+
+    // force VAR to be a reference decl for emitting
+    // e.g., SinOsc x implicitly will be emitted as SinOsc @ x
+    stmt->theIter->decl.var_decl_list->var_decl->force_ref = TRUE;
 
     // for break and continue statement
     env->breaks.push_back( stmt->self );

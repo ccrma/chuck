@@ -583,7 +583,7 @@ struct Chuck_Type : public Chuck_Object
 {
     // type id
     te_Type xid;
-    // type name
+    // type name (FYI use this->str() for full name including []s for array)
     std::string name;
     // type parent (could be NULL)
     Chuck_Type * parent;
