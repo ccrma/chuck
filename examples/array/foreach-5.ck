@@ -22,7 +22,8 @@ for( SinOsc x : array )
 
 
 // a second loop for testing's sake
-for( SinOsc x : array )
+// (also using Osc, a parent of SinOsc to iterate)
+for( Osc x : array )
 {
     // print
     <<< x.freq() >>>;

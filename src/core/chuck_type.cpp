@@ -1278,7 +1278,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         }
 
         // make sure the type matches
-        if( !isa( t_iter->array_type, t_array->array_type ) )
+        if( !isa( t_array->array_type, t_iter->array_type ) )
         {
             // error
             EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
@@ -1289,7 +1289,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     else
     {
         // make sure the type matches
-        if( !isa( t_iter, t_array->array_type ) )
+        if( !isa( t_array->array_type, t_iter ) )
         {
             // error
             EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
@@ -1309,9 +1309,13 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         return FALSE;
     }
 
-    // force VAR to be a reference decl for emitting
-    // e.g., SinOsc x implicitly will be emitted as SinOsc @ x
-    stmt->theIter->decl.var_decl_list->var_decl->force_ref = TRUE;
+    // if VAR is an Object type
+    if( isobj(env, t_iter) )
+    {
+        // force VAR to be a reference decl for emitting
+        // e.g., SinOsc x implicitly will be emitted as SinOsc @ x
+        stmt->theIter->decl.var_decl_list->var_decl->force_ref = TRUE;
+    }
 
     // for break and continue statement
     env->breaks.push_back( stmt->self );
