@@ -166,11 +166,11 @@ extern "C"
     t_CKUINT replaceCode( ChucK * chuck, t_CKUINT shredID, std::vector<std::string> * args )
     {
         Chuck_Msg * msg = new Chuck_Msg;
-        msg->type = MSG_REPLACE;
+        msg->type = CK_MSG_REPLACE;
         msg->code = chuck->compiler()->output();
         msg->param = shredID;
-        // null reply so that VM will delete for us when it's done
-        msg->reply = ( ck_msg_func )NULL;
+        // set so that VM will delete for us when it's done
+        msg->reply_queue = FALSE;
         // 1.5.0.8 use set for proper memory management
         msg->set( args ); // msg->args = args;
 
@@ -357,12 +357,11 @@ extern "C"
     
         // create a msg asking to remove the shred
         Chuck_Msg * msg = new Chuck_Msg;
-        msg->type = MSG_REMOVE;
+        msg->type = CK_MSG_REMOVE;
         msg->param = shredID;
-    
-        // null reply so that VM will delete for us when it's done
-        msg->reply = (ck_msg_func)NULL;
-    
+        // set so that VM will delete for us when it's done
+        msg->reply_queue = FALSE;
+
         // tell the VM to clear
         chuck->globals()->execute_chuck_msg_with_globals( msg );
     
@@ -745,9 +744,9 @@ extern "C"
             // create a msg asking to clear the VM
             Chuck_Msg * msg = new Chuck_Msg;
             // set message type
-            msg->type = MSG_CLEARVM;
-            // null reply so that VM will delete for us when it's done
-            msg->reply = (ck_msg_func)NULL;
+            msg->type = CK_MSG_CLEARVM;
+            // set so that VM will delete for us when it's done
+            msg->reply_queue = FALSE;
             // tell the VM to clear
             chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
 
@@ -770,9 +769,9 @@ extern "C"
             // create a msg asking to clear the globals
             Chuck_Msg * msg = new Chuck_Msg;
             // set message type
-            msg->type = MSG_CLEARGLOBALS;
-            // null reply so that VM will delete for us when it's done
-            msg->reply = (ck_msg_func)NULL;
+            msg->type = CK_MSG_CLEARGLOBALS;
+            // set so that VM will delete for us when it's done
+            msg->reply_queue = FALSE;
             // tell the VM to clear
             chuck->vm()->globals_manager()->execute_chuck_msg_with_globals( msg );
 
