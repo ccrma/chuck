@@ -1,0 +1,4 @@
+error-auto-decl.ck:2:1: error: cannot use 'auto' type variable declaration here...
+[2] auto x;
+    ^
+error-auto-decl.ck: (hint: 'auto' requires either initialization or specific contexts)

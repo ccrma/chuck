@@ -1,9 +1,3 @@
 error-oneline.ck:1:566: error: 's' has already been defined in the same scope
 [1] ...::ms => now; }  Blit s => ADSR e => JCRev r => dac; .5 => s.gain; .05...
                             ^
-error-oneline.ck:1:576: error: 'e' has already been defined in the same scope
-[1] ...w; }  Blit s => ADSR e => JCRev r => dac; .5 => s.gain; .05 => r.mix;...
-                            ^
-error-oneline.ck:1:587: error: 'r' has already been defined in the same scope
-[1] ...s => ADSR e => JCRev r => dac; .5 => s.gain; .05 => r.mix;  /* set ad...
-                            ^

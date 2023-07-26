@@ -135,6 +135,7 @@ Chuck_Env::Chuck_Env( )
     // zero out | 1.5.0.0 (ge) moved Chuck_Type instantiation to after carrier is set,
     // in order to access compiler (e.g., for originHint)
     t_void = NULL;
+    t_auto = NULL;
     t_int = NULL;
     t_float = NULL;
     t_time = NULL;
@@ -157,8 +158,8 @@ Chuck_Env::Chuck_Env( )
     t_fileio = NULL;
     t_chout = NULL;
     t_cherr = NULL;
-    // t_thread = NULL;
     t_class = NULL;
+    // t_thread = NULL;
 }
 
 
@@ -190,6 +191,7 @@ t_CKBOOL Chuck_Env::init()
 {
     // initialize base types
     t_void = new Chuck_Type( this, te_void, "void", NULL, 0 );
+    t_auto = new Chuck_Type( this, te_auto, "auto", NULL, 0 );
     t_int = new Chuck_Type( this, te_int, "int", NULL, sizeof(t_CKINT) );
     t_float = new Chuck_Type( this, te_float, "float", NULL, sizeof(t_CKFLOAT) );
     t_time = new Chuck_Type( this, te_time, "time", NULL, sizeof(t_CKTIME) );
@@ -237,6 +239,7 @@ void Chuck_Env::cleanup()
     // unlock each internal object type | 1.5.0.0 (ge) added
     // 1.5.0.1 (ge) re-ordered: parent dependencies are cleaned up later
     CK_SAFE_UNLOCK_DELETE(t_void);
+    CK_SAFE_UNLOCK_DELETE(t_auto);
     CK_SAFE_UNLOCK_DELETE(t_int);
     CK_SAFE_UNLOCK_DELETE(t_float);
     CK_SAFE_UNLOCK_DELETE(t_time);
@@ -471,6 +474,7 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
 
     // enter the default global type mapping : lock VM objects to catch deletion
     env->global()->type.add( env->t_void->name, env->t_void );          env->t_void->lock();
+    env->global()->type.add( env->t_auto->name, env->t_auto );          env->t_auto->lock();
     env->global()->type.add( env->t_int->name, env->t_int );            env->t_int->lock();
     env->global()->type.add( env->t_float->name, env->t_float );        env->t_float->lock();
     env->global()->type.add( env->t_time->name, env->t_time );          env->t_time->lock();
@@ -1220,16 +1224,11 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
 {
-    // check the iter part
-    if( !type_engine_check_exp( env, stmt->theIter ) )
-        return FALSE;
-
     // check the array part
     if( !type_engine_check_exp( env, stmt->theArray ) )
         return FALSE;
 
-    // iter type
-    Chuck_Type * t_iter = stmt->theIter->type;
+    // get array type
     Chuck_Type * t_array = stmt->theArray->type;
 
     // make sure we have an array
@@ -1239,6 +1238,20 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         EM_error2( stmt->theArray->where, "for( X : ARRAY ) expects ARRAY to be an array" );
         return FALSE;
     }
+
+    // left should be a decl
+    if( stmt->theIter->s_type == ae_exp_decl )
+    {
+        // process auto before we scan theIter
+        type_engine_infer_auto( env, &stmt->theIter->decl, stmt->theArray->type->array_type );
+    }
+
+    // check the iter part
+    if( !type_engine_check_exp( env, stmt->theIter ) )
+        return FALSE;
+
+    // get iter type
+    Chuck_Type * t_iter = stmt->theIter->type;
 
     // make sure lhs is a decl
     if( stmt->theIter->s_type != ae_exp_decl )
@@ -1561,6 +1574,32 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_infer_auto() | 1.5.0.8 (ge) added
+// desc: process auto type
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * type )
+{
+    // make sure
+    assert( type != NULL );
+    assert( decl != NULL );
+
+    // check first var decl
+    if( !decl->ck_type || !isa(decl->ck_type, env->t_auto)) return FALSE;
+    // replace with inferred type
+    CK_SAFE_REF_ASSIGN( decl->ck_type, type );
+    // remember this was auto
+    decl->is_auto = TRUE;
+
+    // NOTE (likely) don't need to loop over decl->var_decl_list,
+    // since we "cannot '=>' from/to a multi-variable declaration"
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_check_code_segment()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1687,13 +1726,27 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
     a_Exp cl = binary->lhs, cr = binary->rhs;
     t_CKTYPE ret = NULL;
 
-    // type check the lhs and rhs
+    // type check the lhs
     t_CKTYPE left = type_engine_check_exp( env, cl );
-    t_CKTYPE right = type_engine_check_exp( env, cr );
+    // check
+    if( !left ) return NULL;
 
-    // if either fails, then return NULL
-    if( !left || !right )
-        return NULL;
+    // for 'auto' type assignment | 1.5.0.8 (ge) added
+    if( cr->s_type == ae_exp_decl &&
+        ( binary->op == ae_op_chuck || binary->op == ae_op_at_chuck ) )
+    {
+        // get type of the left hand side
+        Chuck_Type * type = left;
+        // if array use actual type
+        if( type->array_depth ) type = type->array_type;
+        // process auto before we scan the right hand side
+        type_engine_infer_auto( env, &cr->decl, type );
+    }
+
+    // type check the rhs
+    t_CKTYPE right = type_engine_check_exp( env, cr );
+    // check
+    if( !right ) return NULL;
 
     // cross chuck
     while( cr )
@@ -2508,13 +2561,13 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
         {
             // this cases like [1,2] @=> int foo[2];
             // (basically if the rhs is an array decl with non-empty dimensions)
-            EM_error2( lhs->where, "cannot assign '@=>' to full array declaration..." );
-            EM_error2( lhs->where, " |- hint: declare right-hand-side as empty array" );
+            EM_error2( var_decl->array->exp_list->where, "cannot assign '@=>' to full array declaration..." );
             t_CKBOOL is_ref = isobj(env, rhs->type->array_type) && rhs->decl.type->ref;
             string varName = S_name(rhs->decl.var_decl_list->var_decl->xid);
             string brackets;
             for( t_CKINT i = 0; i < rhs->type->array_depth; i++ ) brackets += "[]";
-            EM_error2( lhs->where, " |- e.g., %s %s%s%s", rhs->type->name.c_str(), is_ref ? "@ " : "", varName.c_str(), brackets.c_str() );
+            EM_error2( 0, "(hint: declare right-hand-side as empty array -- e.g., %s %s%s%s)",
+                       rhs->type->name.c_str(), is_ref ? "@ " : "", varName.c_str(), brackets.c_str());
             return NULL;
         }
 
@@ -3490,10 +3543,173 @@ t_CKBOOL type_engine_check_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_check_exp_decl( )
-// desc: ...
+// name: type_engine_check_exp_decl_part1()
+// desc: deferred from type_engine_scan2b_exp_decl()
+//       reason: 'auto' needs more context before it can processed | 1.5.0.8 (ge)
 //-----------------------------------------------------------------------------
-t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
+t_CKBOOL type_engine_check_exp_decl_part1( Chuck_Env * env, a_Exp_Decl decl )
+{
+    a_Var_Decl_List list = decl->var_decl_list;
+    a_Var_Decl var_decl = NULL;
+    Chuck_Type * type = NULL;
+    Chuck_Value * value = NULL;
+    t_CKBOOL do_alloc = TRUE;
+    t_CKBOOL is_first_in_list = TRUE;
+
+    // retrieve the type
+    type = decl->ck_type;
+    // make sure it's not NULL
+    assert( type != NULL );
+
+    // check to see type is not void
+    if( type->size == 0 )
+    {
+        // see if auto was declared
+        if( isa( type, env->t_auto ) )
+        {
+            EM_error2( decl->where,
+                "cannot use 'auto' type variable declaration here..." );
+            EM_error2( 0, "(hint: 'auto' requires either initialization or specific contexts)" );
+        }
+        else
+        {
+            EM_error2( decl->where,
+                "cannot declare variables of size '0' (i.e. 'void')..." );
+        }
+        return FALSE;
+    }
+
+    // T @ foo?
+    do_alloc = !decl->type->ref;
+
+    // make sure complete
+    if( /*!t->is_complete &&*/ do_alloc )
+    {
+        // check to see if class inside itself
+        if( env->class_def && equals( type, env->class_def ) && env->class_scope == 0 )
+        {
+            EM_error2( decl->where,
+                "...(note: object of type '%s' declared inside itself)",
+                type->c_name() );
+            return FALSE;
+        }
+    }
+
+    // primitive
+    if( (isprim( env, type ) || isa( type, env->t_string )) && decl->type->ref )  // TODO: string
+    {
+        EM_error2( decl->where,
+            "cannot declare references (@) of primitive type '%s'...",
+            type->c_name() );
+        EM_error2( decl->where,
+            "...(primitive types: 'int', 'float', 'time', 'dur')" );
+        return FALSE;
+    }
+
+    // loop through the variables
+    while( list )
+    {
+        // 1.4.2.0 (ge) | reset the type variable to the lead type in the decl
+        // e.g., for cases like int x[2], y;
+        // ...this is so y would not be associated with x's array type
+        type = decl->ck_type;
+
+        // get the decl
+        var_decl = list->var_decl;
+        // 1.4.2.0 (ge) | by default, copy the decl type reference bit
+        // this could be overwritten later as appropriate, e.g., by array vars
+        var_decl->ref = decl->type->ref;
+
+        // check if reserved
+        if( type_engine_check_reserved( env, var_decl->xid, var_decl->where ) )
+        {
+            EM_error2( var_decl->where,
+                "...in variable declaration", S_name(var_decl->xid) );
+            return FALSE;
+        }
+
+        // check if locally defined
+        if( env->curr->lookup_value( var_decl->xid, FALSE ) )
+        {
+            EM_error2( var_decl->where,
+                "'%s' has already been defined in the same scope",
+                S_name(var_decl->xid) );
+            return FALSE;
+        }
+
+        // check if array
+        if( var_decl->array != NULL )
+        {
+            // 1.4.2.0 (ge) was: decl->type->ref;
+            var_decl->ref = ( var_decl->array->exp_list == NULL );
+            // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
+            Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
+
+            // create the new array type
+            type = new_array_type(
+                env,  // the env
+                env->t_array,  // the array base class
+                var_decl->array->depth,  // the depth of the new type
+                t2,  // the 'array_type'
+                env->curr  // the owner namespace
+            );
+
+            // 1.4.2.0 (ge) | assign new array type to current var decl
+            // for handling the following kind of multi-var declarations
+            //   int x[1], y[2];
+            //   int x, y[1];
+            // set reference : var_decl->ck_type = type;
+            CK_SAFE_REF_ASSIGN( var_decl->ck_type, type );
+
+            // 1.4.2.0 (ge) | if one and only one variable, then update decl->ck_type
+            // otherwise, the variables could have different array depths, and therefore different types
+            // also note: cannot => to a multi-variable declaration (e.g., 5 => int x, y;)
+            // this is to support array initialization (e.g., [ [1,2], [3,4] ] @=> int x[][];)
+            if( is_first_in_list && list->next == NULL )
+            {
+                // set reference : var_decl->ck_type = type;
+                CK_SAFE_REF_ASSIGN( decl->ck_type, type );
+            }
+        }
+
+        // enter into value binding
+        env->curr->value.add( var_decl->xid,
+            value = env->context->new_Chuck_Value( type, S_name(var_decl->xid) ) );
+
+        // remember the owner
+        value->owner = env->curr;
+        value->owner_class = env->func ? NULL : env->class_def;
+        value->is_member = ( env->class_def != NULL &&
+                             env->class_scope == 0 &&
+                             env->func == NULL && !decl->is_static );
+        value->is_context_global = ( env->class_def == NULL && env->func == NULL );
+        value->addr = var_decl->addr;
+        // flag it until the decl is checked
+        value->is_decl_checked = FALSE;
+
+        // flag as global
+        value->is_global = decl->is_global;
+
+        // remember the value
+        var_decl->value = value;
+
+        // the next var decl
+        list = list->next;
+        // 1.4.2.0 (ge) | added
+        is_first_in_list = FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_exp_decl_part2()
+// desc: check variable declaration(s) expression
+//-----------------------------------------------------------------------------
+t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
 {
     a_Var_Decl_List list = decl->var_decl_list;
     a_Var_Decl var_decl = NULL;
@@ -3614,6 +3830,26 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // the next var decl
         list = list->next;
     }
+
+    return decl->ck_type;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_exp_decl( )
+// desc: check variable declaration(s) expression
+//-----------------------------------------------------------------------------
+t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
+{
+    // deferred scan2 | 1.5.0.8 (ge)
+    if( !type_engine_check_exp_decl_part1( env, decl ) )
+        return NULL;
+
+    // type check pass | 1.5.0.8 (ge)
+    if( !type_engine_check_exp_decl_part2( env, decl ) )
+        return NULL;
 
     return decl->ck_type;
 }

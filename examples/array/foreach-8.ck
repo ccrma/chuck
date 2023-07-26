@@ -10,7 +10,7 @@ TriOsc array[4];
 
 // for each, connect and set params
 for( Osc x : array )
-{
+{ 
     // connect
     x => dac;
     // set gain

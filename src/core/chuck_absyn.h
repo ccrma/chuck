@@ -295,12 +295,12 @@ struct a_Exp_Func_Call_ { a_Exp func; a_Exp args; t_CKTYPE ret_type;
 struct a_Exp_Dot_Member_ { a_Exp base; t_CKTYPE t_base; S_Symbol xid; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_If_ { a_Exp cond; a_Exp if_exp; a_Exp else_exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_var_decls; int is_static; int is_global;
-                     t_CKTYPE ck_type; uint32_t line; uint32_t where; a_Exp self; };
+                     t_CKTYPE ck_type; int is_auto; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
-struct a_Var_Decl_ { S_Symbol xid; a_Array_Sub array; t_CKVALUE value;
-                     void * addr; t_CKTYPE ck_type; int ref; int force_ref;
+struct a_Var_Decl_ { S_Symbol xid; a_Array_Sub array; t_CKVALUE value; void * addr;
+                     t_CKTYPE ck_type; /* int is_auto; */ int ref; int force_ref;
                      uint32_t line; uint32_t where; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
 struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;

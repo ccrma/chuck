@@ -52,7 +52,7 @@ typedef enum {
     te_function, te_object, te_user, te_array, te_null, te_ugen, te_uana,
     te_event, te_void, te_stdout, te_stderr, te_adc, te_dac, te_bunghole,
     te_uanablob, te_io, te_fileio, te_chout, te_cherr, te_multi,
-    te_vec3, te_vec4, te_vector // ge: added 1.3.5.3
+    te_vec3, te_vec4, te_vector, te_auto
 } te_Type;
 
 
@@ -510,6 +510,7 @@ public:
 public:
     // REFACTOR-2017: public types
     Chuck_Type * t_void;
+    Chuck_Type * t_auto; // 1.5.0.8
     Chuck_Type * t_int;
     Chuck_Type * t_float;
     Chuck_Type * t_time;
@@ -532,10 +533,11 @@ public:
     Chuck_Type * t_fileio;
     Chuck_Type * t_chout;
     Chuck_Type * t_cherr;
-    // Chuck_Type * t_thread;
     Chuck_Type * t_class;
     Chuck_Type * t_dac;
     Chuck_Type * t_adc;
+
+    // Chuck_Type * t_thread;
 };
 
 
@@ -922,6 +924,8 @@ Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, 
 Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
 // convert a vector of type names to a vector of Types | 1.5.0.0 (ge) added
 void type_engine_names2types( Chuck_Env * env, const std::vector<std::string> & typeNames, std::vector<Chuck_Type *> & types );
+// check and process auto types
+t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * type );
 
 
 //-----------------------------------------------------------------------------
