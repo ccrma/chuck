@@ -2,23 +2,20 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.8 (July 2023)
+1.5.0.8 (August 2023)
 ===
-- (note) This release adds a for-each syntax iterating over arrays;
-  it also expands array support; internally, engine support
+- (note) this release introduces a for-each control structure for more 
+  easily iterating over arrays, and also an experimental 'auto' type.
+  array support has also been expanded; internally, engine support
   has been added for a number of features in WebChucK and WebChucK IDE,
   including retrieving and display the chuck 'now', along with a number of
   critical chuck parameters; updated ChucK c++ integration API
 - (added) new 'for' control structure in this general syntax:
-
       for( VAR : ARRAY )
       { ... }
-
     where VAR is a declared variable of the same base type as the ARRAY,
     in each iteration of the for loop body, VAR will take on the value of
-    each element in ARRAY, until the end of ARRAY is reached.
-
-    For example:
+    each element in ARRAY, until the end of ARRAY is reached. For example:
       ```
       // create empty array
       float array[0];
@@ -31,19 +28,34 @@ ChucK VERSIONS log
           <<< x >>>;
       }
       ```
-
-    ...or loop over an array literal of values:
+    or loop over an array literal of values:
       ```
       // iterating over an array literal
       for( int x : [ 1, 2, 3 ] ) { <<< x >>>; }
       ```
-- (added) examples
+- (added) new examples using for-each control structure
     examples/array/foreach-1.ck
     examples/array/foreach-2.ck
     examples/array/foreach-3.ck
     examples/array/foreach-4.ck
     examples/array/foreach-5.ck
     examples/array/foreach-6.ck
+- (added) new 'auto' type; in certain declarations, infers the actual
+  type of a variable from context. For example:
+     ```
+     // 'a' will be automatically typed as 'float'
+     1.5 => auto a;
+     // 'arr' will be automatically typed as 'int[]'
+     [1,2,3] @=> auto arr[];
+     // can use in the new for-each control structure
+     for( auto x : arr )
+     // x is automatically typed as 'int'
+     { <<< x >>>; }
+     ```
+- (added) new examples for 'auto'
+    examples/type/type_auto.ck
+    examples/array/foreach-auto1.ck
+    examples/array/foreach-auto2.ck
 - (added) new array operations
 	void erase(int position)
 	    Remove element at 'position' from the array.
@@ -86,9 +98,9 @@ WebChucK/IDE-- a number of UI updates with underlying VM support:
     https://chuck.stanford.edu/webchuck/
 ===
 miniAudicle (macOS) critical install bug (which affects those who 
-installed chuck-1.5.0.5 through 1.5.0.7) is now addressed, if you are 
-experiencing strangeness with opening CK files, try this troubleshooting 
-recommendation:
+installed chuck-1.5.0.5 through 1.5.0.7 on macOS) is now addressed, if 
+you are experiencing strangeness with opening CK files, try this 
+troubleshooting recommendation:
     https://chuck.stanford.edu/release/images/mA-install-duplicate.jpg
 
 
