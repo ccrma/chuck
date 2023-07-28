@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.8 (August 2023)
+1.5.0.8 (July 2023)
 ===
 - (note) this release introduces a for-each control structure for more 
   easily iterating over arrays, and also an experimental 'auto' type.
@@ -40,6 +40,7 @@ ChucK VERSIONS log
     examples/array/foreach-4.ck
     examples/array/foreach-5.ck
     examples/array/foreach-6.ck
+    examples/ctrl/ctrl_foreach.ck
 - (added) new 'auto' type; in certain declarations, infers the actual
   type of a variable from context. For example:
      ```
@@ -65,16 +66,23 @@ ChucK VERSIONS log
 	    Remove the first element of the array.
   See full array API reference with examples:
     https://chuck.stanford.edu/doc/reference/base.html#@array
+- (added) new array examples
+    examples/array/array_append.ck
+    examples/array/array_erase.ck
+    examples/array/array_erase2.ck
 - (update) map-only function @array.find(string) has been renmed to
     @array.isInMap(string) to avoid confusion with vector
-- (updated, documentation) STK classes HnkyTonk and FrencHrn now properly
-  included in the API reference, and with more examples
+- (updated, documentation) STK classes HnkyTonk and FrencHrn now 
+  properly included in the API reference, and with more examples:
     https://chuck.stanford.edu/doc/reference/ugens-stk.html#HnkyTonk
     https://chuck.stanford.edu/doc/reference/ugens-stk.html#FrencHrn
-- (added, examples)
+- (added) new STK examples
     https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo1.ck
     https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo3.ck
     https://chuck.stanford.edu/doc/examples/stk/frenchrn-algo2.ck
+- (added) new examples for Event and SndBuf
+    examples/event/event-extend2.ck
+    examples/basic/doh.ck
 - (updated, developer) core VM code streamlined for cleaner operation
   regarding shreds status, remove.all, and access to these from C++;
   can now use a callback function to get replies from VM queue_msg()

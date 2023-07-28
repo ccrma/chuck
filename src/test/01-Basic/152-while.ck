@@ -1,10 +1,10 @@
-// until loop (opposite of while loop)
+// while loop (opposite of until loop)
 
 0 => int j;
 0 => int i;
 
 // loop
-until ( i == 5 )
+while( i < 5 )
 { 
     1 +=> j;
     1 +=> i;
