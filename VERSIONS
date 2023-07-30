@@ -4,12 +4,13 @@ ChucK VERSIONS log
 
 1.5.0.8 (August 2023)
 ===
-- (note) this release introduces a for-each control structure for more 
-  easily iterating over arrays, and also an experimental 'auto' type.
-  array support has also been expanded; internally, engine support
-  has been added for a number of features in WebChucK and WebChucK IDE,
-  including retrieving and display the chuck 'now', along with a number of
-  critical chuck parameters; updated ChucK c++ integration API
+(note) this release introduces a for-each control structure for more 
+easily iterating over arrays, as well as an experimental 'auto' type. 
+array support has also been expanded; internally, engine support has been 
+added for a number of features in WebChucK and WebChucK IDE, including 
+retrieving and display the chuck 'now', along with a number of critical 
+chuck parameters; updated ChucK c++ integration API
+===
 - (added) new 'for' control structure in this general syntax:
       for( VAR : ARRAY )
       { ... }
@@ -84,6 +85,8 @@ ChucK VERSIONS log
     examples/event/event-extend2.ck
     examples/basic/doh.ck
     examples/ctrl/ctrl_repeat.ck
+- (added) error checking for public class definitions using an external 
+    file-level, non-global variable
 - (updated, developer) core VM code streamlined for cleaner operation
   regarding shreds status, remove.all, and access to these from C++;
   can now use a callback function to get replies from VM queue_msg()

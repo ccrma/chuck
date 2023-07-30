@@ -1,0 +1,3 @@
+error-public-class-ext-var2.ck:12:9: error: cannot use external variable 'foo' within a public class
+[12]     <<< foo + 5 >>>;
+             ^

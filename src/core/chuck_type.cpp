@@ -2871,6 +2871,19 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         // look globally
                         // v = env->curr->lookup_value( exp->var, TRUE );
                         v = type_engine_find_value( env, S_name(exp->var), TRUE, exp->where );
+
+                        // 1.5.0.8 (ge) added this check
+                        // public classes cannot access variables that are:
+                        // file-context-global-scope (v->is_context_global)
+                        // AND non-explictly-global !(v->is_global) variables
+                        if( v && v->is_context_global && !v->is_global
+                              && env->class_def && env->context->public_class_def
+                              && env->context->public_class_def->decl == ae_key_public )
+                        {
+                            EM_error2( exp->where,
+                                "cannot use external variable '%s' within a public class", S_name(exp->var) );
+                            return NULL;
+                        }
                     }
 
                     // check
