@@ -180,6 +180,7 @@ CK_DLL_MFUN( array_get_capacity );
 CK_DLL_MFUN( array_get_capacity_hack );
 CK_DLL_MFUN( array_set_size );
 CK_DLL_MFUN( array_get_size );
+CK_DLL_MFUN( array_insert );
 CK_DLL_MFUN( array_push_back );
 CK_DLL_MFUN( array_pop_back );
 CK_DLL_MFUN( array_push_front );

@@ -978,6 +978,13 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "reset array size to 0, set capacity to (at least) 8.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+//    // add insert()
+//    func = make_new_mfun( "void", "insert", array_insert );
+//    func->add_arg( "int", "position" );
+//    func->add_arg( "auto", "value" );
+//    func->doc = "insert value before the specific position.";
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
+
 //    // add pushBack()
 //    func = make_new_mfun( "void", "pushBack", array_push_back );
 //    func->add_arg( "auto", "value" );
@@ -2881,6 +2888,29 @@ CK_DLL_MFUN( array_push_back )
     else
         assert( FALSE );
 }
+
+
+// array.insert()
+CK_DLL_MFUN( array_insert )
+{
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    t_CKINT position = GET_NEXT_INT( ARGS );
+
+    // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
+    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
+        RETURN->v_int = ((Chuck_Array4 *)array)->insert( position, GET_NEXT_UINT( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+        RETURN->v_int = ((Chuck_Array8 *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
+        RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_COMPLEX( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
+        RETURN->v_int = ((Chuck_Array24 *)array)->insert( position, GET_NEXT_VEC3( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
+        RETURN->v_int = ((Chuck_Array32 *)array)->insert( position, GET_NEXT_VEC4( ARGS ) );
+    else
+        assert( FALSE );
+}
+
 
 // array.pop_back()
 CK_DLL_MFUN( array_pop_back )
