@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.8 (July 2023)
+1.5.0.8 (August 2023)
 ===
 - (note) this release introduces a for-each control structure for more 
   easily iterating over arrays, and also an experimental 'auto' type.
@@ -80,9 +80,10 @@ ChucK VERSIONS log
     https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo1.ck
     https://chuck.stanford.edu/doc/examples/stk/honkeytonk-algo3.ck
     https://chuck.stanford.edu/doc/examples/stk/frenchrn-algo2.ck
-- (added) new examples for Event and SndBuf
+- (added) new examples for Event and SndBuf and repeat
     examples/event/event-extend2.ck
     examples/basic/doh.ck
+    examples/ctrl/ctrl_repeat.ck
 - (updated, developer) core VM code streamlined for cleaner operation
   regarding shreds status, remove.all, and access to these from C++;
   can now use a callback function to get replies from VM queue_msg()
@@ -100,6 +101,8 @@ ChucK VERSIONS log
     number chuck.getParamInt( string )
     number chuck.getParamFloat( string )
     string chuck.getParamString( string )
+- (updated, developer) VM instruction dump (through +d flag) now
+    prints control structures and other statements
 ===
 WebChucK/IDE-- a number of UI updates with underlying VM support:
     https://chuck.stanford.edu/ide/

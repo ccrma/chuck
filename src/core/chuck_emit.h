@@ -120,6 +120,7 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // dump
     t_CKBOOL dump;
 
+public:
     // constructor
     Chuck_Emitter()
     { env = NULL; code = NULL; context = NULL;
@@ -127,13 +128,12 @@ struct Chuck_Emitter : public Chuck_VM_Object
       should_replace_dac = FALSE; }
 
     // destructor
-    ~Chuck_Emitter()
-    { }
+    ~Chuck_Emitter() { }
 
     // append instruction
     void append( Chuck_Instr * instr )
     { assert( code != NULL ); code->code.push_back( instr ); }
-    // index
+    // next instruction index
     t_CKUINT next_index()
     { assert( code != NULL ); return code->code.size(); }
 
@@ -155,9 +155,23 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // default durations
     t_CKBOOL find_dur( const std::string & name, t_CKDUR * out );
 
+public:
     // post REFACTOR-2017: replace-dac
     std::string dac_replacement;
     t_CKBOOL should_replace_dac;
+
+public:
+    // codestr context (for instruction dump) | 1.5.0.8 (ge) added
+    std::vector<std::string> codestr_context;
+    // push codestr context
+    void codestr_context_push( const std::string & prefix )
+    { codestr_context.push_back(prefix); }
+    // pop codestr context
+    void codestr_context_pop()
+    { codestr_context.pop_back(); }
+    // get current codestr context
+    std::string codestr_context_top() const
+    { return codestr_context.size() > 0 ? codestr_context.back() : ""; }
 };
 
 

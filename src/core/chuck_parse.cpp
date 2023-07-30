@@ -287,6 +287,8 @@ t_CKBOOL SyntaxQuery::parseLine( const std::string & line, SyntaxTokenList & tok
 // absyn to string functions
 //-----------------------------------------------------------------------------
 #include "chuck_type.h"
+
+// expression to string conversion
 string absyn_exp2str( a_Exp exp, t_CKBOOL iterate = true );
 string absyn_binary2str( a_Exp_Binary binary );
 string absyn_unary2str( a_Exp_Unary unary );
@@ -300,6 +302,105 @@ string absyn_func_call2str( a_Exp_Func_Call func_call );
 string absyn_dot_member2str( a_Exp_Dot_Member dot_member );
 string absyn_exp_if2str( a_Exp_If exp_if );
 string absyn_decl2str( a_Exp_Decl decl );
+
+// statement to string conversion
+string absyn_stmt2str( a_Stmt stmt );
+string absyn_if2str( a_Stmt_If stmt_if );
+string absyn_for2str( a_Stmt_For stmt_for );
+string absyn_foreach2str( a_Stmt_ForEach stmt_foreach );
+string absyn_while2str( a_Stmt_While stmt_while );
+string absyn_until2str( a_Stmt_Until stmt_until );
+string absyn_loop2str( a_Stmt_Loop stmt_loop );
+string absyn_break2str( a_Stmt_Break stmt_break );
+string absyn_continue2str( a_Stmt_Continue stmt_continue );
+string absyn_return2str( a_Stmt_Return stmt_return );
+string absyn_code2str( a_Stmt_Code stmt_code );
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_stmt2str()
+// desc: convert abstract syntax stmt to string
+//-----------------------------------------------------------------------------
+std::string absyn2str( a_Stmt stmt )
+{
+    return absyn_stmt2str( stmt );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_stmt2str()
+// desc: convert abstract syntax stmt to string
+//-----------------------------------------------------------------------------
+string absyn_stmt2str( a_Stmt stmt )
+{
+    // check
+    if( !stmt ) return "";
+
+    // str to be constructed
+    string str = "";
+
+    // loop over statements, check by type
+    switch( stmt->s_type )
+    {
+        case ae_stmt_exp:  // expression statement
+            str = absyn_exp2str( stmt->stmt_exp );
+            break;
+
+        case ae_stmt_if:  // if statement
+            str = absyn_if2str( &stmt->stmt_if );
+            break;
+
+        case ae_stmt_for:  // for statement
+            str = absyn_for2str( &stmt->stmt_for );
+            break;
+
+        case ae_stmt_foreach:  // for statement
+            str = absyn_foreach2str( &stmt->stmt_foreach );
+            break;
+
+        case ae_stmt_while:  // while statement
+            str = absyn_while2str( &stmt->stmt_while );
+            break;
+
+        case ae_stmt_until:  // until statement
+            str = absyn_until2str( &stmt->stmt_until );
+            break;
+
+        case ae_stmt_loop:  // loop statement
+            str = absyn_loop2str( &stmt->stmt_loop );
+            break;
+
+        case ae_stmt_break:  // break statement
+            str = absyn_break2str( &stmt->stmt_break );
+            break;
+
+        case ae_stmt_continue:  // continue statement
+            str = absyn_continue2str( &stmt->stmt_continue );
+            break;
+
+        case ae_stmt_return:  // return statement
+            str = absyn_return2str( &stmt->stmt_return );
+            break;
+
+        case ae_stmt_code:  // code segment
+            str = absyn_code2str( &stmt->stmt_code );
+            break;
+
+        // not implemented
+        case ae_stmt_switch: // switch statement
+        case ae_stmt_case: // case statement
+        case ae_stmt_gotolabel: // goto label statement
+        default: // bad
+            break;
+    }
+
+    // return the constructed str
+    return str;
+}
 
 
 
@@ -338,6 +439,10 @@ string name_demangle( const string & name )
 //-----------------------------------------------------------------------------
 string absyn_exp2str( a_Exp exp, t_CKBOOL iterate )
 {
+    // check
+    if( !exp ) return "";
+
+    // the string to be constructed
     string str = "";
 
     // loop over
@@ -507,11 +612,13 @@ string absyn_binary2str( a_Exp_Binary binary )
         case ae_op_chuck:
         case ae_op_unchuck:
         case ae_op_upchuck:
+        case ae_op_at_chuck:
+        case ae_op_eq:
+        case ae_op_neq:
         case ae_op_lt:
         case ae_op_gt:
         case ae_op_le:
         case ae_op_ge:
-        case ae_op_at_chuck:
             paren = false;
             spacing = true;
             break;
@@ -614,7 +721,7 @@ string absyn_primary2str( a_Exp_Primary primary )
         case ae_primary_vec: str = "@("+absyn_exp2str(primary->vec->args)+")"; break;
         case ae_primary_exp: str = absyn_exp2str(primary->exp); break;
         case ae_primary_hack: str = "<<< " + absyn_exp2str(primary->exp) + " >>>"; break;
-        case ae_primary_nil: str = "null"; break;
+        case ae_primary_nil: str = "(void)"; break;
         default: str ="[PRIMARY]"; break;
     }
 
@@ -746,4 +853,127 @@ string absyn_decl2str( a_Exp_Decl decl )
     }
 
     return str;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_if2str()
+// desc: convert abstract syntax if to string
+//-----------------------------------------------------------------------------
+string absyn_if2str( a_Stmt_If stmt_if )
+{
+    return "if( " + absyn_exp2str( stmt_if->cond ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_for2str()
+// desc: convert abstract syntax for to string
+//-----------------------------------------------------------------------------
+string absyn_for2str( a_Stmt_For stmt_for )
+{
+    return "for( " + absyn_stmt2str( stmt_for->c1 ) + "; "
+                   + absyn_stmt2str( stmt_for->c2 ) + "; "
+                   + absyn_exp2str( stmt_for->c3 ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_foreach2str()
+// desc: convert abstract syntax for-each to string
+//-----------------------------------------------------------------------------
+string absyn_foreach2str( a_Stmt_ForEach stmt_foreach )
+{
+    return "for( " + absyn_exp2str( stmt_foreach->theIter ) + " : "
+                   + absyn_exp2str( stmt_foreach->theArray ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_while2str()
+// desc: convert abstract syntax while to string
+//-----------------------------------------------------------------------------
+string absyn_while2str( a_Stmt_While stmt_while )
+{
+    return "while( " + absyn_exp2str( stmt_while->cond ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_until2str()
+// desc: convert abstract syntax until to string
+//-----------------------------------------------------------------------------
+string absyn_until2str( a_Stmt_Until stmt_until )
+{
+    return "until( " + absyn_exp2str( stmt_until->cond ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_loop2str()
+// desc: convert abstract syntax loop to string
+//-----------------------------------------------------------------------------
+string absyn_loop2str( a_Stmt_Loop stmt_loop )
+{
+    return "repeat( " + absyn_exp2str( stmt_loop->cond ) + " )";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_break2str()
+// desc: convert abstract syntax break to string
+//-----------------------------------------------------------------------------
+string absyn_break2str( a_Stmt_Break stmt_break )
+{
+    return "break;";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_continue2str()
+// desc: convert abstract syntax continue to string
+//-----------------------------------------------------------------------------
+string absyn_continue2str( a_Stmt_Continue stmt_continue )
+{
+    return "continue;";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_return2str()
+// desc: convert abstract syntax return to string
+//-----------------------------------------------------------------------------
+string absyn_return2str( a_Stmt_Return stmt_return )
+{
+    return "return " + absyn_exp2str( stmt_return->val ) + ";";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_stmt2str()
+// desc: convert abstract syntax decl to string
+//-----------------------------------------------------------------------------
+string absyn_code2str( a_Stmt_Code stmt_code )
+{
+    return "";
 }

@@ -58,7 +58,21 @@ Chuck_Instr::Chuck_Instr()
     // set linepos to 0 so we can tell later whether it has been set properly
     m_linepos = 0;
     // default codestr
-    m_codestr = NULL;
+    m_codestr_pre = NULL;
+    m_codestr_post = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Instr()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Instr::~Chuck_Instr()
+{
+    CK_SAFE_DELETE( m_codestr_pre );
+    CK_SAFE_DELETE( m_codestr_post );
 }
 
 
@@ -83,16 +97,32 @@ const char * Chuck_Instr::name() const
 
 
 //-----------------------------------------------------------------------------
-// name: set_codestr()
-// desc: set codestr associated with this instruction
+// name: prepend_codestr()
+// desc: prepend codestr associated with this instruction
 //       only certain instructions (e.g., start of stmts) have this
 //-----------------------------------------------------------------------------
-void Chuck_Instr::set_codestr( const string & str )
+void Chuck_Instr::prepend_codestr( const string & str )
 {
-    // cleanup
-    CK_SAFE_DELETE( m_codestr );
-    // allocate
-    m_codestr = new string( str );
+    // alloc if needed
+    if( !m_codestr_pre ) m_codestr_pre = new vector<string>();
+    // prepend to pre
+    m_codestr_pre->insert( m_codestr_pre->begin(), str );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: append_codestr()
+// desc: append codestr associated with this instruction
+//       only certain instructions (e.g., start of stmts) have this
+//-----------------------------------------------------------------------------
+void Chuck_Instr::append_codestr( const string & str )
+{
+    // alloc if needed
+    if( !m_codestr_post ) m_codestr_post = new vector<string>();
+    // append to post
+    m_codestr_post->push_back( str );
 }
 
 

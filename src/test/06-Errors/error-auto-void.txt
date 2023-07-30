@@ -1,0 +1,3 @@
+error-auto-void.ck:2:9: error: cannot infer 'auto' type from 'void' type
+[2] void => auto foo;
+            ^

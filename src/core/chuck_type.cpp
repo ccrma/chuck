@@ -1243,7 +1243,8 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     if( stmt->theIter->s_type == ae_exp_decl )
     {
         // process auto before we scan theIter
-        type_engine_infer_auto( env, &stmt->theIter->decl, stmt->theArray->type->array_type );
+        if( !type_engine_infer_auto( env, &stmt->theIter->decl, stmt->theArray->type->array_type ) )
+            return FALSE;
     }
 
     // check the iter part
@@ -1583,8 +1584,18 @@ t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * 
     assert( type != NULL );
     assert( decl != NULL );
 
-    // check first var decl
-    if( !decl->ck_type || !isa(decl->ck_type, env->t_auto)) return FALSE;
+    // check first var decl, if not auto, then pass through
+    if( !decl->ck_type || !isa(decl->ck_type, env->t_auto) )
+    { return TRUE; }
+    // if RHS is declared as auto, then check for invalid LHS types
+    else if( isa(type,env->t_void) || isa(type,env->t_null) || isa(type,env->t_auto) )
+    {
+        EM_error2( decl->where,
+            "cannot infer 'auto' type from '%s' type",
+            type->c_name() );
+        return FALSE;
+    }
+
     // replace with inferred type
     CK_SAFE_REF_ASSIGN( decl->ck_type, type );
     // remember this was auto
@@ -1739,8 +1750,10 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
         Chuck_Type * type = left;
         // if array use actual type
         if( type->array_depth ) type = type->array_type;
+
         // process auto before we scan the right hand side
-        type_engine_infer_auto( env, &cr->decl, type );
+        if( !type_engine_infer_auto( env, &cr->decl, type ) )
+            return FALSE;
     }
 
     // type check the rhs
@@ -2831,6 +2844,13 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // refers to null
                 t = env->t_null;
             }
+            else if( str == "void" ) // void
+            {
+                // not assignable
+                exp->self->s_meta = ae_meta_value;
+                // refers to void
+                t = env->t_void;
+            }
             else  // look up
             {
                 // look in local scope first
@@ -2987,7 +3007,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
             t = type_engine_check_exp( env, exp->exp );
         break;
 
-        // nil
+        // nil (void)
         case ae_primary_nil:
             t = env->t_void;
         break;

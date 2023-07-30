@@ -67,6 +67,8 @@ void reset_parse();
 // `fd` will be closed using fclose(), if autoClose is set to true
 void fd2parse_set( FILE * fd, t_CKBOOL autoClose );
 
+// convert abstract syntax stmt to string
+std::string absyn2str( a_Stmt stmt );
 // convert abstract syntax expression to string
 std::string absyn2str( a_Exp exp );
 

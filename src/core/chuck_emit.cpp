@@ -322,15 +322,33 @@ Chuck_VM_Code * emit_to_code( Chuck_Code * in,
         EM_print2vanilla( "-------" );
         for( t_CKUINT i = 0; i < code->num_instr; i++ )
         {
-            // check code str | 1.5.0.0 (ge) added
-            if( code->instr[i]->m_codestr )
+            // check code str (PRE) | 1.5.0.0 (ge) added
+            if( code->instr[i]->m_codestr_pre )
             {
-                // print the reconstructed code str
-                EM_print2blue( "%s", code->instr[i]->m_codestr->c_str() );
+                const vector<string> & codestr = *(code->instr[i]->m_codestr_pre);
+                // loop
+                for( t_CKINT c = 0; c < codestr.size(); c++ )
+                {
+                    // print the reconstructed code str
+                    EM_print2blue( "%s", codestr[c].c_str() );
+                }
             }
+
             // print the instruction
             EM_print2vanilla( "[%i] %s( %s )", i,
                               code->instr[i]->name(), code->instr[i]->params() );
+
+            // check code str (POST) | 1.5.0.8 (ge) added
+            if( code->instr[i]->m_codestr_post )
+            {
+                const vector<string> & codestr = *(code->instr[i]->m_codestr_post);
+                // loop
+                for( t_CKINT c = 0; c < codestr.size(); c++ )
+                {
+                    // print the reconstructed code str
+                    EM_print2blue( "%s", codestr[c].c_str() );
+                }
+            }
         }
         EM_print2vanilla( "-------\n" );
     }
@@ -397,16 +415,23 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
     t_CKUINT nextIndex = 0;
     // expression string
     string codestr;
+    // closing codestr, as applicable
+    string codestr_close;
+    // codestr prefix, e.g., (/** loop conditional **/) for code dump
+    string codestr_prefix = emit->codestr_context_top();
+    t_CKBOOL hasPrefix = codestr_prefix.length() > 0;
+
+    // get str
+    codestr = absyn2str( stmt );
+    // prefix?
+    if( hasPrefix ) codestr = codestr_prefix + " " + codestr;
+    // get next index | 1.5.0.0 (ge) added
+    nextIndex = emit->next_index();
 
     // loop over statements
     switch( stmt->s_type )
     {
         case ae_stmt_exp:  // expression statement
-            // get str
-            codestr = absyn2str( stmt->stmt_exp );
-            // get next index | 1.5.0.0 (ge) added
-            nextIndex = emit->next_index();
-
             // emit it
             ret = emit_engine_emit_exp( emit, stmt->stmt_exp );
             if( !ret )
@@ -472,55 +497,66 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                 }
             }
 
-            // see if we added at least one instruction
-            if( nextIndex < emit->next_index() )
-            {
-                // set codestr (for instruction dump)
-                emit->code->code[nextIndex]->set_codestr( codestr );
-            }
+            // add semicolon to code str
+            codestr += ";";
             break;
 
         case ae_stmt_if:  // if statement
             ret = emit_engine_emit_if( emit, &stmt->stmt_if );
+            codestr_close = "} /** " + codestr + " **/";
+            codestr += " {";
             break;
 
         case ae_stmt_for:  // for statement
             ret = emit_engine_emit_for( emit, &stmt->stmt_for );
+            codestr_close = "} /** " + codestr + " **/";
+            codestr += " {";
             break;
 
         case ae_stmt_foreach:  // for statement
             ret = emit_engine_emit_foreach( emit, &stmt->stmt_foreach );
+            codestr_close = "} /** " + codestr + " **/";
+            codestr += " {";
             break;
 
         case ae_stmt_while:  // while statement
             if( stmt->stmt_while.is_do )
+            {
                 ret = emit_engine_emit_do_while( emit, &stmt->stmt_while );
+                codestr_close = "} " + codestr + ";";
+                codestr = "do { /** " + codestr + " **/";
+            }
             else
+            {
                 ret = emit_engine_emit_while( emit, &stmt->stmt_while );
+                codestr_close = "} /** " + codestr + " **/";
+                codestr += " {";
+            }
             break;
 
         case ae_stmt_until:  // until statement
             if( stmt->stmt_until.is_do )
+            {
                 ret = emit_engine_emit_do_until( emit, &stmt->stmt_until );
+                codestr_close = "} " + codestr + ";";
+                codestr = "do { /** " + codestr + " **/";
+            }
             else
+            {
                 ret = emit_engine_emit_until( emit, &stmt->stmt_until );
+                codestr_close = "} /** " + codestr + " **/";
+                codestr += " {";
+            }
             break;
 
         case ae_stmt_loop:  // loop statement
             ret = emit_engine_emit_loop( emit, &stmt->stmt_loop );
-            break;
-
-        case ae_stmt_switch:  // switch statement
-            // not implemented
-            ret = FALSE;
+            codestr += " {";
+            codestr_close = "}";
             break;
 
         case ae_stmt_break:  // break statement
             ret = emit_engine_emit_break( emit, &stmt->stmt_break );
-            break;
-
-        case ae_stmt_code:  // code segment
-            ret = emit_engine_emit_code_segment( emit, &stmt->stmt_code );
             break;
 
         case ae_stmt_continue:  // continue statement
@@ -529,6 +565,15 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
 
         case ae_stmt_return:  // return statement
             ret = emit_engine_emit_return( emit, &stmt->stmt_return );
+            break;
+
+        case ae_stmt_code:  // code segment
+            ret = emit_engine_emit_code_segment( emit, &stmt->stmt_code );
+            break;
+
+        case ae_stmt_switch:  // switch statement
+            // not implemented
+            ret = FALSE;
             break;
 
         case ae_stmt_case:  // case statement
@@ -548,6 +593,20 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                  "(emit): internal error: unhandled statement type '%i'...",
                  stmt->s_type );
             break;
+    }
+
+    // see if we added at least one instruction
+    if( codestr != "" && nextIndex < emit->next_index() )
+    {
+        // PREPEND codestr (for instruction dump)
+        emit->code->code[nextIndex]->prepend_codestr( codestr );
+    }
+
+    // see if need to add closing
+    if( codestr_close != "" && nextIndex < emit->next_index()-1 )
+    {
+        // APPPEND closing
+        emit->code->code[emit->next_index()-1]->append_codestr( codestr_close );
     }
 
     return ret;
@@ -654,20 +713,27 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_for()
-// desc: ...
+// desc: for( C1; C2; C3 ) { BODY }
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
+    // codestr prefix for better description
+    string codestr_prefix = "/** loop conditional **/";
+    // codestr push the context for instruction description / dump
+    emit->codestr_context_push( codestr_prefix );
 
     // push the stack
     emit->push_scope();
 
-    // emit the cond
-    ret = emit_engine_emit_stmt( emit, stmt->c1 );
-    if( !ret )
-        return FALSE;
+    // C1 could be empty
+    if( stmt->c1 )
+    {
+        // emit the cond
+        ret = emit_engine_emit_stmt( emit, stmt->c1 );
+        if( !ret ) return FALSE;
+    }
 
     // the start index
     t_CKUINT start_index = emit->next_index();
@@ -677,10 +743,12 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
-    // emit the cond - keep the result on the stack
-    emit_engine_emit_stmt( emit, stmt->c2, FALSE );
+    // emit the cond (C2) -- keep the result on the stack
+    ret = emit_engine_emit_stmt( emit, stmt->c2, FALSE );
+    if( !ret ) return FALSE;
 
-    // could be NULL
+    // should not be NULL; in chuck C2 is not optional
+    // (enforced earlier in the compilation)
     if( stmt->c2 )
     {
         switch( stmt->c2->stmt_exp->type->xid )
@@ -720,10 +788,12 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
     // added 1.3.1.1: new scope just for loop body
     emit->push_scope();
 
+    // pop the codestr context
+    emit->codestr_context_pop();
+
     // emit the body
     ret = emit_engine_emit_stmt( emit, stmt->body );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
 
     // added 1.3.1.1: pop scope for loop body
     emit->pop_scope();
@@ -731,12 +801,18 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
     // continue here
     cont_index = emit->next_index();
 
-    // emit the action
+    // emit the action (C3)
     if( stmt->c3 )
     {
+        // get the code str
+        string codestr = absyn2str( stmt->c3 );
+        // get the index
+        t_CKUINT c3_index = emit->next_index();
+        // emit the expression
         ret = emit_engine_emit_exp( emit, stmt->c3 );
-        if( !ret )
-            return FALSE;
+        if( !ret ) return FALSE;
+        // add code str
+        emit->code->code[c3_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
         // HACK!
         // count the number of words to pop
@@ -810,17 +886,33 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     Chuck_Instr_ForEach_Inc_And_Branch * op = NULL;
     t_CKUINT num_words = 0;
     t_CKBOOL ret = TRUE;
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop control **/";
+    string codestr;
+    t_CKUINT cond_index = 0;
 
     // push the stack
     emit->push_scope();
 
+    // get the code str | 1.5.0.8
+    codestr = absyn2str( stmt->theIter );
+    // get the index
+    cond_index = emit->next_index();
     // emit the iter part
     ret = emit_engine_emit_exp( emit, stmt->theIter );
     if( !ret ) return FALSE;
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
+    // get the code str | 1.5.0.8
+    codestr = absyn2str( stmt->theArray );
+    // get the index
+    cond_index = emit->next_index();
     // emit the array part
     ret = emit_engine_emit_exp( emit, stmt->theArray );
     if( !ret ) return FALSE;
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // emit local state for tracking array index
     emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -901,12 +993,14 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_while()
-// desc: ...
+// desc: while( COND ) { BODY }
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop conditional **/";
 
     // push stack
     emit->push_scope();
@@ -918,10 +1012,17 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
+    // get the code str | 1.5.0.8
+    string codestr = absyn2str( stmt->cond );
+    // get the index
+    t_CKUINT cond_index = emit->next_index();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
+
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // the condition
     switch( stmt->cond->type->xid )
@@ -1011,6 +1112,8 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
     t_CKUINT start_index = emit->next_index();
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop conditional **/";
 
     // push stack
     emit->push_scope();
@@ -1031,10 +1134,17 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     // added 1.3.1.1: pop scope for loop body
     emit->pop_scope();
 
+    // get the code str | 1.5.0.8
+    string codestr = absyn2str( stmt->cond );
+    // get the index
+    t_CKUINT cond_index = emit->next_index();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
+
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // the condition
     switch( stmt->cond->type->xid )
@@ -1109,6 +1219,8 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop conditional **/";
 
     // push stack
     emit->push_scope();
@@ -1120,10 +1232,17 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
+    // get the code str | 1.5.0.8
+    string codestr = absyn2str( stmt->cond );
+    // get the index
+    t_CKUINT cond_index = emit->next_index();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
+
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // condition
     switch( stmt->cond->type->xid )
@@ -1210,6 +1329,8 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop conditional **/";
 
     // push stack
     emit->push_scope();
@@ -1232,10 +1353,17 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     // added 1.3.1.1: pop scope for loop body
     emit->pop_scope();
 
+    // get the code str | 1.5.0.8
+    string codestr = absyn2str( stmt->cond );
+    // get the index
+    t_CKUINT cond_index = emit->next_index();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
+
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // condition
     switch( stmt->cond->type->xid )
@@ -1301,16 +1429,25 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
 {
     t_CKBOOL ret = TRUE;
     Chuck_Instr_Branch_Op * op = NULL;
+    // codestr prefix for better description | 1.5.0.8
+    string codestr_prefix = "/** loop conditional **/";
 
     Chuck_Instr * instr = NULL;
 
     // push stack
     emit->push_scope();
 
+    // get the code str | 1.5.0.8
+    string codestr = absyn2str( stmt->cond );
+    // get the index
+    t_CKUINT cond_index = emit->next_index();
+
     // emit the cond
     ret = emit_engine_emit_exp( emit, stmt->cond );
-    if( !ret )
-        return FALSE;
+    if( !ret ) return FALSE;
+
+    // add code str | 1.5.0.8
+    emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
     // initialize our loop counter (1.3.5.3)
     emit->append( new Chuck_Instr_Init_Loop_Counter() );

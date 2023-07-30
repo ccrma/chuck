@@ -58,7 +58,7 @@ struct Chuck_Instr
 {
 public:
     Chuck_Instr();
-    virtual ~Chuck_Instr() { CK_SAFE_DELETE(m_codestr); }
+    virtual ~Chuck_Instr();
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred ) = 0;
@@ -73,10 +73,16 @@ public:
     void set_linepos( t_CKUINT linepos );
     t_CKUINT m_linepos;
 
-    // set codestr associated with this instruction
-    void set_codestr( const std::string & str );
+    // prepend codestr associated with this instruction
+    void prepend_codestr( const std::string & str );
+    // append codestr associated with this instruction
+    void append_codestr( const std::string & str );
     // (used in instruction dump) | 1.5.0.0 (ge) added
-    std::string * m_codestr;
+    // (1.5.0.8) made this vector to support cases where there
+    // may be multiple code str, e.g., top of for-loops
+    std::vector<std::string> * m_codestr_pre;
+    // pre prints before the instruction; post prints after
+    std::vector<std::string> * m_codestr_post;
 };
 
 
