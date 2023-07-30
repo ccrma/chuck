@@ -7488,7 +7488,10 @@ void Chuck_Instr_Pop_Loop_Counter::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_ForEach_Inc_And_Branch
-// desc: for( VAR: ARRAY ) increment VAR, test against ARRAY size; branch
+// desc: for( VAR : ARRAY ) increment VAR, test against ARRAY size; branch
+//
+// pre-condition: expects three items on reg stack (see below)
+// post-condition: leaves no values on reg stack
 //-----------------------------------------------------------------------------
 void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7501,16 +7504,22 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
     // --------
     // ^ assume three things on the reg stack
 
-    // stack offset
+    // compute stack offset
     t_CKUINT offset = (m_dataSize + sz_INT + sz_INT) / sz_INT;
-    t_CKUINT * sp = reg_sp-offset;
+
+    // pop
+    pop_( reg_sp, offset );
+    // set
+    t_CKUINT *& sp = reg_sp;
 
     // get var address
     t_CKUINT * pVar = (t_CKUINT *)(*sp);
     // get array pointer
-    Chuck_Array * array = (Chuck_Array *)(*(reg_sp-2));
+    Chuck_Array * array = (Chuck_Array *)(*(sp+1));
     // loop counter pointer
-    t_CKINT * counter = (t_CKINT *)(reg_sp-1);
+    t_CKINT ** pCounter = (t_CKINT **)(sp+2);
+    // counter
+    t_CKINT * counter = *(pCounter);
 
     // branch if either NULL array, or counter reached array size
     if( !array || val_(counter) >= array->size() )
@@ -7525,14 +7534,21 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_INT:
             {
                 // cast to specific array type
-                Chuck_Array4 * arr = (Chuck_Array4 *) array;
+                Chuck_Array4 * arr = (Chuck_Array4 *)array;
+                // is object RELEASE
+                if( arr->contains_objects() && *pVar)
+                {
+                    // release ref, since for-each loops don't auto-release every iteration
+                    // (only at the end or if return encountered)
+                    ((Chuck_VM_Object *)(*pVar))->release();
+                }
                 // get element
                 arr->get( *counter, pVar );
-                // is object
+                // is object ADD_REF
                 if( arr->contains_objects() && *pVar)
                 {
                     // add ref, as this will be cleaned up at end of scope, hopefully
-                    ((Chuck_VM_Object *)(*pVar))->add_ref();
+                    ((Chuck_VM_Object *)(*pVar))->add_ref(); 
                 }
                 break;
             }
@@ -7577,7 +7593,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
         }
 
         // increment counter
-        (*counter)++;
+        (*(*pCounter))++;
     }
 }
 

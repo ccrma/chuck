@@ -894,6 +894,9 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // push the stack
     emit->push_scope();
 
+    //-------------------------------------------------------------------------
+    // emit VAR
+    //-------------------------------------------------------------------------
     // get the code str | 1.5.0.8
     codestr = absyn2str( stmt->theIter );
     // get the index
@@ -904,6 +907,23 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // add code str | 1.5.0.8
     emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
+    // check everything is in place
+    if( stmt->theIter->s_type != ae_exp_decl ||
+        !stmt->theIter->decl.var_decl_list ||
+        !stmt->theIter->decl.var_decl_list->var_decl ||
+        !stmt->theIter->decl.var_decl_list->var_decl->value )
+    {
+        EM_error2( stmt->theIter->where,
+                   "(emit): internal error: cannot accessing foreach ITER value..." );
+        return FALSE;
+    }
+
+    // get the iter
+    Chuck_Value * theIter = stmt->theIter->decl.var_decl_list->var_decl->value;
+
+    //-------------------------------------------------------------------------
+    // emit ARRAY
+    //------------------------------------------------------------------------
     // get the code str | 1.5.0.8
     codestr = absyn2str( stmt->theArray );
     // get the index
@@ -914,14 +934,45 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // add code str | 1.5.0.8
     emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
 
-    // emit local state for tracking array index
-    emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
+    //-------------------------------------------------------------------------
+    // emit implicit ARRAY REF
+    //-------------------------------------------------------------------------
+    // allocate a local variable to hold the array pointer
+    Chuck_Local * localArray = emit->alloc_local( emit->env->t_int->size, "@foreach_array",
+                                                  TRUE, TRUE, FALSE );
+    // check
+    if( !localArray )
+    {
+        EM_error2( stmt->theArray->where,
+                   "(emit): internal error: cannot allocate local @foreach_array..." );
+        return FALSE;
+    }
+    // emit our local array reference
+    emit->append( new Chuck_Instr_Alloc_Word( localArray->offset, TRUE ) );
+    // copy object
+    emit->append( new Chuck_Instr_Assign_Object() );
 
+    //-------------------------------------------------------------------------
+    // emit implicit iter COUNTER
+    //-------------------------------------------------------------------------
+    // allocate a local variable to hold the iterator
+    Chuck_Local * localCounter = emit->alloc_local( emit->env->t_int->size, "@foreach_counter",
+                                                    FALSE, FALSE, FALSE );
+    // check
+    if( !localCounter )
+    {
+        EM_error2( stmt->where,
+                   "(emit): internal error: cannot allocate local @foreach_counter..." );
+        return FALSE;
+    }
+    // emit our local counter; borrow theIter's is_context_global
+    emit->append( new Chuck_Instr_Alloc_Word( localCounter->offset, FALSE ) );
+
+    //-------------------------------------------------------------------------
+    // emit conditional foreach BRANCH instruction
+    //-------------------------------------------------------------------------
     // the start index
     t_CKUINT start_index = emit->next_index();
-
-    // TODO: init hidden foreach iterator
-    // TODO: set op to branch to beyond end of loop
 
     // get data kind and size relevant to array
     t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type);
@@ -931,12 +982,18 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // emit the instruction
     emit->append( op );
 
+    //-------------------------------------------------------------------------
+    // add STACK markers
+    //-------------------------------------------------------------------------
     t_CKUINT cont_index = 0;
     // mark the stack of continue
     emit->code->stack_cont.push_back( NULL );
     // mark the stack of break
     emit->code->stack_break.push_back( NULL );
 
+    //-------------------------------------------------------------------------
+    // emit BODY
+    //-------------------------------------------------------------------------
     // added 1.3.1.1: new scope just for loop body
     emit->push_scope();
 
@@ -948,22 +1005,40 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // added 1.3.1.1: pop scope for loop body
     emit->pop_scope();
 
+    //-------------------------------------------------------------------------
+    // mark CONTINUE point
+    //-------------------------------------------------------------------------
     // continue here
     cont_index = emit->next_index();
 
+    //-------------------------------------------------------------------------
+    // emit foreach ARRAY and ITER state
+    //-------------------------------------------------------------------------
+    // emit our local iter VAR
+    emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( theIter->offset, theIter->is_context_global ) );
+    // emit our local array reference; borrow theIter's is_context_global
+    emit->append( new Chuck_Instr_Reg_Push_Mem( localArray->offset, theIter->is_context_global ) );
+    // emit our local counter; borry theIter's is_context_global
+    emit->append( new Chuck_Instr_Reg_Push_Mem_Addr( localCounter->offset, theIter->is_context_global ) );
+
+    // mark it in the instruction description
+    emit->code->code[cont_index]->prepend_codestr( codestr_prefix );
+
+    //-------------------------------------------------------------------------
+    // emit GOTO
+    //-------------------------------------------------------------------------
     // go back to do check the condition
     emit->append( new Chuck_Instr_Goto( start_index ) );
 
+    //-------------------------------------------------------------------------
+    // immediately AFTER loop
+    //-------------------------------------------------------------------------
     // set the op's target
     op->set( emit->next_index() );
 
-    // compute num words
-    num_words += stmt->theIter->type->size / sz_WORD; // iter size
-    num_words += sz_INT / sz_WORD; // our hidden counter size
-    num_words += sz_INT / sz_WORD; // array size
-    // clean up
-    emit->append( new Chuck_Instr_Reg_Pop_Word4( num_words ) );
-
+    //-------------------------------------------------------------------------
+    // deal with CONTINUEs
+    //-------------------------------------------------------------------------
     // stack of continue
     while( emit->code->stack_cont.size() && emit->code->stack_cont.back() )
     {
@@ -971,6 +1046,9 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
         emit->code->stack_cont.pop_back();
     }
 
+    //-------------------------------------------------------------------------
+    // deal with BREAKs
+    //-------------------------------------------------------------------------
     // stack of break
     while( emit->code->stack_break.size() && emit->code->stack_break.back() )
     {
@@ -978,6 +1056,9 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
         emit->code->stack_break.pop_back();
     }
 
+    //-------------------------------------------------------------------------
+    // end of SCOPE
+    //-------------------------------------------------------------------------
     // pop stack
     emit->pop_scope();
     // pop continue stack

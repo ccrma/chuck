@@ -11,8 +11,8 @@ SinOsc array[5];
 // number
 110 => float f;
 
-// for each element 'x' in array
-for( SinOsc x : array )
+// for each element 'x' in array; use parent Osc ref
+for( Osc x : array )
 {
     // set the frequency
     f => x.freq;
@@ -25,5 +25,5 @@ for( SinOsc x : array )
 for( SinOsc x : array )
 {
     // print
-    <<< x.freq() >>>;
+    <<< x.freq() $ int >>>;
 }
