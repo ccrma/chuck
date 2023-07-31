@@ -244,7 +244,7 @@ string type2url( const string & type, const vector<CKDocGroup *> & groups )
             // check
             if( groups[i]->types[j] == NULL ) continue;
             // compare
-            if( type == groups[i]->types[j]->name )
+            if( type == groups[i]->types[j]->base_name )
             {
                 // file + location within file: basically: 'group.html#type'
                 return groups[i]->shortName + ".html#" + type;
@@ -342,9 +342,9 @@ public:
 
     void toc_class(Chuck_Type * type)
     {
-        m_outputStr += "<p class=\"toc_class\"><a href=\"#" + type->name
+        m_outputStr += "<p class=\"toc_class\"><a href=\"#" + type->base_name
                      + "\" class=\"" + css_class_for_type(m_env_ref, type)
-                     + "\">" + type->name + "</a></p>\n";
+                     + "\">" + type->base_name + "</a></p>\n";
     }
 
     void end_toc()
@@ -365,8 +365,8 @@ public:
 
     void begin_class(Chuck_Type * type, const vector<CKDocGroup *> & groups )
     {
-        m_outputStr += "<a name=\"" + type->name + "\" /><div class=\"class\">\n";
-        m_outputStr += "<h2 class=\"class_title\" name=\"" + type->name + "\">" + type->name + "</h2>\n";
+        m_outputStr += "<a name=\"" + type->base_name + "\" /><div class=\"class\">\n";
+        m_outputStr += "<h2 class=\"class_title\" name=\"" + type->base_name + "\">" + type->base_name + "</h2>\n";
 
         // type heirarchy
         Chuck_Type * parent = type->parent;
@@ -380,9 +380,9 @@ public:
         // iterate over parents
         while( parent != NULL )
         {
-            m_outputStr += ": <a href=\"" + type2url(parent->name, groups)
+            m_outputStr += ": <a href=\"" + type2url(parent->base_name, groups)
                          + "\" class=\"" + css_class_for_type(m_env_ref, parent)
-                         + "\">" + parent->name + "</a> ",
+                         + "\">" + parent->base_name + "</a> ",
             // go up the inheritance chain
             parent = parent->parent;
         }
@@ -463,7 +463,7 @@ public:
     {
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
                      + css_class_for_type(m_env_ref, var->type) + "\">"
-                     + var->type->name;
+                     + var->type->base_name;
         // check array depth
         if( var->type->array_depth )
         {
@@ -488,7 +488,7 @@ public:
     void member_var(Chuck_Value * var)
     {
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
-                     + css_class_for_type(m_env_ref, var->type) + "\">" + var->type->name;
+                     + css_class_for_type(m_env_ref, var->type) + "\">" + var->type->base_name;
         // check array depth
         if( var->type->array_depth )
         {
@@ -515,7 +515,7 @@ public:
         // return type
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
                      + css_class_for_type(m_env_ref, func->def()->ret_type) + "\">"
-                    + func->def()->ret_type->name;
+                    + func->def()->ret_type->base_name;
         // check array
         if( func->def()->ret_type->array_depth )
         {
@@ -551,7 +551,7 @@ public:
         // return type
         m_outputStr += "<div class=\"member\">\n<p class=\"member_declaration\"><span class=\""
                      + css_class_for_type(m_env_ref, func->def()->ret_type)
-                     + "\">" + func->def()->ret_type->name.c_str();
+                     + "\">" + func->def()->ret_type->base_name.c_str();
         // check array
         if( func->def()->ret_type->array_depth )
         {
@@ -585,7 +585,7 @@ public:
     void func_arg(a_Arg_List arg)
     {
         // argument type
-        m_outputStr += "<span class=\"" + css_class_for_type(m_env_ref, arg->type) + "\">" + arg->type->name;
+        m_outputStr += "<span class=\"" + css_class_for_type(m_env_ref, arg->type) + "\">" + arg->type->base_name;
         // check array
         if( arg->type->array_depth )
         {
@@ -694,7 +694,7 @@ string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGro
             if( !type ) continue;
             string cssClass = css_class_for_type( m_env_ref, type );
             // TODO: check for array_depth
-            sout << "<a href=\"" << group->shortName << ".html#" << type->name << "\" class=\"" << cssClass << "\">" << type->name << "</a>\n";
+            sout << "<a href=\"" << group->shortName << ".html#" << type->base_name << "\" class=\"" << cssClass << "\">" << type->base_name << "</a>\n";
         }
         sout << "</p>\n";
         sout << "</div>\n";
@@ -1171,7 +1171,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             if(value->name[0] == '@')
                 continue;
             // value is a function
-            if( value->type->name == "[function]" )
+            if( value->type->base_name == "[function]" )
                 continue;
 
             // static or instance?

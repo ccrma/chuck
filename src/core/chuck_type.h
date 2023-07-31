@@ -577,6 +577,72 @@ struct Chuck_UGen_Info : public Chuck_VM_Object
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Value_Dependency
+// desc: a value dependency records when accessing a value; this is used to
+//       for dependency tracking of file-top-level and class-top-level variables
+//       accessed from within functions or class pre-constructor code;
+//
+// example:
+// ```
+// 5 => int foo;
+// fun void bar()
+// {
+//     // below is a dependency to foo
+//     <<< foo >>>;
+// }
+// ```
+//-----------------------------------------------------------------------------
+struct Chuck_Value_Dependency
+{
+    // value we are tracking
+    Chuck_Value * value;
+    // code position of dependency
+    t_CKUINT where;
+    // position where the use occurs (from within func or class)
+    t_CKUINT use_where;
+
+public:
+    // default
+    Chuck_Value_Dependency() : value(NULL), where(0), use_where(0) { }
+    // constructor
+    Chuck_Value_Dependency( Chuck_Value * argValue, t_CKUINT argUseWhere = 0 );
+    // copy constructor | DANGER: needed to properly ref-count
+    Chuck_Value_Dependency( const Chuck_Value_Dependency & rhs ) : Chuck_Value_Dependency( rhs.value, rhs.use_where ) { }
+    // destructor
+    virtual ~Chuck_Value_Dependency();
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Value_Dependency_Graph
+// desc: data structure of value dependencies, direct and remote
+//-----------------------------------------------------------------------------
+struct Chuck_Value_Dependency_Graph
+{
+public:
+    // add a direct dependency
+    void add( const Chuck_Value_Dependency & dep );
+    // add a remote (recursive) dependency
+    void add( Chuck_Value_Dependency_Graph * graph );
+    // look for a dependency that occurs AFTER a particular code position
+    // this function crawls the graph, taking care in the event of cycles
+    const Chuck_Value_Dependency * locate( t_CKUINT pos, t_CKBOOL isClassDef = FALSE, t_CKBOOL recurse = TRUE );
+
+protected:
+    // vector of dependencies
+    std::vector<Chuck_Value_Dependency> directs;
+
+    // vector of recursive dependency graphs
+    // take care regarding circular dependency
+    std::vector<Chuck_Value_Dependency_Graph *> remotes;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Type
 // desc: class containing information about a type
 // note: 1.5.0.0 (ge) Chuck_VM_Object -> Chuck_Object
@@ -586,7 +652,7 @@ struct Chuck_Type : public Chuck_Object
     // type id
     te_Type xid;
     // type name (FYI use this->str() for full name including []s for array)
-    std::string name;
+    std::string base_name;
     // type parent (could be NULL)
     Chuck_Type * parent;
     // size (in bytes)
@@ -618,13 +684,16 @@ struct Chuck_Type : public Chuck_Object
     // origin hint
     te_Origin originHint;
 
+    // reference to environment RE-FACTOR 2017
+    Chuck_Env * env_ref;
+
+    // dependency tracking | 1.5.0.8
+    Chuck_Value_Dependency_Graph depends;
+
     // documentation
     std::string doc;
     // example files
     std::vector<std::string> examples;
-
-    // reference to environment RE-FACTOR 2017
-    Chuck_Env * m_env;
 
 public:
     // constructor
@@ -643,8 +712,8 @@ public:
     Chuck_Type * copy( Chuck_Env * env ) const;
 
 public:
-    // to string
-    const std::string & str();
+    // to string: the full name of this type, e.g., "UGen" or "int[][]"
+    const std::string & name();
     // to c string
     const char * c_name();
 
@@ -715,33 +784,21 @@ struct Chuck_Value : public Chuck_VM_Object
     // overloads
     t_CKINT func_num_overloads;
 
+    // dependency tracking | 1.5.0.8 (ge) added
+    // code position of where this value is considered initialized
+    // NOTE sed to determine dependencies within a file context
+    t_CKUINT depend_init_where; // 1.5.0.8
+
     // documentation
     std::string doc;
 
+public:
     // constructor
     Chuck_Value( Chuck_Type * t, const std::string & n, void * a = NULL,
                  t_CKBOOL c = FALSE, t_CKBOOL acc = 0, Chuck_Namespace * o = NULL,
-                 Chuck_Type * oc = NULL, t_CKUINT s = 0 )
-    { type = t; CK_SAFE_ADD_REF(type); // add reference
-      name = n; offset = s;
-      is_const = c; access = acc;
-      owner = o; CK_SAFE_ADD_REF(o); // add reference
-      owner_class = oc; CK_SAFE_ADD_REF(oc); // add reference
-      addr = a; is_member = FALSE;
-      is_static = FALSE; is_context_global = FALSE;
-      is_decl_checked = TRUE; // only set to false in certain cases
-      is_global = FALSE;
-      func_ref = NULL; func_num_overloads = 0; }
-
+                 Chuck_Type * oc = NULL, t_CKUINT s = 0 );
     // destructor
-    virtual ~Chuck_Value()
-    {
-        // release
-        // CK_SAFE_RELEASE( type );
-        // CK_SAFE_RELEASE( owner ):
-        // CK_SAFE_RELEASE( owner_class );
-        // CK_SAFE_RELEASE( func_ref );
-    }
+    virtual ~Chuck_Value();
 };
 
 
@@ -757,6 +814,8 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string name;
     // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
+    // human readable function signature: e.g., void Object.func( int foo, float bar[] );
+    std::string signature() const;
     // code (included imported)
     Chuck_VM_Code * code;
     // imported code
@@ -767,12 +826,15 @@ struct Chuck_Func : public Chuck_VM_Object
     t_CKBOOL is_static;
     // virtual table index
     t_CKUINT vt_index;
-    // rember value
+    // remember value
     Chuck_Value * value_ref;
     // for overloading
     Chuck_Func * next;
     // for overriding
     Chuck_Value * up;
+
+    // dependency tracking | 1.5.0.8
+    Chuck_Value_Dependency_Graph depends;
 
     // documentation
     std::string doc;
@@ -798,9 +860,18 @@ public:
 
 public:
     // constructor
-    Chuck_Func() { m_def = NULL; code = NULL; is_member = FALSE; is_static = FALSE,
-        vt_index = CK_NO_VALUE; value_ref = NULL; /*dl_code = NULL;*/ next = NULL;
-        up = NULL; }
+    Chuck_Func()
+    {
+        m_def = NULL;
+        code = NULL;
+        is_member = FALSE;
+        is_static = FALSE,
+        vt_index = CK_NO_VALUE;
+        value_ref = NULL;
+        /*dl_code = NULL;*/
+        next = NULL;
+        up = NULL;
+    }
 
     // destructor
     virtual ~Chuck_Func();

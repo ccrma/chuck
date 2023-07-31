@@ -73,6 +73,53 @@ chuck parameters; updated ChucK c++ integration API
     examples/array/array_erase2.ck
 - (update) map-only function @array.find(string) has been renmed to
     @array.isInMap(string) to avoid confusion with vector
+- (added) error checking for out-of-order dependency issues where
+  a function is called (or a class instantiated) that would skip
+  a neede variable initialization; this addresses a long-standing
+  issue that has caused much confusion because previously the issue
+  failed but silently.
+  ---
+  For example, consider this 'foobar.ck' code
+  ```
+    // does not work here: precedes 'bar' initialization
+    foo();
+    // where 'bar' initializes
+    5 => int bar;
+    // FYI calling foo() works here: after 'bar' initializes
+    // foo();
+
+    // the function definition
+    fun void foo()
+    {
+        // needs 'bar' to be initialized
+        <<< "bar:", bar >>>;
+    }
+  ```
+  The new resulting compiler error:
+  ```
+    > chuck foobar.ck
+    foobar.ck:4:1: error: calling 'foo()' at this point skips
+                   initialization of a needed variable:
+    [4] foo();
+        ^
+    foobar.ck:7:10: error: ...(note: this skipped variable
+                    initialization is needed by 'fun void foo()')
+    [7] 5 => int bar;
+                 ^
+    foobar.ck:16:17: error: ...(note: this is where the variable
+                     is used within 'fun void foo()')
+    [16]     <<< "bar:", bar >>>;
+                         ^
+    error-depend-var.ck: ...(hint: try calling 'foo()' after the
+                         variable initialization)
+  ```
+  ---
+  Similar errors are reported for class definitions that reference
+    file-top-level variables, etc.
+- (added) error reporting for public class definitions that access
+    out-of-class local variables and functions; this is necessary
+    to disallow since public classes can be instantiated from any
+    context (file or code)
 - (updated, documentation) STK classes HnkyTonk and FrencHrn now 
   properly included in the API reference, and with more examples:
     https://chuck.stanford.edu/doc/reference/ugens-stk.html#HnkyTonk

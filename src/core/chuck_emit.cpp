@@ -230,6 +230,9 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
             break;
         }
 
+        // check success code
+        if( !ret ) break;
+
         // the next
         prog = prog->next;
     }
@@ -250,6 +253,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         // Chuck_Instr_Reg_Push_Global)
     }
 
+    // check success code
     if( ret )
     {
         // pop global scope (added 1.3.0.0)
@@ -263,10 +267,27 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         // add reference
         emit->context->nspc->pre_ctor->add_ref();
     }
+    else // error | 1.5.0.8 (ge) added in case emit errors out
+    {
+        // clear the code stack
+        Chuck_Code * code = NULL;
+        // while stack not empty
+        while( emit->stack.size() )
+        {
+            // get the top of the stack
+            code = emit->stack.back();
+            // manually delete the instructions
+            for( t_CKUINT i = 0; i < code->code.size(); i++ )
+            { CK_SAFE_DELETE( code->code[i] ); }
+            // delete the code
+            CK_SAFE_DELETE( code );
+            // pop the stack
+            emit->stack.pop_back();
+        }
+    }
 
     // clear the code
-    delete emit->code;
-    emit->code = NULL;
+    CK_SAFE_DELETE( emit->code );
 
     // pop indent
     EM_poplog();
@@ -401,7 +422,7 @@ t_CKBOOL emit_engine_emit_stmt_list( Chuck_Emitter * emit, a_Stmt_List list )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_stmt()
-// desc: ...
+// desc: emit a statement
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop )
 {
@@ -660,7 +681,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
 
         EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in if condition",
-            stmt->cond->type->name.c_str() );
+            stmt->cond->type->base_name.c_str() );
         return FALSE;
     }
 
@@ -778,7 +799,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 
             EM_error2( stmt->c2->stmt_exp->where,
                 "(emit): internal error: unhandled type '%s' in for conditional",
-                stmt->c2->stmt_exp->type->name.c_str() );
+                stmt->c2->stmt_exp->type->base_name.c_str() );
             return FALSE;
         }
         // append the op
@@ -1133,7 +1154,7 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 
         EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in while conditional",
-            stmt->cond->type->name.c_str() );
+            stmt->cond->type->base_name.c_str() );
         return FALSE;
     }
 
@@ -1353,7 +1374,7 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 
         EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in until conditional",
-            stmt->cond->type->name.c_str() );
+            stmt->cond->type->base_name.c_str() );
         return FALSE;
     }
 
@@ -1465,7 +1486,7 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     default:
         EM_error2( stmt->cond->where,
              "(emit): internal error: unhandled type '%s' in do/until conditional",
-             stmt->cond->type->name.c_str() );
+             stmt->cond->type->base_name.c_str() );
         return FALSE;
     }
 
@@ -1559,7 +1580,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     default:
         EM_error2( stmt->cond->where,
             "(emit): internal error: unhandled type '%s' in while conditional",
-            type->name.c_str() );
+            type->base_name.c_str() );
 
         return FALSE;
     }
@@ -3221,6 +3242,26 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         // if this is an object
         if( isobj( emit->env, t ) )
         {
+            // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+            // before dependencies are met | 1.5.0.8 (ge) added
+            const Chuck_Value_Dependency * unfulfilled = t->depends.locate( unary->where );
+            // at least one unfulfilled
+            if( unfulfilled )
+            {
+                EM_error2( unary->type->where,
+                    "'%s' instantiation at this point skips initialization of a needed variable:",
+                    t->c_name() );
+                EM_error2( unfulfilled->where,
+                    "...(note: this skipped variable initialization is needed by class '%s')",
+                    t->c_name() );
+                EM_error2( unfulfilled->use_where,
+                    "...(note: this is where the variable is used within class '%s')",
+                    t->c_name() );
+                EM_error2( 0,
+                    "...(hint: try instantiating '%s' after the variable initialization)", t->c_name() );
+                return FALSE;
+            }
+
             // should always be false; can't 'new int[]'...
             t_CKBOOL is_array_ref = FALSE;
             // instantiate object, including array
@@ -3794,13 +3835,31 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // is a member?
     t_CKBOOL is_member = func->is_member;
 
+    // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
+    const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def != NULL );
+    // at least one unfulfilled dependency
+    if( unfulfilled )
+    {
+        EM_error2( where,
+            "calling '%s()' at this point skips initialization of a needed variable:",
+            func->base_name.c_str() );
+        EM_error2( unfulfilled->where,
+            "...(note: this skipped variable initialization is needed by '%s')",
+            func->signature().c_str() );
+        EM_error2( unfulfilled->use_where,
+            "...(note: this is where the variable is used within '%s')",
+            func->signature().c_str() );
+        EM_error2( 0,
+            "...(hint: try calling '%s()' after the variable initialization)", func->base_name.c_str() );
+        return FALSE;
+    }
+
     // translate to code
     emit->append( new Chuck_Instr_Func_To_Code );
     // emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)func->code ) );
     // push the local stack depth - local variables
     emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
 
-    // TODO: member functions and static functions
     // call the function
     t_CKUINT size = type->size;
     t_CKUINT kind = getkindof( emit->env, type ); // added 1.3.1.0
@@ -3863,7 +3922,7 @@ t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit,
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp_func_call()
-// desc: ...
+// desc: emit function call from a_Exp_Func_Call
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                                          a_Exp_Func_Call func_call,
@@ -3887,10 +3946,19 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         return FALSE;
     }
 
+    // line and pos
+    t_CKUINT line = func_call->line;
+    t_CKUINT where = func_call->where;
+    // if possible, get more accurate code position
+    if( func_call->func->s_type == ae_exp_dot_member )
+    {
+        line = func_call->func->dot_member.line;
+        where = func_call->func->dot_member.where;
+    }
+
     // the rest
-    return emit_engine_emit_exp_func_call( emit, func_call->ck_func,
-                                           func_call->ret_type,
-                                           func_call->line, func_call->where, spork );
+    return emit_engine_emit_exp_func_call( emit, func_call->ck_func, func_call->ret_type,
+                                           line, where, spork );
 }
 
 
@@ -4280,7 +4348,7 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
     default:
         EM_error2( exp_if->cond->where,
             "(emit): internal error: unhandled type '%s' in if condition",
-            exp_if->cond->type->name.c_str() );
+            exp_if->cond->type->base_name.c_str() );
         return FALSE;
     }
 
@@ -4479,7 +4547,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         else
         {
             // fail if type unsupported
-            EM_error2( decl->type->where, (std::string("unsupported type for global keyword: ") + t->name).c_str() );
+            EM_error2( decl->type->where, (std::string("unsupported type for global keyword: ") + t->base_name).c_str() );
             EM_error2( 0, "(supported types: int, float, string, Event, UGen, Object)" );
             return FALSE;
         }
@@ -4518,6 +4586,28 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // avoid doing this if the array is global?
                 if( !is_array_ref )
                 {
+                    // look at the array/actual type
+                    Chuck_Type * actual_type = type->actual_type;
+                    // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+                    // before dependencies are met | 1.5.0.8 (ge) added
+                    const Chuck_Value_Dependency * unfulfilled = actual_type->depends.locate( decl->type->where );
+                    // at least one unfulfilled dependency
+                    if( unfulfilled )
+                    {
+                        EM_error2( decl->type->where,
+                            "'%s' instantiation at this point skips initialization of a needed variable:",
+                            actual_type->c_name() );
+                        EM_error2( unfulfilled->where,
+                            "...(note: this skipped variable initialization is needed by class '%s')",
+                            actual_type->c_name() );
+                        EM_error2( unfulfilled->use_where,
+                            "...(note: this is where the variable is used within class '%s')",
+                            actual_type->c_name() );
+                        EM_error2( 0,
+                            "...(hint: try instantiating '%s' after the variable initialization)", actual_type->c_name() );
+                        return FALSE;
+                    }
+
                     // set
                     is_init = TRUE;
                     // instantiate object, including array
@@ -4527,6 +4617,26 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
+                // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+                // before dependencies are met | 1.5.0.8 (ge) added
+                const Chuck_Value_Dependency * unfulfilled = type->depends.locate( var_decl->where );
+                // at least one unfulfilled
+                if( unfulfilled )
+                {
+                    EM_error2( var_decl->where,
+                        "'%s' instantiation at this point skips initialization of needed variable:",
+                        type->c_name() );
+                    EM_error2( unfulfilled->where,
+                        "...(note: this skipped variable initialization is needed by class '%s')",
+                        type->c_name() );
+                    EM_error2( unfulfilled->use_where,
+                        "...(note: this is where the variable is used within class '%s')",
+                        type->c_name() );
+                    EM_error2( 0,
+                        "...(hint: try instantiating '%s' after the variable initialization)", type->c_name() );
+                    return FALSE;
+                }
+
                 // REFACTOR-2017: don't emit instructions to instantiate
                 // non-array global variables -- they are init/instantiated
                 // during emit (see below in this function)
@@ -4633,7 +4743,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->where,
                                 "global Event '%s' has different type '%s' than already existing global Event of the same name",
-                                value->name.c_str(), t->name.c_str() );
+                                value->name.c_str(), t->base_name.c_str() );
                             return FALSE;
                         }
                     }
@@ -4646,7 +4756,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                             // if the type doesn't exactly match (different kinds of UGen), then fail.
                             EM_error2( decl->where,
                                 "global UGen '%s' has different type '%s' than already existing global UGen of the same name",
-                                value->name.c_str(), t->name.c_str() );
+                                value->name.c_str(), t->base_name.c_str() );
                             return FALSE;
                         }
                     }
@@ -4659,7 +4769,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                             // if the type doesn't exactly match (different types), then fail.
                             EM_error2( decl->where,
                                       "global Object '%s' has different type '%s' than already existing global Object of the same name",
-                                      value->name.c_str(), t->name.c_str() );
+                                      value->name.c_str(), t->base_name.c_str() );
                             return FALSE;
                         }
                     }
@@ -4866,7 +4976,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // make a new one
     emit->code = new Chuck_Code;
     // name the code
-    emit->code->name = emit->env->class_def ? emit->env->class_def->name + "." : "";
+    emit->code->name = emit->env->class_def ? emit->env->class_def->base_name + "." : "";
     emit->code->name += func->name + "(...)";
     // set whether need this
     emit->code->need_this = func->is_member;
@@ -5020,7 +5130,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     {
         EM_error2( class_def->where,
             "(emit): class '%s' already emitted...",
-            type->name.c_str() );
+            type->base_name.c_str() );
         return FALSE;
     }
 
@@ -5040,7 +5150,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // make a new one
     emit->code = new Chuck_Code;
     // name the code
-    emit->code->name = string("class ") + type->name;
+    emit->code->name = string("class ") + type->base_name;
     // whether code needs this
     emit->code->need_this = TRUE;
     // if has constructor
@@ -5351,7 +5461,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             // internal error
             EM_error2( where,
                 "(emit): internal error: unknown global type '%s'...",
-                v->type->name.c_str() );
+                v->type->base_name.c_str() );
             return FALSE;
         }
     }

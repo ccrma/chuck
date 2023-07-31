@@ -4043,7 +4043,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
-        else if( isa( type, vm->env()->t_class ) ) object = new Chuck_Type( vm->env(), te_class, type->name, type, type->size );
+        else if( isa( type, vm->env()->t_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
         // TODO: is this ok?
         else object = new Chuck_Object;
     }

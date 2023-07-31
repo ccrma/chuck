@@ -162,7 +162,8 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define CK_SAFE_DELETE_ARRAY(x)     do { if(x){ delete [] x; x = NULL; } } while(0)
 #define CK_SAFE_RELEASE(x)          do { if(x){ x->release(); x = NULL; } } while(0)
 #define CK_SAFE_ADD_REF(x)          do { if(x){ x->add_ref(); } } while(0)
-#define CK_SAFE_REF_ASSIGN(lhs,rhs) do { CK_SAFE_RELEASE(lhs); (lhs) = (rhs); CK_SAFE_ADD_REF(lhs); } while(0)
+// NOTE the ref assign accounts for the case that lhs == rhs and the reference==1: add BEFORE release
+#define CK_SAFE_REF_ASSIGN(lhs,rhs) do { Chuck_VM_Object * temp = lhs; (lhs) = (rhs); CK_SAFE_ADD_REF(lhs); CK_SAFE_RELEASE(temp); } while(0)
 #define CK_SAFE_FREE(x)             do { if(x){ free(x); x = NULL; } } while(0)
 #define CK_SAFE_UNLOCK_DELETE(x)    do { if(x){ x->unlock(); delete x; x = NULL; } } while(0)
 

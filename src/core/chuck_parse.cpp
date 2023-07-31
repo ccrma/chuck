@@ -649,7 +649,7 @@ string absyn_unary2str( a_Exp_Unary unary )
     switch( unary->op )
     {
         case ae_op_new:
-            s = absyn_op2str(unary->op) + " " + unary->self->type->str();
+            s = absyn_op2str(unary->op) + " " + unary->self->type->name();
             break;
         default:
             s = absyn_op2str(unary->op) + " " + absyn_exp2str(unary->exp);
@@ -669,7 +669,7 @@ string absyn_unary2str( a_Exp_Unary unary )
 string absyn_cast2str( a_Exp_Cast cast )
 {
     Chuck_Type * to = cast->self->type;
-    return absyn_exp2str(cast->exp) + "$" + to->name;
+    return absyn_exp2str(cast->exp) + "$" + to->base_name;
 }
 
 
@@ -823,7 +823,7 @@ string absyn_decl2str( a_Exp_Decl decl )
     while( list )
     {
         // type
-        str += list->var_decl->value->type->name + " " + (decl->type->ref ? "@ " : "") + list->var_decl->value->name;
+        str += list->var_decl->value->type->base_name + " " + (decl->type->ref ? "@ " : "") + list->var_decl->value->name;
         // array?
         if( list->var_decl->array )
         {

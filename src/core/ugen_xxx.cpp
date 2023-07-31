@@ -1612,7 +1612,7 @@ CK_DLL_CTOR( foogen_ctor )
     {
         // SPENCERTODO: warn on Chugen definition instead of instantiation?
         EM_log(CK_LOG_WARNING, "ChuGen '%s' does not define a suitable tick function",
-               ugen->type_ref->name.c_str());
+               ugen->type_ref->base_name.c_str());
     }
 }
 

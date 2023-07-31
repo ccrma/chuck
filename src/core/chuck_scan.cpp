@@ -259,14 +259,14 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     CK_SAFE_ADD_REF( the_class );
     // set the fields
     the_class->xid = te_user;
-    the_class->name = S_name(class_def->name->xid);
+    the_class->base_name = S_name(class_def->name->xid);
     the_class->owner = env->curr;
     the_class->array_depth = 0;
     the_class->size = sizeof(void *);
     the_class->obj_size = 0;  // TODO:
     the_class->info = env->context->new_Chuck_Namespace();
     CK_SAFE_ADD_REF( the_class->info );
-    the_class->info->name = the_class->name;
+    the_class->info->name = the_class->base_name;
     // if public class, then set parent to context
     // ... allowing the class to address current context
     if( env->context->public_class_def == class_def )
@@ -281,7 +281,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     the_class->info->pre_ctor = new Chuck_VM_Code;
     CK_SAFE_ADD_REF( the_class->info->pre_ctor );
     // add to env
-    env->curr->type.add( the_class->name, the_class );  // URGENT: make this global
+    env->curr->type.add( the_class->base_name, the_class );  // URGENT: make this global
     // incomplete
     the_class->is_complete = FALSE;
 
@@ -332,12 +332,12 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         // allocate value
         type = env->t_class->copy( env );
         type->actual_type = the_class;
-        value = env->context->new_Chuck_Value( type, the_class->name );
+        value = env->context->new_Chuck_Value( type, the_class->base_name );
         value->owner = env->curr;
         value->is_const = TRUE;
         value->is_member = FALSE;
         // add to env
-        env->curr->value.add( the_class->name, value );
+        env->curr->value.add( the_class->base_name, value );
 
         // remember
         class_def->type = the_class;
@@ -2506,7 +2506,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // make a new type for the function
     type = env->context->new_Chuck_Type( env );
     type->xid = te_function;
-    type->name = "[function]";
+    type->base_name = "[function]";
     type->parent = env->t_function;
     type->size = sizeof(void *);
     type->func = func;
@@ -2683,16 +2683,16 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             if( env->class_def )
             {
                 EM_error3( "    |- function in question: %s %s.%s(...)",
-                           func->def()->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+                           func->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
                 EM_error3( "    |- previous defined as: %s %s.%s(...)",
-                           overload->func_ref->def()->ret_type->name.c_str(), env->class_def->c_name(), S_name(f->name) );
+                           overload->func_ref->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
             }
             else
             {
                 EM_error3( "    |- function in question: %s %s(...)",
-                           func->def()->ret_type->name.c_str(), S_name(f->name) );
+                           func->def()->ret_type->base_name.c_str(), S_name(f->name) );
                 EM_error3( "    |- previous defined as: %s %s(...)",
-                           overload->func_ref->def()->ret_type->name.c_str(), S_name(f->name) );
+                           overload->func_ref->def()->ret_type->base_name.c_str(), S_name(f->name) );
             }
             goto error;
         }
@@ -2718,13 +2718,13 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                     if( env->class_def )
                     {
                         EM_error3( "    |- '%s %s.%s( %s )' already defined elsewhere",
-                                   func->def()->ret_type->name.c_str(), env->class_def->c_name(),
+                                   func->def()->ret_type->base_name.c_str(), env->class_def->c_name(),
                                    orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
                     }
                     else
                     {
                         EM_error3( "    |- '%s %s( %s )' already defined elsewhere",
-                                   func->def()->ret_type->name.c_str(), orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
+                                   func->def()->ret_type->base_name.c_str(), orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
                     }
                     goto error;
                 }

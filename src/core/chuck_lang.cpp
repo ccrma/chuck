@@ -3017,7 +3017,7 @@ static void typeGetTypes(
     for( t_CKINT i = 0; i < types.size(); i++ )
     {
         // check special
-        t_CKBOOL special = (types[i]->name.length()>0 && types[i]->name[0] == '@');
+        t_CKBOOL special = (types[i]->base_name.length()>0 && types[i]->base_name[0] == '@');
         // if not requesting special types
         if( !isSpecial && (special == TRUE) ) continue;
         // check origin
@@ -3108,7 +3108,7 @@ CK_DLL_MFUN( type_basename )
     // new it
     Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
     // set
-    str->set( type->name );
+    str->set( type->base_name );
     // return
     RETURN->v_object = str;
 }
@@ -3120,7 +3120,7 @@ CK_DLL_MFUN( type_name )
     // new it
     Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
     // construct the full type name (arrays included)
-    string name = type->name;
+    string name = type->base_name;
     // append array depth
     for( t_CKINT i = 0; i < type->array_depth; i++ ) name += "[]";
     // set
@@ -3142,7 +3142,7 @@ CK_DLL_MFUN( type_children )
     // get me
     Chuck_Type * me = (Chuck_Type *)SELF;
     // name
-    string name = me->name;
+    string name = me->base_name;
 
     // instantiate
     Chuck_Array4 * ret = new Chuck_Array4( TRUE );

@@ -1,0 +1,10 @@
+error-depend-func.ck:5:1: error: calling 'printArray()' at this point skips initialization of a needed variable:
+[5] printArray();
+    ^
+error-depend-func.ck:8:19: error: ...(note: this skipped variable initialization is needed by 'fun void printArray()')
+[8] [1, 2, 3] @=> int array[];
+                      ^
+error-depend-func.ck:17:9: error: ...(note: this is where the variable is used within 'fun void printArray()')
+[17]     <<< array[0], array[1], array[2] >>>;
+             ^
+error-depend-func.ck: ...(hint: try calling 'printArray()' after the variable initialization)

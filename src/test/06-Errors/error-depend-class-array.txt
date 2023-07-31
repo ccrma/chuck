@@ -1,0 +1,10 @@
+error-depend-class-array.ck:5:1: error: 'Foo' instantiation at this point skips initialization of a needed variable:
+[5] Foo foo[2];
+    ^
+error-depend-class-array.ck:8:19: error: ...(note: this skipped variable initialization is needed by class 'Foo')
+[8] [1, 2, 3] @=> int array[];
+                      ^
+error-depend-class-array.ck:14:9: error: ...(note: this is where the variable is used within class 'Foo')
+[14]     <<< array[0], array[1], array[2] >>>;
+             ^
+error-depend-class-array.ck: ...(hint: try instantiating 'Foo' after the variable initialization)

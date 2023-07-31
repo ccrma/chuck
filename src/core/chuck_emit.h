@@ -88,7 +88,14 @@ public:
     }
 
     // destructor
-    ~Chuck_Code() { delete frame; frame = NULL; }
+    ~Chuck_Code()
+    {
+        // clean up frame
+        CK_SAFE_DELETE( frame );
+        // TODO: what about contents of code?
+        // TODO: what about contents of stack_*?
+        // (these may also depend on success/error during emission)
+    }
 };
 
 

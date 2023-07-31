@@ -7,7 +7,8 @@ string a_keys[0];
 
 a.getKeys(a_keys);
 
-if (a_keys.size() != 0) {
+if( a_keys.size() != 0 )
+{
     <<< "key array should be empty" >>>;
     false => passing;
 }
@@ -40,36 +41,43 @@ string c_keys2[0];
 c.getKeys(c_keys2);
 checkKeys(c_keys2, c_want) && passing => passing;
 
-if (passing) <<< "success" >>>;
+if( passing ) <<< "success" >>>;
 
-fun int checkKeys(string got[], string want[]) {
-    if (got.size() != want.size()) {
-	printFailure(got, want);
-	return false;
+fun int checkKeys(string got[], string want[])
+{
+    if( got.size() != want.size() )
+    {
+        printFailure(got, want);
+        return false;
     }
 
     true => int passing;
-    for (0 => int i; i < want.size(); i++) {
-	false => int contains;
-	for (0 => int j; j < got.size(); j++) {
-	    if (got[i] == want[j]) {
-		true => contains;
+    for( 0 => int i; i < want.size(); i++ )
+    {
+	    false => int contains;
+	    for( 0 => int j; j < got.size(); j++ )
+        {
+	        if (got[i] == want[j])
+            {
+		        true => contains;
+	        }
 	    }
-	}
-
-	if (!contains) false => passing;
+	    if( !contains ) false => passing;
     }
 
-    if (!passing) {
-	printFailure(got, want);
-	return false;
+    if (!passing)
+    {
+	    printFailure(got, want);
+	    return false;
     }
+
     return true;
 }
 
-fun void printFailure(string got[], string want[]) {
+fun void printFailure( string got[], string want[] )
+{
     <<< "failure in get_keys(), got:" >>>;
-    for (0 => int i; i < got.size(); i++) <<< got[i] >>>;
+    for( 0 => int i; i < got.size(); i++ ) <<< got[i] >>>;
     <<< "want:" >>>;
-    for (0 => int i; i < want.size(); i++) <<< want[i] >>>;
+    for( 0 => int i; i < want.size(); i++ ) <<< want[i] >>>;
 }
