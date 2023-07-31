@@ -606,8 +606,8 @@ public:
     Chuck_Value_Dependency() : value(NULL), where(0), use_where(0) { }
     // constructor
     Chuck_Value_Dependency( Chuck_Value * argValue, t_CKUINT argUseWhere = 0 );
-    // copy constructor | DANGER: needed to properly ref-count
-    Chuck_Value_Dependency( const Chuck_Value_Dependency & rhs ) : Chuck_Value_Dependency( rhs.value, rhs.use_where ) { }
+    // copy constructor | NOTE: needed to properly ref-count
+    Chuck_Value_Dependency( const Chuck_Value_Dependency & rhs );
     // destructor
     virtual ~Chuck_Value_Dependency();
 };

@@ -3736,8 +3736,8 @@ t_CKBOOL type_engine_check_exp_decl_part1( Chuck_Env * env, a_Exp_Decl decl )
         value->is_global = decl->is_global;
 
         // dependency tracking: remember the code position of the DECL | 1.5.0.8
-        // do only if file-top-level or class-top-level
-        if( value->is_member || value->is_context_global )
+        // do only if file-top-level or class-top-level, but not global
+        if( (value->is_member || value->is_context_global) && !value->is_global )
             value->depend_init_where = var_decl->where;
 
         // remember the value
@@ -7689,6 +7689,22 @@ Chuck_Value_Dependency::Chuck_Value_Dependency( Chuck_Value * argValue, t_CKUINT
 {
     CK_SAFE_REF_ASSIGN( value, argValue );
     use_where = argUseWhere;
+    // for convenience
+    where = value ? value->depend_init_where : 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Value_Dependency()
+// desc: copy constructor; DANGER: needed to properly ref-count
+//-----------------------------------------------------------------------------
+Chuck_Value_Dependency::Chuck_Value_Dependency( const Chuck_Value_Dependency & rhs )
+    : value(NULL)
+{
+    CK_SAFE_REF_ASSIGN( value, rhs.value );
+    use_where = rhs.use_where;
     // for convenience
     where = value ? value->depend_init_where : 0;
 }
