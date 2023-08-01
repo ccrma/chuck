@@ -35,6 +35,7 @@
 #include "chuck_errmsg.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #ifdef __PLATFORM_WINDOWS__
@@ -175,10 +176,10 @@ t_CKBOOL ck_configANSI_ESCcodes()
 //-----------------------------------------------------------------------------
 t_CKBOOL ck_isatty( int fd )
 {
-#ifndef __PLATFORM_WINDOWS__
-    return isatty( fd ) != 0;
-#else
+#if defined(__PLATFORM_WINDOWS__)
     return _isatty( fd ) != 0;
+#else
+    return isatty( fd ) != 0;
 #endif
 }
 //-----------------------------------------------------------------------------
@@ -187,10 +188,15 @@ t_CKBOOL ck_isatty( int fd )
 t_CKBOOL ck_isatty()
 {
     // let's test stderr, since much of chuck operates over it
-#ifndef __PLATFORM_WINDOWS__
-    return ck_isatty( fileno(stderr) );
-#else
+#if defined(__PLATFORM_WINDOWS__)
     return ck_isatty( _fileno(stderr) );
+#elif defined(__PLATFORM_EMSCRIPTEN__)
+    // emscripten always seems to return TRUE for isatty()
+    // but then ioctl() does not seem to be working / implemented
+    // so returning FALSE for now | use chuck param TTY_WIDTH_HINT
+    return FALSE;
+#else
+    return ck_isatty( fileno(stderr) );
 #endif
 }
 
@@ -209,8 +215,13 @@ t_CKUINT ck_ttywidth()
     if( !ck_isatty() ) return g_ttywidth_default;
 
 #ifndef __PLATFORM_WINDOWS__
+    // a struct to hold return value
     struct winsize w;
+    // zero out, as ioctl() can return 0 but not modify w (et tu emscripten?)
+    memset( &w, 0, sizeof(w) );
+    // get the window size
     if( ioctl( fileno(stderr), TIOCGWINSZ, &w ) != 0 ) { goto error; }
+    // return
     return w.ws_col;
 #else
     // get windows handle to stderr

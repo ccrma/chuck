@@ -263,7 +263,12 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
         t_CKINT posLineIndent = posLine.length() + 3;
 
         // get terminal width; -2 for the indentation below
-        t_CKUINT WIDTH = ck_ttywidth()-posLineIndent;
+        t_CKUINT WIDTH = ck_ttywidth();
+        // check for 0; this one time, emscripten ioctl() ran amok...
+        if( WIDTH == 0 ) WIDTH = ck_ttywidth_default();
+        // subtract
+        WIDTH -= posLineIndent;
+        // compute caret pos
         t_CKUINT CARET_POS = (t_CKUINT)(WIDTH/3.0);
 
         // check for some mininum
