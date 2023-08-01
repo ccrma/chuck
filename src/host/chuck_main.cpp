@@ -399,6 +399,13 @@ t_CKBOOL global_cleanup()
     // 1.5.0.0 (ge) | commented
     // s_mutex.release();
 
+    // delete process id file.
+    if( g_pidfile )
+    {
+        unlink( g_pidfile );
+        g_pidfile = NULL;
+    }
+
     return TRUE;
 }
 
