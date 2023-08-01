@@ -3842,7 +3842,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 
     // only check dependency violations if we are at a context-top-level
     // or class-top-level scope, i.e., not in a function definition
-    if( !emit->env->func )
+    // also, once sporked,  it will be up the programmer to ensure intention
+    if( !emit->env->func && !spork )
     {
         // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
         const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def != NULL );

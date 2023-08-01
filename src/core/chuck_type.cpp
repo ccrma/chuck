@@ -125,6 +125,7 @@ Chuck_Env::Chuck_Env( )
     class_def = NULL;
     func = NULL;
     curr = NULL;
+    sporking = FALSE;
 
     // clear
     this->reset();
@@ -2623,8 +2624,18 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
     // make sure
     if( unary->exp )
     {
+        // current sporking state | 1.5.0.8 (ge)
+        t_CKBOOL sporkingSaved = env->sporking;
+        // set sporking flag | 1.5.0.8 (ge)
+        if( unary->op == ae_op_spork ) env->sporking = TRUE;
+
         // assert( unary->op == ae_op_new );
         t = type_engine_check_exp( env, unary->exp );
+
+        // unset sporking flag | 1.5.0.8 (ge)
+        if( unary->op == ae_op_spork ) env->sporking = sporkingSaved;
+
+        // check returned type
         if( !t ) return NULL;
     }
 
@@ -4173,16 +4184,21 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
 
     ck_func = theFunc;
 
-    // if in a function definition
-    if( env->func )
+    // if sporking, then don't track dependencies...
+    // up to the programmer to ensure correctness across spork and time
+    if( !env->sporking )
     {
-        // dependency tracking: add the callee's dependencies
-        env->func->depends.add( &ck_func->depends );
-    }
-    else if( env->class_def ) // in a class definition
-    {
-        // dependency tracking: add the callee's dependencies
-        env->class_def->depends.add( &ck_func->depends );
+        // if in a function definition
+        if( env->func )
+        {
+            // dependency tracking: add the callee's dependencies
+            env->func->depends.add( &ck_func->depends );
+        }
+        else if( env->class_def ) // in a class definition
+        {
+            // dependency tracking: add the callee's dependencies
+            env->class_def->depends.add( &ck_func->depends );
+        }
     }
 
     return theFunc->def()->ret_type;

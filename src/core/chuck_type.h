@@ -487,6 +487,8 @@ public:
     Chuck_Func * func;
     // how far nested in a class definition
     t_CKUINT class_scope;
+    // are we in a spork operation
+    t_CKBOOL sporking;
 
     // current contexts in memory
     std::vector<Chuck_Context *> contexts;
