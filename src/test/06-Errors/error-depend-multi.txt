@@ -4,7 +4,7 @@ error-depend-multi.ck:10:1: error: calling 'printArray()' at this point skips in
 error-depend-multi.ck:13:10: error: ...(note: this skipped variable initialization is needed by 'fun void printArray()')
 [13] 2 => int bar;
               ^
-error-depend-multi.ck:22:14: error: ...(note: this is where the variable is used within 'fun void printArray()')
+error-depend-multi.ck:22:14: error: ...(note: this is where the variable is used within 'fun void printArray()' or its subsidiaries)
 [22]     <<< foo, bar >>>;
                   ^
 error-depend-multi.ck: ...(hint: try calling 'printArray()' after the variable initialization)

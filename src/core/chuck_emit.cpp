@@ -3242,24 +3242,29 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         // if this is an object
         if( isobj( emit->env, t ) )
         {
-            // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
-            // before dependencies are met | 1.5.0.8 (ge) added
-            const Chuck_Value_Dependency * unfulfilled = t->depends.locate( unary->where );
-            // at least one unfulfilled
-            if( unfulfilled )
+            // only check dependency violations if we are at a context-top-level
+            // or class-top-level scope, i.e., not in a function definition
+            if( !emit->env->func )
             {
-                EM_error2( unary->type->where,
-                    "'%s' instantiation at this point skips initialization of a needed variable:",
-                    t->c_name() );
-                EM_error2( unfulfilled->where,
-                    "...(note: this skipped variable initialization is needed by class '%s')",
-                    t->c_name() );
-                EM_error2( unfulfilled->use_where,
-                    "...(note: this is where the variable is used within class '%s')",
-                    t->c_name() );
-                EM_error2( 0,
-                    "...(hint: try instantiating '%s' after the variable initialization)", t->c_name() );
-                return FALSE;
+                // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+                // before dependencies are met | 1.5.0.8 (ge) added
+                const Chuck_Value_Dependency * unfulfilled = t->depends.locate( unary->where );
+                // at least one unfulfilled
+                if( unfulfilled )
+                {
+                    EM_error2( unary->type->where,
+                              "'%s' instantiation at this point skips initialization of a needed variable:",
+                              t->c_name() );
+                    EM_error2( unfulfilled->where,
+                              "...(note: this skipped variable initialization is needed by class '%s')",
+                              t->c_name() );
+                    EM_error2( unfulfilled->use_where,
+                              "...(note: this is where the variable is used within class '%s')",
+                              t->c_name() );
+                    EM_error2( 0,
+                              "...(hint: try instantiating '%s' after the variable initialization)", t->c_name() );
+                    return FALSE;
+                }
             }
 
             // should always be false; can't 'new int[]'...
@@ -3835,23 +3840,28 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // is a member?
     t_CKBOOL is_member = func->is_member;
 
-    // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
-    const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def != NULL );
-    // at least one unfulfilled dependency
-    if( unfulfilled )
+    // only check dependency violations if we are at a context-top-level
+    // or class-top-level scope, i.e., not in a function definition
+    if( !emit->env->func )
     {
-        EM_error2( where,
-            "calling '%s()' at this point skips initialization of a needed variable:",
-            func->base_name.c_str() );
-        EM_error2( unfulfilled->where,
-            "...(note: this skipped variable initialization is needed by '%s')",
-            func->signature().c_str() );
-        EM_error2( unfulfilled->use_where,
-            "...(note: this is where the variable is used within '%s')",
-            func->signature().c_str() );
-        EM_error2( 0,
-            "...(hint: try calling '%s()' after the variable initialization)", func->base_name.c_str() );
-        return FALSE;
+        // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
+        const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def != NULL );
+        // at least one unfulfilled dependency
+        if( unfulfilled )
+        {
+            EM_error2( where,
+                      "calling '%s()' at this point skips initialization of a needed variable:",
+                      func->base_name.c_str() );
+            EM_error2( unfulfilled->where,
+                      "...(note: this skipped variable initialization is needed by '%s')",
+                      func->signature().c_str() );
+            EM_error2( unfulfilled->use_where,
+                      "...(note: this is where the variable is used within '%s' or its subsidiaries)",
+                      func->signature().c_str() );
+            EM_error2( 0,
+                      "...(hint: try calling '%s()' after the variable initialization)", func->base_name.c_str() );
+            return FALSE;
+        }
     }
 
     // translate to code
@@ -4586,26 +4596,31 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 // avoid doing this if the array is global?
                 if( !is_array_ref )
                 {
-                    // look at the array/actual type
-                    Chuck_Type * actual_type = type->actual_type;
-                    // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
-                    // before dependencies are met | 1.5.0.8 (ge) added
-                    const Chuck_Value_Dependency * unfulfilled = actual_type->depends.locate( decl->type->where );
-                    // at least one unfulfilled dependency
-                    if( unfulfilled )
+                    // only check dependency violations if we are at a context-top-level
+                    // or class-top-level scope, i.e., not in a function definition
+                    if( !emit->env->func )
                     {
-                        EM_error2( decl->type->where,
-                            "'%s' instantiation at this point skips initialization of a needed variable:",
-                            actual_type->c_name() );
-                        EM_error2( unfulfilled->where,
-                            "...(note: this skipped variable initialization is needed by class '%s')",
-                            actual_type->c_name() );
-                        EM_error2( unfulfilled->use_where,
-                            "...(note: this is where the variable is used within class '%s')",
-                            actual_type->c_name() );
-                        EM_error2( 0,
-                            "...(hint: try instantiating '%s' after the variable initialization)", actual_type->c_name() );
-                        return FALSE;
+                        // look at the array/actual type
+                        Chuck_Type * actual_type = type->actual_type;
+                        // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+                        // before dependencies are met | 1.5.0.8 (ge) added
+                        const Chuck_Value_Dependency * unfulfilled = actual_type->depends.locate( decl->type->where );
+                        // at least one unfulfilled dependency
+                        if( unfulfilled )
+                        {
+                            EM_error2( decl->type->where,
+                                      "'%s' instantiation at this point skips initialization of a needed variable:",
+                                      actual_type->c_name() );
+                            EM_error2( unfulfilled->where,
+                                      "...(note: this skipped variable initialization is needed by class '%s')",
+                                      actual_type->c_name() );
+                            EM_error2( unfulfilled->use_where,
+                                      "...(note: this is where the variable is used within class '%s')",
+                                      actual_type->c_name() );
+                            EM_error2( 0,
+                                      "...(hint: try instantiating '%s' after the variable initialization)", actual_type->c_name() );
+                            return FALSE;
+                        }
                     }
 
                     // set
@@ -4617,24 +4632,29 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             }
             else if( !is_ref )
             {
-                // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
-                // before dependencies are met | 1.5.0.8 (ge) added
-                const Chuck_Value_Dependency * unfulfilled = type->depends.locate( var_decl->where );
-                // at least one unfulfilled
-                if( unfulfilled )
+                // only check dependency violations if we are at a context-top-level
+                // or class-top-level scope, i.e., not in a function definition
+                if( !emit->env->func )
                 {
-                    EM_error2( var_decl->where,
-                        "'%s' instantiation at this point skips initialization of needed variable:",
-                        type->c_name() );
-                    EM_error2( unfulfilled->where,
-                        "...(note: this skipped variable initialization is needed by class '%s')",
-                        type->c_name() );
-                    EM_error2( unfulfilled->use_where,
-                        "...(note: this is where the variable is used within class '%s')",
-                        type->c_name() );
-                    EM_error2( 0,
-                        "...(hint: try instantiating '%s' after the variable initialization)", type->c_name() );
-                    return FALSE;
+                    // dependency tracking: ensure object instantiation (e.g., Foo foo;) is not invoked
+                    // before dependencies are met | 1.5.0.8 (ge) added
+                    const Chuck_Value_Dependency * unfulfilled = type->depends.locate( var_decl->where );
+                    // at least one unfulfilled
+                    if( unfulfilled )
+                    {
+                        EM_error2( var_decl->where,
+                                  "'%s' instantiation at this point skips initialization of needed variable:",
+                                  type->c_name() );
+                        EM_error2( unfulfilled->where,
+                                  "...(note: this skipped variable initialization is needed by class '%s')",
+                                  type->c_name() );
+                        EM_error2( unfulfilled->use_where,
+                                  "...(note: this is where the variable is used within class '%s')",
+                                  type->c_name() );
+                        EM_error2( 0,
+                                  "...(hint: try instantiating '%s' after the variable initialization)", type->c_name() );
+                        return FALSE;
+                    }
                 }
 
                 // REFACTOR-2017: don't emit instructions to instantiate

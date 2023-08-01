@@ -4,7 +4,7 @@ error-depend-var.ck:4:1: error: calling 'foo()' at this point skips initializati
 error-depend-var.ck:7:10: error: ...(note: this skipped variable initialization is needed by 'fun void foo()')
 [7] 5 => int bar;
              ^
-error-depend-var.ck:16:17: error: ...(note: this is where the variable is used within 'fun void foo()')
+error-depend-var.ck:16:17: error: ...(note: this is where the variable is used within 'fun void foo()' or its subsidiaries)
 [16]     <<< "bar:", bar >>>;
                      ^
 error-depend-var.ck: ...(hint: try calling 'foo()' after the variable initialization)

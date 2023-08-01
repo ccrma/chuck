@@ -628,15 +628,28 @@ public:
     void add( Chuck_Value_Dependency_Graph * graph );
     // look for a dependency that occurs AFTER a particular code position
     // this function crawls the graph, taking care in the event of cycles
-    const Chuck_Value_Dependency * locate( t_CKUINT pos, t_CKBOOL isClassDef = FALSE, t_CKBOOL recurse = TRUE );
+    const Chuck_Value_Dependency * locate( t_CKUINT pos, t_CKBOOL isClassDef = FALSE );
+
+public:
+    // constructor
+    Chuck_Value_Dependency_Graph() : token(0) { }
 
 protected:
+    // search token, for cycle detection (not reentrant, thread-wise)
+    t_CKUINT token;
     // vector of dependencies
     std::vector<Chuck_Value_Dependency> directs;
-
     // vector of recursive dependency graphs
     // take care regarding circular dependency
     std::vector<Chuck_Value_Dependency_Graph *> remotes;
+
+protected:
+    // locate non-recursive
+    const Chuck_Value_Dependency * locateLocal( t_CKUINT pos, t_CKBOOL isClassDef );
+    // reset search tokens
+    void resetRecursive( t_CKUINT value = 0 );
+    // locate recursive
+    const Chuck_Value_Dependency * locateRecursive( t_CKUINT pos, t_CKBOOL isClassDef, t_CKUINT searchToken = 1 );
 };
 
 

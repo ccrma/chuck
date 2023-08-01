@@ -2692,6 +2692,19 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 return NULL;
             }
 
+            // dependency tracking | 1.5.0.8 (ge) added
+            // if in a function definition
+            if( env->func )
+            {
+                // dependency tracking: add the callee's dependencies
+                env->func->depends.add( &t->depends );
+            }
+            else if( env->class_def ) // in a class definition
+            {
+                // dependency tracking: add the callee's dependencies
+                env->class_def->depends.add( &t->depends );
+            }
+
             // []
             if( unary->array )
             {
@@ -3805,6 +3818,22 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         // 1.4.2.0 (ge, later) yes, it should be var_decl->ref, because var_decl is per declaration...
         // e.g., float a[], b -- the entire line is a decl whereas a and b are individual var_decls
 
+        // if instantiating an object
+        if( is_obj )
+        {
+            // if in a function definition
+            if( env->func )
+            {
+                // dependency tracking: add the callee's dependencies
+                env->func->depends.add( &type->depends );
+            }
+            else if( env->class_def ) // in a class definition
+            {
+                // dependency tracking: add the callee's dependencies
+                env->class_def->depends.add( &type->depends );
+            }
+        }
+
         // if array, then check to see if empty []
         if( var_decl->array && var_decl->array->exp_list != NULL )
         {
@@ -4143,6 +4172,18 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     else assert( FALSE );
 
     ck_func = theFunc;
+
+    // if in a function definition
+    if( env->func )
+    {
+        // dependency tracking: add the callee's dependencies
+        env->func->depends.add( &ck_func->depends );
+    }
+    else if( env->class_def ) // in a class definition
+    {
+        // dependency tracking: add the callee's dependencies
+        env->class_def->depends.add( &ck_func->depends );
+    }
 
     return theFunc->def()->ret_type;
 }
@@ -7751,11 +7792,14 @@ void Chuck_Value_Dependency_Graph::add( Chuck_Value_Dependency_Graph * graph )
 
 //-----------------------------------------------------------------------------
 // name: locate()
-// desc: look for a dependency that occurs AFTER a particular code position
+// desc: locate dependency non-recursive
 //-----------------------------------------------------------------------------
-const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locate( t_CKUINT pos,
-    t_CKBOOL isMember, t_CKBOOL recurse )
+const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateLocal(
+    t_CKUINT pos, t_CKBOOL isMember )
 {
+    // don't worry it if pos == 0 (assume omni-present, which is all good)
+    if( !pos ) return NULL;
+
     // value
     Chuck_Value * v = NULL;
 
@@ -7774,29 +7818,85 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locate( t_CKUINT po
         }
     }
 
-    // TODO crawl the remote graph, taking care to handle cycle
-#if 0
-    if( recurse )
-    {
-        // pointer to hold graphs
-        Chuck_Value_Dependency_Graph * graph = NULL;
-        // pointer to hold dep
-        const Chuck_Value_Dependency * dep = NULL;
-        // loop over
-        for( t_CKUINT i = 0; i < remotes.size(); i++ )
-        {
-            // copy pointer
-            graph = remotes[i];
-            // locate (without recursing first)
-            dep = graph->locate( pos, FALSE );
-            // if found
-            if( dep ) return dep;
-        }
-    }
-#endif
-
-    // none found
     return NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: resetRecursive()
+// desc: reset search tokens
+//-----------------------------------------------------------------------------
+void Chuck_Value_Dependency_Graph::resetRecursive( t_CKUINT value )
+{
+    // check
+    if( token == value ) return;
+    // set for self
+    this->token = value;
+
+    // pointer to hold graphs
+    Chuck_Value_Dependency_Graph * graph = NULL;
+    // loop over
+    for( t_CKUINT i = 0; i < remotes.size(); i++ )
+    {
+        // copy pointer
+        graph = remotes[i];
+        // if not already visited, visit
+        graph->resetRecursive( value );
+   }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: locateRecursive()
+// desc: crawl the remote graph, taking care to handle cycle
+//-----------------------------------------------------------------------------
+const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateRecursive(
+    t_CKUINT pos, t_CKBOOL isMember, t_CKUINT searchToken )
+{
+    // pointer to hold dep
+    const Chuck_Value_Dependency * dep = NULL;
+    // first search locally
+    dep = locateLocal( pos, isMember );
+    // if found, done
+    if( dep ) return dep;
+
+    // set search token, for cycle detection
+    this->token = searchToken;
+    // pointer to hold graphs
+    Chuck_Value_Dependency_Graph * graph = NULL;
+    // loop over
+    for( t_CKUINT i = 0; i < remotes.size(); i++ )
+    {
+        // copy pointer
+        graph = remotes[i];
+        // if not already visited, visit
+        if( graph->token != searchToken )
+            dep = graph->locateRecursive( pos, isMember, searchToken );
+        // if found, done
+        if( dep ) return dep;
+    }
+
+    return NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: locate()
+// desc: look for a dependency that occurs AFTER a particular code position
+//-----------------------------------------------------------------------------
+const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locate(
+    t_CKUINT pos, t_CKBOOL isMember )
+{
+    // reset search token
+    resetRecursive();
+    // recursive search
+    return locateRecursive( pos, isMember, 1 );
 }
 
 

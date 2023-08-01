@@ -1,0 +1,10 @@
+error-depend-nest3.ck:6:1: error: calling 'nest()' at this point skips initialization of a needed variable:
+[6] nest();
+    ^
+error-depend-nest3.ck:8:19: error: ...(note: this skipped variable initialization is needed by 'fun void nest()')
+[8] [1, 2, 3] @=> int array[];
+                      ^
+error-depend-nest3.ck:22:9: error: ...(note: this is where the variable is used within 'fun void nest()' or its subsidiaries)
+[22]     <<< array[0], array[1], array[2] >>>;
+             ^
+error-depend-nest3.ck: ...(hint: try calling 'nest()' after the variable initialization)

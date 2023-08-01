@@ -1,0 +1,10 @@
+error-depend-mutual.ck:4:1: error: calling 'foo()' at this point skips initialization of a needed variable:
+[4] foo();
+    ^
+error-depend-mutual.ck:7:10: error: ...(note: this skipped variable initialization is needed by 'fun void foo()')
+[7] 5 => int n;
+             ^
+error-depend-mutual.ck:13:9: error: ...(note: this is where the variable is used within 'fun void foo()' or its subsidiaries)
+[13]     if( n > 0 )
+             ^
+error-depend-mutual.ck: ...(hint: try calling 'foo()' after the variable initialization)

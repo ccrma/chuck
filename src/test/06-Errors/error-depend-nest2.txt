@@ -1,0 +1,10 @@
+error-depend-nest2.ck:15:1: error: calling 'nest()' at this point skips initialization of a needed variable:
+[15] nest();
+     ^
+error-depend-nest2.ck:18:12: error: ...(note: this skipped variable initialization is needed by 'fun void nest()')
+[18] 5 => float foo;
+                ^
+error-depend-nest2.ck:23:9: error: ...(note: this is where the variable is used within 'fun void nest()' or its subsidiaries)
+[23]     <<< foo >>>;
+             ^
+error-depend-nest2.ck: ...(hint: try calling 'nest()' after the variable initialization)
