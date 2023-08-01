@@ -1,13 +1,8 @@
 # this builds chuck on Linux with all supported drivers
-CFLAGS+= -D__LINUX_ALSA__ -D__LINUX_PULSE__ -D__UNIX_JACK__
-CFLAGS+= -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
-CFLAGS+= $(shell pkg-config --cflags jack)
+CFLAGS+=-D__LINUX_ALSA__ -D__LINUX_PULSE__ -D__UNIX_JACK__
+CFLAGS+=-fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
+CFLAGS+=$(shell pkg-config --cflags jack)
 
-ifneq ($(CHUCK_DEBUG),)
-CFLAGS+= -g
-else
-CFLAGS+= -O3
-endif
-
-LDFLAGS+= -lasound $(shell pkg-config --libs jack) -lpulse-simple -lpulse
-LDFLAGS+= -lstdc++ -ldl -lm -lsndfile -lpthread
+# linker / library flags
+LDFLAGS+=-lasound $(shell pkg-config --libs jack) -lpulse-simple -lpulse
+LDFLAGS+=-lstdc++ -ldl -lm -lsndfile -lpthread

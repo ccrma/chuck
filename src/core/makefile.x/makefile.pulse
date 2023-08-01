@@ -1,10 +1,5 @@
-
+# compiler flags
 CFLAGS+= -D__LINUX_PULSE__ -fno-strict-aliasing -D__CK_SNDFILE_NATIVE__
 
-ifneq ($(CHUCK_DEBUG),)
-CFLAGS+= -g
-else
-CFLAGS+= -O3
-endif
-
+# linker / library flags
 LDFLAGS+= -lasound -lstdc++ -ldl -lm -lsndfile -lpthread -lpulse-simple -lpulse

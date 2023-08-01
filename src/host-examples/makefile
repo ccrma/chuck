@@ -24,7 +24,7 @@ CXX=g++
 LD=g++
 
 # compiler flags
-CFLAGS+=-I. -I$(CHUCK_CORE_DIR) -I$(CHUCK_CORE_DIR)/lo
+CFLAGS+=-I. -I$(CHUCK_CORE_DIR) -I$(CHUCK_CORE_DIR)/lo -O3
 
 
 ########################## DEFAULT MAKE TARGET #################################
