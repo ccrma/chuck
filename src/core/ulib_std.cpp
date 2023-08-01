@@ -819,42 +819,42 @@ CK_DLL_SFUN( setenv_impl )
 CK_DLL_SFUN( mtof_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = mtof(v);
+    RETURN->v_float = ck_mtof(v);
 }
 
 // ftom
 CK_DLL_SFUN( ftom_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = ftom(v);
+    RETURN->v_float = ck_ftom(v);
 }
 
 // powtodb
 CK_DLL_SFUN( powtodb_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = powtodb(v);
+    RETURN->v_float = ck_powtodb(v);
 }
 
 // rmstodb
 CK_DLL_SFUN( rmstodb_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = rmstodb(v);
+    RETURN->v_float = ck_rmstodb(v);
 }
 
 // dbtopow
 CK_DLL_SFUN( dbtopow_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = dbtopow(v);
+    RETURN->v_float = ck_dbtopow(v);
 }
 
 // dbtorms
 CK_DLL_SFUN( dbtorms_impl )
 {
     t_CKFLOAT v = GET_CK_FLOAT(ARGS);
-    RETURN->v_float = dbtorms(v);
+    RETURN->v_float = ck_dbtorms(v);
 }
 
 CK_DLL_SFUN( dbtolin_impl )

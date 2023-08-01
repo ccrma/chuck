@@ -20370,7 +20370,7 @@ ck_domidi ( Instrmnt * inst, unsigned char status, unsigned char data1, unsigned
     unsigned char type = status && 0xf0;
     switch ( type ) {
     case __SK_NoteOn_:
-      inst->noteOn( mtof ( (float)data1 ), ((float)data2) / 128.0 );
+      inst->noteOn( ck_mtof ( (float)data1 ), ((float)data2) / 128.0 );
       break;
     case __SK_NoteOff_:
       inst->noteOff( ((float)data2) / 128.0 );
@@ -27210,7 +27210,7 @@ CK_DLL_CTRL( Shakers_ctrl_freq )
 {
     Shakers * s = (Shakers *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     s->freq = GET_NEXT_FLOAT(ARGS);
-    s->controlChange( __SK_ModWheel_, ftom(s->freq) );
+    s->controlChange( __SK_ModWheel_, ck_ftom(s->freq) );
     RETURN->v_float = (t_CKFLOAT)s->freq;
 }
 

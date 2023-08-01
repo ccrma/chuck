@@ -2391,7 +2391,7 @@ struct Corr_Object
         // minimum size
         t_CKINT mincap = fs + gs - 1;
         // ensure power of two
-        mincap = ensurepow2( mincap );
+        mincap = ck_ensurepow2( mincap );
         // log
         EM_log( CK_LOG_FINE, "Corr resizing to %d-element buffers...", mincap );
 

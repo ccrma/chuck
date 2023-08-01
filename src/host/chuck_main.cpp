@@ -973,7 +973,7 @@ t_CKBOOL go( int argc, const char ** argv )
     ChucK::enableSystemCall = g_enable_system_cmd;
 
     // check buffer size
-    buffer_size = ensurepow2( buffer_size );
+    buffer_size = ck_ensurepow2( buffer_size );
     // check mode and blocking
     if( !g_enable_realtime_audio && !block ) block = TRUE;
     // audio, boost 1.4.1.0 (ge) commented out

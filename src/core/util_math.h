@@ -80,21 +80,21 @@ void ck_randomize();
 
 
 // mtof
-double mtof( double f );
+double ck_mtof( double f );
 // ftom
-double ftom( double f );
+double ck_ftom( double f );
 // powtodb
-double powtodb( double f );
+double ck_powtodb( double f );
 // rmstodb
-double rmstodb( double f );
+double ck_rmstodb( double f );
 // dbtopow
-double dbtopow( double f );
+double ck_dbtopow( double f );
 // dbtorms
-double dbtorms( double f );
+double ck_dbtorms( double f );
 // nextpow2
-unsigned long nextpow2( unsigned long i );
+unsigned long ck_nextpow2( unsigned long i );
 // ensurepow2
-unsigned long ensurepow2( unsigned long i );
+unsigned long ck_ensurepow2( unsigned long i );
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }

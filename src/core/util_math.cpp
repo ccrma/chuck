@@ -143,13 +143,13 @@ double ck_remainder( double a, double b )
 
 
 //-----------------------------------------------------------------------------
-// name: mtof()
+// name: ck_mtof()
 // desc: midi to freq
 //-----------------------------------------------------------------------------
-double mtof( double f )
+double ck_mtof( double f )
 {
     if( f <= -1500 ) return (0);
-    else if( f > 1499 ) return (mtof(1499));
+    else if( f > 1499 ) return (ck_mtof(1499));
     // else return (8.17579891564 * exp(.0577622650 * f));
     // TODO: optimize
     else return ( pow(2,(f-69)/12.0) * 440.0 );
@@ -159,10 +159,10 @@ double mtof( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: ftom()
+// name: ck_ftom()
 // desc: freq to midi
 //-----------------------------------------------------------------------------
-double ftom( double f )
+double ck_ftom( double f )
 {   
     // return (f > 0 ? 17.3123405046 * log(.12231220585 * f) : -1500);
     // TODO: optimize
@@ -173,10 +173,10 @@ double ftom( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: powtodb()
+// name: ck_powtodb()
 // desc: ...
 //-----------------------------------------------------------------------------
-double powtodb( double f )
+double ck_powtodb( double f )
 {
     if( f <= 0 ) return (0);
     else
@@ -190,10 +190,10 @@ double powtodb( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: rmstodb()
+// name: ck_rmstodb()
 // desc: ...
 //-----------------------------------------------------------------------------
-double rmstodb( double f )
+double ck_rmstodb( double f )
 {
     if( f <= 0 ) return (0);
     else
@@ -207,10 +207,10 @@ double rmstodb( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: dbtopow()
+// name: ck_dbtopow()
 // desc: ...
 //-----------------------------------------------------------------------------
-double dbtopow( double f )
+double ck_dbtopow( double f )
 {
     if( f <= 0 )
         return (0);
@@ -225,10 +225,10 @@ double dbtopow( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: dbtorms()
+// name: ck_dbtorms()
 // desc: ...
 //-----------------------------------------------------------------------------
-double dbtorms( double f )
+double ck_dbtorms( double f )
 {
     if( f <= 0 )
         return (0);
@@ -243,10 +243,10 @@ double dbtorms( double f )
 
 
 //-----------------------------------------------------------------------------
-// name: nextpow2()
+// name: ck_nextpow2()
 // desc: ...
 //-----------------------------------------------------------------------------
-unsigned long nextpow2( unsigned long n )
+unsigned long ck_nextpow2( unsigned long n )
 {
     unsigned long nn = n;
     for( ; n &= n-1; nn = n );
@@ -257,10 +257,10 @@ unsigned long nextpow2( unsigned long n )
 
 
 //-----------------------------------------------------------------------------
-// name: ensurepow2()
+// name: ck_ensurepow2()
 // desc: ...
 //-----------------------------------------------------------------------------
-unsigned long ensurepow2( unsigned long n )
+unsigned long ck_ensurepow2( unsigned long n )
 {
-    return nextpow2( n-1 );
+    return ck_nextpow2( n-1 );
 }
