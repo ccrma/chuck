@@ -1053,37 +1053,4 @@ std::string arglist2string( a_Arg_List list );
 
 
 
-//-----------------------------------------------------------------------------
-// REFACTOR-2017: exile! these default types now stored in env
-//-----------------------------------------------------------------------------
-//extern Chuck_Type t_void;
-//extern Chuck_Type t_int;
-//extern Chuck_Type t_float;
-//extern Chuck_Type t_time;
-//extern Chuck_Type t_dur;
-//extern Chuck_Type t_complex;
-//extern Chuck_Type t_polar;
-//extern Chuck_Type t_vec3; // ge: added 1.3.5.3
-//extern Chuck_Type t_vec4; // ge: added 1.3.5.3
-//extern Chuck_Type t_vector;
-//extern Chuck_Type t_object;
-//extern Chuck_Type t_null;
-//extern Chuck_Type t_string;
-//extern Chuck_Type t_array;
-//extern Chuck_Type t_shred;
-//extern Chuck_Type t_thread;
-//extern Chuck_Type t_function;
-//extern Chuck_Type t_class;
-//extern Chuck_Type t_event;
-//extern Chuck_Type t_io;
-//extern Chuck_Type t_fileio;
-//extern Chuck_Type t_chout;
-//extern Chuck_Type t_cherr;
-//extern Chuck_Type t_ugen;
-//extern Chuck_Type t_uana;
-//extern Chuck_Type t_uanablob;
-
-
-
-
 #endif

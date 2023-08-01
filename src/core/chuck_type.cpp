@@ -1230,10 +1230,10 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         return FALSE;
 
     // get array type
-    Chuck_Type * t_array = stmt->theArray->type;
+    Chuck_Type * type_array = stmt->theArray->type;
 
     // make sure we have an array
-    if( !t_array->array_depth )
+    if( !type_array->array_depth )
     {
         // error
         EM_error2( stmt->theArray->where, "for( X : ARRAY ) expects ARRAY to be an array" );
@@ -1253,14 +1253,14 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         return FALSE;
 
     // get iter type
-    Chuck_Type * t_iter = stmt->theIter->type;
+    Chuck_Type * type_iter = stmt->theIter->type;
 
     // make sure lhs is a decl
     if( stmt->theIter->s_type != ae_exp_decl )
     {
         // type suggestion
-        string suggest = t_array->base_name + " x";
-        for( t_CKINT i = 0; i < t_array->array_depth-1; i++ ) suggest += "[]";
+        string suggest = type_array->base_name + " x";
+        for( t_CKINT i = 0; i < type_array->array_depth-1; i++ ) suggest += "[]";
 
         // error
         EM_error2( stmt->theIter->where, "for( X : ARRAY ) expects X to be a declaration, e.g., '%s'", suggest.c_str() );
@@ -1277,7 +1277,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     }
 
     // check if VAR is itself an array
-    if( t_iter->array_depth > 0 )
+    if( type_iter->array_depth > 0 )
     {
         // get var decl list
         a_Var_Decl_List list = stmt->theIter->decl.var_decl_list;
@@ -1293,7 +1293,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
         }
 
         // make sure the type matches
-        if( !isa( t_array->array_type, t_iter->array_type ) )
+        if( !isa( type_array->array_type, type_iter->array_type ) )
         {
             // error
             EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
@@ -1304,7 +1304,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     else
     {
         // make sure the type matches
-        if( !isa( t_array->array_type, t_iter ) )
+        if( !isa( type_array->array_type, type_iter ) )
         {
             // error
             EM_error2( stmt->theIter->where, "for( X : ARRAY ) type mismatch between X [%s] and ARRAY [%s]",
@@ -1314,7 +1314,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     }
 
     // difference in array depth
-    t_CKINT depth = t_array->array_depth - t_iter->array_depth;
+    t_CKINT depth = type_array->array_depth - type_iter->array_depth;
     // VAR array depth should always be one less
     if( depth != 1 )
     {
@@ -1325,7 +1325,7 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     }
 
     // if VAR is an Object type
-    if( isobj(env, t_iter) )
+    if( isobj(env, type_iter) )
     {
         // force VAR to be a reference decl for emitting
         // e.g., SinOsc x implicitly will be emitted as SinOsc @ x
@@ -8597,54 +8597,3 @@ void Chuck_Type::dump_obj( Chuck_Object * obj, std::string & output )
 {
     // TODO
 }
-
-
-
-
-//-----------------------------------------------------------------------------
-// default types
-//-----------------------------------------------------------------------------
-// REFACTOR-2017: exile again!
-//Chuck_Type t_void( te_void, "void", NULL, 0 );
-//Chuck_Type t_int( te_int, "int", NULL, sizeof(t_CKINT) );
-//Chuck_Type t_float( te_float, "float", NULL, sizeof(t_CKFLOAT) );
-//Chuck_Type t_time( te_time, "time", NULL, sizeof(t_CKTIME) );
-//Chuck_Type t_dur( te_dur, "dur", NULL, sizeof(t_CKTIME) );
-//Chuck_Type t_complex( te_complex, "complex", NULL, sizeof(t_CKCOMPLEX) );
-//Chuck_Type t_polar( te_polar, "polar", NULL, sizeof(t_CKPOLAR) );
-//Chuck_Type t_vec3( te_vec3, "vec3", NULL, sizeof(t_CKVEC3) ); // 1.3.5.3
-//Chuck_Type t_vec4( te_vec4, "vec4", NULL, sizeof(t_CKVEC4) ); // 1.3.5.3
-//Chuck_Type t_null( te_null, "@null", NULL, sizeof(void *) );
-//Chuck_Type t_function( te_function, "@function", &t_object, sizeof(void *) );
-//Chuck_Type t_object( te_object, "Object", NULL, sizeof(void *) );
-//Chuck_Type t_array( te_array, "@array", &t_object, sizeof(void *) );
-//Chuck_Type t_string( te_string, "string", &t_object, sizeof(void *) );
-//Chuck_Type t_event( te_event, "Event", &t_object, sizeof(void *) );
-//Chuck_Type t_ugen( te_ugen, "UGen", &t_object, sizeof(void *) );
-//Chuck_Type t_uana( te_uana, "UAna", &t_ugen, sizeof(void *) );
-//Chuck_Type t_uanablob( te_uanablob, "UAnaBlob", &t_object, sizeof(void *) );
-//Chuck_Type t_shred( te_shred, "Shred", &t_object, sizeof(void *) );
-//Chuck_Type t_io( te_io, "IO", &t_event, sizeof(void *) );
-//Chuck_Type t_fileio( te_fileio, "FileIO", &t_io, sizeof(void *) );
-//Chuck_Type t_chout( te_chout, "StdOut", &t_io, sizeof(void *) );
-//Chuck_Type t_cherr( te_cherr, "StdErr", &t_io, sizeof(void *) );
-//Chuck_Type t_thread( te_thread, "Thread", &t_object, sizeof(void *) );
-//Chuck_Type t_class( te_class, "Class", &t_object, sizeof(void *) );
-
-// exile
-//struct Chuck_Type t_adc = { te_adc, "adc", &t_ugen, t_ugen.size };
-//struct Chuck_Type t_dac = { te_dac, "dac", &t_ugen, t_ugen.size };
-//struct Chuck_Type t_bunghole = { te_bunghole, "bunghole", &t_ugen, t_ugen.size };
-//struct Chuck_Type t_midiout = { te_midiout, "midiout", &t_object, sizeof(void *) };
-//struct Chuck_Type t_midiin = { te_midiin, "midiin", &t_object, sizeof(void *) };
-//struct Chuck_Type t_stdout = { te_stdout, "@stdout", &t_object, sizeof(void *) };
-//struct Chuck_Type t_stderr ={ te_stdout, "@stderr", &t_object, sizeof(void *) };
-//
-//struct Chuck_Type t_uint = { te_uint, "uint", NULL, sizeof(t_CKUINT) };
-//struct Chuck_Type t_single = { te_single, "single", NULL, sizeof(float) };
-//struct Chuck_Type t_double = { te_double, "double", NULL, sizeof(double) };
-//struct Chuck_Type t_code = { te_code, "code", NULL, sizeof(void *) };
-//struct Chuck_Type t_tuple = { te_tuple, "tuple", NULL, sizeof(void *) };
-//struct Chuck_Type t_pattern = { te_pattern, "pattern", &t_object, sizeof(void *) };
-//struct Chuck_Type t_transport = { te_transport, "transport", &t_object, sizeof(void *) };
-//struct Chuck_Type t_host = { te_host, "host", &t_object, sizeof(void *) };

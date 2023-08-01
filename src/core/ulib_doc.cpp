@@ -1046,7 +1046,7 @@ string CKDoc::genGroup( CKDocGroup * group, t_CKBOOL clearOutput )
             // get the current type
             Chuck_Type * type = *t;
             // skip
-            // if( skip(type->name) ) continue;
+            // if( skip(type->base_name) ) continue;
             // output the type in TOC
             output->toc_class( type );
         }
@@ -1062,7 +1062,7 @@ string CKDoc::genGroup( CKDocGroup * group, t_CKBOOL clearOutput )
     for( vector<Chuck_Type *>::const_iterator t = group->types.begin(); t != group->types.end(); t++ )
     {
         // skip
-        // if( skip(type->name) ) continue;
+        // if( skip(type->base_name) ) continue;
         // gen type, don't clear output
         genType( *t, FALSE );
     }
