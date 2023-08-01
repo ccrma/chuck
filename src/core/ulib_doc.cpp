@@ -1517,7 +1517,7 @@ CK_DLL_CTRL( CKDoc_examplesRoot_set )
 CK_DLL_CGET( CKDoc_examplesRoot_get )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( ckdoc->getExamplesRoot() );
     RETURN->v_string = str;
 }
@@ -1543,7 +1543,7 @@ CK_DLL_MFUN( CKDoc_genIndex )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
     Chuck_String * indexTitle = GET_NEXT_STRING(ARGS);
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( ckdoc->genIndex( indexTitle != NULL ? indexTitle->str() : "" ) );
     RETURN->v_string = str;
 }
@@ -1551,7 +1551,7 @@ CK_DLL_MFUN( CKDoc_genIndex )
 CK_DLL_MFUN( CKDoc_genCSS )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( ckdoc->genCSS() );
     RETURN->v_string = str;
 }
@@ -1572,7 +1572,7 @@ CK_DLL_MFUN( CKDoc_genGroups )
     for( t_CKINT i = 0; i < results.size(); i++ )
     {
         // instantiate chuck string
-        Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+        Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
         // set into chuck string
         str->set( ckdoc->genCSS() );
         // push back
@@ -1585,7 +1585,7 @@ CK_DLL_MFUN( CKDoc_genType_type )
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
     Chuck_Type * type = (Chuck_Type *)GET_NEXT_OBJECT(ARGS);
     // return something
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // gen type
     str->set( type ? ckdoc->genType( type ) : "" );
     // set return
@@ -1601,7 +1601,7 @@ CK_DLL_MFUN( CKDoc_genType_str )
     // chuck type
     Chuck_Type * type = type_engine_find_type( VM->env(), typeName->str() );
     // return something
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // gen type
     str->set( type ? ckdoc->genType( type ) : "" );
     // set return

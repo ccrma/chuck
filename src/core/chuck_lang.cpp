@@ -1345,7 +1345,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init void
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_void, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_void, env->global(), NULL, NULL,
         "the type of nothingness, or the lack of a type.") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1353,7 +1353,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init int
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_int, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_int, env->global(), NULL, NULL,
         "the primitive integer type.") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1361,7 +1361,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init float
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_float, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_float, env->global(), NULL, NULL,
         "the primitive floating point type.") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1369,7 +1369,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init time
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_time, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_time, env->global(), NULL, NULL,
         "the primitive type of a point in time.") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1377,7 +1377,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init dur
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_dur, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_dur, env->global(), NULL, NULL,
         "the primitive type of a length of time.") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1385,7 +1385,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init complex
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_complex, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_complex, env->global(), NULL, NULL,
         "the primitive type of a complex pair #(re,im).") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1393,7 +1393,7 @@ t_CKBOOL init_primitive_types( Chuck_Env * env )
     //-----------------------------------------------------------------------------
     // init polar
     //-----------------------------------------------------------------------------
-    if( !type_engine_import_class_begin( env, env->t_polar, env->global(), NULL, NULL,
+    if( !type_engine_import_class_begin( env, env->ckt_polar, env->global(), NULL, NULL,
         "the primitive type of a polar value %(mag,phase)") ) return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1434,7 +1434,7 @@ CK_DLL_MFUN( object_toString )
     if( !str )
     {
         // new it
-        str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+        str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
         // check it
         if( !str )
         {
@@ -1701,7 +1701,7 @@ CK_DLL_MFUN( ugen_cget_buffered )
 CK_DLL_CTOR( uana_ctor )
 {
     // make an actual blob
-    Chuck_Object * blob = instantiate_and_initialize_object( SHRED->vm_ref->env()->t_uanablob, SHRED );
+    Chuck_Object * blob = instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_uanablob, SHRED );
     // check
     if( blob == NULL )
     {
@@ -1900,13 +1900,13 @@ CK_DLL_CTOR( uanablob_ctor )
 
     // fvals
     Chuck_Array8 * arr8 = new Chuck_Array8( 8 );
-    initialize_object( arr8, SHRED->vm_ref->env()->t_array );
+    initialize_object( arr8, SHRED->vm_ref->env()->ckt_array );
     arr8->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
 
     // cvals
     Chuck_Array16 * arr16 = new Chuck_Array16( 8 );
-    initialize_object( arr16, SHRED->vm_ref->env()->t_array );
+    initialize_object( arr16, SHRED->vm_ref->env()->ckt_array );
     arr16->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
 }
@@ -2276,7 +2276,7 @@ CK_DLL_MFUN( shred_getArg )
     // total
     t_CKINT num = derhs->args.size();
 
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( ( i < num ? derhs->args[i] : "" ) );
     RETURN->v_string = str;
 }
@@ -2285,7 +2285,7 @@ CK_DLL_MFUN( shred_sourcePath ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
 
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( derhs->code->filename );
     RETURN->v_string = str;
 }
@@ -2294,7 +2294,7 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
 
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
 
     str->set( extract_filepath_dir(derhs->code->filename) );
 
@@ -2310,7 +2310,7 @@ CK_DLL_MFUN( shred_sourceDir2 ) // added 1.3.2.0
     if( i < 0 ) i = -i;
 
     // new chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // set the content
     str->set( extract_filepath_dir(derhs->code->filename) );
     // up
@@ -2342,7 +2342,7 @@ CK_DLL_MFUN( string_length )
 CK_DLL_MFUN( string_upper )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( toupper( s->str() ) );
     RETURN->v_string = str;
 }
@@ -2350,7 +2350,7 @@ CK_DLL_MFUN( string_upper )
 CK_DLL_MFUN( string_lower )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( tolower( s->str() ) );
     RETURN->v_string = str;
 }
@@ -2358,7 +2358,7 @@ CK_DLL_MFUN( string_lower )
 CK_DLL_MFUN( string_ltrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( ltrim( s->str() ) );
     RETURN->v_string = str;
 }
@@ -2366,7 +2366,7 @@ CK_DLL_MFUN( string_ltrim )
 CK_DLL_MFUN( string_rtrim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( rtrim( s->str() ) );
     RETURN->v_string = str;
 }
@@ -2374,7 +2374,7 @@ CK_DLL_MFUN( string_rtrim )
 CK_DLL_MFUN( string_trim )
 {
     Chuck_String * s = (Chuck_String *)SELF;
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( trim( s->str() ) );
     RETURN->v_string = str;
 }
@@ -2432,7 +2432,7 @@ CK_DLL_MFUN(string_substring)
         return;
     }
 
-    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
     ss->set( str->str().substr(start) );
 
     RETURN->v_string = ss;
@@ -2458,7 +2458,7 @@ CK_DLL_MFUN(string_substringN)
         return;
     }
 
-    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+    Chuck_String * ss = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
     ss->set( str->str().substr(start, length) );
 
     RETURN->v_string = ss;
@@ -2734,7 +2734,7 @@ CK_DLL_MFUN( string_parent )
         i = str->str().rfind('\\', str->str().length()-2);
 #endif // __PLATFORM_WINDOWS__
 
-    Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+    Chuck_String * parent = (Chuck_String *) instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
 
     if(i != string::npos)
     {
@@ -2977,7 +2977,7 @@ CK_DLL_MFUN( array_get_keys )
 
     // copy array keys into the provided string array
     for (t_CKUINT i = 0; i < array_keys.size(); i++ ) {
-        Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->t_string, SHRED);
+        Chuck_String * key = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
         key->set(array_keys[i]);
         returned_keys->push_back((t_CKUINT) key);
     }
@@ -3106,7 +3106,7 @@ CK_DLL_MFUN( type_basename )
     // get self as type
     Chuck_Type * type = (Chuck_Type *)SELF;
     // new it
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // set
     str->set( type->base_name );
     // return
@@ -3118,7 +3118,7 @@ CK_DLL_MFUN( type_name )
     // get self as type
     Chuck_Type * type = (Chuck_Type *)SELF;
     // new it
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // construct the full type name (arrays included)
     string name = type->base_name;
     // append array depth
@@ -3146,7 +3146,7 @@ CK_DLL_MFUN( type_children )
 
     // instantiate
     Chuck_Array4 * ret = new Chuck_Array4( TRUE );
-    initialize_object( ret, VM->env()->t_array );
+    initialize_object( ret, VM->env()->ckt_array );
 
     // results
     vector<Chuck_Type *> types;
@@ -3176,7 +3176,7 @@ CK_DLL_MFUN( type_origin )
     // me, the type
     Chuck_Type * type = (Chuck_Type *)SELF;
     // return type
-    Chuck_String * origin = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, VM );
+    Chuck_String * origin = (Chuck_String *)instantiate_and_initialize_object( VM->env()->ckt_string, VM );
     // string
     string s = "";
     // check origin hint
@@ -3264,49 +3264,49 @@ CK_DLL_SFUN( type_typeOf_obj )
 
 CK_DLL_SFUN( type_typeOf_int )
 {
-    RETURN->v_object = VM->env()->t_int;
+    RETURN->v_object = VM->env()->ckt_int;
 }
 
 CK_DLL_SFUN( type_typeOf_float )
 {
-    RETURN->v_object = VM->env()->t_float;
+    RETURN->v_object = VM->env()->ckt_float;
 }
 
 CK_DLL_SFUN( type_typeOf_time )
 {
-    RETURN->v_object = VM->env()->t_time;
+    RETURN->v_object = VM->env()->ckt_time;
 }
 
 CK_DLL_SFUN( type_typeOf_dur )
 {
-    RETURN->v_object = VM->env()->t_dur;
+    RETURN->v_object = VM->env()->ckt_dur;
 }
 
 CK_DLL_SFUN( type_typeOf_complex )
 {
-    RETURN->v_object = VM->env()->t_complex;
+    RETURN->v_object = VM->env()->ckt_complex;
 }
 
 CK_DLL_SFUN( type_typeOf_polar )
 {
-    RETURN->v_object = VM->env()->t_polar;
+    RETURN->v_object = VM->env()->ckt_polar;
 }
 
 CK_DLL_SFUN( type_typeOf_vec3 )
 {
-    RETURN->v_object = VM->env()->t_vec3;
+    RETURN->v_object = VM->env()->ckt_vec3;
 }
 
 CK_DLL_SFUN( type_typeOf_vec4 )
 {
-    RETURN->v_object = VM->env()->t_vec4;
+    RETURN->v_object = VM->env()->ckt_vec4;
 }
 
 CK_DLL_SFUN( type_getTypes )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->t_array );
+    initialize_object( array, VM->env()->ckt_array );
 
     // get args
     t_CKINT attributes = GET_NEXT_INT(ARGS);
@@ -3331,7 +3331,7 @@ CK_DLL_SFUN( type_getTypes2 )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->t_array );
+    initialize_object( array, VM->env()->ckt_array );
 
     // get args
     t_CKBOOL objs = GET_NEXT_INT(ARGS);
@@ -3352,7 +3352,7 @@ CK_DLL_SFUN( type_getTypesAll )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->t_array );
+    initialize_object( array, VM->env()->ckt_array );
 
     // get all types
     typeGetTypes( VM, array, true, true, true, true, true, true, true );

@@ -997,7 +997,7 @@ t_CKBOOL Chuck_Globals_Manager::init_global_string( const std::string & name )
         m_global_strings[name] = new Chuck_Global_String_Container;
         // init
         m_global_strings[name]->val = (Chuck_String *)
-        instantiate_and_initialize_object( m_vm->env()->t_string, m_vm );
+        instantiate_and_initialize_object( m_vm->env()->ckt_string, m_vm );
 
         // add reference to prevent deletion
         m_global_strings[name]->val->add_ref();

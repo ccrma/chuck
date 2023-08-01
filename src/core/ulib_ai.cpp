@@ -5895,7 +5895,7 @@ CK_DLL_MFUN( Wekinator_get_task_type_name )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // make a new chuck string
-    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, SHRED );
+    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->ckt_string, SHRED );
     // get_task_type_name
     wekinator->get_task_type_name( *name );
     // return
@@ -5971,7 +5971,7 @@ CK_DLL_MFUN( Wekinator_get_model_type_name )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // make a chuck string
-    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->t_string, SHRED );
+    Chuck_String * name = (Chuck_String *)instantiate_and_initialize_object( VM->env()->ckt_string, SHRED );
     // get_model_type_name
     wekinator->get_model_type_name( *name );
     // return it

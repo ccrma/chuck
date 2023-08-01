@@ -330,7 +330,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         Chuck_Type * type = NULL;
 
         // allocate value
-        type = env->t_class->copy( env );
+        type = env->ckt_class->copy( env );
         type->actual_type = the_class;
         value = env->context->new_Chuck_Value( type, the_class->base_name );
         value->owner = env->curr;
@@ -359,7 +359,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     }
 
     // initialize the Type info object | 1.5.0.0 (ge) added
-    initialize_object( the_class, env->t_class );
+    initialize_object( the_class, env->ckt_class );
 
 done:
 
@@ -1394,7 +1394,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         // create the new array type
         t = new_array_type(
             env,  // the env
-            env->t_array,  // the array base class
+            env->ckt_array,  // the array base class
             f->type_decl->array->depth,  // the depth of the new type
             t2,  // the 'array_type'
             env->curr  // the owner namespace
@@ -2441,7 +2441,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( overload )
     {
         // if value
-        if( !isa( overload->type, env->t_function ) )
+        if( !isa( overload->type, env->ckt_function ) )
         {
             EM_error2( f->where,
                 "function name '%s' is already used by another value", S_name(f->name) );
@@ -2507,7 +2507,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     type = env->context->new_Chuck_Type( env );
     type->xid = te_function;
     type->base_name = "[function]";
-    type->parent = env->t_function;
+    type->parent = env->ckt_function;
     type->size = sizeof(void *);
     type->func = func;
 
@@ -2631,7 +2631,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // create the new array type
             t = new_array_type(
                 env,  // the env
-                env->t_array,  // the array base class
+                env->ckt_array,  // the array base class
                 arg_list->var_decl->array->depth,  // the depth of the new type
                 t2,  // the 'array_type'
                 env->curr  // the owner namespace

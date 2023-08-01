@@ -286,7 +286,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
         return FALSE;
     }
 
-    if( !env()->t_dac || !env()->t_adc )
+    if( !env()->ckt_dac || !env()->ckt_adc )
     {
         m_last_error = "VM initialize_synthesis() called before type system initialized";
         return FALSE;
@@ -300,9 +300,9 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
-    // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->t_dac)
-    env()->t_dac->ugen_info->num_outs = env()->t_dac->ugen_info->num_ins = m_num_dac_channels;
-    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->t_dac, this );
+    // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->ckt_dac)
+    env()->ckt_dac->ugen_info->num_outs = env()->ckt_dac->ugen_info->num_ins = m_num_dac_channels;
+    m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_dac, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
@@ -313,9 +313,9 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
 
     // log
     EM_log( CK_LOG_SEVERE, "initializing 'adc'..." );
-    // (REFACTOR-2017: g_t_adc changed to env()->t_adc)
-    env()->t_adc->ugen_info->num_ins = env()->t_adc->ugen_info->num_outs = m_num_adc_channels;
-    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->t_adc, this );
+    // (REFACTOR-2017: g_t_adc changed to env()->ckt_adc)
+    env()->ckt_adc->ugen_info->num_ins = env()->ckt_adc->ugen_info->num_outs = m_num_adc_channels;
+    m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_adc, this );
     // Chuck_DL_Api::Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
     stereo_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::Api::instance() );
@@ -329,7 +329,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
-    initialize_object( m_bunghole, env()->t_ugen );
+    initialize_object( m_bunghole, env()->ckt_ugen );
     m_bunghole->tick = NULL;
     m_bunghole->alloc_v( m_shreduler->m_max_block_size );
     m_shreduler->m_dac = m_dac;
@@ -1496,7 +1496,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, vm_ref->env()->t_shred );
+    initialize_object( this, vm_ref->env()->ckt_shred );
 
     return TRUE;
 }

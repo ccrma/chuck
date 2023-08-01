@@ -1690,7 +1690,7 @@ void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( !rhs || !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
 
     // concat
     // result->str = lhs->str + rhs->str;
@@ -1784,7 +1784,7 @@ void Chuck_Instr_Add_string_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     if( !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
 
     // concat
     // result->str = lhs->str + ::itoa(rhs);
@@ -1833,7 +1833,7 @@ void Chuck_Instr_Add_string_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( !lhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
 
     // concat
     // result->str = lhs->str + ::ftoa(rhs, 4);
@@ -1882,7 +1882,7 @@ void Chuck_Instr_Add_int_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     if( !rhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
 
     // concat
     // result->str = ::itoa(lhs) + rhs->str;
@@ -1931,7 +1931,7 @@ void Chuck_Instr_Add_float_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( !rhs ) goto null_pointer;
 
     // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
 
     // concat
     // result->str = ::ftoa(lhs, 4) + rhs->str;
@@ -3951,7 +3951,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         {
             // allocate ugen for each | REFACTOR-2017: added ugen->vm
             Chuck_Object * obj = instantiate_and_initialize_object(
-                ugen->vm->env()->t_ugen, ugen->shred, ugen->vm );
+                ugen->vm->env()->ckt_ugen, ugen->shred, ugen->vm );
             // cast to ugen
             ugen->m_multi_chan[i] = (Chuck_UGen *)obj;
             // additional reference count
@@ -4032,18 +4032,18 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         if( type->allocator )
             object = type->allocator( vm, shred, Chuck_DL_Api::Api::instance() );
         // #ifndef __DISABLE_FILEIO__
-        else if( isa( type, vm->env()->t_fileio ) ) object = new Chuck_IO_File( vm );
+        else if( isa( type, vm->env()->ckt_fileio ) ) object = new Chuck_IO_File( vm );
         // #endif
-        else if( isa( type, vm->env()->t_event ) ) object = new Chuck_Event;
-        else if( isa( type, vm->env()->t_string ) ) object = new Chuck_String;
+        else if( isa( type, vm->env()->ckt_event ) ) object = new Chuck_Event;
+        else if( isa( type, vm->env()->ckt_string ) ) object = new Chuck_String;
         // TODO: is this ok?
-        else if( isa( type, vm->env()->t_shred ) )
+        else if( isa( type, vm->env()->ckt_shred ) )
         {
             object = new Chuck_VM_Shred;
             ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
-        else if( isa( type, vm->env()->t_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
+        else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
         // TODO: is this ok?
         else object = new Chuck_Object;
     }
@@ -4412,7 +4412,7 @@ void Chuck_Instr_Assign_String::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // if left is not null, yes
         if( lhs != NULL )
         {
-            (*rhs_ptr) = (Chuck_String *)instantiate_and_initialize_object( vm->env()->t_string, shred );
+            (*rhs_ptr) = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
             // add ref
             (*rhs_ptr)->add_ref();
             (*rhs_ptr)->set( lhs->str() );
@@ -5272,7 +5272,7 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
     m_is_obj = isobj( env, m_type_ref );
     // float | 1.4.2.0 (ge) added to differentiate between int and float arrays
     // -- in situations where they are the same size
-    m_is_float = isa( t, env->t_float );
+    m_is_float = isa( t, env->ckt_float );
 
     // copy type name
     const char * str = m_type_ref->c_name();
@@ -5332,7 +5332,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         if( !array ) goto out_of_memory;
         // initialize object
         // TODO: should it be this??? initialize_object( array, m_type_ref );
-        initialize_object( array, vm->env()->t_array );
+        initialize_object( array, vm->env()->ckt_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -5355,7 +5355,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->t_array );
+        initialize_object( array, vm->env()->ckt_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -5378,7 +5378,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->t_array );
+        initialize_object( array, vm->env()->ckt_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -5401,7 +5401,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKVEC3 * sp = (t_CKVEC3 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->t_array );
+        initialize_object( array, vm->env()->ckt_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -5424,7 +5424,7 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // fill array
         t_CKVEC4 * sp = (t_CKVEC4 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->t_array );
+        initialize_object( array, vm->env()->ckt_array );
         // set array type
         array->m_array_type = m_type_ref;
         m_type_ref->add_ref();
@@ -5564,7 +5564,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
-            // initialize_object( baseX, vm->env()->t_array );
+            // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
         else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -5575,7 +5575,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
-            // initialize_object( baseX, vm->env()->t_array );
+            // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
         else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -5586,7 +5586,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
-            // initialize_object( baseX, vm->env()->t_array );
+            // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
         else if( kind == kindof_VEC3 ) // 1.3.5.3
@@ -5597,7 +5597,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
-            // initialize_object( baseX, vm->env()->t_array );
+            // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
         else if( kind == kindof_VEC4 ) // 1.3.5.3
@@ -5608,7 +5608,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
-            // initialize_object( baseX, vm->env()->t_array );
+            // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
 
@@ -5641,7 +5641,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
     // for the object->type_ref to contain more specific information
     initialize_object( theBase, type );
-    // initialize_object( theBase, vm->env()->t_array );
+    // initialize_object( theBase, vm->env()->ckt_array );
     return theBase;
 
 internal_error_array_depth:
@@ -7886,10 +7886,10 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     {
         t_CKINT * sp = (t_CKINT *)shred->reg->sp;
         Chuck_Object * obj = ((Chuck_Object *)*(sp-1));
-        if( !isa( m_type_ref, vm->env()->t_string ) || *(sp-1) == 0 )
+        if( !isa( m_type_ref, vm->env()->ckt_string ) || *(sp-1) == 0 )
         {
             // print it
-            if( isa( m_type_ref, vm->env()->t_object ) )
+            if( isa( m_type_ref, vm->env()->ckt_object ) )
             {
                 if( obj == NULL )
                 {
@@ -8023,9 +8023,9 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         if( type->size == sz_INT && iskindofint(vm->env(), type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             t_CKINT * sp = (t_CKINT *)the_sp;
-            if( !isa( type, vm->env()->t_string ) || *(sp) == 0 )
+            if( !isa( type, vm->env()->ckt_string ) || *(sp) == 0 )
             {
-                if( isa( type, vm->env()->t_object ) )
+                if( isa( type, vm->env()->ckt_object ) )
                 {
                     Chuck_Object * obj = ((Chuck_Object *)(*sp));
                     // print it

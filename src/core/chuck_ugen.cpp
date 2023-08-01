@@ -1322,7 +1322,7 @@ void Chuck_UGen::init_subgraph()
     Chuck_Object * obj = NULL;
 
     // instantiate object for inlet
-    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->t_ugen, this->shred );
+    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->ckt_ugen, this->shred );
     // set as inlet
     m_inlet = (Chuck_UGen *)obj;
     // additional reference count
@@ -1333,7 +1333,7 @@ void Chuck_UGen::init_subgraph()
     this->add_ref();
 
     // instantiate object for outlet
-    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->t_ugen, this->shred );
+    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->ckt_ugen, this->shred );
     // set as outlet
     m_outlet = (Chuck_UGen *)obj;
     // additional reference count

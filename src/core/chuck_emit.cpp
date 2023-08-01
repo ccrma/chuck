@@ -671,7 +671,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
 
     default:
         // check for IO
-        if( isa( stmt->cond->type, emit->env->t_io ) )
+        if( isa( stmt->cond->type, emit->env->ckt_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -789,7 +789,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 
         default:
             // check for IO
-            if( isa( stmt->c2->stmt_exp->type, emit->env->t_io ) )
+            if( isa( stmt->c2->stmt_exp->type, emit->env->ckt_io ) )
             {
                 // push 0
                 emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -959,7 +959,7 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // emit implicit ARRAY REF
     //-------------------------------------------------------------------------
     // allocate a local variable to hold the array pointer
-    Chuck_Local * localArray = emit->alloc_local( emit->env->t_int->size, "@foreach_array",
+    Chuck_Local * localArray = emit->alloc_local( emit->env->ckt_int->size, "@foreach_array",
                                                   TRUE, TRUE, FALSE );
     // check
     if( !localArray )
@@ -977,7 +977,7 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     // emit implicit iter COUNTER
     //-------------------------------------------------------------------------
     // allocate a local variable to hold the iterator
-    Chuck_Local * localCounter = emit->alloc_local( emit->env->t_int->size, "@foreach_counter",
+    Chuck_Local * localCounter = emit->alloc_local( emit->env->ckt_int->size, "@foreach_counter",
                                                     FALSE, FALSE, FALSE );
     // check
     if( !localCounter )
@@ -1144,7 +1144,7 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 
     default:
         // check for IO
-        if( isa( stmt->cond->type, emit->env->t_io ) )
+        if( isa( stmt->cond->type, emit->env->ckt_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -1266,7 +1266,7 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
 
     default:
         // check for IO
-        if( isa( stmt->cond->type, emit->env->t_io ) )
+        if( isa( stmt->cond->type, emit->env->ckt_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -1364,7 +1364,7 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
 
     default:
         // check for IO
-        if( isa( stmt->cond->type, emit->env->t_io ) )
+        if( isa( stmt->cond->type, emit->env->ckt_io ) )
         {
             // push 0
             emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
@@ -1907,7 +1907,7 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
     // whether to track object references on stack (added 1.3.0.2)
     t_CKBOOL doRef = FALSE;
     // check to see if this is a function call (added 1.3.0.2)
-    if( isa( binary->rhs->type, emit->env->t_function ) )
+    if( isa( binary->rhs->type, emit->env->ckt_function ) )
     {
         // take care of objects in terms of reference counting
         doRef = TRUE;
@@ -1958,22 +1958,22 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( instr = new Chuck_Instr_Add_double );
         }
         // string + string
-        else if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+        else if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string );
             instr->set_linepos( lhs->line );
         }
         // left: string
-        else if( isa( t_left, emit->env->t_string ) )
+        else if( isa( t_left, emit->env->ckt_string ) )
         {
             // + int
-            if( isa( t_right, emit->env->t_int ) )
+            if( isa( t_right, emit->env->ckt_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_int );
                 instr->set_linepos( lhs->line );
             }
-            else if( isa( t_right, emit->env->t_float ) )
+            else if( isa( t_right, emit->env->ckt_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_string_float );
                 instr->set_linepos( lhs->line );
@@ -1987,15 +1987,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             }
         }
         // right: string
-        else if( isa( t_right, emit->env->t_string ) )
+        else if( isa( t_right, emit->env->ckt_string ) )
         {
             // + int
-            if( isa( t_left, emit->env->t_int ) )
+            if( isa( t_left, emit->env->ckt_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string );
                 instr->set_linepos( rhs->line );
             }
-            else if( isa( t_left, emit->env->t_float ) )
+            else if( isa( t_left, emit->env->ckt_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string );
                 instr->set_linepos( rhs->line );
@@ -2055,23 +2055,23 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( instr = new Chuck_Instr_Add_double_Assign );
         }
         // string + string
-        else if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+        else if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
         {
             // concatenate
             emit->append( instr = new Chuck_Instr_Add_string_Assign );
             instr->set_linepos( lhs->line );
         }
         // right: string
-        else if( isa( t_right, emit->env->t_string ) )
+        else if( isa( t_right, emit->env->ckt_string ) )
         {
             // + int
-            if( isa( t_left, emit->env->t_int ) )
+            if( isa( t_left, emit->env->ckt_int ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_int_string_Assign );
                 // null exceptions will occur from string: use rhs, not lhs
                 instr->set_linepos( rhs->line );
             }
-            else if( isa( t_left, emit->env->t_float ) )
+            else if( isa( t_left, emit->env->ckt_float ) )
             {
                 emit->append( instr = new Chuck_Instr_Add_float_string_Assign );
                 instr->set_linepos( rhs->line );
@@ -2578,13 +2578,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     // -------------------------------- bool -----------------------------------
     case ae_op_eq:
-        if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string )
-            && !isa( t_left, emit->env->t_null ) && !isa( t_right, emit->env->t_null ) ) // !null
+        if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
+            && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
             instr->set_linepos( lhs->line );
         }
-        else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
+        else if( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) )
             emit->append( instr = new Chuck_Instr_Eq_int );
         else
         {
@@ -2615,14 +2615,14 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
 
     case ae_op_neq:
-        if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string )
-            && !isa( t_left, emit->env->t_null ) && !isa( t_right, emit->env->t_null ) ) // !null
+        if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
+            && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
             // added 1.3.2.0 (spencer)
         {
             emit->append( instr = new Chuck_Instr_Op_string( op ) );
             instr->set_linepos( lhs->line );
         }
-        else if( isa( t_left, emit->env->t_object ) && isa( t_right, emit->env->t_object ) )
+        else if( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) )
             emit->append( instr = new Chuck_Instr_Neq_int );
         else
         {
@@ -2665,7 +2665,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->line );
@@ -2687,25 +2687,25 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->line );
             }
-            else if( isa( t_left, emit->env->t_io ) )
+            else if( isa( t_left, emit->env->ckt_io ) )
             {
                 // output
-                if( isa( t_right, emit->env->t_int ) )
+                if( isa( t_right, emit->env->ckt_int ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_int );
                     instr->set_linepos( rhs->line );
                 }
-                else if( isa( t_right, emit->env->t_float ) )
+                else if( isa( t_right, emit->env->ckt_float ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_float );
                     instr->set_linepos( rhs->line );
                 }
-                else if( isa( t_right, emit->env->t_string ) )
+                else if( isa( t_right, emit->env->ckt_string ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_string );
                     instr->set_linepos( rhs->line );
@@ -2728,7 +2728,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->line );
@@ -2750,7 +2750,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->t_string ) && isa( t_right, emit->env->t_string ) )
+            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_Op_string( op ) );
                 instr->set_linepos( lhs->line );
@@ -2794,7 +2794,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             instr->set_linepos( rhs->line );
             break;
         default:
-            if( isa( t_right, emit->env->t_string ) )
+            if( isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_out_string );
                 instr->set_linepos( rhs->line );
@@ -2815,7 +2815,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             instr->set_linepos( rhs->line );
             break;
         default:
-            if( isa( t_right, emit->env->t_string ) )
+            if( isa( t_right, emit->env->ckt_string ) )
             {
                 emit->append( instr = new Chuck_Instr_IO_in_string );
                 instr->set_linepos( rhs->line );
@@ -2861,7 +2861,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     Chuck_Instr * instr = NULL;
 
     // ugen => ugen
-    if( isa( left, emit->env->t_ugen ) && isa( right, emit->env->t_ugen ) )
+    if( isa( left, emit->env->ckt_ugen ) && isa( right, emit->env->ckt_ugen ) )
     {
         // link, flag as NOT unchuck
         emit->append( instr = new Chuck_Instr_UGen_Link( FALSE ) );
@@ -2871,18 +2871,18 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
 
     // ugen[] => ugen[] (or permutation)
-    if( ( isa( left, emit->env->t_ugen ) || ( isa( left, emit->env->t_array ) && isa( left->array_type, emit->env->t_ugen ) ) ) &&
-        ( isa( right, emit->env->t_ugen ) || ( isa( right, emit->env->t_array ) && isa( right->array_type, emit->env->t_ugen ) ) ) )
+    if( ( isa( left, emit->env->ckt_ugen ) || ( isa( left, emit->env->ckt_array ) && isa( left->array_type, emit->env->ckt_ugen ) ) ) &&
+        ( isa( right, emit->env->ckt_ugen ) || ( isa( right, emit->env->ckt_array ) && isa( right->array_type, emit->env->ckt_ugen ) ) ) )
     {
         // link, flag as NOT unchuck
-        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->t_array ), isa( right, emit->env->t_array ) ) );
+        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->ckt_array ), isa( right, emit->env->ckt_array ) ) );
         instr->set_linepos( lhs->line );
         // done
         return TRUE;
     }
 
     // time advance
-    if( isa( left, emit->env->t_dur ) && isa( right, emit->env->t_time ) && rhs->s_meta == ae_meta_var )
+    if( isa( left, emit->env->ckt_dur ) && isa( right, emit->env->ckt_time ) && rhs->s_meta == ae_meta_var )
     {
         // add the two
         emit->append( new Chuck_Instr_Add_double );
@@ -2899,7 +2899,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
 
     // time advance
-    if( isa( left, emit->env->t_event ) && isa( right, emit->env->t_time ) && rhs->s_meta == ae_meta_var &&
+    if( isa( left, emit->env->ckt_event ) && isa( right, emit->env->ckt_time ) && rhs->s_meta == ae_meta_var &&
         rhs->s_type == ae_exp_primary && !strcmp( "now", S_name(rhs->primary.var) ) )
     {
         // pop now
@@ -2911,23 +2911,23 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
 
     // input
-    if( isa( left, emit->env->t_io ) )
+    if( isa( left, emit->env->ckt_io ) )
     {
-        if( isa( right, emit->env->t_int ) )
+        if( isa( right, emit->env->ckt_int ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_int );
             instr->set_linepos( rhs->line );
             return TRUE;
         }
-        else if( isa( right, emit->env->t_float ) )
+        else if( isa( right, emit->env->ckt_float ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_float );
             instr->set_linepos( rhs->line );
             return TRUE;
         }
-        else if( isa( right, emit->env->t_string ) )
+        else if( isa( right, emit->env->ckt_string ) )
         {
             assert( rhs->s_meta == ae_meta_var );
             emit->append( instr = new Chuck_Instr_IO_in_string );
@@ -2937,7 +2937,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     }
 
     // func call
-    if( isa( right, emit->env->t_function ) )
+    if( isa( right, emit->env->ckt_function ) )
     {
         assert( binary->ck_func != NULL );
 
@@ -2949,7 +2949,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     if( isa( left, right ) )
     {
         // basic types?
-        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->t_string ) )
+        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->ckt_string ) )
         {
             // use at assign
             return emit_engine_emit_op_at_chuck( emit, lhs, rhs );
@@ -2981,7 +2981,7 @@ t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
 
     // if ugen
-    if( isa( left, emit->env->t_ugen ) && isa( right, emit->env->t_ugen ) )
+    if( isa( left, emit->env->ckt_ugen ) && isa( right, emit->env->ckt_ugen ) )
     {
         // no connect
         emit->append( new Chuck_Instr_UGen_UnLink );
@@ -3011,7 +3011,7 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
 
     // if ugen
-    if( isa( left, emit->env->t_uana ) && isa( right, emit->env->t_uana ) )
+    if( isa( left, emit->env->ckt_uana ) && isa( right, emit->env->ckt_uana ) )
     {
         // connect; flag it as unchuck
         Chuck_Instr * instr = NULL;
@@ -3046,7 +3046,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
     if( isa( left, right ) )
     {
         // basic types?
-        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->t_string ) )
+        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->ckt_string ) )
         {
             // assigment?
             if( rhs->s_meta != ae_meta_var )
@@ -3066,7 +3066,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                 emit->append( instr = new Chuck_Instr_Time_Advance );
                 instr->set_linepos( lhs->line );
             }
-            else if( isa( left, emit->env->t_string ) ) // string
+            else if( isa( left, emit->env->ckt_string ) ) // string
             {
                 // assign string
                 emit->append( new Chuck_Instr_Assign_String );
@@ -3144,7 +3144,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         }
 
         // increment
-        if( equals( unary->exp->type, emit->env->t_int ) )
+        if( equals( unary->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_PreInc_int );
         else
         {
@@ -3165,7 +3165,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
         }
 
         // decrement
-        if( equals( unary->exp->type, emit->env->t_int ) )
+        if( equals( unary->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_PreDec_int );
         else
         {
@@ -3178,7 +3178,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
     case ae_op_tilda:
         // complement
-        if( equals( unary->exp->type, emit->env->t_int ) )
+        if( equals( unary->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_Complement_int );
         else
         {
@@ -3191,7 +3191,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
     case ae_op_exclamation:
         // !
-        if( equals( unary->exp->type, emit->env->t_int ) )
+        if( equals( unary->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_Not_int );
         else
         {
@@ -3204,9 +3204,9 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
     case ae_op_minus:
         // negate
-        if( equals( unary->exp->type, emit->env->t_int ) )
+        if( equals( unary->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_Negate_int );
-        else if( equals( unary->exp->type, emit->env->t_float ) )
+        else if( equals( unary->exp->type, emit->env->ckt_float ) )
             emit->append( new Chuck_Instr_Negate_double );
         else
         {
@@ -3401,7 +3401,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
     case ae_primary_str:
         // TODO: fix this
         str = new Chuck_String();
-        if( !str || !initialize_object( str, emit->env->t_string ) )
+        if( !str || !initialize_object( str, emit->env->ckt_string ) )
         {
             // error (TODO: why is this a CK_SAFE_RELEASE and not CK_SAFE_DELETE?)
             CK_SAFE_RELEASE( str );
@@ -3607,28 +3607,28 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         return TRUE;
 
     // int to float
-    if( equals( to, emit->env->t_int ) && equals( from, emit->env->t_float ) )
+    if( equals( to, emit->env->ckt_int ) && equals( from, emit->env->ckt_float ) )
         emit->append( new Chuck_Instr_Cast_double2int );
     // float to int
-    else if( equals( to, emit->env->t_float ) && equals( from, emit->env->t_int ) )
+    else if( equals( to, emit->env->ckt_float ) && equals( from, emit->env->ckt_int ) )
         emit->append( new Chuck_Instr_Cast_int2double );
-    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_int ) )
+    else if( equals( to, emit->env->ckt_complex ) && equals( from, emit->env->ckt_int ) )
         emit->append( new Chuck_Instr_Cast_int2complex );
-    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_int ) )
+    else if( equals( to, emit->env->ckt_polar ) && equals( from, emit->env->ckt_int ) )
         emit->append( new Chuck_Instr_Cast_int2polar );
-    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_float ) )
+    else if( equals( to, emit->env->ckt_complex ) && equals( from, emit->env->ckt_float ) )
         emit->append( new Chuck_Instr_Cast_double2complex );
-    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_float ) )
+    else if( equals( to, emit->env->ckt_polar ) && equals( from, emit->env->ckt_float ) )
         emit->append( new Chuck_Instr_Cast_double2polar );
-    else if( equals( to, emit->env->t_polar ) && equals( from, emit->env->t_complex ) )
+    else if( equals( to, emit->env->ckt_polar ) && equals( from, emit->env->ckt_complex ) )
         emit->append( new Chuck_Instr_Cast_complex2polar );
-    else if( equals( to, emit->env->t_complex ) && equals( from, emit->env->t_polar ) )
+    else if( equals( to, emit->env->ckt_complex ) && equals( from, emit->env->ckt_polar ) )
         emit->append( new Chuck_Instr_Cast_polar2complex );
-    else if( equals( to, emit->env->t_vec3 ) && equals( from, emit->env->t_vec4 ) )
+    else if( equals( to, emit->env->ckt_vec3 ) && equals( from, emit->env->ckt_vec4 ) )
         emit->append( new Chuck_Instr_Cast_vec4tovec3 );
-    else if( equals( to, emit->env->t_vec4 ) && equals( from, emit->env->t_vec3 ) )
+    else if( equals( to, emit->env->ckt_vec4 ) && equals( from, emit->env->ckt_vec3 ) )
         emit->append( new Chuck_Instr_Cast_vec3tovec4 );
-    else if( equals( to, emit->env->t_string ) && isa( from, emit->env->t_object ) && !isa( from, emit->env->t_string ) )
+    else if( equals( to, emit->env->ckt_string ) && isa( from, emit->env->ckt_object ) && !isa( from, emit->env->ckt_string ) )
         emit->append( new Chuck_Instr_Cast_object2string );
     // up cast - do nothing
     else if( !isa( to, from ) && !isa( from, to ) )
@@ -3658,7 +3658,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     switch( postfix->op )
     {
     case ae_op_plusplus:
-        if( equals( postfix->exp->type, emit->env->t_int ) )
+        if( equals( postfix->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_PostInc_int );
         else
         {
@@ -3670,7 +3670,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     break;
 
     case ae_op_minusminus:
-        if( equals( postfix->exp->type, emit->env->t_int ) )
+        if( equals( postfix->exp->type, emit->env->ckt_int ) )
             emit->append( new Chuck_Instr_PostDec_int );
         else
         {
@@ -3705,7 +3705,7 @@ t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur )
         return FALSE;
 
     // cast
-    if( equals( dur->base->type, emit->env->t_int ) )
+    if( equals( dur->base->type, emit->env->ckt_int ) )
         emit->append( new Chuck_Instr_Cast_int2double );
 
     // emit unit
@@ -3775,7 +3775,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         return FALSE;
 
     // find out first element
-    if( isa( exp->type, emit->env->t_string ) )
+    if( isa( exp->type, emit->env->ckt_string ) )
         is_str = TRUE;
 
     // make sure
@@ -3812,7 +3812,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
         while( e )
         {
             // check if string
-            aam->indexIsAssociative().push_back( isa( exp->type, emit->env->t_string ) );
+            aam->indexIsAssociative().push_back( isa( exp->type, emit->env->ckt_string ) );
             // next
             e = e->next;
         }
@@ -4091,7 +4091,7 @@ check_func:
     Chuck_Type * t_base = member->t_base;
     // is the base a class/namespace or a variable
     t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
-    // t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
+    // t_CKBOOL base_static = isa( member->ckt_base, emit->env->ckt_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -4162,7 +4162,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     t_CKBOOL emit_addr = member->self->emit_var;
     // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to func call
     t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
-    // t_CKBOOL base_static = isa( member->t_base, emit->env->t_class );
+    // t_CKBOOL base_static = isa( member->ckt_base, emit->env->ckt_class );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -4522,33 +4522,33 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
 
     if( decl->is_global )
     {
-        if( isa( t, emit->env->t_int ) )
+        if( isa( t, emit->env->ckt_int ) )
         {
             globalType = te_globalInt;
         }
-        else if( isa( t, emit->env->t_float ) )
+        else if( isa( t, emit->env->ckt_float ) )
         {
             globalType = te_globalFloat;
         }
-        else if( isa( t, emit->env->t_string ) )
+        else if( isa( t, emit->env->ckt_string ) )
         {
             globalType = te_globalString;
         }
-        else if( isa( t, emit->env->t_event ) )
+        else if( isa( t, emit->env->ckt_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
             globalType = te_globalEvent;
             // need to call ctors
             needs_global_ctor = TRUE;
         }
-        else if( isa( t, emit->env->t_ugen ) )
+        else if( isa( t, emit->env->ckt_ugen ) )
         {
             // kind-of-ugen (te_Type might not be te_ugen, so we store globalUGen in our own field)
             globalType = te_globalUGen;
             // need to call ctors
             needs_global_ctor = TRUE;
         }
-        else if( isa( t, emit->env->t_object ) )
+        else if( isa( t, emit->env->ckt_object ) )
         {
             // kind-of-object (te_Type might not be te_object, so we store globalObject in our own field)
             globalType = te_globalObject;
@@ -5086,7 +5086,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         return FALSE;
 
     // added by spencer June 2014 (1.3.5.0) | ensure return
-    if( func_def->ret_type && func_def->ret_type != emit->env->t_void )
+    if( func_def->ret_type && func_def->ret_type != emit->env->ckt_void )
     {
         // 1.5.0.0 (ge) | account for differences in return type size
         // push 0 for the width of the return type in question
@@ -5449,31 +5449,31 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     te_GlobalType global_type = te_globalTypeNone;
     if( v->is_global )
     {
-        if( isa( v->type, emit->env->t_int ) )
+        if( isa( v->type, emit->env->ckt_int ) )
         {
             global_type = te_globalInt;
         }
-        else if( isa( v->type, emit->env->t_float ) )
+        else if( isa( v->type, emit->env->ckt_float ) )
         {
             global_type = te_globalFloat;
         }
-        else if( isa( v->type, emit->env->t_string ) )
+        else if( isa( v->type, emit->env->ckt_string ) )
         {
             global_type = te_globalString;
         }
-        else if( isa( v->type, emit->env->t_event ) )
+        else if( isa( v->type, emit->env->ckt_event ) )
         {
             global_type = te_globalEvent;
         }
-        else if( isa( v->type, emit->env->t_ugen ) )
+        else if( isa( v->type, emit->env->ckt_ugen ) )
         {
             global_type = te_globalUGen;
         }
-        else if( isa( v->type, emit->env->t_array ) )
+        else if( isa( v->type, emit->env->ckt_array ) )
         {
             global_type = te_globalArraySymbol;
         }
-        else if( isa( v->type, emit->env->t_object ) )
+        else if( isa( v->type, emit->env->ckt_object ) )
         {
             global_type = te_globalObject;
         }
@@ -5712,7 +5712,7 @@ t_CKBOOL Chuck_Emitter::find_dur( const string & name, t_CKDUR * out )
     *out = 0.0;
     // get value from env
     Chuck_Value * value = env->global()->lookup_value( name, FALSE );
-    if( !value || !equals( value->type, env->t_dur ) ) return FALSE;
+    if( !value || !equals( value->type, env->ckt_dur ) ) return FALSE;
     // copy
     *out = *( (t_CKDUR *)value->addr );
 

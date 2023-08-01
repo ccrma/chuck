@@ -1244,7 +1244,7 @@ static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Ch
 static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, const char * cstr )
 {
     // instantiate and initalize object
-    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( shred->vm_ref->env()->t_string, shred->vm_ref );
+    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( shred->vm_ref->env()->ckt_string, shred->vm_ref );
     // set the value
     string->set( cstr ? cstr : "" );
     // return reference

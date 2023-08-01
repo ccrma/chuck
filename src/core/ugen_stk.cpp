@@ -26452,7 +26452,7 @@ CK_DLL_CGET( Mandolin_cget_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( m->soundfile[0]->str_filename );
     RETURN->v_string = str;
 }
@@ -27415,7 +27415,7 @@ CK_DLL_CGET( VoicForm_cget_phoneme )
 {
     VoicForm * v = (VoicForm *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     // set
     str->set( v->str_phoneme );
     RETURN->v_string = str;
@@ -27726,7 +27726,7 @@ CK_DLL_CGET( WvIn_cget_path )
 {
     WvIn * w = (WvIn *)OBJ_MEMBER_UINT(SELF, WvIn_offset_data);
     // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( w->str_filename );
     // return value
     RETURN->v_string = str;
@@ -28311,7 +28311,7 @@ CK_DLL_CGET( WvOut_cget_filename )
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
 
     // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( w->str_filename );
 
     RETURN->v_string = str;
@@ -28393,7 +28393,7 @@ CK_DLL_CGET( WvOut_cget_autoPrefix )
 {
     WvOut * w = (WvOut *)OBJ_MEMBER_UINT(SELF, WvOut_offset_data);
     // instantiate | 1.5.0.0 (ge) added to dynamic allocate chuck string
-    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+    Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
     str->set( w->autoPrefix );
     // return value
     RETURN->v_string = str;
