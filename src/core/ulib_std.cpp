@@ -259,8 +259,13 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
 
     // add getenv
     QUERY->add_sfun( QUERY, getenv_impl, "string", "getenv" ); //! fetch environment variable
-    QUERY->add_arg( QUERY, "string", "value" );
-    QUERY->doc_func( QUERY, "get the value of an environment variable (e.g., PATH)." );
+    QUERY->add_arg( QUERY, "string", "key" );
+    QUERY->doc_func( QUERY, "get the value of an environment variable (e.g. PATH)." );
+
+    QUERY->add_sfun( QUERY, getenv2_impl, "string", "getenv" ); //! fetch environment variable
+    QUERY->add_arg( QUERY, "string", "key" );
+    QUERY->add_arg( QUERY, "string", "default" );
+    QUERY->doc_func( QUERY, "get the value of an environment variable, returning the provided default if unset." );
 
     // add setenv
     QUERY->add_sfun( QUERY, setenv_impl, "int", "setenv" ); //! set environment variable
@@ -806,7 +811,22 @@ CK_DLL_SFUN( getenv_impl )
     RETURN->v_string = a;
 }
 
-// setenv
+// getenv with default value fallback.
+CK_DLL_SFUN( getenv2_impl )
+{
+    const char * k = GET_NEXT_STRING(ARGS)->str().c_str();
+    const char * v = getenv( k );
+    if (v) {
+        Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->t_string, SHRED );
+        a->set( v ? v : "" );
+        RETURN->v_string = a;
+    } else {
+        Chuck_String * d = GET_CK_STRING(ARGS);
+        RETURN->v_string = d;
+    }
+}
+
+/// setenv
 CK_DLL_SFUN( setenv_impl )
 {
     const char * v1 = GET_NEXT_STRING(ARGS)->str().c_str();
