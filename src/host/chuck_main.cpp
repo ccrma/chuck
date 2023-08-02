@@ -256,7 +256,7 @@ void usage()
     CK_FPRINTF_STDERR( "                remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
     CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe|\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
-    CK_FPRINTF_STDERR( "                --color:{on|off}|--no-color\n" );
+    CK_FPRINTF_STDERR( "                --color:{on|off}|--no-color|--pid-file:<path>\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
     CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
@@ -265,6 +265,35 @@ void usage()
 }
 
 
+//-----------------------------------------------------------------------------
+// name: write_pid(filename)
+// desc: writes the host's process id to the given file path
+//       returns true if successful, false otherwise.
+//-----------------------------------------------------------------------------
+bool write_pid( const char * filename )
+{
+#if defined(__PLATFORM_WIN32__)
+    // TODO: call DWORD GetCurrentProcessId() in <processthreadsapi.h>
+    CK_FPRINTF_STDERR( "[chuck]: --pid-file option not yet implemented for Windows\n");
+    return false;
+#else
+    const unsigned int pid = getpid();
+    FILE * pidfile = fopen( filename, "w" );
+    if( pidfile )
+    {
+        fprintf( pidfile, "%u", pid );
+        fclose( pidfile );
+        EM_error3( "[chuck]: process ID %u stored in %s", pid, filename );
+        return true;
+    }
+    else
+    {
+        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", pid, filename);
+        return false;
+    }
+#endif
+}
+const char * g_pidfile = NULL; // non-NULL when a pid file has been written.
 
 
 //-----------------------------------------------------------------------------
@@ -850,6 +879,13 @@ t_CKBOOL go( int argc, const char ** argv )
                 colorTerminal = TRUE;
             else if( tolower(argv[i]) == "--no-color" )
                 colorTerminal = FALSE;
+            else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
+            {
+                const char* filename = argv[i] + sizeof("--pid-file:")-1;
+                if (write_pid(filename)) {
+                    g_pidfile = filename;
+                }
+            }
             // (added 1.3.0.0)
             else if( !strcmp( argv[i], "--no-otf" ) )
             {
