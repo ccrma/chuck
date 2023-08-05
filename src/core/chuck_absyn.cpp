@@ -944,6 +944,7 @@ a_Complex new_complex( a_Exp re, uint32_t lineNum, uint32_t posNum )
 {
     a_Complex a = (a_Complex)checked_malloc( sizeof( struct a_Complex_ ) );
     a->re = re;
+    // NOTE: if this ever changes, make sure to also update delete_complex | 1.5.0.9
     if( re ) a->im = re->next;
     a->line = lineNum; a->where = posNum;
 
@@ -954,6 +955,7 @@ a_Polar new_polar( a_Exp mod, uint32_t lineNum, uint32_t posNum )
 {
     a_Polar a = (a_Polar)checked_malloc( sizeof( struct a_Polar_ ) );
     a->mod = mod;
+    // NOTE: if this ever changes, make sure to also update delete_polar | 1.5.0.9
     if( mod ) a->phase = mod->next;
     a->line = lineNum; a->where = posNum;
 
@@ -1005,20 +1007,25 @@ static const char * op_str[] = {
   ">>=>",
   "<<=>",
   "%=>",
-  "->",
   "++",
   "--",
   "~",
   "!",
   "@=>",
   "=<",
+  "^=>",
   "spork ~",
   "typeof",
   "sizeof",
-  "new"
+  "new",
+  "<-",
+  "->"
 };
 
-
+//-----------------------------------------------------------------------------
+// name: op2str()
+// desc: chuck operator to string
+//-----------------------------------------------------------------------------
 const char * op2str( ae_Operator op )
 {
     t_CKINT index = (t_CKINT)op;
@@ -1388,7 +1395,6 @@ void delete_exp_contents( a_Exp e )
     }
 }
 
-
 // delete an exp
 void delete_exp( a_Exp e )
 {
@@ -1529,16 +1535,14 @@ void delete_exp_from_complex( a_Exp_Primary e )
 {
     EM_log( CK_LOG_FINEST, "deleting exp (primary complex) [%p]...", (void *)e );
 
-    delete_exp( e->complex->re );
-    delete_exp( e->complex->im );
+    delete_complex( e->complex );
 }
 
 void delete_exp_from_polar( a_Exp_Primary e )
 {
     EM_log( CK_LOG_FINEST, "deleting exp (primary polar) [%p]...", (void *)e );
 
-    delete_exp( e->polar->mod );
-    delete_exp( e->polar->phase );
+    delete_polar( e->polar );
 }
 
 void delete_exp_from_vec( a_Exp_Primary e )
@@ -1609,7 +1613,8 @@ void delete_complex( a_Complex c )
 {
     EM_log( CK_LOG_FINEST, "deleting complex [%p]...", (void *)c );
     delete_exp( c->re );
-    delete_exp( c->im );
+    // do not delete c->im, since it's just c->re->next
+    // delete_exp( c->im );
     CK_SAFE_FREE( c );
 }
 
@@ -1617,7 +1622,8 @@ void delete_polar( a_Polar p )
 {
     EM_log( CK_LOG_FINEST, "deleting polar [%p]...", (void *)p );
     delete_exp( p->mod );
-    delete_exp( p->phase );
+    // do not delete p->phase, since it's just c->re->next
+    // delete_exp( p->phase );
     CK_SAFE_FREE( p );
 }
 

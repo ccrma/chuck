@@ -5255,10 +5255,10 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: Chuck_Instr_Array_Init()
-// desc: ...
+// name: Chuck_Instr_Array_Init_Literal()
+// desc: initialize array literal, e.g., [1,2,3]
 //-----------------------------------------------------------------------------
-Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t, t_CKINT length )
+Chuck_Instr_Array_Init_Literal::Chuck_Instr_Array_Init_Literal( Chuck_Env * env, Chuck_Type * t, t_CKINT length )
 {
     // set
     m_length = length;
@@ -5296,10 +5296,10 @@ Chuck_Instr_Array_Init::Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * t,
 
 
 //-----------------------------------------------------------------------------
-// name: ~Chuck_Instr_Array_Init()
+// name: ~Chuck_Instr_Array_Init_Literal()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Instr_Array_Init::~Chuck_Instr_Array_Init()
+Chuck_Instr_Array_Init_Literal::~Chuck_Instr_Array_Init_Literal()
 {
     // delete
     CK_SAFE_DELETE_ARRAY( m_param_str );
@@ -5314,7 +5314,7 @@ Chuck_Instr_Array_Init::~Chuck_Instr_Array_Init()
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // reg stack pointer
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
@@ -5333,9 +5333,6 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // initialize object
         // TODO: should it be this??? initialize_object( array, m_type_ref );
         initialize_object( array, vm->env()->ckt_array );
-        // set array type
-        array->m_array_type = m_type_ref;
-        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -5356,9 +5353,6 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array );
-        // set array type
-        array->m_array_type = m_type_ref;
-        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -5379,9 +5373,8 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array );
-        // set array type
-        array->m_array_type = m_type_ref;
-        m_type_ref->add_ref();
+        // differentiate between complex and polar | 1.5.0.9 (ge) added, used for sorting Array16s
+        if( isa(m_type_ref, vm->env()->ckt_polar) ) array->m_isPolarType = TRUE;
         // set size
         array->set_size( m_length );
         // fill array
@@ -5402,9 +5395,6 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKVEC3 * sp = (t_CKVEC3 *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array );
-        // set array type
-        array->m_array_type = m_type_ref;
-        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -5425,9 +5415,6 @@ void Chuck_Instr_Array_Init::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKVEC4 * sp = (t_CKVEC4 *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array );
-        // set array type
-        array->m_array_type = m_type_ref;
-        m_type_ref->add_ref();
         // set size
         array->set_size( m_length );
         // fill array
@@ -5583,6 +5570,11 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             Chuck_Array16 * baseX = new Chuck_Array16( *capacity );
             if( !baseX ) goto out_of_memory;
 
+            // check array type
+            Chuck_Type * array_type = type->array_type;
+            // differentiate between complex and polar | 1.5.0.9 (ge) added, used for sorting Array16s
+            if( array_type && isa(array_type, vm->env()->ckt_polar) ) baseX->m_isPolarType = TRUE;
+
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
             initialize_object( baseX, type );
@@ -5621,6 +5613,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     if( !theBase) goto out_of_memory;
 
     // construct type for next array level | 1.5.0.0 (ge) added
+    // TODO: look up in common array type pool before allocating
     typeNext = type->copy( vm->env() );
     // check
     if( typeNext->array_depth == 0 ) goto internal_error_array_depth;
@@ -7498,14 +7491,15 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // --------
-    // output of VAR alloc (e.g., int or float or other)
+    // output of VAR alloc (e.g., int or float or other) -- but always an UINT
     // ARRAY to iterate over
     // implicit loop counter
     // --------
     // ^ assume three things on the reg stack
 
     // compute stack offset
-    t_CKUINT offset = (m_dataSize + sz_INT + sz_INT) / sz_INT;
+    // t_CKUINT offset = (m_dataSize + sz_INT + sz_INT) / sz_INT;
+    t_CKUINT offset = (sz_INT + sz_INT + sz_INT) / sz_INT;
 
     // pop
     pop_( reg_sp, offset );
@@ -7741,7 +7735,7 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: insert int value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7783,7 +7777,7 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: insert float value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7824,8 +7818,176 @@ done:
 
 
 //-----------------------------------------------------------------------------
+// name: execute() | 1.5.0.9
+// desc: insert complex value into output stream
+//-----------------------------------------------------------------------------
+void Chuck_Instr_IO_out_complex::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
+
+    // pop the value
+    pop_( sp, 1 + (sz_COMPLEX / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+
+    // ISSUE: 64-bit
+    // the IO
+    Chuck_IO **& ppIO = (Chuck_IO **&)sp;
+
+    // check it
+    if( *(ppIO) == NULL ) goto null_pointer;
+
+    // write the value
+    (*ppIO)->write( *((t_CKCOMPLEX *)(sp+1)) );
+
+    // push the IO
+    push_( sp, (t_CKINT)(*(ppIO)) );
+
+    return;
+
+null_pointer:
+    // we have a problem
+    CK_FPRINTF_STDERR(
+        "[chuck](VM): NullPointerException: (IO output complex) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute() | 1.5.0.9
+// desc: insert complex value into output stream
+//-----------------------------------------------------------------------------
+void Chuck_Instr_IO_out_polar::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
+
+    // pop the value
+    pop_( sp, 1 + (sz_POLAR / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+
+    // ISSUE: 64-bit
+    // the IO
+    Chuck_IO **& ppIO = (Chuck_IO **&)sp;
+
+    // check it
+    if( *(ppIO) == NULL ) goto null_pointer;
+
+    // write the value
+    (*ppIO)->write( *((t_CKPOLAR *)(sp+1)) );
+
+    // push the IO
+    push_( sp, (t_CKINT)(*(ppIO)) );
+
+    return;
+
+null_pointer:
+    // we have a problem
+    CK_FPRINTF_STDERR(
+        "[chuck](VM): NullPointerException: (IO output polar) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute() | 1.5.0.9
+// desc: insert vec3 value into output stream
+//-----------------------------------------------------------------------------
+void Chuck_Instr_IO_out_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
+
+    // pop the value
+    pop_( sp, 1 + (sz_VEC3 / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+
+    // ISSUE: 64-bit
+    // the IO
+    Chuck_IO **& ppIO = (Chuck_IO **&)sp;
+
+    // check it
+    if( *(ppIO) == NULL ) goto null_pointer;
+
+    // write the value
+    (*ppIO)->write( *((t_CKVEC3 *)(sp+1)) );
+
+    // push the IO
+    push_( sp, (t_CKINT)(*(ppIO)) );
+
+    return;
+
+null_pointer:
+    // we have a problem
+    CK_FPRINTF_STDERR(
+        "[chuck](VM): NullPointerException: (IO output vec3) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute() | 1.5.0.9
+// desc: insert vec4 value into output stream
+//-----------------------------------------------------------------------------
+void Chuck_Instr_IO_out_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
+
+    // pop the value
+    pop_( sp, 1 + (sz_VEC4 / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+
+    // ISSUE: 64-bit
+    // the IO
+    Chuck_IO **& ppIO = (Chuck_IO **&)sp;
+
+    // check it
+    if( *(ppIO) == NULL ) goto null_pointer;
+
+    // write the value
+    (*ppIO)->write( *((t_CKVEC4 *)(sp+1)) );
+
+    // push the IO
+    push_( sp, (t_CKINT)(*(ppIO)) );
+
+    return;
+
+null_pointer:
+    // we have a problem
+    CK_FPRINTF_STDERR(
+        "[chuck](VM): NullPointerException: (IO output vec4) on line[%lu] in shred[id=%lu:%s]\n",
+        m_linepos, shred->xid, shred->name.c_str() );
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: insert string into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {

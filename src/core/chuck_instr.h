@@ -3204,14 +3204,14 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Array_Init
-// desc: for [ ... ] values
+// name: struct Chuck_Instr_Array_Init_Literal
+// desc: for [ ... ] array literal values
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Array_Init : public Chuck_Instr
+struct Chuck_Instr_Array_Init_Literal : public Chuck_Instr
 {
 public: // REFACTOR-2017: added env
-    Chuck_Instr_Array_Init( Chuck_Env * env, Chuck_Type * the_type, t_CKINT length );
-    virtual ~Chuck_Instr_Array_Init();
+    Chuck_Instr_Array_Init_Literal( Chuck_Env * env, Chuck_Type * the_type, t_CKINT length );
+    virtual ~Chuck_Instr_Array_Init_Literal();
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -4055,7 +4055,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_out_int
-// desc: ...
+// desc: insert int value into output stream
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_IO_out_int : public Chuck_Instr_Binary_Op
 {
@@ -4068,9 +4068,61 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_out_float
-// desc: ...
+// desc: insert float value into output stream
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_IO_out_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_IO_out_complex
+// desc: insert complex value into output stream
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_IO_out_complex : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_IO_out_polar
+// desc: insert polar value into output stream
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_IO_out_polar : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_IO_out_vec3
+// desc: insert complex value into output stream
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_IO_out_vec3 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_IO_out_vec4
+// desc: insert complex value into output stream
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_IO_out_vec4 : public Chuck_Instr_Binary_Op
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );

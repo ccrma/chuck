@@ -193,6 +193,7 @@ CK_DLL_MFUN( array_zero );
 CK_DLL_MFUN( array_get_keys );
 CK_DLL_MFUN( array_reverse );
 CK_DLL_MFUN( array_shuffle );
+CK_DLL_MFUN( array_sort );
 CK_DLL_MFUN( array_map_find );
 CK_DLL_MFUN( array_map_erase );
 

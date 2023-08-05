@@ -1081,6 +1081,11 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     func->doc = "shuffle the contents of the array.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add sort()
+    func = make_new_mfun( "void", "sort", array_sort );
+    func->doc = "sort the contents of the array in ascending order.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "array/array_append.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_argument.ck" ) ) goto error;
@@ -1096,6 +1101,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "array/array_resize.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_reverse.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_shuffle.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_sort.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_storage.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_sub_assign.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_zero.ck" ) ) goto error;
@@ -2868,6 +2874,13 @@ CK_DLL_MFUN( array_shuffle )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
     array->shuffle();
+}
+
+// array.sort()
+CK_DLL_MFUN( array_sort )
+{
+    Chuck_Array * array = (Chuck_Array *)SELF;
+    array->sort();
 }
 
 // array.push_back()

@@ -3744,8 +3744,9 @@ t_CKBOOL Chuck_IO_File::readString( std::string & str )
 
 
 
+//-----------------------------------------------------------------------------
 /* (ATODO: doesn't look like asynchronous reads will work)
-
+//-----------------------------------------------------------------------------
 THREAD_RETURN( THREAD_TYPE Chuck_IO_File::read_thread ) (void * data)
 {
     // (ATODO: test this)
@@ -3791,6 +3792,10 @@ THREAD_RETURN( THREAD_TYPE Chuck_IO_File::readFloat_thread ) (void * data)
     return NULL;
 }
 */
+//-----------------------------------------------------------------------------
+
+
+
 
  //-----------------------------------------------------------------------------
  // name: eof()
@@ -3853,40 +3858,43 @@ void Chuck_IO_File::write( const std::string & val )
 
 //-----------------------------------------------------------------------------
 // name: write( t_CKINT val )
-// desc: ...
+// desc: write an integer value to file
 //-----------------------------------------------------------------------------
 void Chuck_IO_File::write( t_CKINT val )
 {
-    // sanity
-    if( !(m_io.is_open()) ) {
-        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
-        return;
-    }
+    // 0 flags means write (if binary will write in native int size)
+    this->write( val, 0 );
 
-    if( m_io.fail() ) {
-        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
-        return;
-    }
-
-    if( m_dir )
-    {
-        EM_error3( "[chuck](via FileIO): cannot write on directory" );
-        return;
-    }
-
-    if( m_flags & TYPE_ASCII ) {
-        m_io << val;
-    }
-    else if( m_flags & TYPE_BINARY ) {
-        m_io.write( (char *)&val, sizeof( t_CKINT ) );
-    }
-    else {
-        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
-    }
-
-    if( m_io.fail() ) { // check both before and after write if stream is ok
-        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
-    }
+//    // sanity
+//    if( !(m_io.is_open()) ) {
+//        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+//        return;
+//    }
+//
+//    if( m_io.fail() ) {
+//        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+//        return;
+//    }
+//
+//    if( m_dir )
+//    {
+//        EM_error3( "[chuck](via FileIO): cannot write on directory" );
+//        return;
+//    }
+//
+//    if( m_flags & TYPE_ASCII ) {
+//        m_io << val;
+//    }
+//    else if( m_flags & TYPE_BINARY ) {
+//        m_io.write( (char *)&val, sizeof( t_CKINT ) );
+//    }
+//    else {
+//        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+//    }
+//
+//    if( m_io.fail() ) { // check both before and after write if stream is ok
+//        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+//    }
 }
 
 
@@ -3973,6 +3981,11 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
             int64_t v = val;
             m_io.write( (char *)&v, 8 );
         }
+        else
+        {
+            // write to native int size | 1.5.0.9
+            m_io.write( (char *)&val, sizeof(t_CKINT) );
+        }
     }
     else {
         EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
@@ -4038,6 +4051,240 @@ void Chuck_IO_File::write( t_CKFLOAT val, t_CKINT flags )
             // 64-bit
             double v = (double)val;
             m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+
+    if( m_io.fail() ) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
+void Chuck_IO_File::write( const t_CKCOMPLEX & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_File::write( const t_CKCOMPLEX & val, t_CKINT flags )
+{
+    // sanity
+    if( !(m_io.is_open()) ) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    if( m_io.fail() ) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    if( m_dir ) {
+        EM_error3( "[chuck](via FileIO): cannot write to a directory" );
+        return;
+    }
+
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
+        m_io << "#(" << val.re << "," << val.im << ")";
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val.re; m_io.write( (char *)&v, 4 );
+                  v = (float)val.im; m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val.re; m_io.write( (char *)&v, 8 );
+                   v = (double)val.im; m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+
+    if( m_io.fail() ) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
+void Chuck_IO_File::write( const t_CKPOLAR & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_File::write( const t_CKPOLAR & val, t_CKINT flags )
+{
+    // sanity
+    if( !(m_io.is_open()) ) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    if( m_io.fail() ) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    if( m_dir ) {
+        EM_error3( "[chuck](via FileIO): cannot write to a directory" );
+        return;
+    }
+
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
+        m_io << "%(" << val.modulus << "," << val.phase << ")";
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val.modulus; m_io.write( (char *)&v, 4 );
+                  v = (float)val.phase; m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val.modulus; m_io.write( (char *)&v, 8 );
+                   v = (double)val.phase; m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+
+    if( m_io.fail() ) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
+void Chuck_IO_File::write( const t_CKVEC3 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_File::write( const t_CKVEC3 & val, t_CKINT flags )
+{
+    // sanity
+    if( !(m_io.is_open()) ) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    if( m_io.fail() ) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    if( m_dir ) {
+        EM_error3( "[chuck](via FileIO): cannot write to a directory" );
+        return;
+    }
+
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
+        m_io << "@(" << val.x << "," << val.y << "," << val.z << ")";
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val.x; m_io.write( (char *)&v, 4 );
+                  v = (float)val.y; m_io.write( (char *)&v, 4 );
+                  v = (float)val.z; m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val.x; m_io.write( (char *)&v, 8 );
+                   v = (double)val.y; m_io.write( (char *)&v, 8 );
+                   v = (double)val.z; m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+
+    if( m_io.fail() ) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
+void Chuck_IO_File::write( const t_CKVEC4 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_File::write( const t_CKVEC4 & val, t_CKINT flags )
+{
+    // sanity
+    if( !(m_io.is_open()) ) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    if( m_io.fail() ) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    if( m_dir ) {
+        EM_error3( "[chuck](via FileIO): cannot write to a directory" );
+        return;
+    }
+
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
+        m_io << "@(" << val.x << "," << val.y << "," << val.z << "," << val.w << ")";
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val.x; m_io.write( (char *)&v, 4 );
+                  v = (float)val.y; m_io.write( (char *)&v, 4 );
+                  v = (float)val.z; m_io.write( (char *)&v, 4 );
+                  v = (float)val.w; m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val.x; m_io.write( (char *)&v, 8 );
+                   v = (double)val.y; m_io.write( (char *)&v, 8 );
+                   v = (double)val.z; m_io.write( (char *)&v, 8 );
+                   v = (double)val.w; m_io.write( (char *)&v, 8 );
         }
         else
         {
@@ -4205,6 +4452,7 @@ void Chuck_IO_Chout::write( t_CKINT val )
 
 void Chuck_IO_Chout::write( t_CKINT val, t_CKINT flags )
 {
+    // ignore flag for chout
     m_buffer << val;
 }
 
@@ -4218,6 +4466,55 @@ void Chuck_IO_Chout::write( t_CKFLOAT val, t_CKINT flags )
     // ignore flags for chout
     m_buffer << val;
 }
+
+void Chuck_IO_Chout::write( const t_CKCOMPLEX & val )
+{
+    // print complex value
+    m_buffer << "#(" << val.re << "," << val.im << ")";
+}
+
+void Chuck_IO_Chout::write( const t_CKCOMPLEX & val, t_CKINT flags )
+{
+    // ignore flags for chout
+    this->write( val );
+}
+
+void Chuck_IO_Chout::write( const t_CKPOLAR & val )
+{
+    // print polar value
+    m_buffer << "%(" << val.modulus << "," << val.phase << ")";
+}
+
+void Chuck_IO_Chout::write( const t_CKPOLAR & val, t_CKINT flags )
+{
+    // ignore flags for chout
+    this->write( val );
+}
+
+void Chuck_IO_Chout::write( const t_CKVEC3 & v )
+{
+    // print vec3 value
+    m_buffer << "@(" << v.x << "," << v.y << "," << v.z << ")";
+}
+
+void Chuck_IO_Chout::write( const t_CKVEC3 & v, t_CKINT flags )
+{
+    // ignore flags for chout
+    this->write( v );
+}
+
+void Chuck_IO_Chout::write( const t_CKVEC4 & v )
+{
+    // print vec4 value
+    m_buffer << "@(" << v.x << "," << v.y << "," << v.z << "," << v.w << ")";
+}
+
+void Chuck_IO_Chout::write( const t_CKVEC4 & v, t_CKINT flags )
+{
+    // ignore flags for chout
+    this->write( v );
+}
+
 
 
 
@@ -4344,6 +4641,58 @@ void Chuck_IO_Cherr::write( t_CKFLOAT val, t_CKINT flags )
     // ignore flags for cherr
     m_buffer << val;
     flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKCOMPLEX & val )
+{
+    // print complex value
+    m_buffer << "#(" << val.re << "," << val.im << ")";
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKCOMPLEX & val, t_CKINT flags )
+{
+    // ignore flags for cherr
+    this->write( val );
+}
+
+void Chuck_IO_Cherr::write( const t_CKPOLAR & val )
+{
+    // print polar value
+    m_buffer << "%(" << val.modulus << "," << val.phase << ")";
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKPOLAR & val, t_CKINT flags )
+{
+    // ignore flags for cherr
+    this->write( val );
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC3 & v )
+{
+    // print vec3 value
+    m_buffer << "@(" << v.x << "," << v.y << "," << v.z << ")";
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC3 & v, t_CKINT flags )
+{
+    // ignore flags for cherr
+    this->write( v );
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC4 & v )
+{
+    // print vec4 value
+    m_buffer << "@(" << v.x << "," << v.y << "," << v.z << "," << v.w << ")";
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC4 & v, t_CKINT flags )
+{
+    // ignore flags for cherr
+    this->write( v );
 }
 
 
@@ -5087,6 +5436,56 @@ void Chuck_IO_Serial::write( t_CKFLOAT val, t_CKINT flags )
     }
 }
 
+void Chuck_IO_Serial::write( const t_CKCOMPLEX & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_Serial::write( const t_CKCOMPLEX & val, t_CKINT flags )
+{
+    // NOTE this will NOT output chuck-format complex #(re,im) in ASCII mode
+    this->write( val.re, flags );
+    this->write( val.im, flags );
+}
+
+void Chuck_IO_Serial::write( const t_CKPOLAR & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_Serial::write( const t_CKPOLAR & val, t_CKINT flags )
+{
+    // NOTE this will NOT output chuck-format polar %(modulus,phase) in ASCII mode
+    this->write( val.modulus, flags );
+    this->write( val.phase, flags );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC3 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC3 & val, t_CKINT flags )
+{
+    // NOTE this will NOT output chuck-format vec3 @(x,y,z) in ASCII mode
+    this->write( val.x, flags );
+    this->write( val.y, flags );
+    this->write( val.z, flags );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC4 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC4 & val, t_CKINT flags )
+{
+    // NOTE this will NOT output chuck-format vec4 @(x,y,z,w) in ASCII mode
+    this->write( val.x, flags );
+    this->write( val.y, flags );
+    this->write( val.z, flags );
+    this->write( val.w, flags );
+}
 
 void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
 {

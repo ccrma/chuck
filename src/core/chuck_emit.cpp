@@ -2573,9 +2573,6 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         return TRUE;
     }
 
-    case ae_op_s_chuck:
-    break;
-
     // -------------------------------- bool -----------------------------------
     case ae_op_eq:
         if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
@@ -2708,6 +2705,26 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
                 else if( isa( t_right, emit->env->ckt_string ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_string );
+                    instr->set_linepos( rhs->line );
+                }
+                else if( isa( t_right, emit->env->ckt_complex ) )
+                {
+                    emit->append( instr = new Chuck_Instr_IO_out_complex );
+                    instr->set_linepos( rhs->line );
+                }
+                else if( isa( t_right, emit->env->ckt_polar ) )
+                {
+                    emit->append( instr = new Chuck_Instr_IO_out_polar );
+                    instr->set_linepos( rhs->line );
+                }
+                else if( isa( t_right, emit->env->ckt_vec3 ) )
+                {
+                    emit->append( instr = new Chuck_Instr_IO_out_vec3 );
+                    instr->set_linepos( rhs->line );
+                }
+                else if( isa( t_right, emit->env->ckt_vec4 ) )
+                {
+                    emit->append( instr = new Chuck_Instr_IO_out_vec4 );
                     instr->set_linepos( rhs->line );
                 }
             }
@@ -3499,7 +3516,7 @@ t_CKBOOL emit_engine_emit_array_lit( Chuck_Emitter * emit, a_Array_Sub array )
 
     // construct array dynamically
     Chuck_Instr * instr = NULL;
-    emit->append( instr = new Chuck_Instr_Array_Init( emit->env, type, count ) );
+    emit->append( instr = new Chuck_Instr_Array_Init_Literal( emit->env, type, count ) );
     instr->set_linepos( array->line );
 
     return TRUE;

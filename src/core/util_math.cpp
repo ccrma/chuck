@@ -93,9 +93,9 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 #ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
 //-----------------------------------------------------------------------------
 // name: round()
-// desc: ...
+// desc: round a to the nearest interger number
 //-----------------------------------------------------------------------------
-  double round(double a)
+  double round( double a )
   {
       if (a >= 0) return (double)(t_CKINT)(a + .5);
       else return (double)(t_CKINT)(a - .5);
@@ -104,11 +104,11 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 
   //-----------------------------------------------------------------------------
   // name: trunc()
-  // desc: ...
+  // desc: remove non-integer aspect of a
   //-----------------------------------------------------------------------------
-  double trunc(double a)
+  double trunc( double a )
   {
-      return (double)(long)a;
+      return (double)(long long)a;
   }
 #endif // __CK_MATH_DEFINE_ROUND_TRUNC
 #endif // __PLATFORM_WINDOWS__
@@ -118,7 +118,7 @@ void ck_randomize() { ck_srandom( (unsigned)time(NULL) ); }
 
 //-----------------------------------------------------------------------------
 // name: ck_remainder()
-// desc: ...
+// desc: the remainder of a / b
 //-----------------------------------------------------------------------------
 double ck_remainder( double a, double b )
 {
@@ -174,7 +174,7 @@ double ck_ftom( double f )
 
 //-----------------------------------------------------------------------------
 // name: ck_powtodb()
-// desc: ...
+// desc: pow to db
 //-----------------------------------------------------------------------------
 double ck_powtodb( double f )
 {
@@ -191,7 +191,7 @@ double ck_powtodb( double f )
 
 //-----------------------------------------------------------------------------
 // name: ck_rmstodb()
-// desc: ...
+// desc: rms to db
 //-----------------------------------------------------------------------------
 double ck_rmstodb( double f )
 {
@@ -208,7 +208,7 @@ double ck_rmstodb( double f )
 
 //-----------------------------------------------------------------------------
 // name: ck_dbtopow()
-// desc: ...
+// desc: db to pow
 //-----------------------------------------------------------------------------
 double ck_dbtopow( double f )
 {
@@ -226,7 +226,7 @@ double ck_dbtopow( double f )
 
 //-----------------------------------------------------------------------------
 // name: ck_dbtorms()
-// desc: ...
+// desc: db to rms
 //-----------------------------------------------------------------------------
 double ck_dbtorms( double f )
 {
@@ -244,7 +244,7 @@ double ck_dbtorms( double f )
 
 //-----------------------------------------------------------------------------
 // name: ck_nextpow2()
-// desc: ...
+// desc: compute the next power of two greater than n
 //-----------------------------------------------------------------------------
 unsigned long ck_nextpow2( unsigned long n )
 {
@@ -258,9 +258,57 @@ unsigned long ck_nextpow2( unsigned long n )
 
 //-----------------------------------------------------------------------------
 // name: ck_ensurepow2()
-// desc: ...
+// desc: return the largest power of two no less than n
 //-----------------------------------------------------------------------------
 unsigned long ck_ensurepow2( unsigned long n )
 {
     return ck_nextpow2( n-1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_complex_magnitude()
+// desc: magnitude of complex number
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp )
+{
+    return ::sqrt( cmp.re*cmp.re + cmp.im*cmp.im );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_complex_phase()
+// desc: phase of complex number
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp )
+{
+    return ::atan2( cmp.im, cmp.re );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_vec3_magnitude()
+// desc: magnitude of vec3
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v )
+{
+    return ::sqrt( v.x*v.x + v.y*v.y + v.z*v.z );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_vec4_magnitude()
+// desc: magnitude of vec4
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v )
+{
+    return ::sqrt( v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w );
 }

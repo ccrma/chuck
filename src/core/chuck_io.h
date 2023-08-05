@@ -100,6 +100,14 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags ) = 0;
     virtual void write( t_CKFLOAT val ) = 0;
     virtual void write( t_CKFLOAT val, t_CKINT flags ) = 0;
+    virtual void write( const t_CKCOMPLEX & val ) = 0;
+    virtual void write( const t_CKCOMPLEX & val, t_CKINT flags ) = 0;
+    virtual void write( const t_CKPOLAR & val ) = 0;
+    virtual void write( const t_CKPOLAR & val, t_CKINT flags ) = 0;
+    virtual void write( const t_CKVEC3 & val ) = 0;
+    virtual void write( const t_CKVEC3 & val, t_CKINT flags ) = 0;
+    virtual void write( const t_CKVEC4 & val ) = 0;
+    virtual void write( const t_CKVEC4 & val, t_CKINT flags ) = 0;
 
 public:
     // type | moved to IO in 1.5.0.0 (ge)
@@ -210,6 +218,14 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     virtual void write( t_CKFLOAT val, t_CKINT flags );
+    virtual void write( const t_CKCOMPLEX & val );
+    virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
+    virtual void write( const t_CKPOLAR & val );
+    virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC3 & val );
+    virtual void write( const t_CKVEC3 & val, t_CKINT flags );
+    virtual void write( const t_CKVEC4 & val );
+    virtual void write( const t_CKVEC4 & val, t_CKINT flags );
 
 #ifndef __DISABLE_THREADS__
     // writing -- async
@@ -271,6 +287,14 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     virtual void write( t_CKFLOAT val, t_CKINT flags );
+    virtual void write( const t_CKCOMPLEX & val );
+    virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
+    virtual void write( const t_CKPOLAR & val );
+    virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC3 & val );
+    virtual void write( const t_CKVEC3 & val, t_CKINT flags );
+    virtual void write( const t_CKVEC4 & val );
+    virtual void write( const t_CKVEC4 & val, t_CKINT flags );
 
 public: // REFACTOR-2017
     // set callback
@@ -318,6 +342,14 @@ public:
     virtual void write( t_CKINT val, t_CKINT flags );
     virtual void write( t_CKFLOAT val );
     virtual void write( t_CKFLOAT val, t_CKINT flags );
+    virtual void write( const t_CKCOMPLEX & val );
+    virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
+    virtual void write( const t_CKPOLAR & val );
+    virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC3 & val );
+    virtual void write( const t_CKVEC3 & val, t_CKINT flags );
+    virtual void write( const t_CKVEC4 & val );
+    virtual void write( const t_CKVEC4 & val, t_CKINT flags );
 
 public:
     // set callback | REFACTOR-2017
@@ -592,6 +624,14 @@ public:
     virtual void writeBytes( Chuck_Array4 * arr );
     virtual void write( t_CKFLOAT val );
     virtual void write( t_CKFLOAT val, t_CKINT flags );
+    virtual void write( const t_CKCOMPLEX & val );
+    virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
+    virtual void write( const t_CKPOLAR & val );
+    virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC3 & val );
+    virtual void write( const t_CKVEC3 & val, t_CKINT flags );
+    virtual void write( const t_CKVEC4 & val );
+    virtual void write( const t_CKVEC4 & val, t_CKINT flags );
 
     // serial stuff
     virtual t_CKBOOL setBaudRate( t_CKUINT rate );

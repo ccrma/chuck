@@ -96,6 +96,17 @@ unsigned long ck_nextpow2( unsigned long i );
 // ensurepow2
 unsigned long ck_ensurepow2( unsigned long i );
 
+// magnitude of complex number
+t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp );
+// phase of complex number
+t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp );
+// magnitude of vec3
+t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
+// magnitude of vec4
+t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
+
+
+
 #if defined (__cplusplus) || defined(_cplusplus)
 }
 #endif

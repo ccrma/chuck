@@ -2,6 +2,28 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.0.9 (August 2023)
+===
+- (added) array
+	void sort()
+        sort the contents of the array in ascending order.
+- (sorting semantics, by type)
+        int[]: sort by value
+      float[]: sort by value
+    complex[]: sort by magnitude (2-norm) with phase as tie-breaker
+      polar[]: sort by magnitude with phase as tie-breaker
+       vec3[]: sort by magnitude with x then y then z
+       vec4[]: sort by magnitude with x then y then z then w
+- new examples
+    |- examples/array/array_sort.ck
+- (added) IO (cherr, chout, FileIO) for complex, polar, vec3, vec3
+    e.g., cherr <= #(1,1) <= IO.nl();
+    e.g., chout <= #(1,1)$polar <= IO.nl();
+- (fixed) for-each for complex, polar, vec3, vec4 types
+- (fixed) error reporting for a few binary operators, including reserved
+    (spork ~, typeof, sizeof, new, <-, ->)
+
+
 1.5.0.8 (August 2023)
 ===
 (note) this release introduces a for-each control structure for more 

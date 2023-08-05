@@ -2179,6 +2179,10 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             if( isa( right, env->ckt_int ) ) return left;
             else if( isa( right, env->ckt_float ) ) return left;
             else if( isa( right, env->ckt_string ) ) return left;
+            else if( isa( right, env->ckt_complex ) ) return left;
+            else if( isa( right, env->ckt_polar ) ) return left;
+            else if( isa( right, env->ckt_vec3 ) ) return left;
+            else if( isa( right, env->ckt_vec4 ) ) return left;
             else // error
             {
                 EM_error2( lhs->where, "on suitable IO action for '%s' <= '%s'",
@@ -2249,7 +2253,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     }
 
     // no match
-    EM_error2( lhs->where,
+    EM_error2( binary->where,
         "cannot resolve operator '%s' on types '%s' and '%s'",
         op2str( op ), left->c_name(), right->c_name() );
     return NULL;

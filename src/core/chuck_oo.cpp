@@ -321,14 +321,19 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Array()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Array::Chuck_Array() { }
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ~Chuck_Array()
 // desc: destructor
 //-----------------------------------------------------------------------------
-Chuck_Array::~Chuck_Array()
-{
-    // decrement reference count; added (ge): 1.4.1.0
-    CK_SAFE_RELEASE( m_array_type );
-}
+Chuck_Array::~Chuck_Array() { }
 
 
 
@@ -759,9 +764,33 @@ void Chuck_Array4::shuffle()
 // name: reverse()
 // desc: reverses array in-place
 //-----------------------------------------------------------------------------
-void Chuck_Array4::reverse( )
+void Chuck_Array4::reverse()
 {
     std::reverse( m_vector.begin(), m_vector.end() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_int()
+// desc: compare function for sorting uints as signed int
+//-----------------------------------------------------------------------------
+static bool ck_compare_sint( t_CKUINT lhs, t_CKUINT rhs )
+{
+    // sort by 2-norm / magnitude
+    return (t_CKINT)lhs < (t_CKINT)rhs;
+}
+//-----------------------------------------------------------------------------
+// name: sort()
+// desc: sort the array in ascending order
+//-----------------------------------------------------------------------------
+void Chuck_Array4::sort()
+{
+    // if object references sort as unsigned
+    if( m_is_obj ) std::sort( m_vector.begin(), m_vector.end() );
+    // if not object references, sort as signed ints
+    else std::sort( m_vector.begin(), m_vector.end(), ck_compare_sint );
 }
 
 
@@ -1259,6 +1288,18 @@ void Chuck_Array8::shuffle()
 
 
 //-----------------------------------------------------------------------------
+// name: sort()
+// desc: sort the array in ascending order
+//-----------------------------------------------------------------------------
+void Chuck_Array8::sort()
+{
+    std::sort( m_vector.begin(), m_vector.end() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1376,6 +1417,8 @@ Chuck_Array16::Chuck_Array16( t_CKINT capacity )
     m_vector.resize( capacity );
     // clear
     this->zero( 0, m_vector.capacity() );
+    // clear
+    m_isPolarType = FALSE;
 }
 
 
@@ -1706,6 +1749,74 @@ void Chuck_Array16::reverse( )
 void Chuck_Array16::shuffle()
 {
     my_random_shuffle( m_vector.begin(), m_vector.end() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_polar()
+// desc: compare function for sorting chuck polar values
+//-----------------------------------------------------------------------------
+static bool ck_compare_polar( const t_CKCOMPLEX & lhs, const t_CKCOMPLEX & rhs )
+{
+    // cast to polar
+    const t_CKPOLAR * pL = (const t_CKPOLAR *)&lhs;
+    const t_CKPOLAR * pR = (const t_CKPOLAR *)&rhs;
+
+    // compare magnitude first
+    t_CKFLOAT x = pL->modulus;
+    t_CKFLOAT y = pR->modulus;
+    // if magnitude equal
+    if( x == y ) {
+        // compare phase
+        return pL->phase < pR->phase;
+    }
+    // return magnitude comparison
+    return x < y;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_complex()
+// desc: compare function for sorting chuck complex values
+//-----------------------------------------------------------------------------
+static bool ck_compare_complex( const t_CKCOMPLEX & lhs, const t_CKCOMPLEX & rhs )
+{
+    // compare magnitude first
+    t_CKFLOAT x = ck_complex_magnitude(lhs);
+    t_CKFLOAT y = ck_complex_magnitude(rhs);
+    // if magnitude equal
+    if( x == y ) {
+        // compare phase
+        t_CKFLOAT xp = ck_complex_phase(lhs);
+        t_CKFLOAT yp = ck_complex_phase(rhs);
+        return xp < yp;
+    }
+    // return magnitude comparison
+    return x < y;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: sort()
+// desc: sort the array in ascending order
+// NOTE: complex/polar type sort in chuck uses MATLAB convention:
+//       https://www.mathworks.com/help/matlab/ref/sort.html
+//       "By default, the sort function sorts complex values by their magnitude,
+//        and breaks ties using phase angles"
+//-----------------------------------------------------------------------------
+void Chuck_Array16::sort()
+{
+    // check betwen complex vs. polar
+    if( m_isPolarType )
+        std::sort( m_vector.begin(), m_vector.end(), ck_compare_polar );
+    else
+        std::sort( m_vector.begin(), m_vector.end(), ck_compare_complex );
 }
 
 
@@ -2273,6 +2384,42 @@ void Chuck_Array24::shuffle()
 
 
 //-----------------------------------------------------------------------------
+// name: ck_compare_vec3()
+// desc: compare function for sorting chuck vec3s
+//-----------------------------------------------------------------------------
+static bool ck_compare_vec3( const t_CKVEC3 & lhs, const t_CKVEC3 & rhs )
+{
+    // sort by 2-norm / magnitude
+    t_CKFLOAT x = ck_vec3_magnitude(lhs);
+    t_CKFLOAT y = ck_vec3_magnitude(rhs);
+    // if same
+    if( x == y )
+    {
+        // tie breakers
+        if( lhs.x < rhs.x ) return true;
+        if( lhs.y < rhs.y ) return true;
+        if( lhs.z < rhs.z ) return true;
+    }
+    return x < y;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: sort()
+// desc: sort the array in ascending order
+// NOTE: sort vec3 by 2-norm (magnitude)
+//-----------------------------------------------------------------------------
+void Chuck_Array24::sort()
+{
+    std::sort( m_vector.begin(), m_vector.end(), ck_compare_vec3 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Array32()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -2725,6 +2872,43 @@ void Chuck_Array32::reverse( )
 void Chuck_Array32::shuffle()
 {
     my_random_shuffle( m_vector.begin(), m_vector.end() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_vec4()
+// desc: compare function for sorting chuck vec4s
+//-----------------------------------------------------------------------------
+static bool ck_compare_vec4( const t_CKVEC4 & lhs, const t_CKVEC4 & rhs )
+{
+    // sort by 2-norm / magnitude
+    t_CKFLOAT x = ck_vec4_magnitude(lhs);
+    t_CKFLOAT y = ck_vec4_magnitude(rhs);
+    // if same
+    if( x == y )
+    {
+        // tie breakers
+        if( lhs.x < rhs.x ) return true;
+        if( lhs.y < rhs.y ) return true;
+        if( lhs.z < rhs.z ) return true;
+        if( lhs.w < rhs.w ) return true;
+    }
+    return x < y;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: sort()
+// desc: sort the array in ascending order
+// NOTE: sort vec3 by 2-norm (magnitude)
+//-----------------------------------------------------------------------------
+void Chuck_Array32::sort()
+{
+    std::sort( m_vector.begin(), m_vector.end(), ck_compare_vec4 );
 }
 
 

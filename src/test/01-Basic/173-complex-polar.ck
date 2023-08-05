@@ -1,3 +1,5 @@
+// adapted from examples/type/type_analysis.ck
+
 // print complex
 <<< #(1,1) >>>;
 // print polar

@@ -551,7 +551,7 @@ string absyn_op2str( ae_Operator op )
         case ae_op_unchuck: str = "=<"; break;
         case ae_op_upchuck: str = "=^"; break;
         case ae_op_at_chuck: str = "@=>"; break;
-        case ae_op_s_chuck: str = ""; break;
+        // case ae_op_s_chuck: str = ""; break;
         case ae_op_eq: str = "=="; break;
         case ae_op_neq: str = "!="; break;
         case ae_op_lt: str = "<"; break;
@@ -716,8 +716,8 @@ string absyn_primary2str( a_Exp_Primary primary )
         case ae_primary_str: str = string("\"") + primary->str + "\""; break;
         case ae_primary_char: str = string("'") + primary->chr + "'"; break;
         case ae_primary_array: str = "["+absyn_exp2str(primary->array->exp_list)+"]"; break;
-        case ae_primary_complex: str = "#("+absyn_exp2str(primary->complex->re)+")"; break;
-        case ae_primary_polar: str = "%("+absyn_exp2str(primary->polar->mod)+")"; break;
+        case ae_primary_complex: str = "#("+absyn_exp2str(primary->complex->re)+","+absyn_exp2str(primary->complex->im)+")"; break;
+        case ae_primary_polar: str = "%("+absyn_exp2str(primary->polar->mod)+","+absyn_exp2str(primary->polar->phase)+")"; break;
         case ae_primary_vec: str = "@("+absyn_exp2str(primary->vec->args)+")"; break;
         case ae_primary_exp: str = absyn_exp2str(primary->exp); break;
         case ae_primary_hack: str = "<<< " + absyn_exp2str(primary->exp) + " >>>"; break;
