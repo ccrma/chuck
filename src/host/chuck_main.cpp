@@ -56,6 +56,7 @@ using namespace std;
 t_CKBOOL init_shell( Chuck_Shell * shell, Chuck_Shell_UI * ui, Chuck_VM * vm );
 void * shell_cb( void * p );
 t_CKBOOL go( int argc, const char ** argv );
+void EXIT_with_global_cleanup( int exitCode );
 t_CKBOOL global_cleanup();
 void all_stop();
 void all_detach();
@@ -265,8 +266,14 @@ void usage()
 }
 
 
+
+
+// non-NULL when a pid file has been written
+const char * g_ck_pidfile = NULL;
+// current process id
+unsigned int g_ck_pid = 0;
 //-----------------------------------------------------------------------------
-// name: write_pid(filename)
+// name: write_pid(filename) | 1.5.0.9 (@ynohtna)
 // desc: writes the host's process id to the given file path
 //       returns true if successful, false otherwise.
 //-----------------------------------------------------------------------------
@@ -277,23 +284,33 @@ bool write_pid( const char * filename )
     CK_FPRINTF_STDERR( "[chuck]: --pid-file option not yet implemented for Windows\n");
     return false;
 #else
-    const unsigned int pid = getpid();
+    // get process id and store in global variable
+    g_ck_pid = getpid();
+    // open file to write to
     FILE * pidfile = fopen( filename, "w" );
+    // check file
     if( pidfile )
     {
-        fprintf( pidfile, "%u", pid );
+        // write to file
+        fprintf( pidfile, "%u", g_ck_pid );
+        // close the file
         fclose( pidfile );
-        EM_error3( "[chuck]: process ID %u stored in %s", pid, filename );
+        // done
         return true;
     }
     else
     {
-        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", pid, filename);
+        // problem
+        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", g_ck_pid, filename );
+        // clear id
+        g_ck_pid = 0;
+        // report
         return false;
     }
 #endif
 }
-const char * g_pidfile = NULL; // non-NULL when a pid file has been written.
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -359,10 +376,8 @@ extern "C" void signal_pipe( int sig_num )
     {
         // log
         CK_FPRINTF_STDERR( "[chuck]: cleaning up...\n" );
-        // clean up everything!
-        global_cleanup();
-        // later
-        exit( 2 );
+        // done
+        EXIT_with_global_cleanup( 141 ); // 141 -> SIGPIPE
     }
 }
 
@@ -371,7 +386,7 @@ extern "C" void signal_pipe( int sig_num )
 
 //-----------------------------------------------------------------------------
 // name: global_cleanup()
-// desc: ...
+// desc: try to leave the campground better than you found it
 //-----------------------------------------------------------------------------
 t_CKBOOL global_cleanup()
 {
@@ -428,14 +443,35 @@ t_CKBOOL global_cleanup()
     // 1.5.0.0 (ge) | commented
     // s_mutex.release();
 
-    // delete process id file.
-    if( g_pidfile )
+    // delete process id file
+    if( g_ck_pidfile )
     {
-        unlink( g_pidfile );
-        g_pidfile = NULL;
+        // log
+        EM_log( CK_LOG_INFO, "cleaning up pid-file '%s'...", g_ck_pidfile );
+        // remove directory entry
+        unlink( g_ck_pidfile );
+        // reset
+        g_ck_pidfile = NULL;
     }
+    // reset
+    g_ck_pid = 0;
 
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: EXIT_with_global_cleanup()
+// desc: exit program after invoking global_cleanup()
+//-----------------------------------------------------------------------------
+void EXIT_with_global_cleanup( int exitCode )
+{
+    // clean up after ourselves, the best we can
+    global_cleanup();
+    // exit program
+    exit( exitCode );
 }
 
 
@@ -517,8 +553,8 @@ void * shell_cb( void * p )
     
     // assuming this is absolutely necessary, an assert may be better
     assert( p != NULL );
-    
-    shell = (Chuck_Shell *) p;
+    // get shell object pointer
+    shell = (Chuck_Shell *)p;
     
     //atexit( wait_for_shell );
     
@@ -528,6 +564,7 @@ void * shell_cb( void * p )
     // flag to effect global shutdown from main thread
     g_shutdown_shell = TRUE;
 
+    // log
     EM_log( CK_LOG_INFO, "exiting thread routine for shell..." );
     
     return NULL;
@@ -881,9 +918,12 @@ t_CKBOOL go( int argc, const char ** argv )
                 colorTerminal = FALSE;
             else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
             {
-                const char* filename = argv[i] + sizeof("--pid-file:")-1;
-                if (write_pid(filename)) {
-                    g_pidfile = filename;
+                // get argument for writing PID file | 1.5.0.9 (@ynohtna) added
+                const char * filename = argv[i] + sizeof("--pid-file:")-1;
+                // write the process ID file |
+                if( write_pid(filename) ) {
+                    // save file name
+                    g_ck_pidfile = filename;
                 }
             }
             // (added 1.3.0.0)
@@ -922,10 +962,17 @@ t_CKBOOL go( int argc, const char ** argv )
                 
                 // do it
                 if( otf_send_cmd( argc, argv, i, g_otf_dest, g_otf_port, &is_otf ) )
-                    exit( 0 );
-                
+                {
+                    // done
+                    EXIT_with_global_cleanup( 0 );
+                }
+
                 // is otf
-                if( is_otf ) exit( 1 );
+                if( is_otf )
+                {
+                    // done
+                    EXIT_with_global_cleanup( 1 );
+                }
                 
                 // done
                 errorMessage1 = string("invalid flag '") + argv[i] + "' (see --help/-h)";
@@ -954,6 +1001,10 @@ t_CKBOOL go( int argc, const char ** argv )
 
     // set log level so things can start logging
     the_chuck->setLogLevel( log_level );
+
+    // log PID file output
+    if( g_ck_pidfile )
+    { EM_log( CK_LOG_INFO, "process ID '%u' stored in '%s'...", g_ck_pid, g_ck_pidfile ); }
     //-----------------------------------------------------------------
 
     // check for error message from command-line arguments
@@ -964,8 +1015,8 @@ t_CKBOOL go( int argc, const char ** argv )
     {
         // see if need to print usage
         if( doAbout ) usage();
-        // bail for now
-        exit(1);
+        // done
+        EXIT_with_global_cleanup( 1 );
     }
 
     //-----------------------------------------------------------------
@@ -973,22 +1024,28 @@ t_CKBOOL go( int argc, const char ** argv )
     //-----------------------------------------------------------------
     if( doAbout )
     {
+        // print usage info
         usage();
-        exit( 2 );
+        // done
+        EXIT_with_global_cleanup( 0 );
     }
     //-----------------------------------------------------------------
     // version
     //-----------------------------------------------------------------
     if( doVersion )
     {
+        // print version
         version();
-        exit( 2 );
+        // done
+        EXIT_with_global_cleanup( 0 );
     }
     //-----------------------------------------------------------------
     // probe
     //-----------------------------------------------------------------
     if( probe )
     {
+        // save log level
+        t_CKINT loglevel = the_chuck->getLogLevel();
         // ensure log level is at least SYSTEM
         if( the_chuck->getLogLevel() < CK_LOG_SYSTEM )
             the_chuck->setLogLevel( CK_LOG_SYSTEM );
@@ -1008,8 +1065,10 @@ t_CKBOOL go( int argc, const char ** argv )
         // probe HID devices
         HidInManager::probeHidIn();
 
-        // done probe
-        exit( 0 );
+        // restore log level
+        the_chuck->setLogLevel( log_level );
+        // done
+        EXIT_with_global_cleanup( 0 );
     }
 
     // set caution to wind
@@ -1029,10 +1088,15 @@ t_CKBOOL go( int argc, const char ** argv )
     // set adaptive size
     if( adaptive_size < 0 ) adaptive_size = buffer_size;
 
+    // no files or --loop
     if( !files && vm_halt && !g_enable_shell && !probe_chugs )
     {
+        // print error
         EM_error2( 0, "no input files... (try --help/-h)" );
-        exit( 1 );
+        // clean up
+        global_cleanup();
+        // done
+        EXIT_with_global_cleanup( 1 );
     }
 
     // shell initialization without vm
@@ -1042,20 +1106,25 @@ t_CKBOOL go( int argc, const char ** argv )
         g_shell = new Chuck_Shell;
         // initialize
         if( !init_shell( g_shell, new Chuck_Console(), NULL ) )
-            exit( 1 );
+        {
+            // done
+            EXIT_with_global_cleanup( 1 );
+        }
         // no vm is needed, just start running the shell now
         g_shell->run();
         // clean up
         CK_SAFE_DELETE( g_shell );
         // done
-        exit( 0 );
+        EXIT_with_global_cleanup( 0 );
     }
     
     // make sure vm
     if( no_vm )
     {
+        // error
         CK_FPRINTF_STDERR( "[chuck]: '--empty' can only be used with shell...\n" );
-        exit( 1 );
+        // done
+        EXIT_with_global_cleanup( 1 );
     }
     
     // find dac_name if appropriate (added 1.3.0.0)
@@ -1071,7 +1140,8 @@ t_CKBOOL go( int argc, const char ** argv )
         {
             CK_FPRINTF_STDERR( "[chuck]: unable to find dac '%s'...\n", dac_name.c_str() );
             CK_FPRINTF_STDERR( "[chuck]: | (try --probe to enumerate audio device info)\n" );
-            exit( 1 );
+            // done
+            EXIT_with_global_cleanup( 1 );
         }
     }
     
@@ -1088,7 +1158,8 @@ t_CKBOOL go( int argc, const char ** argv )
         {
             CK_FPRINTF_STDERR( "[chuck]: unable to find adc '%s'...\n", adc_name.c_str() );
             CK_FPRINTF_STDERR( "[chuck]: | (try --probe to enumerate audio device info)\n" );
-            exit( 1 );
+            // done
+            EXIT_with_global_cleanup( 1 );
         }
     }
 
@@ -1111,16 +1182,14 @@ t_CKBOOL go( int argc, const char ** argv )
         // probe chugins (.chug and .ck modules)
         // print/log what ChucK would load with current settings
         the_chuck->probeChugins();
-
-        // done with probe
-        exit( 0 );
+        // done
+        EXIT_with_global_cleanup( 0 );
     }
 
     // log
     EM_log( CK_LOG_SYSTEM, "initializing chuck..." );
     // push
     EM_pushlog();
-
 
     //--------------------------- AUDIO I/O SETUP -----------------------------
     // log
@@ -1149,8 +1218,9 @@ t_CKBOOL go( int argc, const char ** argv )
             EM_log( CK_LOG_SYSTEM, "| (use --help for more details)" );
             // pop
             EM_poplog();
+
             // done
-            exit( 1 );
+            EXIT_with_global_cleanup( 1 );
         }
 
         // these could have been updated during initialization
@@ -1193,8 +1263,10 @@ t_CKBOOL go( int argc, const char ** argv )
     // initialize
     if( !the_chuck->init() )
     {
+        // print error
         CK_FPRINTF_STDERR( "[chuck]: failed to initialize...\n" );
-        exit( 1 );
+        // done
+        EXIT_with_global_cleanup( 1 );
     }
 
     // timestamp
@@ -1248,7 +1320,8 @@ t_CKBOOL go( int argc, const char ** argv )
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: error setting thread priority...\n" );
-            exit( 1 );
+            // done
+            EXIT_with_global_cleanup( 1 );
         }
     }
 
@@ -1260,7 +1333,10 @@ t_CKBOOL go( int argc, const char ** argv )
         g_shell = new Chuck_Shell;
         // initialize
         if( !init_shell( g_shell, new Chuck_Console(), the_chuck->vm() ) )
-            exit( 1 );
+        {
+            // done
+            EXIT_with_global_cleanup( 1 );
+        }
 
         // flag
         g_shutdown_shell = FALSE;
