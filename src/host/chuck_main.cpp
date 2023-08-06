@@ -1092,8 +1092,6 @@ t_CKBOOL go( int argc, const char ** argv )
     {
         // print error
         EM_error2( 0, "no input files... (try --help/-h)" );
-        // clean up
-        global_cleanup();
         // done
         EXIT_with_global_cleanup( 1 );
     }
