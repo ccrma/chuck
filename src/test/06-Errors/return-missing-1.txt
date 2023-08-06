@@ -1,0 +1,4 @@
+return-missing-1.ck:6:5: error: function 'foo()' was defined with return type 'float' -- but returning type 'void'
+[6]     return;
+        ^
+return-missing-1.ck: ...in function 'float foo()'

@@ -705,6 +705,8 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     // emit the skip to the end
     emit->append( op2 = new Chuck_Instr_Goto(0) );
 
+    // remember the next index
+    t_CKUINT topOfElse = emit->next_index();
     // set the op's target
     op->set( emit->next_index() );
 
@@ -712,10 +714,13 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     {
         // push the stack, allowing for new local variables
         emit->push_scope();
-        // emit the body
+        // emit the body (else)
         ret = emit_engine_emit_stmt( emit, stmt->else_body );
         if( !ret )
             return FALSE;
+        // add else to dump string
+        if( topOfElse < emit->next_index() )
+            emit->code->code[topOfElse]->prepend_codestr( "} else {" );
         // pop stack
         emit->pop_scope();
     }
@@ -5133,7 +5138,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // vm code
     func->code = emit_to_code( emit->code, NULL, emit->dump );
     // add reference
-    func->code->add_ref();
+    CK_SAFE_ADD_REF( func->code );
 
     // unset the func
     emit->env->func = NULL;

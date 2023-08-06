@@ -1420,7 +1420,6 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         if( !arg_list->type )
         {
             // TODO: try to resolve
-            // EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
             EM_error2( arg_list->where,
                 "...in argument %i '%s' of function '%s(.)'",
                 count, S_name(arg_list->var_decl->xid), S_name(f->name) );
@@ -2494,7 +2493,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( f->s_type == ae_func_builtin )
     {
         // we can emit code now
-        func->code = new Chuck_VM_Code;
+        func->code = new Chuck_VM_Code; func->code->add_ref();
         // whether the function needs 'this'
         func->code->need_this = func->is_member;
         // is static inside
@@ -2585,7 +2584,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // check if reserved
         if( type_engine_check_reserved( env, arg_list->var_decl->xid, arg_list->where ) )
         {
-            EM_error2( arg_list->where, "in function '%s'", S_name(f->name) );
+            EM_error2( arg_list->where, "in function '%s'", func->signature().c_str() ); // S_name(f->name) );
             goto error;
         }
 
@@ -2622,10 +2621,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // should be partial and empty []
             if( arg_list->var_decl->array->exp_list )
             {
-                EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
+                EM_error2( arg_list->where, "in function '%s':", func->signature().c_str() ); // S_name(f->name) );
                 EM_error2( arg_list->where, "argument %i '%s' must be defined with empty []'s",
                     count, S_name(arg_list->var_decl->xid) );
-                return FALSE;
+                goto error; // return FALSE;
             }
 
             // create the new array type
@@ -2755,7 +2754,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     assert( f->code == NULL || f->code->s_type == ae_stmt_code );
     if( f->code && !type_engine_scan2_code_segment( env, &f->code->stmt_code, FALSE ) )
     {
-        EM_error2( 0, "...in function '%s'", S_name(f->name) );
+        EM_error2( 0, "...in function '%s'", func->signature().c_str() ); // S_name(f->name) );
         goto error;
     }
 
@@ -2771,7 +2770,13 @@ error:
     // clean up
     if( func )
     {
+        // reset
         env->func = NULL;
+        // break func_ref <-> value_ref cycle, at least here
+        CK_SAFE_RELEASE( func->value_ref );
+        // release
+        CK_SAFE_RELEASE(value);
+        CK_SAFE_RELEASE(type);
         CK_SAFE_RELEASE(func);
     }
 

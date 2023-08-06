@@ -119,16 +119,24 @@ void Chuck_VM_Object::add_ref()
 //-----------------------------------------------------------------------------
 void Chuck_VM_Object::release()
 {
-    // check
+    //-----------------------------------------------------------------------------
+    // release is permitted even if ref-count is already 0 | 1.5.0.9 (ge)
+    //-----------------------------------------------------------------------------
     if( m_ref_count <= 0 )
     {
+        // print warning
+        EM_log( CK_LOG_FINEST, "(internal) Object.release() refcount already %d", m_ref_count );
+
         // print error
-        EM_error3( "[chuck]: (internal error) Object.release() refcount == %d", m_ref_count );
+        // EM_error3( "[chuck]: (internal error) Object.release() refcount == %d", m_ref_count );
         // make sure there is at least one reference
-        assert( m_ref_count > 0 );
+        // assert( m_ref_count > 0 );
     }
-    // decrement
-    m_ref_count--;
+    else
+    {
+        // decrement
+        m_ref_count--;
+    }
 
     // added 1.3.0.0
     // CK_VM_DEBUG(CK_FPRINTF_STDERR( "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, mini_type(typeid(*this).name()), m_ref_count));

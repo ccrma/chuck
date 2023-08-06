@@ -508,7 +508,6 @@ public:
     // level - 0:stop, 1:warn, 2:ignore
     t_CKINT deprecate_level;
 
-
 public:
     // REFACTOR-2017: public types
     Chuck_Type * ckt_void;
@@ -830,7 +829,7 @@ struct Chuck_Func : public Chuck_VM_Object
     // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
     // human readable function signature: e.g., void Object.func( int foo, float bar[] );
-    std::string signature() const;
+    std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
     Chuck_VM_Code * code;
     // imported code

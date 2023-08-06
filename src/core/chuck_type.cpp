@@ -101,6 +101,11 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
 a_Func_Def partial_deep_copy_fn( a_Func_Def f );
 a_Arg_List partial_deep_copy_args( a_Arg_List args );
 
+// helper macros
+#define CK_LR( L, R )      if( (left->xid == L) && (right->xid == R) )
+#define CK_COMMUTE( L, R ) if( ( (left->xid == L) && (right->xid == R) ) || \
+                            ( (left->xid == R) && (right->xid == L) ) )
+
 
 
 
@@ -1559,14 +1564,24 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
     else
         ret_type = env->ckt_void;
 
-    // check to see that return type matches the prototype
-    if( ret_type && !isa( ret_type, env->func->def()->ret_type ) )
+    t_CKTYPE left = ret_type;
+    t_CKTYPE right = env->func->def()->ret_type;
+    // if there is thing to return
+    if( left )
     {
-        EM_error2( stmt->where,
-            "function '%s' was defined with return type '%s' -- but returning type '%s'",
-            env->func->name.c_str(), env->func->def()->ret_type->c_name(),
-            ret_type->c_name() );
-        return FALSE;
+        // check implicit cast | 1.5.0.9
+        CK_LR( te_int, te_float ) left = stmt->val->cast_to = env->ckt_float;
+
+        // check to see that return type matches the prototype
+        if( !isa( left, right ) )
+        {
+            // error
+            EM_error2( stmt->where,
+                "function '%s' was defined with return type '%s' -- but returning type '%s'",
+                env->func->signature(FALSE,FALSE).c_str(), env->func->def()->ret_type->c_name(),
+                ret_type->c_name() );
+            return FALSE;
+        }
     }
 
     return ret_type != NULL;
@@ -1798,10 +1813,6 @@ t_CKBOOL type_engine_ensure_no_multi_decl( a_Exp exp, const char * op_str )
 }
 
 
-// helper macros
-#define LR( L, R )      if( (left->xid == L) && (right->xid == R) )
-#define COMMUTE( L, R ) if( ( (left->xid == L) && (right->xid == R) ) || \
-                            ( (left->xid == R) && (right->xid == L) ) )
 
 
 //-----------------------------------------------------------------------------
@@ -1866,8 +1877,8 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             else if( isa( left, env->ckt_object ) && isa( right, env->ckt_string ) && !isa( left, env->ckt_string) )
                 left = lhs->cast_to = env->ckt_string;
         case ae_op_minus:
-            LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
-            else LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
+            CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
         case ae_op_times:
         case ae_op_divide:
         case ae_op_lt:
@@ -1877,20 +1888,20 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         case ae_op_eq:
         case ae_op_neq:
             // complex
-            LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
-            else LR( te_complex, te_int ) right = rhs->cast_to = env->ckt_complex;
-            LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_complex;
-            else LR( te_complex, te_float ) right = rhs->cast_to = env->ckt_complex;
+            CK_LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
+            else CK_LR( te_complex, te_int ) right = rhs->cast_to = env->ckt_complex;
+            CK_LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_complex;
+            else CK_LR( te_complex, te_float ) right = rhs->cast_to = env->ckt_complex;
 
             // polar
-            LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
-            else LR( te_complex, te_int ) right = rhs->cast_to = env->ckt_polar;
-            LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_polar;
-            else LR( te_complex, te_float ) right = rhs->cast_to = env->ckt_polar;
+            CK_LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
+            else CK_LR( te_complex, te_int ) right = rhs->cast_to = env->ckt_polar;
+            CK_LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_polar;
+            else CK_LR( te_complex, te_float ) right = rhs->cast_to = env->ckt_polar;
         case ae_op_percent:
             // mark for cast
-            LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
-            else LR( te_float, te_int ) right = rhs->cast_to = env->ckt_float;
+            CK_LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
+            else CK_LR( te_float, te_int ) right = rhs->cast_to = env->ckt_float;
         break;
 
         default: break;
@@ -1908,11 +1919,11 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         case ae_op_divide_chuck:
         case ae_op_percent_chuck:
             // mark for cast
-            LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
-            LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_complex;
-            LR( te_float, te_polar ) left = lhs->cast_to = env->ckt_polar;
-            LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
-            LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
+            CK_LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
+            CK_LR( te_float, te_complex ) left = lhs->cast_to = env->ckt_complex;
+            CK_LR( te_float, te_polar ) left = lhs->cast_to = env->ckt_polar;
+            CK_LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
+            CK_LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
         break;
 
         default: break;
@@ -1921,34 +1932,34 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         // int/dur and int/vectors
         if( op == ae_op_times )
         {
-            LR( te_int, te_dur ) left = lhs->cast_to = env->ckt_float;
-            else LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
+            CK_LR( te_int, te_dur ) left = lhs->cast_to = env->ckt_float;
+            else CK_LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
             // vectors, 1.3.5.3
-            else LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
         }
         else if( op == ae_op_divide )
         {
-            LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
+            CK_LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
             // vectors, 1.3.5.3
-            else LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
-            else LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
         }
 
         // op_chuck
         if( op == ae_op_times_chuck )
         {
-            LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
         }
         else if( op == ae_op_divide_chuck )
         {
-            LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
-            LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
         }
 
         // array
@@ -2073,17 +2084,17 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         if( isa( left, env->ckt_int ) && isa( right, env->ckt_string ) ) return env->ckt_string;
         if( isa( left, env->ckt_float ) && isa( right, env->ckt_string ) ) return env->ckt_string;
     case ae_op_plus:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_dur, te_dur ) return env->ckt_dur;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        // COMMUTE( te_float, te_complex ) return env->ckt_complex;
-        // COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
-        COMMUTE( te_dur, te_time ) return env->ckt_time;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_dur, te_dur ) return env->ckt_dur;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
+        // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_dur, te_time ) return env->ckt_time;
         if( isa( left, env->ckt_string ) && isa( right, env->ckt_string ) ) return env->ckt_string;
         if( isa( left, env->ckt_string ) && isa( right, env->ckt_int ) ) return env->ckt_string;
         if( isa( left, env->ckt_string ) && isa( right, env->ckt_float ) ) return env->ckt_string;
@@ -2092,78 +2103,78 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     break;
 
     case ae_op_minus:
-        LR( te_time, te_time ) return env->ckt_dur;
-        LR( te_time, te_dur ) return env->ckt_time;
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_dur, te_dur ) return env->ckt_dur;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        // COMMUTE( te_float, te_complex ) return env->ckt_complex;
-        // COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_LR( te_time, te_time ) return env->ckt_dur;
+        CK_LR( te_time, te_dur ) return env->ckt_time;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_dur, te_dur ) return env->ckt_dur;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
+        // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
     // take care of non-commutative
     case ae_op_minus_chuck:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_dur, te_dur ) return env->ckt_dur;
-        LR( te_dur, te_time ) return env->ckt_time;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        // COMMUTE( te_float, te_complex ) return env->ckt_complex;
-        // COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_dur, te_dur ) return env->ckt_dur;
+        CK_LR( te_dur, te_time ) return env->ckt_time;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
+        // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
     case ae_op_times:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
-        COMMUTE( te_float, te_dur ) return env->ckt_dur;
-        // COMMUTE( te_float, te_complex ) return env->ckt_complex;
-        // COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        COMMUTE( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        COMMUTE( te_float, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_float, te_dur ) return env->ckt_dur;
+        // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
+        // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_COMMUTE( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_COMMUTE( te_float, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
     case ae_op_times_chuck:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_float, te_dur ) return env->ckt_dur;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        LR( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
-        LR( te_int, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_float, te_dur ) return env->ckt_dur;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
+        CK_LR( te_int, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
     case ae_op_divide:
-        LR( te_dur, te_dur ) return env->ckt_float;
-        LR( te_time, te_dur ) return env->ckt_float;
-        LR( te_dur, te_float ) return env->ckt_dur;
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
-        LR( te_vec3, te_float ) return env->ckt_vec3;
-        LR( te_vec4, te_float ) return env->ckt_vec4;
+        CK_LR( te_dur, te_dur ) return env->ckt_float;
+        CK_LR( te_time, te_dur ) return env->ckt_float;
+        CK_LR( te_dur, te_float ) return env->ckt_dur;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec3, te_float ) return env->ckt_vec3;
+        CK_LR( te_vec4, te_float ) return env->ckt_vec4;
     break;
 
     // take care of non-commutative
     case ae_op_divide_chuck:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_float, te_dur ) return env->ckt_dur;
-        LR( te_complex, te_complex ) return env->ckt_complex;
-        LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_float, te_dur ) return env->ckt_dur;
+        CK_LR( te_complex, te_complex ) return env->ckt_complex;
+        CK_LR( te_polar, te_polar ) return env->ckt_polar;
     break;
 
     case ae_op_eq:
@@ -2192,17 +2203,17 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         }
     case ae_op_ge:
     case ae_op_neq:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_int;
-        LR( te_dur, te_dur ) return env->ckt_int;
-        LR( te_time, te_time ) return env->ckt_int;
-        LR( te_complex, te_complex ) return env->ckt_int;
-        LR( te_polar, te_polar ) return env->ckt_int;
-        // COMMUTE( te_float, te_complex ) return env->ckt_int;
-        // COMMUTE( te_float, te_polar ) return env->ckt_int;
-        LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
-        LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
-        COMMUTE( te_vec3, te_vec4 ) return env->ckt_int; // 1.3.5.3
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_int;
+        CK_LR( te_dur, te_dur ) return env->ckt_int;
+        CK_LR( te_time, te_time ) return env->ckt_int;
+        CK_LR( te_complex, te_complex ) return env->ckt_int;
+        CK_LR( te_polar, te_polar ) return env->ckt_int;
+        // CK_COMMUTE( te_float, te_complex ) return env->ckt_int;
+        // CK_COMMUTE( te_float, te_polar ) return env->ckt_int;
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
+        CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_int; // 1.3.5.3
         if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
     break;
 
@@ -2232,21 +2243,21 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         }
     case ae_op_shift_right:
         // shift
-        LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_int, te_int ) return env->ckt_int;
     break;
 
     case ae_op_percent:
-        LR( te_time, te_dur ) return env->ckt_dur;
-        LR( te_dur, te_dur ) return env->ckt_dur;
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_time, te_dur ) return env->ckt_dur;
+        CK_LR( te_dur, te_dur ) return env->ckt_dur;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
     break;
 
     // take of non-commutative
     case ae_op_percent_chuck:
-        LR( te_int, te_int ) return env->ckt_int;
-        LR( te_float, te_float ) return env->ckt_float;
-        LR( te_dur, te_dur ) return env->ckt_dur;
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_float, te_float ) return env->ckt_float;
+        CK_LR( te_dur, te_dur ) return env->ckt_dur;
     break;
 
     default: break;
@@ -2407,10 +2418,10 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     // object.toString
 
     // implicit cast
-    LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
-    LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
-    LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
-    LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
+    CK_LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
+    CK_LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
+    CK_LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
+    CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
 
     // assignment or something else
     if( isa( left, right ) )
@@ -2595,7 +2606,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     }
 
     // implicit cast
-    LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
+    CK_LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
 
     // primitive
     if( !isa( left, right ) )
@@ -4934,7 +4945,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         // look up in scope: later
         if( env->curr->lookup_value( arg_list->var_decl->xid, FALSE ) )
         {
-            EM_error2( arg_list->where, "in function '%s':", S_name(f->name) );
+            EM_error2( arg_list->where, "in function '%s':", theFunc->signature(FALSE,FALSE).c_str() ); // S_name(f->name) );
             EM_error2( arg_list->where, "argument %i '%s' is already defined in this scope",
                 count, S_name(arg_list->var_decl->xid) );
             goto error;
@@ -4953,7 +4964,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     assert( f->code == NULL || f->code->s_type == ae_stmt_code );
     if( f->code && !type_engine_check_code_segment( env, &f->code->stmt_code, FALSE ) )
     {
-        EM_error2( 0, "...in function '%s'", S_name(f->name) );
+        EM_error2( 0, "...in function '%s'", theFunc->signature(FALSE).c_str() ); // S_name(f->name) );
         goto error;
     }
 
@@ -7595,31 +7606,39 @@ Chuck_Value::~Chuck_Value()
 //-----------------------------------------------------------------------------
 Chuck_Func::~Chuck_Func()
 {
-    // TODO: release references
-
     // delete our partial deep copy
     funcdef_cleanup();
+
+    // release reference | 1.5.0.9 (ge) added
+    CK_SAFE_RELEASE( this->code );
+    CK_SAFE_RELEASE( this->value_ref );
+
+    // TODO: check if more references to release, e.g., up and next?
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// human readable function signature: e.g., Object.func( int foo, float bar[] );
+// name: signature()
+// desc: human readable function signature: e.g., Object.func( int foo, float bar[] );
+// args: incFunDef -- controls whether to include the "fun" in "fun RET FUNC(..."
+//       incRetType -- controls whether to include the return type
 //-----------------------------------------------------------------------------
-string Chuck_Func::signature() const
+string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
 {
     // check we have the necessary info
     if( !value_ref || !def() || !def()->ret_type )
         return "[function signature missing info]";
 
-    string signature;
-
     // check if a member func
     string className = value_ref->owner_class ? value_ref->owner_class->name() + "." : "";
-
-    // the function keyword, return type, base name
-    signature = string("fun") + " " + def()->ret_type->name() + " " + className + base_name + "(";
+    // make signature so far
+    string signature = className + base_name + "(";
+    // the function keyword
+    if( incRetType ) signature = def()->ret_type->name() + " " + signature;
+    // the return type
+    if( incFuncDef ) signature = string("fun") + " " + signature;
 
     // loop over arguments
     a_Arg_List list = def()->arg_list;
