@@ -6,7 +6,7 @@ ChucK VERSIONS log
 ===
 - (added) array
 	void sort()
-        sort the contents of the array in ascending order.
+        Sort the contents of the array in ascending order.
   ** array sorting semantics, by type **
         int[]: sort by value
       float[]: sort by value
@@ -23,6 +23,10 @@ ChucK VERSIONS log
 - (fixed) error reporting for a few binary operators, including reserved
     (spork ~, typeof, sizeof, new, <-, ->)
 - (fixed) implicit cast from 'int' to 'float' in function returns
+- (added) overloded Std.getenv() variant (thanks @ynohtna)
+        string getenv(string value)
+        Get the value of an environment variable, returning the provided 
+            default if unset.
 
 
 1.5.0.8 (August 2023)
