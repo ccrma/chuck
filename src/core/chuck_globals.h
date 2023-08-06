@@ -43,6 +43,8 @@
 #include "chuck_type.h"
 #include "chuck_ugen.h"
 #include <string>
+#include <map>
+#include <vector>
 
 // forward reference for ChucK VM
 struct Chuck_VM;
@@ -73,6 +75,7 @@ struct Chuck_Set_Global_Float_Array_Value_Request;
 struct Chuck_Get_Global_Float_Array_Value_Request;
 struct Chuck_Set_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Float_Array_Value_Request;
+struct Chuck_Get_Global_All_Request; // 1.5.0.9
 struct Chuck_Execute_Chuck_Msg_Request;
 
 // forward references for global storage
@@ -83,7 +86,6 @@ struct Chuck_Global_Event_Container;
 struct Chuck_Global_UGen_Container;
 struct Chuck_Global_Array_Container;
 struct Chuck_Global_Object_Container;
-
 
 
 
@@ -119,6 +121,8 @@ enum Chuck_Global_Request_Type
     get_global_float_array_value_request,
     set_global_associative_float_array_value_request,
     get_global_associative_float_array_value_request,
+    // 1.5.0.9 (ge) get all global variables
+    get_global_all_request,
     // shreds
     spork_shred_request,
     // chuck_msg
@@ -161,6 +165,8 @@ struct Chuck_Global_Request
         Chuck_Get_Global_Float_Array_Value_Request* getFloatArrayValueRequest;
         Chuck_Set_Global_Associative_Float_Array_Value_Request* setAssociativeFloatArrayValueRequest;
         Chuck_Get_Global_Associative_Float_Array_Value_Request* getAssociativeFloatArrayValueRequest;
+        // get all global variables | 1.5.0.9
+        Chuck_Get_Global_All_Request* getAllRequest;
         // shreds
         Chuck_VM_Shred* shred;
         // chuck_msg
@@ -173,6 +179,28 @@ struct Chuck_Global_Request
         retries = 0;
         executeChuckMsgRequest = NULL;
     }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Globals_TypeValue | 1.5.0.9 (ge) added
+// desc: a type-value pair representing a global value in the system
+//       used to retrive a list of all current global variables
+//-----------------------------------------------------------------------------
+struct Chuck_Globals_TypeValue
+{
+    // type string of global variable
+    std::string type;
+    // global variable name
+    std::string name;
+
+    // constructor
+    Chuck_Globals_TypeValue()
+    { }
+    Chuck_Globals_TypeValue( const std::string & t, const std::string & n )
+    : type(t), name(n) { }
 };
 
 
@@ -243,6 +271,9 @@ public:
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, const char * key, void (*callback)(const char*, t_CKFLOAT) );
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, t_CKINT callbackID, const char * key, void (*callback)(t_CKINT, t_CKFLOAT) );
 
+    // 1.5.0.9 (ge) get all global variables
+    t_CKBOOL getAllGlobalVariables( void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list ) );
+
 public:
     // run Chuck_Msg in the globals order
     t_CKBOOL execute_chuck_msg_with_globals( Chuck_Msg* msg );
@@ -250,7 +281,7 @@ public:
 public:
     // REFACTOR-2017: externally accessible + global variables.
     // WARNING: these internal functions are to be used only by other
-    // chuck code in the audio thread.
+    // chuck code in the audio thread...
     t_CKBOOL init_global_int( const std::string & name );
     t_CKINT get_global_int_value( const std::string & name );
     t_CKINT* get_ptr_to_global_int( const std::string & name );
@@ -286,6 +317,9 @@ public:
     t_CKBOOL is_global_object_valid( const std::string & name );
     Chuck_Object* get_global_object( const std::string & name );
     Chuck_Object** get_ptr_to_global_object( const std::string & name );
+
+    // 1.5.0.9 (ge) get all global variables
+    void get_all_global_variables( std::vector<Chuck_Globals_TypeValue> & list );
 
     t_CKBOOL should_call_global_ctor( const std::string & name, te_GlobalType type );
     void global_ctor_was_called( const std::string & name, te_GlobalType type );

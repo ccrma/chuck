@@ -100,7 +100,7 @@ int audio_cb( void * outputBuffer, void * inputBuffer, unsigned int nBufferFrame
     if( f != g_last_frequency )
     {
         // print
-        cerr << "getting global value from ChucK: " << f << endl;
+        cerr << "    getting global value from ChucK: " << f << endl;
         // set
         g_last_frequency = f;
     }
@@ -116,6 +116,19 @@ void error_cb( RtAudioErrorType type, const std::string &errorText )
 {
     // print the type and error text from RtAudio
     cerr << "[real-time audio](error " << (int)type << "): " << errorText << endl;
+}
+
+
+//-----------------------------------------------------------------------------
+// globals callback function (called by ChucK on request)
+//-----------------------------------------------------------------------------
+void all_globals_cb( const vector<Chuck_Globals_TypeValue> & list )
+{
+    // loop over
+    for( t_CKUINT i = 0; i < list.size(); i++ )
+    {
+        cerr << "    global variable: " << list[i].type << " " << list[i].name << endl;
+    }
 }
 
 
@@ -183,6 +196,8 @@ int main( int argc, char ** argv )
         // signal the event in ChucK
         // NOTE: this is using CamelCase version (calling from outside of audio thread)
         the_chuck->globals()->broadcastGlobalEvent( "the_nextNote" );
+        // also request a list of all globals in ChucK
+        the_chuck->globals()->getAllGlobalVariables( all_globals_cb );
     }
 
 cleanup:
