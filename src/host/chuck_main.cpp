@@ -40,6 +40,7 @@
 
 #if defined(__PLATFORM_WINDOWS__)
   #include <windows.h>
+  #include <processthreadsapi.h> // GetCurrentProcessId()
 #else
   #include <unistd.h>
   #include <pthread.h>
@@ -271,7 +272,7 @@ void usage()
 // non-NULL when a pid file has been written
 const char * g_ck_pidfile = NULL;
 // current process id
-unsigned int g_ck_pid = 0;
+unsigned long g_ck_pid = 0;
 //-----------------------------------------------------------------------------
 // name: write_pid(filename) | 1.5.0.9 (@ynohtna)
 // desc: writes the host's process id to the given file path
@@ -280,34 +281,32 @@ unsigned int g_ck_pid = 0;
 bool write_pid( const char * filename )
 {
 #if defined(__PLATFORM_WIN32__)
-    // TODO: call DWORD GetCurrentProcessId() in <processthreadsapi.h>
-    CK_FPRINTF_STDERR( "[chuck]: --pid-file option not yet implemented for Windows\n");
-    return false;
+    // get process id and store in global variable
+    g_ck_pid = (unsigned long)GetCurrentProcessId();
 #else
     // get process id and store in global variable
-    g_ck_pid = getpid();
+    g_ck_pid = (unsigned long)getpid();
+#endif
+
     // open file to write to
     FILE * pidfile = fopen( filename, "w" );
     // check file
-    if( pidfile )
-    {
-        // write to file
-        fprintf( pidfile, "%u", g_ck_pid );
-        // close the file
-        fclose( pidfile );
-        // done
-        return true;
-    }
-    else
+    if( !pidfile )
     {
         // problem
-        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %u in %s\n", g_ck_pid, filename );
+        CK_FPRINTF_STDERR( "[chuck]: failed to store process ID %lu in %s\n", g_ck_pid, filename );
         // clear id
         g_ck_pid = 0;
         // report
         return false;
     }
-#endif
+
+    // write to file
+    fprintf( pidfile, "%u", g_ck_pid );
+    // close the file
+    fclose( pidfile );
+    // done
+    return true;
 }
 
 
@@ -1004,7 +1003,7 @@ t_CKBOOL go( int argc, const char ** argv )
 
     // log PID file output
     if( g_ck_pidfile )
-    { EM_log( CK_LOG_INFO, "process ID '%u' stored in '%s'...", g_ck_pid, g_ck_pidfile ); }
+    { EM_log( CK_LOG_INFO, "process ID '%lu' stored in '%s'...", g_ck_pid, g_ck_pidfile ); }
     //-----------------------------------------------------------------
 
     // check for error message from command-line arguments
