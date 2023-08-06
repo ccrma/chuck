@@ -302,7 +302,7 @@ bool write_pid( const char * filename )
     }
 
     // write to file
-    fprintf( pidfile, "%u", g_ck_pid );
+    fprintf( pidfile, "%lu", g_ck_pid );
     // close the file
     fclose( pidfile );
     // done

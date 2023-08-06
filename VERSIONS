@@ -27,6 +27,13 @@ ChucK VERSIONS log
         string getenv(string value)
         Get the value of an environment variable, returning the provided 
             default if unset.
+- (added) --pid-file:<FILENAME> CLI option (thanks @ynohtna)
+    "If this flag is specified with argument, chuck will attempt to write 
+     its process ID to the given file upon startup, and then remove that 
+     file upon shutdown. This assists external process supervision 
+     (through tools like monit,etc) for long-running installations that 
+     need auto-rebooting, instant kill switches for live performances, 
+     and other programmatic external process control."
 
 
 1.5.0.8 (August 2023)
