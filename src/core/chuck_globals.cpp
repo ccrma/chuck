@@ -2461,7 +2461,7 @@ void Chuck_Globals_Manager::get_all_global_variables( std::vector<Chuck_Globals_
         // container
         Chuck_Global_Object_Container * c = it_object->second;
         // check
-        string type = c->type ? c->type->name() : "array";
+        string type = c->type ? c->type->name() : "Object";
         // append entry
         list.push_back( Chuck_Globals_TypeValue( type, it_object->first ) );
     }
