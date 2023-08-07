@@ -272,7 +272,8 @@ public:
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, t_CKINT callbackID, const char * key, void (*callback)(t_CKINT, t_CKFLOAT) );
 
     // 1.5.0.9 (ge) get all global variables
-    t_CKBOOL getAllGlobalVariables( void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list ) );
+    t_CKBOOL getAllGlobalVariables( void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list, void * data ),
+                                    void * data = NULL );
 
 public:
     // run Chuck_Msg in the globals order

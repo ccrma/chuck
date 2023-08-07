@@ -34,6 +34,8 @@
 //            the_chuck()->globals() to signal a ChucK Event from C++
 //         3. the audio thread get the value of a ChucK global variable
 //            and if it changed from last time, prints its value
+//         4. additionally, on input a request is made to retrieve all
+//            global variables current in VM by name and type
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
 //   date: Summer 2023
@@ -80,7 +82,6 @@ t_CKBOOL cleanup_realtime_audio();
 
 
 
-
 //-----------------------------------------------------------------------------
 // audio callback function (called by RtAudio)
 //-----------------------------------------------------------------------------
@@ -121,12 +122,14 @@ void error_cb( RtAudioErrorType type, const std::string &errorText )
 
 //-----------------------------------------------------------------------------
 // globals callback function (called by ChucK on request)
+// args: `list` a vector of [type,name] pairs, each corresponding to a global
+//       `data` whatever data was passed into getAllGlobalVariables()
 //-----------------------------------------------------------------------------
-void all_globals_cb( const vector<Chuck_Globals_TypeValue> & list )
+void all_globals_cb( const vector<Chuck_Globals_TypeValue> & list, void * data )
 {
-    // loop over
     for( t_CKUINT i = 0; i < list.size(); i++ )
     {
+        // print
         cerr << "    global variable: " << list[i].type << " " << list[i].name << endl;
     }
 }
@@ -197,7 +200,7 @@ int main( int argc, char ** argv )
         // NOTE: this is using CamelCase version (calling from outside of audio thread)
         the_chuck->globals()->broadcastGlobalEvent( "the_nextNote" );
         // also request a list of all globals in ChucK
-        the_chuck->globals()->getAllGlobalVariables( all_globals_cb );
+        the_chuck->globals()->getAllGlobalVariables( all_globals_cb, NULL );
     }
 
 cleanup:

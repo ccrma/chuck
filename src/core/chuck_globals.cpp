@@ -435,10 +435,12 @@ struct Chuck_Execute_Chuck_Msg_Request
 struct Chuck_Get_Global_All_Request
 {
     // callback
-    void (* cb)( const std::vector<Chuck_Globals_TypeValue> & list );
+    void (* cb)( const std::vector<Chuck_Globals_TypeValue> & list, void * data );
+    // data
+    void * data;
 
     // constructor
-    Chuck_Get_Global_All_Request() : cb(NULL) { }
+    Chuck_Get_Global_All_Request() : cb(NULL), data(NULL) { }
 };
 
 
@@ -2120,10 +2122,12 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalAssociativeFloatArrayValue(
 // desc: get a global float by name
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Globals_Manager::getAllGlobalVariables(
-    void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list ) )
+    void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list, void * data ),
+    void * data )
 {
     Chuck_Get_Global_All_Request * get_all_message = new Chuck_Get_Global_All_Request;
     get_all_message->cb = callback;
+    get_all_message->data = data;
 
     Chuck_Global_Request r;
     r.type = get_global_all_request;
@@ -2448,7 +2452,7 @@ void Chuck_Globals_Manager::get_all_global_variables( std::vector<Chuck_Globals_
         // container
         Chuck_Global_Array_Container * c = it_array->second;
         // check
-        string type = c->type ? c->type->name() : "array";
+        string type = c->type ? c->type->name() : "@array";
         // append entry
         list.push_back( Chuck_Globals_TypeValue( type, it_array->first ) );
     }
@@ -2740,7 +2744,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                         // get all
                         get_all_global_variables( list );
                         // call back
-                        message.getAllRequest->cb( list );
+                        message.getAllRequest->cb( list, message.getAllRequest->data );
                     }
                     // clean up request storage
                     CK_SAFE_DELETE( message.getAllRequest );
