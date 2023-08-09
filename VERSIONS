@@ -19,10 +19,6 @@ ChucK VERSIONS log
 - (added) IO (cherr, chout, FileIO) for complex, polar, vec3, vec3
     e.g., cherr <= #(1,1) <= IO.nl();
     e.g., chout <= #(1,1)$polar <= IO.nl();
-- (fixed) for-each for complex, polar, vec3, vec4 types
-- (fixed) error reporting for a few binary operators, including reserved
-    (spork ~, typeof, sizeof, new, <-, ->)
-- (fixed) implicit cast from 'int' to 'float' in function returns
 - (added) overloded Std.getenv() variant (thanks @ynohtna)
         string getenv(string value)
         Get the value of an environment variable, returning the provided 
@@ -34,6 +30,15 @@ ChucK VERSIONS log
      (through tools like monit,etc) for long-running installations that 
      need auto-rebooting, instant kill switches for live performances, 
      and other programmatic external process control."
+- (fixed) for-each for complex, polar, vec3, vec4 types;
+    (e.g., `for( vec3 n : myVec3Array ) { ... }`
+- (fixed) compiler issue (introduced in 1.5.0.8) where a declaration in 
+    the middle of a three-part chuck statement incorrectly reports error
+    that variable already declared (e.g., `440 => float f => osc.freq;`)
+- (fixed) error reporting printing for a few binary and unary operators:
+    spork ~, typeof, sizeof, new, <-, ->
+- (fixed) implicit cast from 'int' to 'float' in function returns;
+    (e.g., `fun float foo() { return 5; }`)
 
 
 1.5.0.8 (August 2023)
