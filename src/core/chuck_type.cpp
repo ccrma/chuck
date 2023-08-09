@@ -3640,6 +3640,14 @@ t_CKBOOL type_engine_check_exp_decl_part1( Chuck_Env * env, a_Exp_Decl decl )
     t_CKBOOL do_alloc = TRUE;
     t_CKBOOL is_first_in_list = TRUE;
 
+    // check to see if Part 1 was already processed | 1.5.0.9 (ge)
+    // NOTE Part 1 (migrated here from scan2b_exp_decl() in 1.5.0.8 to support
+    // 'auto', can only be run once as it creates and adds values into the
+    // current scope; yet a decl expression could be checked more than once
+    // due to chained chuck statements like: `440 => float f => osc.freq;`
+    if( list && list->var_decl && list->var_decl->value )
+        return TRUE;
+
     // retrieve the type
     type = decl->ck_type;
     // make sure it's not NULL
