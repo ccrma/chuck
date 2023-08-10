@@ -4,7 +4,11 @@ ChucK VERSIONS log
 
 1.5.1.0 (August 2023)
 =======
-(note) much has been added between 1.5.0.0 and 1.5.0.8, including:
+(note) this release (1.5.1.0) updates a long-standing policy regarding 
+`return`statements in function declarations; adds @array.sort(), a new 
+command-line options, general bug fixes and stability improvements.
+
+(note) much has been added between 1.5.0.0 and 1.5.1.0, including:
   * new for-each loop syntax for iterating through arrays (1.5.0.8)
   * enhanced and more accurate compiler error reporting; now
     highlights code and pinpointing error location in code (1.5.0.5)
@@ -16,13 +20,10 @@ ChucK VERSIONS log
   * (developer) streamlined c++ integration for those wishing to
     incorporate ChucK core into other c++ hosts (1.5.0.7)
     https://github.com/ccrma/chuck/tree/main/src/host-examples
-
-This release (1.5.1.0) updates a long-standing policy regarding `return`
-statements in function declarations; adds @array.sort(), a new command-line
-options, general bug fixes and stability improvements.
+  * (see below for more information)
 
 ---
-(language update) `return` statements in function definitions:
+(update) `return` statements in function definitions:
 
 PREVIOUSLY: chuck does not require all control paths in non-void 
 functions to explicitly return values -- in cases of missing `return` 
