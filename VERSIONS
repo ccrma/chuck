@@ -4,6 +4,56 @@ ChucK VERSIONS log
 
 1.5.0.9 (August 2023)
 ===
+(language update) this release changes a long-standing policy regarding 
+`return` statements within function definitions.
+
+PREVIOUSLY: chuck does not require all control paths in non-void 
+functions to explicitly return values -- in cases of missing `return` 
+statements at the end of a function, ChucK implicitly sets the return 
+value to some form of 0 or null, depending on the return type.
+
+NEW: the chuck compiler now rejects non-void function definitions in 
+which not all control paths return a value, and will print a compiler
+error in the form of:
+
+  "error: not all control paths in 'fun int foo()' return a value"
+
+RATIONALE: ***while this may break some existing working code 
+(apologies!)*** that assumed the previous return semantics (or forgot to 
+return a value or accidentally declared a function as returning something 
+other than `void`), we believe this change will be more beneficial in the 
+long run and will lead to clearer, more intentional code. This will 
+hopefully benefit students learning or using the language, as well as 
+veterans of the language.
+
+Example:
+```
+// as of 1.5.0.9, will result in a compiler error
+fun int foo()
+{
+    // no return
+}
+```
+
+ChucK performs syntactical analysis of function control paths:
+```
+// this is valid code, even though the function does not end in a `return`
+fun float foo( int v )
+{
+    if( v == 1 ) return 1;
+    else if( v == 2 ) return 2;
+    else return 3;
+}
+
+// this code will result in a compiler error, since there is no `else`
+// and no subsequent `return`
+fun float foo( int v )
+{
+    if( v == 1 ) return 1;
+    else if( v == 2 ) return 2;
+}
+```
+===
 - (added) array
 	void sort()
         Sort the contents of the array in ascending order.
