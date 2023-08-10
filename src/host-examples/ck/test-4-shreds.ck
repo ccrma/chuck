@@ -26,7 +26,7 @@ NRev reverb => dac;
 .15 => reverb.mix;
 
 // handler
-fun int hi( TheEvent e, int id )
+fun void hi( TheEvent e, int id )
 {
     // voice
     FrencHrn f => reverb;
