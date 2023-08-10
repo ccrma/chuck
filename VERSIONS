@@ -3,9 +3,26 @@ ChucK VERSIONS log
 ------------------
 
 1.5.1.0 (August 2023)
-===
-(language update) this release changes a long-standing policy regarding 
-`return` statements within function definitions.
+=======
+(note) much has been updated and added since 1.5.0.0, including:
+  * new for-each loop syntax for iterating through arrays (1.5.0.8)
+  * enhanced and more accurate compiler error reporting; now highlights
+    code and pinpointing error location in code (1.5.0.5)
+  * color terminal support for CLI chuck (1.5.0.5)
+  * expanded class library support in IO, random number generation,
+    Machine.eval(), chugins management, and array
+  * new features in CLI chuck, miniAudicle, WebChucK & IDE
+  * (developer) The Great ChucK Repo Cleanup of 2023 (1.5.0.2)
+  * (developer) streamlined c++ integration for those wishing to
+    incorporate ChucK core into other c++ hosts (1.5.0.7)
+    https://github.com/ccrma/chuck/tree/main/src/host-examples
+
+This release updates a long-standing policy regarding `return` statements
+in funciton declarations, adds @array.sort(), a new command-line options,
+and general bug fixes and stability improvements.
+
+---
+(language update) `return` statements in function definitions:
 
 PREVIOUSLY: chuck does not require all control paths in non-void 
 functions to explicitly return values -- in cases of missing `return` 
@@ -16,17 +33,17 @@ NEW: the chuck compiler now rejects non-void function definitions in
 which not all control paths return a value, and will print a compiler
 error in the form of:
 
-  "error: not all control paths in 'fun int foo()' return a value"
+  "error: not all control paths in 'fun int f()' return a value"
 
-RATIONALE: ***while this may break some existing working code 
-(apologies!)*** that assumed the previous return semantics (or forgot to 
+RATIONALE: *** while this may break some existing working code 
+(apologies!) *** that assumed the previous return semantics (or forgot to 
 return a value or accidentally declared a function as returning something 
-other than `void`), we believe this change will be more beneficial in the 
-long run and will lead to clearer, more intentional code. This will 
-hopefully benefit students learning or using the language, as well as 
-veterans of the language.
+when it should return `void`), we believe this change will be more 
+beneficial in the long run and will lead to clearer, more intentional 
+code. This will hopefully benefit students learning or using the language, 
+as well as veterans.
 
-Example:
+example:
 ```
 // as of chuck-1.5.1.0, will result in a compiler error
 fun int foo()
@@ -53,8 +70,7 @@ fun float foo( int v )
     else if( v == 2 ) return 2;
 }
 ```
-===
-- (added) array
+- (added) array sorting
 	void sort()
         Sort the contents of the array in ascending order.
   ** array sorting semantics, by type **
