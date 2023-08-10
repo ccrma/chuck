@@ -4,7 +4,7 @@
 global Event e;
 int i;
 
-fun int hi( Event e )
+fun void hi( Event e )
 {
     // wait on event
     e => now;

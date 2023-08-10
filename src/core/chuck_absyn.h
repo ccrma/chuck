@@ -384,7 +384,6 @@ struct a_Stmt_Until_ { int is_do; a_Exp cond; a_Stmt body; uint32_t line; uint32
 struct a_Stmt_For_ { a_Stmt c1; a_Stmt c2; a_Exp c3; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_ForEach_ { a_Exp theIter; a_Exp theArray; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Loop_ { a_Exp cond; a_Stmt body; uint32_t line; uint32_t where; a_Stmt self; };
-struct a_Stmt_Code_ { a_Stmt_List stmt_list; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_If_ { a_Exp cond; a_Stmt if_body; a_Stmt else_body; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Switch_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Break_ { uint32_t line; uint32_t where; a_Stmt self; };
@@ -392,6 +391,15 @@ struct a_Stmt_Continue_ { uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Return_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Case_ { a_Exp exp; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_GotoLabel_ { S_Symbol name; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Code_
+{
+    // statement list
+    a_Stmt_List stmt_list;
+    // used to track control paths in non-void functions
+    t_CKBOOL allControlPathsReturn; // 1.5.0.9 (ge) added
+    // code position
+    uint32_t line; uint32_t where; a_Stmt self;
+};
 
 // enum values for stmt type
 typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_foreach,
@@ -399,11 +407,15 @@ typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_f
                ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel
              } ae_Stmt_Type;
 
+// a statement
 struct a_Stmt_
 {
+    // type of the statement
     ae_Stmt_Type s_type;
-    int skip;
+    // used to track control paths in non-void functions
+    t_CKBOOL allControlPathsReturn; // 1.5.0.9 (ge) added
 
+    // mushed into one!
     union
     {
         a_Exp stmt_exp;
@@ -422,10 +434,22 @@ struct a_Stmt_
         struct a_Stmt_GotoLabel_ stmt_gotolabel;
     };
 
+    // code position
     uint32_t line; uint32_t where;
 };
 
-struct a_Stmt_List_ { a_Stmt stmt; a_Stmt_List next; uint32_t line; uint32_t where; };
+// list of statements, e.g., as enclosed by { }
+struct a_Stmt_List_
+{
+    // a statement
+    a_Stmt stmt;
+    // next in list
+    a_Stmt_List next;
+    // code position
+    uint32_t line; uint32_t where;
+};
+
+// class definition AST node
 struct a_Class_Def_ { ae_Keyword decl; a_Id_List name; a_Class_Ext ext;
                       a_Class_Body body; t_CKTYPE type; int iface; t_CKNSPC home;
                       uint32_t line; uint32_t where; };

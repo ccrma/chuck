@@ -10,7 +10,7 @@ global myEvent e;
 5 => e.myStorage;
 int i;
 
-fun int hi( myEvent e )
+fun void hi( myEvent e )
 {
     // wait on event
     e => now;

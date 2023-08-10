@@ -13,7 +13,7 @@ class TheEvent extends Event
 TheEvent e;
 
 // handler
-fun int hi( TheEvent e )
+fun void hi( TheEvent e )
 {
     while( true )
     {

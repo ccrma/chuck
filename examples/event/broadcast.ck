@@ -4,7 +4,7 @@
 Event e;
 
 // base function for shred
-fun int hi( Event e )
+fun void hi( Event e )
 {
     // wait on event
     e => now;

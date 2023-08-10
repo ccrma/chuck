@@ -1,0 +1,5 @@
+fun float foo()
+{
+    return;
+}
+

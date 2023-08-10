@@ -4,7 +4,7 @@
 Event e;
 
 // the base function of our shreds
-fun int hi( Event e, string id )
+fun void hi( Event e, string id )
 {
     // time/event loop
     while( true )

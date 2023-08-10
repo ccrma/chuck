@@ -1,0 +1,4 @@
+error-return-void.ck:6:5: error: function 'void foo()' was defined with return type 'void' -- but returning type 'int'
+[6]     return 5;
+        ^
+error-return-void.ck: ...in function 'void foo()'

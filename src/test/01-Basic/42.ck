@@ -4,7 +4,7 @@
 Event e;
 int i;
 
-fun int hi( Event e )
+fun void hi( Event e )
 {
     // wait on event
     e => now;
@@ -28,7 +28,7 @@ e.broadcast();
 // advance time since this parent shred will free all child shreds on exit
 1::ms => now;
 
-if(i == 4)
+if( i == 4 )
     <<<"success">>>;
 else
     <<<"failure">>>;

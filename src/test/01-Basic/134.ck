@@ -4,7 +4,7 @@
 Event e;
 
 // declare function
-fun int hi( Event e, int id )
+fun void hi( Event e, int id )
 {
     while( true )
     {

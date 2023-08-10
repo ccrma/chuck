@@ -1578,7 +1578,7 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
             // error
             EM_error2( stmt->where,
                 "function '%s' was defined with return type '%s' -- but returning type '%s'",
-                env->func->signature(FALSE,FALSE).c_str(), env->func->def()->ret_type->c_name(),
+                env->func->signature(FALSE).c_str(), env->func->def()->ret_type->c_name(),
                 ret_type->c_name() );
             return FALSE;
         }
@@ -4976,6 +4976,15 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         goto error;
     }
 
+    // check whether all control paths return
+    if( f->ret_type && !isa(f->ret_type, env->ckt_void) &&
+        f->code && !f->code->stmt_code.allControlPathsReturn )
+    {
+        EM_error2( f->type_decl->where, "not all control paths in '%s' return a value",
+                   theFunc->signature(TRUE).c_str() ); // S_name(f->name) );
+        goto error;
+    }
+
     // if imported, add the stack depth
     if( f->s_type == ae_func_builtin )
     {
@@ -7654,9 +7663,12 @@ string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
     while( list )
     {
         // arg type
-        signature += list->type->name() + " ";
+        signature += list->type->base_name + " ";
         // arg name
         signature += S_name( list->var_decl->xid );
+        // array
+        for( t_CKUINT i = 0; i < list->type->array_depth; i++ )
+            signature += string("[]");
         // comma
         if( list->next ) signature += ", ";
         // next
