@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.0.9 (August 2023)
+1.5.1.0 (August 2023)
 ===
 (language update) this release changes a long-standing policy regarding 
 `return` statements within function definitions.
@@ -28,7 +28,7 @@ veterans of the language.
 
 Example:
 ```
-// as of 1.5.0.9, will result in a compiler error
+// as of chuck-1.5.1.0, will result in a compiler error
 fun int foo()
 {
     // no return

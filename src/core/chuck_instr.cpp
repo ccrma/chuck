@@ -5373,7 +5373,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array );
-        // differentiate between complex and polar | 1.5.0.9 (ge) added, used for sorting Array16s
+        // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
         if( isa(m_type_ref, vm->env()->ckt_polar) ) array->m_isPolarType = TRUE;
         // set size
         array->set_size( m_length );
@@ -5572,7 +5572,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // check array type
             Chuck_Type * array_type = type->array_type;
-            // differentiate between complex and polar | 1.5.0.9 (ge) added, used for sorting Array16s
+            // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
             if( array_type && isa(array_type, vm->env()->ckt_polar) ) baseX->m_isPolarType = TRUE;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
@@ -7818,7 +7818,7 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: execute() | 1.5.0.9
+// name: execute() | 1.5.1.0
 // desc: insert complex value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_complex::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -7860,7 +7860,7 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: execute() | 1.5.0.9
+// name: execute() | 1.5.1.0
 // desc: insert complex value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_polar::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -7902,7 +7902,7 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: execute() | 1.5.0.9
+// name: execute() | 1.5.1.0
 // desc: insert vec3 value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -7944,7 +7944,7 @@ done:
 
 
 //-----------------------------------------------------------------------------
-// name: execute() | 1.5.0.9
+// name: execute() | 1.5.1.0
 // desc: insert vec4 value into output stream
 //-----------------------------------------------------------------------------
 void Chuck_Instr_IO_out_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )

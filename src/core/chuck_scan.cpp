@@ -452,7 +452,7 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list,
         if( !type_engine_scan1_stmt( env, list->stmt ) )
             return FALSE;
 
-        // if last one, pass back info from stmt we just scanned | 1.5.0.9
+        // if last one, pass back info from stmt we just scanned | 1.5.1.0
         if( retrieveAllControlPathsReturn && !list->next )
             *retrieveAllControlPathsReturn = list->stmt->allControlPathsReturn;
 
@@ -473,7 +473,7 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list,
 t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
 {
     t_CKBOOL ret = FALSE;
-    t_CKBOOL allControlPathsReturn = FALSE; // 1.5.0.9
+    t_CKBOOL allControlPathsReturn = FALSE; // 1.5.1.0
 
     if( !stmt )
         return TRUE;
@@ -489,7 +489,7 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             env->curr->value.pop();
             env->class_scope--;
 
-            // both control paths must end with return for this to be true | 1.5.0.9
+            // both control paths must end with return for this to be true | 1.5.1.0
             if( stmt->stmt_if.if_body )
             {
                 // check if there is ELSE-BODY
@@ -553,7 +553,7 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
 
         case ae_stmt_return:
             ret = type_engine_scan1_return( env, &stmt->stmt_return );
-            // this one should be easy, since this is literal return stmt | 1.5.0.9
+            // this one should be easy, since this is literal return stmt | 1.5.1.0
             allControlPathsReturn = TRUE;
             break;
 
@@ -562,7 +562,7 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             ret = type_engine_scan1_code_segment( env, &stmt->stmt_code );
             env->class_scope--;
 
-            // check if code segment (e.g., { stmt_list }) fulfills this | 1.5.0.9
+            // check if code segment (e.g., { stmt_list }) fulfills this | 1.5.1.0
             allControlPathsReturn = stmt->stmt_code.allControlPathsReturn;
             break;
 
@@ -595,7 +595,7 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
             break;
     }
 
-    // set whether all control paths associated with this stmt return | 1.5.0.9
+    // set whether all control paths associated with this stmt return | 1.5.1.0
     stmt->allControlPathsReturn = allControlPathsReturn;
 
     return ret;
@@ -1472,7 +1472,7 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         goto error;
     }
 
-    // propagate from stmt_code to the outer stmt | 1.5.0.9
+    // propagate from stmt_code to the outer stmt | 1.5.1.0
     if( f->code ) f->code->allControlPathsReturn = f->code->stmt_code.allControlPathsReturn;
 
     return TRUE;

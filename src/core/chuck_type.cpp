@@ -1569,7 +1569,7 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
     // if there is thing to return
     if( left )
     {
-        // check implicit cast | 1.5.0.9
+        // check implicit cast | 1.5.1.0
         CK_LR( te_int, te_float ) left = stmt->val->cast_to = env->ckt_float;
 
         // check to see that return type matches the prototype
@@ -3640,7 +3640,7 @@ t_CKBOOL type_engine_check_exp_decl_part1( Chuck_Env * env, a_Exp_Decl decl )
     t_CKBOOL do_alloc = TRUE;
     t_CKBOOL is_first_in_list = TRUE;
 
-    // check to see if Part 1 was already processed | 1.5.0.9 (ge)
+    // check to see if Part 1 was already processed | 1.5.1.0 (ge)
     // NOTE Part 1 (migrated here from scan2b_exp_decl() in 1.5.0.8 to support
     // 'auto', can only be run once as it creates and adds values into the
     // current scope; yet a decl expression could be checked more than once
@@ -7626,7 +7626,7 @@ Chuck_Func::~Chuck_Func()
     // delete our partial deep copy
     funcdef_cleanup();
 
-    // release reference | 1.5.0.9 (ge) added
+    // release reference | 1.5.1.0 (ge) added
     CK_SAFE_RELEASE( this->code );
     CK_SAFE_RELEASE( this->value_ref );
 

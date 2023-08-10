@@ -944,7 +944,7 @@ a_Complex new_complex( a_Exp re, uint32_t lineNum, uint32_t posNum )
 {
     a_Complex a = (a_Complex)checked_malloc( sizeof( struct a_Complex_ ) );
     a->re = re;
-    // NOTE: if this ever changes, make sure to also update delete_complex | 1.5.0.9
+    // NOTE: if this ever changes, make sure to also update delete_complex | 1.5.1.0
     if( re ) a->im = re->next;
     a->line = lineNum; a->where = posNum;
 
@@ -955,7 +955,7 @@ a_Polar new_polar( a_Exp mod, uint32_t lineNum, uint32_t posNum )
 {
     a_Polar a = (a_Polar)checked_malloc( sizeof( struct a_Polar_ ) );
     a->mod = mod;
-    // NOTE: if this ever changes, make sure to also update delete_polar | 1.5.0.9
+    // NOTE: if this ever changes, make sure to also update delete_polar | 1.5.1.0
     if( mod ) a->phase = mod->next;
     a->line = lineNum; a->where = posNum;
 

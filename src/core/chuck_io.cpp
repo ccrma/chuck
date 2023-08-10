@@ -3983,7 +3983,7 @@ void Chuck_IO_File::write( t_CKINT val, t_CKINT flags )
         }
         else
         {
-            // write to native int size | 1.5.0.9
+            // write to native int size | 1.5.1.0
             m_io.write( (char *)&val, sizeof(t_CKINT) );
         }
     }

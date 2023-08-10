@@ -2383,7 +2383,7 @@ Chuck_Object ** Chuck_Globals_Manager::get_ptr_to_global_object( const std::stri
 
 
 //-----------------------------------------------------------------------------
-// name: get_all_global_variables() | 1.5.0.9 (ge)
+// name: get_all_global_variables() | 1.5.1.0 (ge)
 // desc: get list of all global variables as a two-string pair of (type, name)
 //-----------------------------------------------------------------------------
 void Chuck_Globals_Manager::get_all_global_variables( std::vector<Chuck_Globals_TypeValue> & list )

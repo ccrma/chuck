@@ -275,7 +275,7 @@ const char * g_ck_pidfile = NULL;
 // current process id
 unsigned long g_ck_pid = 0;
 //-----------------------------------------------------------------------------
-// name: write_pid(filename) | 1.5.0.9 (@ynohtna)
+// name: write_pid(filename) | 1.5.1.0 (@ynohtna)
 // desc: writes the host's process id to the given file path
 //       returns true if successful, false otherwise.
 //-----------------------------------------------------------------------------
@@ -918,7 +918,7 @@ t_CKBOOL go( int argc, const char ** argv )
                 colorTerminal = FALSE;
             else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
             {
-                // get argument for writing PID file | 1.5.0.9 (@ynohtna) added
+                // get argument for writing PID file | 1.5.1.0 (@ynohtna) added
                 const char * filename = argv[i] + sizeof("--pid-file:")-1;
                 // write the process ID file |
                 if( write_pid(filename) ) {

@@ -120,7 +120,7 @@ void Chuck_VM_Object::add_ref()
 void Chuck_VM_Object::release()
 {
     //-----------------------------------------------------------------------------
-    // release is permitted even if ref-count is already 0 | 1.5.0.9 (ge)
+    // release is permitted even if ref-count is already 0 | 1.5.1.0 (ge)
     //-----------------------------------------------------------------------------
     if( m_ref_count <= 0 )
     {

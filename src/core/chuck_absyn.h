@@ -396,7 +396,7 @@ struct a_Stmt_Code_
     // statement list
     a_Stmt_List stmt_list;
     // used to track control paths in non-void functions
-    t_CKBOOL allControlPathsReturn; // 1.5.0.9 (ge) added
+    t_CKBOOL allControlPathsReturn; // 1.5.1.0 (ge) added
     // code position
     uint32_t line; uint32_t where; a_Stmt self;
 };
@@ -413,7 +413,7 @@ struct a_Stmt_
     // type of the statement
     ae_Stmt_Type s_type;
     // used to track control paths in non-void functions
-    t_CKBOOL allControlPathsReturn; // 1.5.0.9 (ge) added
+    t_CKBOOL allControlPathsReturn; // 1.5.1.0 (ge) added
 
     // mushed into one!
     union

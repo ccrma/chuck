@@ -75,7 +75,7 @@ struct Chuck_Set_Global_Float_Array_Value_Request;
 struct Chuck_Get_Global_Float_Array_Value_Request;
 struct Chuck_Set_Global_Associative_Float_Array_Value_Request;
 struct Chuck_Get_Global_Associative_Float_Array_Value_Request;
-struct Chuck_Get_Global_All_Request; // 1.5.0.9
+struct Chuck_Get_Global_All_Request; // 1.5.1.0
 struct Chuck_Execute_Chuck_Msg_Request;
 
 // forward references for global storage
@@ -121,7 +121,7 @@ enum Chuck_Global_Request_Type
     get_global_float_array_value_request,
     set_global_associative_float_array_value_request,
     get_global_associative_float_array_value_request,
-    // 1.5.0.9 (ge) get all global variables
+    // 1.5.1.0 (ge) get all global variables
     get_global_all_request,
     // shreds
     spork_shred_request,
@@ -165,7 +165,7 @@ struct Chuck_Global_Request
         Chuck_Get_Global_Float_Array_Value_Request* getFloatArrayValueRequest;
         Chuck_Set_Global_Associative_Float_Array_Value_Request* setAssociativeFloatArrayValueRequest;
         Chuck_Get_Global_Associative_Float_Array_Value_Request* getAssociativeFloatArrayValueRequest;
-        // get all global variables | 1.5.0.9
+        // get all global variables | 1.5.1.0
         Chuck_Get_Global_All_Request* getAllRequest;
         // shreds
         Chuck_VM_Shred* shred;
@@ -185,7 +185,7 @@ struct Chuck_Global_Request
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Globals_TypeValue | 1.5.0.9 (ge) added
+// name: struct Chuck_Globals_TypeValue | 1.5.1.0 (ge) added
 // desc: a type-value pair representing a global value in the system
 //       used to retrive a list of all current global variables
 //-----------------------------------------------------------------------------
@@ -271,7 +271,7 @@ public:
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, const char * key, void (*callback)(const char*, t_CKFLOAT) );
     t_CKBOOL getGlobalAssociativeFloatArrayValue( const char * name, t_CKINT callbackID, const char * key, void (*callback)(t_CKINT, t_CKFLOAT) );
 
-    // 1.5.0.9 (ge) get all global variables
+    // 1.5.1.0 (ge) get all global variables
     t_CKBOOL getAllGlobalVariables( void (*callback)( const std::vector<Chuck_Globals_TypeValue> & list, void * data ),
                                     void * data = NULL );
 
@@ -319,7 +319,7 @@ public:
     Chuck_Object* get_global_object( const std::string & name );
     Chuck_Object** get_ptr_to_global_object( const std::string & name );
 
-    // 1.5.0.9 (ge) get all global variables
+    // 1.5.1.0 (ge) get all global variables
     void get_all_global_variables( std::vector<Chuck_Globals_TypeValue> & list );
 
     t_CKBOOL should_call_global_ctor( const std::string & name, te_GlobalType type );

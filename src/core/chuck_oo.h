@@ -220,7 +220,7 @@ public: // interface common to all Chuck_Arary*
     virtual void reverse() = 0;
     // reverse array order | added (1.5.0.0) kunwoo, nshaheed, azaday, ge
     virtual void shuffle() = 0;
-    // sort contents of array in ascending order | added (1.5.0.9) ge
+    // sort contents of array in ascending order | added (1.5.1.0) ge
     virtual void sort() = 0;
 
     // typed as Object array? | 1.5.0.8 (ge) moved to common
@@ -506,7 +506,7 @@ public:
     std::vector<t_CKCOMPLEX> m_vector;
     std::map<std::string, t_CKCOMPLEX> m_map;
     // semantic hint; in certain situations (like sorting)
-    // need to distinguish between complex and polar | 1.5.0.9
+    // need to distinguish between complex and polar | 1.5.1.0
     t_CKBOOL m_isPolarType;
 };
 
