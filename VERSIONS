@@ -4,10 +4,10 @@ ChucK VERSIONS log
 
 1.5.1.0 (August 2023)
 =======
-(note) much has been updated and added since 1.5.0.0, including:
+(note) much has been added between 1.5.0.0 and 1.5.0.8, including:
   * new for-each loop syntax for iterating through arrays (1.5.0.8)
-  * enhanced and more accurate compiler error reporting; now highlights
-    code and pinpointing error location in code (1.5.0.5)
+  * enhanced and more accurate compiler error reporting; now
+    highlights code and pinpointing error location in code (1.5.0.5)
   * color terminal support for CLI chuck (1.5.0.5)
   * expanded class library support in IO, random number generation,
     Machine.eval(), chugins management, and array
@@ -17,9 +17,9 @@ ChucK VERSIONS log
     incorporate ChucK core into other c++ hosts (1.5.0.7)
     https://github.com/ccrma/chuck/tree/main/src/host-examples
 
-This release updates a long-standing policy regarding `return` statements
-in funciton declarations, adds @array.sort(), a new command-line options,
-and general bug fixes and stability improvements.
+This release (1.5.1.0) updates a long-standing policy regarding `return`
+statements in function declarations; adds @array.sort(), a new command-line
+options, general bug fixes and stability improvements.
 
 ---
 (language update) `return` statements in function definitions:
