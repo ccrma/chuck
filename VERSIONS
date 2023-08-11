@@ -6,7 +6,7 @@ ChucK VERSIONS log
 =======
 (note) this release (1.5.1.0) updates a long-standing policy regarding 
 `return`statements in function declarations; adds @array.sort(), a new 
-command-line options, general bug fixes and stability improvements.
+command-line option, general bug fixes and stability improvements.
 
 (note) much has been added between 1.5.0.0 and 1.5.1.0, including:
   * new for-each loop syntax for iterating through arrays (1.5.0.8)
@@ -36,13 +36,11 @@ error in the form of:
 
   "error: not all control paths in 'fun int f()' return a value"
 
-RATIONALE: *** while this may break some existing working code 
-(apologies!) *** that assumed the previous return semantics (or forgot to 
-return a value or accidentally declared a function as returning something 
-when it should return `void`), we believe this change will be more 
-beneficial in the long run and will lead to clearer, more intentional 
-code. This will hopefully benefit students learning or using the language, 
-as well as veterans.
+RATIONALE: while *** this may break some existing code (apologies!) ***
+that assumed the previous return semantics (or forgot to return a value
+or accidentally declared a function as returning something when it should
+return `void`), we believe this change will be more beneficial in the
+long-term and will lead to clearer, more intentional code.
 
 example:
 ```
