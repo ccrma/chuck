@@ -337,6 +337,16 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "dstmax" );
     QUERY->doc_func( QUERY, "Scale a float from source range to destination range." );
 
+    // add range functions
+    QUERY->add_sfun(QUERY, range1_impl, "int[]", "range"); //! fetch environment variable
+    QUERY->add_arg(QUERY, "int", "stop");
+    QUERY->doc_func(QUERY, "Returns array incrementing [0,stop).");
+
+    QUERY->add_sfun(QUERY, range2_impl, "int[]", "range"); //! fetch environment variable
+    QUERY->add_arg(QUERY, "int", "start");
+    QUERY->add_arg(QUERY, "int", "stop");
+    QUERY->doc_func(QUERY, "Returns array incrementing [start,stop). If start is greater than stop, returns empty array.");
+
     // finish class
     QUERY->end_class( QUERY );
 
@@ -946,6 +956,38 @@ CK_DLL_SFUN( scalef_impl )
 
     RETURN->v_float = dstmin + (dstmax-dstmin) * ((v-srcmin)/(srcmax-srcmin));
 }
+
+// Basic range function - make array with values from [0,stop)
+CK_DLL_SFUN(range1_impl)
+{
+    int stop = GET_NEXT_INT(ARGS);
+
+    Chuck_Array4* range = new Chuck_Array4(FALSE, stop);
+    initialize_object(range, SHRED->vm_ref->env()->ckt_array);
+
+    for (int i = 0; i < stop; i++) {
+        range->set(i, i);
+    }
+    RETURN->v_object = range;
+}
+
+// Start/stop range function - make array with values from [start,stop)
+CK_DLL_SFUN(range2_impl)
+{
+    int start = GET_NEXT_INT(ARGS);
+    int stop = GET_NEXT_INT(ARGS);
+
+    // if stop < start, then returned array is empty
+    int size = max(stop - start, 0);
+    Chuck_Array4* range = new Chuck_Array4(FALSE, size);
+    initialize_object(range, SHRED->vm_ref->env()->ckt_array);
+
+    for (int i = 0; i < size; i++) {
+        range->set(i, i + start);
+    }
+    RETURN->v_object = range;
+}
+
 
 
 

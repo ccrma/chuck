@@ -67,7 +67,8 @@ CK_DLL_SFUN( lintodb_impl );
 CK_DLL_SFUN( clamp_impl );
 CK_DLL_SFUN( clampf_impl );
 CK_DLL_SFUN( scalef_impl );
-
+CK_DLL_SFUN( range1_impl );
+CK_DLL_SFUN( range2_impl );
 
 
 
