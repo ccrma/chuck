@@ -1,4 +1,5 @@
-// Test Std.range functionality.
+// test Std.range functionality
+// requires 1.5.1.1 (nshaheed)
 
 [0, 1, 2, 3] @=> int want[];
 Std.range(4) @=> int got[];
@@ -39,13 +40,36 @@ for (int i; i < want.size(); i++) {
     }
 }
 
-// validate empty
-// Test empty
-Std.range(700,-4) @=> got;
+// validate negative
+print( Std.range(-5) );
+// validate reverse
+print( Std.range(7,-4) );
 
-if (got.size() != 0) {
-    <<< "Std.range(0) does not return an empty array" >>>;
-    me.exit();
+// validate step
+print( Std.range(-1,5,1) );
+print( Std.range(-2,-10,-1) );
+print( Std.range(0,20,4) );
+print( Std.range(5,-20,-4) );
+// 4 works the same as -4
+print( Std.range(5,-20,4) );
+
+// validate zero length
+print( Std.range(1,1,2) );
+print( Std.range(1,1,-1) );
+print( Std.range(-1,-1,-1) );
+
+// step == 0
+print( Std.range(1,1,0) );
+
+// formatted array print
+fun void print( int array[] )
+{
+    // print open
+    cherr <= "[ ";
+    // print each element
+    for( int x : array ) cherr <= x <= ", ";
+    // print close
+    cherr <= "]";
+    // new line
+    cherr <= IO.nl();
 }
-
-<<< "success" >>>;
