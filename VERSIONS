@@ -2,6 +2,26 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.1
+=======
+(added) trailing commas in array initializer lists are now permitted
+```
+// an array initializer list (aka array literal), as usual
+[1,2,3] @=> int foo[];
+
+// now also permitted: trailing comma after last element
+[1,2,3,] @=> int bar[];
+```
+(added) new functions for generating arrays containing a range of values (nshaheed)
+	static int[] range( int stop );
+	    Return array containing the range [0,stop).
+	static int[] range( int start, int stop );
+	    Return array containing the range [start,stop).
+	static int[] range( int start, int stop, int step );
+	    Return array containing values from start up to (but not including) stop,
+	    hopping by step.
+
+
 1.5.1.0 (August 2023)
 =======
 (note) this release (1.5.1.0) updates a long-standing policy regarding 
