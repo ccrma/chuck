@@ -337,6 +337,22 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "dstmax" );
     QUERY->doc_func( QUERY, "Scale a float from source range to destination range." );
 
+    // add range functions | 1.5.1.1 (nshaheed)
+    QUERY->add_sfun(QUERY, range1_impl, "int[]", "range"); //! fetch environment variable
+    QUERY->add_arg(QUERY, "int", "stop");
+    QUERY->doc_func(QUERY, "Return array containing the range [0,stop).");
+
+    QUERY->add_sfun(QUERY, range2_impl, "int[]", "range"); //! fetch environment variable
+    QUERY->add_arg(QUERY, "int", "start");
+    QUERY->add_arg(QUERY, "int", "stop");
+    QUERY->doc_func(QUERY, "Return array containing the range [start,stop).");
+
+    QUERY->add_sfun(QUERY, range3_impl, "int[]", "range"); //! fetch environment variable
+    QUERY->add_arg(QUERY, "int", "start");
+    QUERY->add_arg(QUERY, "int", "stop");
+    QUERY->add_arg(QUERY, "int", "step");
+    QUERY->doc_func(QUERY, "Return array containing values from start up to (but not including) stop, hopping by step.");
+
     // finish class
     QUERY->end_class( QUERY );
 
@@ -945,6 +961,64 @@ CK_DLL_SFUN( scalef_impl )
     t_CKFLOAT dstmax = GET_NEXT_FLOAT(ARGS);
 
     RETURN->v_float = dstmin + (dstmax-dstmin) * ((v-srcmin)/(srcmax-srcmin));
+}
+
+// common internal function for range() | 1.5.1.1 (nshaheed)
+static Chuck_Array4 * ck_range( t_CKINT start, t_CKINT stop, t_CKINT step, Chuck_VM_Shred * SHRED )
+{
+    // size
+    t_CKINT size = 0;
+    // calculate size based on comparing start and stop
+    if( start < stop && step > 0 ) size = (stop-start)/step + ((stop-start)%step ? 1 : 0);
+    else if( start > stop && step < 0 ) size = (start-stop)/(-step) + ((start-stop)%(-step) ? 1 : 0);
+
+    // allocate array object
+    Chuck_Array4 * range = new Chuck_Array4(FALSE, size);
+    // initialize with trappings of Object
+    initialize_object(range, SHRED->vm_ref->env()->ckt_array);
+
+    // the value
+    t_CKINT value = start;
+    // populate the array
+    for (t_CKINT i = 0; i < size; i++) {
+        range->set(i, value);
+        value += step;
+    }
+
+    // return the array reference
+    return range;
+}
+
+// basic range function - make array with values from [0,stop)
+CK_DLL_SFUN(range1_impl)
+{
+    t_CKINT start = 0;
+    t_CKINT stop = GET_NEXT_INT(ARGS);
+    t_CKINT step = stop > start ? 1 : -1;
+    RETURN->v_object = ck_range( start, stop, step, SHRED );
+}
+
+// start/stop range function - make array with values from [start,stop)
+CK_DLL_SFUN(range2_impl)
+{
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    t_CKINT stop = GET_NEXT_INT(ARGS);
+    t_CKINT step = stop > start ? 1 : -1;
+    RETURN->v_object = ck_range( start, stop, step, SHRED );
+}
+
+// start/stop/step range function - make array with values from [start,stop) with step stride
+CK_DLL_SFUN(range3_impl)
+{
+    t_CKINT start = GET_NEXT_INT(ARGS);
+    t_CKINT stop = GET_NEXT_INT(ARGS);
+    t_CKINT step = GET_NEXT_INT(ARGS);
+
+    // check and flip signs to match with stop-start
+    if( (start < stop && step < 0) ||
+        (start > stop && step > 0 ) ) step = -step;
+
+    RETURN->v_object = ck_range( start, stop, step, SHRED );
 }
 
 

@@ -1098,6 +1098,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "array/array_mdim.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_mmixed.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_negative.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "array/array_range.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_resize.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_reverse.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "array/array_shuffle.ck" ) ) goto error;
