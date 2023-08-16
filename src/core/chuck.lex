@@ -370,6 +370,7 @@ global                  { adjust(); return GLOBAL; }
 0[Xx]([0-9a-fA-F]*\.[0-9a-fA-F]+|[0-9a-fA-F]+\.?)[Pp][-+]?[0-9]+[flFL]? { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 
 \"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\" { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
+\`([^`\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})*\` { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 \'([^'\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+|{UCN})+\' { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
 
 .                       { adjust(); EM_error( EM_tokPos, "illegal token" ); }
