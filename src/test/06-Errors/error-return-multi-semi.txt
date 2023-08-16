@@ -1,0 +1,3 @@
+error-return-multi-semi.ck:11:5: error: not all control paths in 'fun int bar()' return a value
+[11] fun int bar()
+         ^

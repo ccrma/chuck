@@ -445,6 +445,11 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
 t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list,
                                       t_CKBOOL * retrieveAllControlPathsReturn )
 {
+    // last non-NULL statement
+    a_Stmt lastStmt = NULL;
+    // set to NULL to begin with
+    if( retrieveAllControlPathsReturn ) *retrieveAllControlPathsReturn = FALSE;
+
     // type check the stmt_list
     while( list )
     {
@@ -452,13 +457,19 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list,
         if( !type_engine_scan1_stmt( env, list->stmt ) )
             return FALSE;
 
-        // if last one, pass back info from stmt we just scanned | 1.5.1.0
-        if( retrieveAllControlPathsReturn && !list->next )
-            *retrieveAllControlPathsReturn = list->stmt->allControlPathsReturn;
+        // add if not NULL
+        if( retrieveAllControlPathsReturn && list->stmt != NULL )
+            lastStmt = list->stmt;
 
         // advance to the next statement
         list = list->next;
     }
+
+    // set to the last non-NULL stmt | 1.5.1.0
+    // handle cases with multiple ending ;;;
+    //     public class Class { fun void foo(){ samp => now;; } }
+    if( retrieveAllControlPathsReturn && lastStmt )
+        *retrieveAllControlPathsReturn = lastStmt->allControlPathsReturn;
 
     return TRUE;
 }
