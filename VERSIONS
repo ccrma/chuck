@@ -20,6 +20,10 @@ ChucK VERSIONS log
 	static int[] range( int start, int stop, int step );
 	    Return array containing values from start up to (but not including) stop,
 	    hopping by step.
+(re-added) backtick(`)-delimited strings; context: needed for FaucK
+    (FAUST in ChucK) through the Faust chugin
+(fixed) issue related to multiple empty statements (e.g., ;;;;) being
+    incorrectly handled by the function control path analysis
 
 
 1.5.1.0 (August 2023)

@@ -35,7 +35,7 @@ assert( foo > "b", "13" );
 assert( foo >= foo, "14" );
 assert( foo >= bar, "15" );
 
-// concatention
+// concatenation
 assert( "foo" + "bar" == "foobar", "16" );
 "foo" => string s;
 "bar" +=> s;
