@@ -1,0 +1,3 @@
+error-class-auto-s.ck:30:17: error: cannot use 'auto' type for top-level class variables...
+[30]     8 => static auto m_var;
+                     ^

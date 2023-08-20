@@ -1,0 +1,15 @@
+// Foo factory
+public class FooFactory
+{
+    fun static FooChild make()
+    {
+        FooChild f;
+        return f;
+    }
+}
+
+// FooChild, child of Foo
+class FooChild extends Foo
+{
+    "FooChild" => name;
+}

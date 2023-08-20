@@ -1,0 +1,5 @@
+// using stuff from other files
+public class User
+{
+    FooFactory.make() @=> Foo foo;
+}

@@ -1,0 +1,6 @@
+// Foo base class
+public class Foo
+{
+    "1:1" => string ratio;
+    "Foo" => string name;
+}
