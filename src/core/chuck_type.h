@@ -627,6 +627,12 @@ public:
     void add( const Chuck_Value_Dependency & dep );
     // add a remote (recursive) dependency
     void add( Chuck_Value_Dependency_Graph * graph );
+    // clear all dependencies | to be called when all dependencies are met
+    // for example, at the successful compilation of a context (e.g., a file)
+    // after this, calls to locate() will return NULL, indicating no dependencies
+    // NOTE dependency analysis is for within-context only, and is not needed
+    // across contexts (e.g., files) | 1.5.1.1 (ge) added
+    void clear();
     // look for a dependency that occurs AFTER a particular code position
     // this function crawls the graph, taking care in the event of cycles
     const Chuck_Value_Dependency * locate( t_CKUINT pos, t_CKBOOL isClassDef = FALSE );
@@ -701,7 +707,7 @@ struct Chuck_Type : public Chuck_Object
     // reference to environment RE-FACTOR 2017
     Chuck_Env * env_ref;
 
-    // dependency tracking | 1.5.0.8
+    // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;
 
     // documentation
@@ -718,7 +724,7 @@ public:
                 t_CKUINT _s = 0 );
     // destructor
     virtual ~Chuck_Type();
-        // reset
+    // reset
     void reset();
     // assignment - this does not touch the Chuck_VM_Object
     const Chuck_Type & operator =( const Chuck_Type & rhs );
@@ -832,8 +838,8 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
     Chuck_VM_Code * code;
-    // imported code
-    // Chuck_DL_Func * dl_code;
+    // context name (which file or string defined this func)
+    std::string context_name;
     // member
     t_CKBOOL is_member;
     // static (inside class)
@@ -847,7 +853,7 @@ struct Chuck_Func : public Chuck_VM_Object
     // for overriding
     Chuck_Value * up;
 
-    // dependency tracking | 1.5.0.8
+    // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;
 
     // documentation

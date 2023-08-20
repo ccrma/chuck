@@ -4587,7 +4587,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
             t_parent = type_engine_find_type( env, class_def->ext->extend_id );
             if( !t_parent )
             {
-                EM_error2( class_def->ext->where,
+                EM_error2( class_def->ext->extend_id->where,
                     "undefined super class '%s' in definition of class '%s'",
                     type_path(class_def->ext->extend_id), S_name(class_def->name->xid) );
                 return FALSE;
@@ -4692,7 +4692,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
         // set complete
         the_class->is_complete = TRUE;
     }
-    if( !ret )
+    else // if not ok | if( !ret )
     {
         // delete the class definition
         CK_SAFE_RELEASE( class_def->type );
@@ -5215,7 +5215,7 @@ t_CKBOOL operator !=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 
 //-----------------------------------------------------------------------------
 // name: equals()
-// desc: ...
+// desc: type equivalence test
 //-----------------------------------------------------------------------------
 t_CKBOOL equals( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) == (*rhs); }
 
@@ -5224,7 +5224,7 @@ t_CKBOOL equals( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) == (*rhs);
 
 //-----------------------------------------------------------------------------
 // name: operator <=
-// desc: ...
+// desc: type equivalence and inheritance test; e.g., is LHS a kind of RHS?
 //-----------------------------------------------------------------------------
 t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 {
@@ -5250,9 +5250,28 @@ t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 
 //-----------------------------------------------------------------------------
 // name: isa()
-// desc: ...
+// desc: is LHS a kind of RHS?
 //-----------------------------------------------------------------------------
 t_CKBOOL isa( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) <= (*rhs); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup_objs_vec()
+// desc: clean up a VM object vector, releasing references and clearing the vec
+//-----------------------------------------------------------------------------
+void cleanup_objs_vec( std::vector<Chuck_VM_Object *> & v )
+{
+    // loop over
+    for( t_CKUINT i = 0; i < v.size(); i++ )
+    {
+        // release the object
+        CK_SAFE_RELEASE( v[i] );
+    }
+    // clear the vector
+    v.clear();
+}
 
 
 
@@ -5267,14 +5286,34 @@ Chuck_Context::~Chuck_Context()
     // the type system, since many things have been added to it
     if( has_error )
     {
+        // delete
         CK_SAFE_DELETE( nspc );
 
-        // delete the types - can't do this since the type system and vm still use
-        // for( t_CKINT i = 0; i < new_types.size(); i++ )
-        //    new_types[i]->release();
+        // delete the new types, values, funcs, and nspc
+        // can't do this since the type system and vm still use?
+        // TODO (1.5.1.1) take care of new_* (or get rid of new_*)
+        // TODO (1.5.1.1) should this be done regardless of `has_error`?
+        // cleanup_objs_vec( new_types );
+        // cleanup_objs_vec( new_values );
+        // cleanup_objs_vec( new_funcs );
+        // cleanup_objs_vec( new_nspc );
 
-        // clear it
-        new_types.clear();
+        // done
+        return;
+    }
+
+    // loop over types created in compiling this context | 1.5.1.1
+    for( t_CKUINT i = 0; i < new_types.size(); i++ )
+    {
+        // clear within-context value dependencies for new types
+        ((Chuck_Type *)new_types[i])->depends.clear();
+    }
+
+    // loop over functions created in compiling this context | 1.5.1.1
+    for( t_CKUINT i = 0; i < new_funcs.size(); i++ )
+    {
+        // clear within-context value dependencies for new funcs
+        ((Chuck_Func *)new_funcs[i])->depends.clear();
     }
 }
 
@@ -7956,6 +7995,25 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locate(
     resetRecursive();
     // recursive search
     return locateRecursive( pos, isMember, 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clear() | 1.5.1.1
+// desc: clear all dependencies | to be called when all dependencies are met
+// for example, at the successful compilation of a context (e.g., a file)
+// after this, calls to locate() will return NULL, indicating no dependencies
+// NOTE dependency analysis is for within-context only, and is not needed
+// across contexts (e.g., files)
+//-----------------------------------------------------------------------------
+void Chuck_Value_Dependency_Graph::clear()
+{
+    // direct dependencies
+    this->directs.clear();
+    // remote dependencies
+    this->remotes.clear();
 }
 
 
