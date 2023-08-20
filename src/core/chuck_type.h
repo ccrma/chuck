@@ -838,8 +838,6 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
     Chuck_VM_Code * code;
-    // context name (which file or string defined this func)
-    std::string context_name;
     // member
     t_CKBOOL is_member;
     // static (inside class)
