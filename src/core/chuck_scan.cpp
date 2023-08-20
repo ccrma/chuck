@@ -192,6 +192,10 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             break;
         }
 
+        // check return | 1.5.1.1
+        if( !ret ) return FALSE;
+
+        // next section
         prog = prog->next;
     }
 
@@ -425,6 +429,10 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
             break;
         }
 
+        // check return | 1.5.1.1
+        if( !ret ) return FALSE;
+
+        // next section
         prog = prog->next;
     }
 
@@ -934,13 +942,12 @@ t_CKBOOL type_engine_scan1_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 {
     a_Exp cl = binary->lhs, cr = binary->rhs;
 
-    // type check the lhs and rhs
+    // scan lhs
     t_CKBOOL left = type_engine_scan1_exp( env, cl );
+    if( !left ) return FALSE;
+    // scan rhs
     t_CKBOOL right = type_engine_scan1_exp( env, cr);
-
-    // if either fails, then return FALSE
-    if( !left || !right )
-        return FALSE;
+    if( !right ) return FALSE;
 
     // cross chuck
     while( cr )
@@ -1549,6 +1556,10 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
             break;
         }
 
+        // check return | 1.5.1.1
+        if( !ret ) return FALSE;
+
+        // next section
         prog = prog->next;
     }
 
@@ -2015,13 +2026,12 @@ t_CKBOOL type_engine_scan2_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 {
     a_Exp cl = binary->lhs, cr = binary->rhs;
 
-    // type check the lhs and rhs
+    // scan lhs
     t_CKBOOL left = type_engine_scan2_exp( env, cl );
+    if( !left ) return FALSE;
+    // scan rhs
     t_CKBOOL right = type_engine_scan2_exp( env, cr);
-
-    // if either fails, then return FALSE
-    if( !left || !right )
-        return FALSE;
+    if( !right ) return FALSE;
 
     // cross chuck
     while( cr )
@@ -2254,6 +2264,191 @@ t_CKBOOL type_engine_scan2_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_scan2_exp_decl_create() | 1.5.1.1 (ge)
+//       *** adapted from type_engine_scan2_exp_decl() pre-1.5.0.8
+//       *** which became type_engine_check_exp_decl_part1() in 1.5.0.8
+// reason: 'auto' needs more context before it can processed | 1.5.0.8 (ge)
+//       however, class variables are meant to be accessible out-of-order
+//       and needs decl created in an earlier pass | 1.5.1.1 (ge)
+// desc: this can now be called either from type_scan if not 'auto' in order
+//       to support accessing class member decls from anywhere (e.g., in the
+//       same file, above the actual decl); or it can be deferred in the case
+//       of 'auto' from chuck_type | 1.5.1.1 (ge)
+// caveat: 'auto' is disallowed for now as a top-level class member decl type
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
+{
+    a_Var_Decl_List list = decl->var_decl_list;
+    a_Var_Decl var_decl = NULL;
+    Chuck_Type * type = NULL;
+    Chuck_Value * value = NULL;
+    t_CKBOOL do_alloc = TRUE;
+    t_CKBOOL is_first_in_list = TRUE;
+
+    // check to see if Part 1 was already processed | 1.5.1.0 (ge)
+    // NOTE Part 1 (migrated here from scan2b_exp_decl() in 1.5.0.8 to support
+    // 'auto', can only be run once as it creates and adds values into the
+    // current scope; yet a decl expression could be checked more than once
+    // due to chained chuck statements like: `440 => float f => osc.freq;`
+    if( list && list->var_decl && list->var_decl->value )
+        return TRUE;
+
+    // retrieve the type
+    type = decl->ck_type;
+    // make sure it's not NULL
+    assert( type != NULL );
+
+    // check to see type is not void or auto
+    // by this point, any 'auto' should have been resolved
+    if( type->size == 0 )
+    {
+        // see if auto was declared
+        if( isa( type, env->ckt_auto ) )
+        {
+            EM_error2( decl->type->where,
+                "cannot use 'auto' type variable declaration here..." );
+            EM_error2( 0, "(hint: 'auto' requires either initialization or specific contexts)" );
+        }
+        else
+        {
+            EM_error2( decl->where,
+                "cannot declare variables of size '0' (i.e. 'void')..." );
+        }
+        return FALSE;
+    }
+
+    // T @ foo?
+    do_alloc = !decl->type->ref;
+
+    // make sure complete
+    if( /*!t->is_complete &&*/ do_alloc )
+    {
+        // check to see if class inside itself
+        if( env->class_def && equals( type, env->class_def ) && env->class_scope == 0 )
+        {
+            EM_error2( decl->where,
+                "...(note: object of type '%s' declared inside itself)",
+                type->c_name() );
+            return FALSE;
+        }
+    }
+
+    // primitive
+    if( (isprim( env, type ) || isa( type, env->ckt_string )) && decl->type->ref )  // TODO: string
+    {
+        EM_error2( decl->where,
+            "cannot declare references (@) of primitive type '%s'...",
+            type->c_name() );
+        EM_error2( decl->where,
+            "...(primitive types: 'int', 'float', 'time', 'dur')" );
+        return FALSE;
+    }
+
+    // loop through the variables
+    while( list )
+    {
+        // 1.4.2.0 (ge) | reset the type variable to the lead type in the decl
+        // e.g., for cases like int x[2], y;
+        // ...this is so y would not be associated with x's array type
+        type = decl->ck_type;
+
+        // get the decl
+        var_decl = list->var_decl;
+        // 1.4.2.0 (ge) | by default, copy the decl type reference bit
+        // this could be overwritten later as appropriate, e.g., by array vars
+        var_decl->ref = decl->type->ref;
+
+        // check if reserved
+        if( type_engine_check_reserved( env, var_decl->xid, var_decl->where ) )
+        {
+            EM_error2( var_decl->where,
+                "...in variable declaration", S_name(var_decl->xid) );
+            return FALSE;
+        }
+
+        // check if locally defined
+        if( env->curr->lookup_value( var_decl->xid, FALSE ) )
+        {
+            EM_error2( var_decl->where,
+                "'%s' has already been defined in the same scope",
+                S_name(var_decl->xid) );
+            return FALSE;
+        }
+
+        // check if array
+        if( var_decl->array != NULL )
+        {
+            // 1.4.2.0 (ge) was: decl->type->ref;
+            var_decl->ref = ( var_decl->array->exp_list == NULL );
+            // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
+            Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
+
+            // create the new array type
+            type = new_array_type(
+                env,  // the env
+                env->ckt_array,  // the array base class
+                var_decl->array->depth,  // the depth of the new type
+                t2,  // the 'array_type'
+                env->curr  // the owner namespace
+            );
+
+            // 1.4.2.0 (ge) | assign new array type to current var decl
+            // for handling the following kind of multi-var declarations
+            //   int x[1], y[2];
+            //   int x, y[1];
+            // set reference : var_decl->ck_type = type;
+            CK_SAFE_REF_ASSIGN( var_decl->ck_type, type );
+
+            // 1.4.2.0 (ge) | if one and only one variable, then update decl->ck_type
+            // otherwise, the variables could have different array depths, and therefore different types
+            // also note: cannot => to a multi-variable declaration (e.g., 5 => int x, y;)
+            // this is to support array initialization (e.g., [ [1,2], [3,4] ] @=> int x[][];)
+            if( is_first_in_list && list->next == NULL )
+            {
+                // set reference : var_decl->ck_type = type;
+                CK_SAFE_REF_ASSIGN( decl->ck_type, type );
+            }
+        }
+
+        // enter into value binding
+        env->curr->value.add( var_decl->xid,
+            value = env->context->new_Chuck_Value( type, S_name(var_decl->xid) ) );
+
+        // remember the owner
+        value->owner = env->curr;
+        value->owner_class = env->func ? NULL : env->class_def;
+        value->is_member = ( env->class_def != NULL &&
+                             env->class_scope == 0 &&
+                             env->func == NULL && !decl->is_static );
+        value->is_context_global = ( env->class_def == NULL && env->func == NULL );
+        value->addr = var_decl->addr;
+        // flag it until the decl is checked
+        value->is_decl_checked = FALSE;
+
+        // flag as global
+        value->is_global = decl->is_global;
+
+        // dependency tracking: remember the code position of the DECL | 1.5.0.8
+        // do only if file-top-level or class-top-level, but not global
+        if( (value->is_member || value->is_context_global) && !value->is_global )
+            value->depend_init_where = var_decl->where;
+
+        // remember the value
+        var_decl->value = value;
+
+        // the next var decl
+        list = list->next;
+        // 1.4.2.0 (ge) | added
+        is_first_in_list = FALSE;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_scan2_exp_decl( )
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2288,6 +2483,27 @@ t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 
         // advance
         list = list->next;
+    }
+
+    // check whether decl type is auto | 1.5.1.1
+    if( !isa(decl->ck_type, env->ckt_auto) )
+    {
+        // not auto? go ahead and create the decl
+        if( !type_engine_scan2_exp_decl_create( env, decl ) )
+            return FALSE;
+    }
+    else // decl type is auto
+    {
+        // disallow 'auto' for top-level class member variables
+        if( env->class_def && env->class_scope == 0 )
+        {
+            EM_error2( decl->type->where,
+                "cannot use 'auto' type for top-level class variables..." );
+            return FALSE;
+        }
+
+        // nothing more to do for now
+        // defer decl creation until chuck_type has a chance to infer the auto type
     }
 
     return TRUE;

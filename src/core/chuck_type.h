@@ -455,7 +455,7 @@ public:
     // get namespace at top of stack
     Chuck_Namespace * nspc_top();
     // get type at top of type stack
-    Chuck_Type* class_top();
+    Chuck_Type * class_top();
 
 public:
     // REFACTOR-2017: carrier and accessors

@@ -63,6 +63,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def def );
 // scan an exp decl
 t_CKBOOL type_engine_scan2_exp_decl( Chuck_Env * env, a_Exp_Decl decl );
 
+// create the decl value
+// (can be called from chuck_scan or chuck_type, depending on 'auto')
+t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl );
+
 // the rest is done in chuck_type
 
 

@@ -4,6 +4,11 @@ ChucK VERSIONS log
 
 1.5.1.1
 =======
+(note) this patch release fixes a number of issues related to recently added
+    language features; it also adds some "syntatic sugar" in the form of allowing
+    trailing commas in array initializer lists, as well as a set of range
+    functions for generating arrays of ranges of value.
+
 (added) trailing commas in array initializer lists are now permitted
 ```
 // an array initializer list (aka array literal), as usual
@@ -12,18 +17,63 @@ ChucK VERSIONS log
 // now also permitted: trailing comma after last element
 [1,2,3,] @=> int bar[];
 ```
-(added) new functions for generating arrays containing a range of values (nshaheed)
-	static int[] range( int stop );
+(added) Std functions for generating arrays containing a range of values (nshaheed)
+	static int[] Std.range( int stop );
 	    Return array containing the range [0,stop).
-	static int[] range( int start, int stop );
+	static int[] Std.range( int start, int stop );
 	    Return array containing the range [start,stop).
-	static int[] range( int start, int stop, int step );
+	static int[] Std.range( int start, int stop, int step );
 	    Return array containing values from start up to (but not including) stop,
 	    hopping by step.
 (re-added) backtick(`)-delimited strings; context: needed for FaucK
     (FAUST in ChucK) through the Faust chugin
 (fixed) issue related to multiple empty statements (e.g., ;;;;) being
     incorrectly handled by the function control path analysis
+(fixed) issue related to incorrect out-of-order dependencies across
+    different files / contexts (thanks Michael Heuer for investigating)
+(fixed) class member/static variables can now be accessed, as before,
+    from anywhere in the same file, regardless of order of declaration
+    (thanks Michael Heuer for investigating)
+```
+Foo foo;
+// using val above declaration is part of language semantics
+// (but due to regression bug was broken in 1.5.0.8)
+// this should work once again
+5 => foo.val;
+
+class Foo
+{
+    int val;
+}
+```
+(updated) 'auto' type is now disallowed as a top-level class variables,
+    instance or static; since these variables could be used from outside the class,
+    1) this potentially leads to more intentional code and 2) currently there is no
+    mechanism to resolve the 'auto' until type checking stage such that out-of-order
+    access of class variables are resolved.
+```
+// class definition
+class Foo
+{
+    // ok
+    for( auto x : [1,2,3] ) { <<< x >>>; }
+
+    // ok
+    fun void bar() { 4 => auto y; }
+
+    // ok
+    if( true ) { 5 => auto x; }
+
+    // ok
+    { 6 => auto x; }
+
+    // not ok *** compiler should report error
+    7 => auto m_var;
+
+    // not ok *** compiler should report error
+    8 => static auto m_var;
+}
+```
 
 
 1.5.1.0 (August 2023)
