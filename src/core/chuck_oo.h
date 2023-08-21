@@ -102,10 +102,6 @@ public:
     t_CKBOOL m_pooled; // if true, this allocates from a pool
     t_CKBOOL m_locked; // if true, this should never be deleted
 
-public:
-    // where
-    std::vector<Chuck_VM_Object *> * m_v_ref;
-
 private:
     void init_ref();
 };

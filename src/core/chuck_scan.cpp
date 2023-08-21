@@ -334,7 +334,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         Chuck_Type * type = NULL;
 
         // allocate value
-        type = env->ckt_class->copy( env );
+        type = env->ckt_class->copy( env, env->context );
         type->actual_type = the_class;
         value = env->context->new_Chuck_Value( type, the_class->base_name );
         value->owner = env->curr;
@@ -2768,7 +2768,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     type = env->context->new_Chuck_Type( env );
     type->xid = te_function;
     type->base_name = "[function]";
-    type->parent = env->ckt_function;
+    type->parent = env->ckt_function; // TODO: reference count the parent
     type->size = sizeof(void *);
     type->func = func;
 
@@ -2780,7 +2780,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     value->owner = env->curr;
     value->owner_class = env->class_def;
     value->is_member = func->is_member;
-       // is global context
+    // is global context
     value->is_context_global = env->class_def == NULL;
     // remember the func
     value->func_ref = func; func->add_ref(); // add reference TODO: break cycle?

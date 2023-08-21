@@ -4388,8 +4388,8 @@ t_CKTYPE type_engine_check_exp_array( Chuck_Env * env, a_Exp_Array array )
     }
     else
     {
-        // partial
-        t = array->base->type->copy( env );
+        // partial; context added in 1.5.1.1
+        t = array->base->type->copy( env, env->context );
         // remainder
         t->array_depth -= depth;
     }
@@ -5127,33 +5127,34 @@ Chuck_Context::~Chuck_Context()
     {
         // delete
         CK_SAFE_DELETE( nspc );
-
-        // delete the new types, values, funcs, and nspc
-        // can't do this since the type system and vm still use?
-        // TODO (1.5.1.1) take care of new_* (or get rid of new_*)
-        // TODO (1.5.1.1) should this be done regardless of `has_error`?
-        // cleanup_objs_vec( new_types );
-        // cleanup_objs_vec( new_values );
-        // cleanup_objs_vec( new_funcs );
-        // cleanup_objs_vec( new_nspc );
-
         // done
-        return;
+        goto done;
     }
 
     // loop over types created in compiling this context | 1.5.1.1
     for( t_CKUINT i = 0; i < new_types.size(); i++ )
     {
+        // cast, slightly sus
+        Chuck_Type * t = (Chuck_Type *)new_types[i];
         // clear within-context value dependencies for new types
-        ((Chuck_Type *)new_types[i])->depends.clear();
+        t->depends.clear();
     }
 
     // loop over functions created in compiling this context | 1.5.1.1
     for( t_CKUINT i = 0; i < new_funcs.size(); i++ )
     {
+        // cast, slightly sus
+        Chuck_Func * f = (Chuck_Func *)new_funcs[i];
         // clear within-context value dependencies for new funcs
-        ((Chuck_Func *)new_funcs[i])->depends.clear();
+        f->depends.clear();
     }
+
+done:
+    // delete the new types, values, funcs, and nspc | 1.5.1.1
+    cleanup_objs_vec( new_types );
+    cleanup_objs_vec( new_values );
+    cleanup_objs_vec( new_funcs );
+    cleanup_objs_vec( new_nspc );
 }
 
 
@@ -5800,8 +5801,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
 
     // flag as complete
     type->is_complete = TRUE;
-    // make type
-    type_type = env->ckt_class->copy( env );
+    // make type; context added in 1.5.1.1
+    type_type = env->ckt_class->copy( env, env->context );
     type_type->actual_type = type;
     // CK_SAFE_REF_ASSIGN( type_type->actual_type, type );
 
@@ -6323,22 +6324,6 @@ t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
 
 
 //-----------------------------------------------------------------------------
-// name: init_special()
-// desc: ...
-//-----------------------------------------------------------------------------
-void init_special( Chuck_VM_Object * obj )
-{
-    // reference - this is done when the reference is assigned
-    // obj->add_ref();
-
-    // add to vector
-    if( obj->m_v_ref ) obj->m_v_ref->push_back( obj );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: new_Chuck_Type()
 // desc: instantiate new chuck type
 //-----------------------------------------------------------------------------
@@ -6347,10 +6332,9 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     // allocate
     Chuck_Type * type = new Chuck_Type( env );
     if( !type ) return NULL;
-    // set v ref
-    type->m_v_ref = &new_types;
-    // initialize it
-    init_special( type );
+
+    // remember in context | 1.5.1.1
+    this->new_types.push_back( type ); CK_SAFE_ADD_REF( type );
 
     // check if t_class has itself been initialized
     // this is only for types created before Type (t_class) initialized,
@@ -6379,10 +6363,9 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
     // allocate
     Chuck_Value * value = new Chuck_Value( t, name );
     if( !value ) return NULL;
-    // set v ref
-    value->m_v_ref = &new_values;
-    // initialize it
-    init_special( value );
+
+    // remember in context | 1.5.1.1
+    this->new_values.push_back( value ); CK_SAFE_ADD_REF( value );
 
     return value;
 }
@@ -6397,14 +6380,12 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
 Chuck_Func * Chuck_Context::new_Chuck_Func()
 {
     // allocate
-    Chuck_Func * theFunc = new Chuck_Func;
-    if( !theFunc ) return NULL;
-    // set v ref
-    theFunc->m_v_ref = &new_funcs;
-    // initialize it
-    init_special( theFunc );
+    Chuck_Func * func = new Chuck_Func;
+    if( !func ) return NULL;
+    // remember in context | 1.5.1.1
+    this->new_funcs.push_back( func ); CK_SAFE_ADD_REF( func );
 
-    return theFunc;
+    return func;
 }
 
 
@@ -6417,14 +6398,12 @@ Chuck_Func * Chuck_Context::new_Chuck_Func()
 Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 {
     // allocate
-    Chuck_Namespace * theNpsc = new Chuck_Namespace;
-    if( !theNpsc ) return NULL;
-    // set v ref
-    theNpsc->m_v_ref = &new_nspc;
-    // initialize it
-    init_special( theNpsc );
+    Chuck_Namespace * nspc = new Chuck_Namespace;
+    if( !nspc ) return NULL;
+    // remember in context | 1.5.1.1
+    this->new_nspc.push_back( nspc ); CK_SAFE_ADD_REF( nspc );
 
-    return theNpsc;
+    return nspc;
 }
 
 
@@ -7904,6 +7883,11 @@ Chuck_Type::~Chuck_Type()
     reset();
     // release env ref | 1.5.0.8
     CK_SAFE_RELEASE( env_ref );
+
+    // TODO: release parent ref | 1.5.1.1
+    // TODO: make it safe to do this, as there are multiple instances of
+    //       ->parent assignments without add-refs
+    // CK_SAFE_RELEASE( parent );
 }
 
 
@@ -7970,12 +7954,24 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
 // name: copy()
 // desc: create a copy of this type struct
 //-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Type::copy( Chuck_Env * env ) const
+Chuck_Type * Chuck_Type::copy( Chuck_Env * env, Chuck_Context * context ) const
 {
-    // allocate new instance
-    Chuck_Type * n = env->context->new_Chuck_Type( env );
+    // pointer
+    Chuck_Type * n = NULL;
+    // check context
+    if( context != NULL )
+    {
+        // allocate new instance with context
+        n = context->new_Chuck_Type( env );
+    }
+    else
+    {
+        // allocate new instance without context | 1.5.1.1
+        n = new Chuck_Type( env );
+    }
     // invoke = operator
     *n = *this;
+
     // return new instance
     return n;
 }

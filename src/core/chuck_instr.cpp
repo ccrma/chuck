@@ -5614,11 +5614,17 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
     // construct type for next array level | 1.5.0.0 (ge) added
     // TODO: look up in common array type pool before allocating
-    typeNext = type->copy( vm->env() );
+    // pass in NULL (context) as typeNext is meant to be temporary and
+    // shouldn't be associated with context; also by this point,
+    // vm->env()->context is likely the global context, and the
+    // originating context (e.g., ck file) is already cleaned up | 1.5.1.1
+    typeNext = type->copy( vm->env(), NULL );
     // check
     if( typeNext->array_depth == 0 ) goto internal_error_array_depth;
     // minus the depth
     typeNext->array_depth--;
+    // add ref | 1.5.1.1
+    CK_SAFE_ADD_REF( typeNext );
 
     // allocate the next level
     for( i = 0; i < *capacity; i++ )
@@ -5630,6 +5636,9 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         // set that, with ref count
         theBase->set( i, (t_CKUINT)next );
     }
+
+    // release | 1.5.1.1
+    CK_SAFE_RELEASE( typeNext );
 
     // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
     // for the object->type_ref to contain more specific information

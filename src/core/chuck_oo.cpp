@@ -88,8 +88,6 @@ void Chuck_VM_Object::init_ref()
     m_pooled = FALSE;
     // set to not locked
     m_locked = FALSE;
-    // set v ref
-    m_v_ref = NULL;
 }
 
 
@@ -288,9 +286,6 @@ Chuck_Object::~Chuck_Object()
     CK_SAFE_DELETE( vtable );
     CK_SAFE_RELEASE( type_ref );
     CK_SAFE_DELETE_ARRAY( data );
-    // if( vtable ) { delete vtable; vtable = NULL; }
-    // if( type_ref ) { type_ref->release(); type_ref = NULL; }
-    // if( data ) { delete [] data; size = 0; data = NULL; }
 }
 
 
