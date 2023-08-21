@@ -192,9 +192,6 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             break;
         }
 
-        // check return | 1.5.1.1
-        if( !ret ) return FALSE;
-
         // next section
         prog = prog->next;
     }
@@ -428,9 +425,6 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
             ret = FALSE;
             break;
         }
-
-        // check return | 1.5.1.1
-        if( !ret ) return FALSE;
 
         // next section
         prog = prog->next;
@@ -1555,9 +1549,6 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
             ret = FALSE;
             break;
         }
-
-        // check return | 1.5.1.1
-        if( !ret ) return FALSE;
 
         // next section
         prog = prog->next;
@@ -2777,15 +2768,15 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // it is const
     value->is_const = TRUE;
     // remember the owner
-    value->owner = env->curr;
-    value->owner_class = env->class_def;
+    value->owner = env->curr; CK_SAFE_ADD_REF( value->owner );
+    value->owner_class = env->class_def; CK_SAFE_ADD_REF( value->owner_class );
     value->is_member = func->is_member;
     // is global context
     value->is_context_global = env->class_def == NULL;
     // remember the func
-    value->func_ref = func; func->add_ref(); // add reference TODO: break cycle?
+    value->func_ref = func; CK_SAFE_ADD_REF( value->func_ref ); // add reference TODO: break cycle?
     // remember the value
-    func->value_ref = value; value->add_ref(); // add reference TODO: break cycle?
+    func->value_ref = value; CK_SAFE_ADD_REF( func->value_ref ); // add reference TODO: break cycle?
 
     // set the func
     f->ck_func = func; func->add_ref(); // add reference
@@ -2908,9 +2899,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         v = env->context->new_Chuck_Value(
             arg_list->type, S_name(arg_list->var_decl->xid) );
         // remember the owner
-        v->owner = env->curr;
+        v->owner = env->curr; CK_SAFE_ADD_REF( v->owner );
         // function args not owned
-        v->owner_class = NULL;
+        v->owner_class = NULL; CK_SAFE_ADD_REF( v->owner_class );
         v->is_member = FALSE;
         // later: add as value
         // symbols.push_back( arg_list );

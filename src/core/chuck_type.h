@@ -902,9 +902,9 @@ public:
 // primary chuck type checker interface
 //-----------------------------------------------------------------------------
 // initialize the type engine
-Chuck_Env * type_engine_init( Chuck_Carrier * carrier );
+t_CKBOOL type_engine_init( Chuck_Carrier * carrier );
 // shutdown the type engine
-void type_engine_shutdown( Chuck_Env * env );
+void type_engine_shutdown( Chuck_Carrier * carrier );
 // load a context to be type-checked or emitted
 t_CKBOOL type_engine_load_context( Chuck_Env * env, Chuck_Context * context );
 // unload a context after being emitted

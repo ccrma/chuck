@@ -456,7 +456,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 // name: type_engine_init()
 // desc: initialize a type engine
 //-----------------------------------------------------------------------------
-Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
+t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 {
     // log
     EM_log( CK_LOG_SEVERE, "initializing type checker..." );
@@ -472,6 +472,8 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
 
     // REFACTOR-2017: store env in carrier
     carrier->env = env;
+    // add reference
+    CK_SAFE_ADD_REF( carrier->env );
     // and store carrier in env
     env->set_carrier( carrier );
 
@@ -670,22 +672,22 @@ Chuck_Env * type_engine_init( Chuck_Carrier * carrier )
     // pop indent level
     EM_poplog();
 
-    return env;
+    return TRUE;
 }
 
 
 
 //-----------------------------------------------------------------------------
 // name: type_engine_shutdown()
-// desc: ...
+// desc: shut down the type engine instance
 //-----------------------------------------------------------------------------
-void type_engine_shutdown( Chuck_Env * env )
+void type_engine_shutdown( Chuck_Carrier * carrier )
 {
     // log
     EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
 
-    // shut it down
-    CK_SAFE_DELETE( env );
+    // shut it down; this is system cleanup -- delete instead of release
+    CK_SAFE_DELETE( carrier->env );
 
     // log
     EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
@@ -773,11 +775,13 @@ Chuck_Context * type_engine_make_context( a_Program prog, const string & filenam
     EM_pushlog();
 
     // each parse tree corresponds to a chuck context
-    Chuck_Context * context = new Chuck_Context;
+    Chuck_Context * context = new Chuck_Context();
     // save a reference to the parse tree
     context->parse_tree = prog;
     // set name
     context->filename = filename;
+    // set namespace to same name | 1.5.1.1
+    context->nspc->name = filename;
 
     // pop indent
     EM_poplog();
@@ -857,6 +861,7 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
             break;
         }
 
+        // next section
         prog = prog->next;
     }
 
@@ -958,7 +963,7 @@ t_CKBOOL type_engine_unload_context( Chuck_Env * env )
     // pop the namespace stack
     env->nspc_stack.pop_back();
     // release the context
-    env->context->release();
+    CK_SAFE_RELEASE( env->context );
     // restore context
     env->context = env->contexts.back();
     // pop the context
@@ -5125,8 +5130,8 @@ Chuck_Context::~Chuck_Context()
     // the type system, since many things have been added to it
     if( has_error )
     {
-        // delete
-        CK_SAFE_DELETE( nspc );
+        // release
+        CK_SAFE_RELEASE( this->nspc );
         // done
         goto done;
     }
@@ -6330,11 +6335,11 @@ t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
 Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
 {
     // allocate
-    Chuck_Type * type = new Chuck_Type( env );
-    if( !type ) return NULL;
+    Chuck_Type * theType = new Chuck_Type( env );
+    if( !theType ) return NULL;
 
     // remember in context | 1.5.1.1
-    this->new_types.push_back( type ); CK_SAFE_ADD_REF( type );
+    this->new_types.push_back( theType ); CK_SAFE_ADD_REF( theType );
 
     // check if t_class has itself been initialized
     // this is only for types created before Type (t_class) initialized,
@@ -6344,10 +6349,10 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     if( env->ckt_class->info != NULL )
     {
         // initialize it as Type object | 1.5.0.0 (ge) added
-        initialize_object( type, env->ckt_class );
+        initialize_object( theType, env->ckt_class );
     }
 
-    return type;
+    return theType;
 }
 
 
@@ -6361,13 +6366,13 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
                                               const string & name )
 {
     // allocate
-    Chuck_Value * value = new Chuck_Value( t, name );
-    if( !value ) return NULL;
+    Chuck_Value * theValue = new Chuck_Value( t, name );
+    if( !theValue ) return NULL;
 
     // remember in context | 1.5.1.1
-    this->new_values.push_back( value ); CK_SAFE_ADD_REF( value );
+    this->new_values.push_back( theValue ); CK_SAFE_ADD_REF( theValue );
 
-    return value;
+    return theValue;
 }
 
 
@@ -6380,12 +6385,12 @@ Chuck_Value * Chuck_Context::new_Chuck_Value( Chuck_Type * t,
 Chuck_Func * Chuck_Context::new_Chuck_Func()
 {
     // allocate
-    Chuck_Func * func = new Chuck_Func;
-    if( !func ) return NULL;
+    Chuck_Func * theFunc = new Chuck_Func;
+    if( !theFunc ) return NULL;
     // remember in context | 1.5.1.1
-    this->new_funcs.push_back( func ); CK_SAFE_ADD_REF( func );
+    this->new_funcs.push_back( theFunc ); CK_SAFE_ADD_REF( theFunc );
 
-    return func;
+    return theFunc;
 }
 
 
@@ -6398,12 +6403,12 @@ Chuck_Func * Chuck_Context::new_Chuck_Func()
 Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 {
     // allocate
-    Chuck_Namespace * nspc = new Chuck_Namespace;
-    if( !nspc ) return NULL;
+    Chuck_Namespace * theNspc = new Chuck_Namespace;
+    if( !theNspc ) return NULL;
     // remember in context | 1.5.1.1
-    this->new_nspc.push_back( nspc ); CK_SAFE_ADD_REF( nspc );
+    this->new_nspc.push_back( theNspc ); CK_SAFE_ADD_REF( theNspc );
 
-    return nspc;
+    return theNspc;
 }
 
 
