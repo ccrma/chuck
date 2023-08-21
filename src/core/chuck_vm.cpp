@@ -2951,7 +2951,7 @@ std::string Chuck_VM_Debug::info_type( Chuck_Type * type )
     if( !type ) return "[NULL type]";
 
     // construct value string
-    string s = string("'") + type->str() + "'";
+    string s = string("'") + type->name() + "'";
 
     // namescpace
     // if( type->owner ) s += info_namespace( type->owner ) + " ";
