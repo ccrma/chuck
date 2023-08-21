@@ -261,7 +261,7 @@ $(CXXOBJS_HOST): %.o: %.cpp
 
 ############################## RUN UNIT TEST ##################################
 test:
-	pushd test; ./test.py ../chuck .; popd
+	(cd test && ./test.py ../chuck .)
 
 
 ############################### DISTRIBUTION ##################################
