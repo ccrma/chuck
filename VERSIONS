@@ -5,9 +5,9 @@ ChucK VERSIONS log
 1.5.1.1
 =======
 (note) this patch release fixes a number of issues related to recently added
-    language features; it also adds some "syntatic sugar" in the form of allowing
-    trailing commas in array initializer lists, as well as a set of range
-    functions for generating arrays of ranges of value.
+    language features; it also adds some "syntatic sugar" in the form of 
+    allowing trailing commas in array initializer lists, as well as a set 
+    of range() functions for generating arrays of ranges of value.
 
 (added) trailing commas in array initializer lists are now permitted
 ```
@@ -57,23 +57,19 @@ class Foo
 {
     // ok
     for( auto x : [1,2,3] ) { <<< x >>>; }
-
     // ok
     fun void bar() { 4 => auto y; }
-
     // ok
     if( true ) { 5 => auto x; }
-
     // ok
     { 6 => auto x; }
-
     // not ok *** compiler should report error
     7 => auto m_var;
-
     // not ok *** compiler should report error
     8 => static auto m_var;
 }
 ```
+(fixed) a memory leak associated with array declarations
 
 
 1.5.1.0 (August 2023)
