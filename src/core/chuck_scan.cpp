@@ -261,7 +261,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // set the fields
     the_class->xid = te_user;
     the_class->base_name = S_name(class_def->name->xid);
-    the_class->owner = env->curr;
+    the_class->owner = env->curr; CK_SAFE_ADD_REF(the_class->owner);
     the_class->array_depth = 0;
     the_class->size = sizeof(void *);
     the_class->obj_size = 0;  // TODO:
@@ -334,7 +334,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         type = env->ckt_class->copy( env, env->context );
         type->actual_type = the_class;
         value = env->context->new_Chuck_Value( type, the_class->base_name );
-        value->owner = env->curr;
+        value->owner = env->curr; CK_SAFE_ADD_REF(value->owner);
         value->is_const = TRUE;
         value->is_member = FALSE;
         // add to env
@@ -2406,7 +2406,7 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
             value = env->context->new_Chuck_Value( type, S_name(var_decl->xid) ) );
 
         // remember the owner
-        value->owner = env->curr;
+        value->owner = env->curr; CK_SAFE_ADD_REF( value->owner );
         value->owner_class = env->func ? NULL : env->class_def;
         value->is_member = ( env->class_def != NULL &&
                              env->class_scope == 0 &&

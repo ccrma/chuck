@@ -3180,30 +3180,6 @@ t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
         env->curr  // the owner namespace
     );
 
-    /*
-    // create the new type
-    t = env->context->new_Chuck_Type();
-    // set the xid
-    t->xid = te_array;
-    // set the name
-    t->base_name = type->base_name;
-    // set the parent
-    t->parent = env->ckt_array;
-    // is a ref
-    t->size = t_array.size;
-    // set the array depth
-    t->array_depth = type->array_depth + 1;
-    // set the base type
-    t->array_type = type->array_depth ? type->array_type : type;
-    // TODO: verify the following is correct
-    // set namespace
-    t->info = t_array->info;
-    // add reference
-    t->info->add_ref();
-    // set owner
-    t->owner = env->curr;
-    */
-
     return t;
 }
 
@@ -5794,9 +5770,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     }
 
     // set the owner namespace
-    type->owner = where;
-    // add reference
-    CK_SAFE_ADD_REF(type->owner);
+    type->owner = where; CK_SAFE_ADD_REF(type->owner);
     // check if primitive
     if( !isprim( env, type ) ) // 1.3.5.3 (primitives already have size!)
     {
@@ -5813,7 +5787,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
 
     // make value
     value = new Chuck_Value( type_type, type->base_name );
-    value->owner = where;
+    value->owner = where; CK_SAFE_ADD_REF( value->owner );
     // CK_SAFE_REF_ASSIGN( value->owner, where );
     value->is_const = TRUE;
     value->is_member = FALSE;
@@ -6466,9 +6440,7 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // add reference
     CK_SAFE_ADD_REF(t->info);
     // set owner
-    t->owner = owner_nspc;
-    // add reference
-    CK_SAFE_ADD_REF(t->owner);
+    t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
 
     // return the type
     return t;
@@ -6508,9 +6480,7 @@ Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
       CK_SAFE_ADD_REF(t->info);
     }
     // set owner
-    t->owner = owner_nspc;
-    // add reference
-    CK_SAFE_ADD_REF(t->owner);
+    t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
 
     // return the type
     return t;
@@ -7888,11 +7858,6 @@ Chuck_Type::~Chuck_Type()
     reset();
     // release env ref | 1.5.0.8
     CK_SAFE_RELEASE( env_ref );
-
-    // TODO: release parent ref | 1.5.1.1
-    // TODO: make it safe to do this, as there are multiple instances of
-    //       ->parent assignments without add-refs
-    // CK_SAFE_RELEASE( parent );
 }
 
 
@@ -7913,14 +7878,16 @@ void Chuck_Type::reset()
     // free only if not locked: to prevent garbage collection after exit
     if( !this->m_locked )
     {
-        // TODO: uncomment this, fix it to behave correctly
         // release references
-        // CK_SAFE_RELEASE(parent);
-        // CK_SAFE_RELEASE(array_type);
-        CK_SAFE_RELEASE(info);
-        // CK_SAFE_RELEASE(owner);
-        // CK_SAFE_RELEASE(func);
-        // CK_SAFE_RELEASE(ugen_info);
+        CK_SAFE_RELEASE( info );
+        CK_SAFE_RELEASE( owner );
+
+        // TODO: uncomment this, fix it to behave correctly
+        // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
+        // CK_SAFE_RELEASE( parent );
+        // CK_SAFE_RELEASE( array_type );
+        // CK_SAFE_RELEASE( ugen_info );
+        // CK_SAFE_RELEASE( func );
     }
 }
 
@@ -7939,15 +7906,15 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     // copy
     this->xid = rhs.xid;
     this->base_name = rhs.base_name;
-    this->parent = rhs.parent;
+    this->parent = rhs.parent; CK_SAFE_ADD_REF(this->parent);
     this->obj_size = rhs.obj_size;
     this->size = rhs.size;
     this->is_copy = TRUE;
     this->array_depth = rhs.array_depth;
-    this->array_type = rhs.array_type; // CK_SAFE_ADD_REF(this->array_type);
-    this->func = rhs.func; // CK_SAFE_ADD_REF(this->func);
+    this->array_type = rhs.array_type; CK_SAFE_ADD_REF(this->array_type);
+    this->func = rhs.func; CK_SAFE_ADD_REF(this->func);
     this->info = rhs.info; CK_SAFE_ADD_REF(this->info);
-    this->owner = rhs.owner; // CK_SAFE_ADD_REF(this->owner);
+    this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
 
     return *this;
 }
