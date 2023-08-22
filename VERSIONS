@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.1
+1.5.1.1 (August 2023)
 =======
 (note) this patch release fixes a number of issues related to recently added
     language features; it also adds some "syntatic sugar" in the form of 
