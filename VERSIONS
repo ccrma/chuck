@@ -70,6 +70,9 @@ class Foo
 }
 ```
 (fixed) a memory leak associated with array declarations
+(fixed) chout and cherr now properly accounts for IO redirect out of
+    chuck; this addresses issue with miniAudicle console output, and
+    also affects other C++ hosts embedding chuck core.
 
 
 1.5.1.0 (August 2023)

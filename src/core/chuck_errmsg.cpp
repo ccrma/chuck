@@ -1219,17 +1219,22 @@ ChuckOutStream::~ChuckOutStream()
 {
 }
 
-ChuckOutStream& ChuckOutStream::operator<<( const std::string val )
+ChuckOutStream& ChuckOutStream::operator<<( const std::string & val )
 {
     m_stream << val;
-    if( m_isErr || (val == CK_STDENDL) ) { this->flush(); }
+    if( m_isErr || (val == CK_STDENDL)
+        /* || val.find("\n") != std::string::npos */ )
+    { this->flush(); }
     return *this;
 }
 
 ChuckOutStream& ChuckOutStream::operator<<( const char * val )
 {
     m_stream << val;
-    if( m_isErr || std::string(val) == CK_STDENDL ) { this->flush(); }
+    string s = val;
+    if( m_isErr || s == CK_STDENDL
+        /* || s.find("\n") != std::string::npos */ )
+    { this->flush(); }
     return *this;
 }
 

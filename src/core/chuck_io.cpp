@@ -4391,9 +4391,10 @@ void Chuck_IO_Chout::flush()
     }
     else
     {
-        // print to cout
-        cout << m_buffer.str().c_str();
-        cout.flush();
+        // send to cout
+        g_ck_stdoutstream << m_buffer.str();
+        // flush
+        g_ck_stdoutstream.flush();
     }
     // clear buffer
     m_buffer.str( std::string() );
@@ -4441,8 +4442,12 @@ t_CKBOOL Chuck_IO_Chout::eof()
 void Chuck_IO_Chout::write( const std::string & val )
 // added 1.3.0.0: the flush
 {
+    // insert into stream
     m_buffer << val;
-    if( val == "\n" ) flush();
+    // if there is an endline anywhere | 1.5.1.1
+    if( val.find("\n") != string::npos ) flush();
+    // previous: only if val == endline
+    // if( val == "\n" ) flush();
 }
 
 void Chuck_IO_Chout::write( t_CKINT val )
@@ -4564,10 +4569,10 @@ void Chuck_IO_Cherr::flush()
     }
     else
     {
-        // send to cerr
-        cerr << m_buffer.str().c_str();
-        cerr.flush();
+        // send to cerr | this should auto-flush
+        g_ck_stderrstream << m_buffer.str();
     }
+
     // clear buffer
     m_buffer.str( std::string() );
 }
@@ -4613,9 +4618,11 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 
 void Chuck_IO_Cherr::write( const std::string & val )
 {
+    // insert into stream
     m_buffer << val;
-    flush(); // always flush for cerr | 1.5.0.0 (ge) added
-    // if( val == "\n" ) flush();
+    // always flush for cerr | 1.5.0.0 (ge) added
+    flush();
+    // if( val.find("\n") != string::npos ) flush();
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val )
