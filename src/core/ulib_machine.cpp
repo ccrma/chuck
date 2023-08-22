@@ -299,7 +299,7 @@ t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
 CK_DLL_SFUN( machine_add_impl )
 {
     const char * v = GET_CK_STRING(ARGS)->str().c_str();
-    Net_Msg msg;
+    OTF_Net_Msg msg;
 
     msg.type = CK_MSG_ADD;
     strcpy( msg.buffer, v );
@@ -310,7 +310,7 @@ CK_DLL_SFUN( machine_add_impl )
 CK_DLL_SFUN( machine_remove_impl )
 {
     t_CKINT v = GET_CK_INT(ARGS);
-    Net_Msg msg;
+    OTF_Net_Msg msg;
 
     msg.type = CK_MSG_REMOVE;
     msg.param = v;
@@ -322,7 +322,7 @@ CK_DLL_SFUN( machine_replace_impl )
 {
     t_CKINT v = GET_NEXT_INT(ARGS);
     const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
-    Net_Msg msg;
+    OTF_Net_Msg msg;
 
     msg.type = CK_MSG_REPLACE;
     msg.param = v;
@@ -333,7 +333,7 @@ CK_DLL_SFUN( machine_replace_impl )
 // status
 CK_DLL_SFUN( machine_status_impl )
 {
-    Net_Msg msg;
+    OTF_Net_Msg msg;
 
     msg.type = CK_MSG_STATUS;
     RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );

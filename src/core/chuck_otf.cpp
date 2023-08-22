@@ -65,7 +65,7 @@ t_CKUINT g_otf_log = CK_LOG_INFO;
 // name: otf_hton( )
 // desc: ...
 //-----------------------------------------------------------------------------
-void otf_hton( Net_Msg * msg )
+void otf_hton( OTF_Net_Msg * msg )
 {
     msg->header = htonl( msg->header );
     msg->type = htonl( msg->type );
@@ -82,7 +82,7 @@ void otf_hton( Net_Msg * msg )
 // name: otf_ntoh( )
 // desc: ...
 //-----------------------------------------------------------------------------
-void otf_ntoh( Net_Msg * msg )
+void otf_ntoh( OTF_Net_Msg * msg )
 {
     msg->header = ntohl( msg->header );
     msg->type = ntohl( msg->type );
@@ -99,9 +99,9 @@ void otf_ntoh( Net_Msg * msg )
 // name: recv_file()
 // desc: ...
 //-----------------------------------------------------------------------------
-FILE * recv_file( const Net_Msg & msg, ck_socket sock )
+FILE * recv_file( const OTF_Net_Msg & msg, ck_socket sock )
 {
-    Net_Msg buf;
+    OTF_Net_Msg buf;
 
     // what is left
     // t_CKUINT left = msg.param2;
@@ -125,7 +125,7 @@ FILE * recv_file( const Net_Msg & msg, ck_socket sock )
     }while( buf.param2 > 0 );
 
     // check for error
-    if( buf.param2 == NET_ERROR )
+    if( buf.param2 == CK_NET_ERROR )
     {
         // this was a problem
         EM_log( CK_LOG_INFO, "(via otf): received error flag, dropping..." );
@@ -149,7 +149,7 @@ error:
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
-                          Net_Msg * msg, t_CKBOOL immediate, void * data )
+                          OTF_Net_Msg * msg, t_CKBOOL immediate, void * data )
 {
     Chuck_Msg * cmd = new Chuck_Msg;
     Chuck_VM_Code * code = NULL;
@@ -182,7 +182,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         }
 
         // see if entire file is on the way
-        if( msg->param2 && msg->param2 != NET_ERROR )
+        if( msg->param2 && msg->param2 != CK_NET_ERROR )
         {
             fd = recv_file( *msg, (ck_socket)data );
             if( !fd )
@@ -269,7 +269,7 @@ cleanup:
 // name: otf_send_file()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
+t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
                        ck_socket dest )
 {
     FILE * fd = NULL;
@@ -329,7 +329,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
         // log
         EM_log( CK_LOG_FINER, "%03d bytes left...", left );
         // amount to send
-        msg.length = left > NET_BUFFER_SIZE ? NET_BUFFER_SIZE : left;
+        msg.length = left > CK_NET_BUFFER_SIZE ? CK_NET_BUFFER_SIZE : left;
         // read
         msg.param3 = fread( msg.buffer, sizeof(char), msg.length, fd );
         // check for error
@@ -340,7 +340,7 @@ t_CKINT otf_send_file( const char * fname, Net_Msg & msg, const char * op,
             // mark done
             left = 0;
             // error flag
-            msg.param2 = NET_ERROR;
+            msg.param2 = CK_NET_ERROR;
         }
         else
         {
@@ -410,7 +410,7 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
 t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
                       const char * host, t_CKINT port, t_CKINT * is_otf )
 {
-    Net_Msg msg;
+    OTF_Net_Msg msg;
     // REFACTOR-2017 TODO: wat is global sigpipe mode
 //    g_sigpipe_mode = 1;
     int tasks_total = 0, tasks_done = 0;
@@ -655,8 +655,8 @@ error:
 //-----------------------------------------------------------------------------
 void * otf_cb( void * p )
 {
-    Net_Msg msg;
-    Net_Msg ret;
+    OTF_Net_Msg msg;
+    OTF_Net_Msg ret;
     ck_socket client;
     int n;
 
@@ -701,7 +701,7 @@ void * otf_cb( void * p )
             continue;
         }
 
-        if( msg.header != NET_HEADER )
+        if( msg.header != CK_NET_HEADER )
         {
             EM_error2( 0, "header mismatch - possible endian lunacy..." );
             ck_close( client );

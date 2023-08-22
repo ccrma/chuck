@@ -38,21 +38,21 @@
 
 
 // defines
-#define NET_HEADER      0x8c8cc8c8
+#define CK_NET_HEADER      0x8c8cc8c8
 // buffer size
-#define NET_BUFFER_SIZE 512
+#define CK_NET_BUFFER_SIZE 512
 // error value
-#define NET_ERROR       0xffffffff
+#define CK_NET_ERROR       0xffffffff
 // forward
 struct Chuck_VM;
 struct Chuck_Compiler;
 
 
 //-----------------------------------------------------------------------------
-// name: struct Net_Msg()
-// desc: ...
+// name: struct OTF_Net_Msg()
+// desc: a network message for on-the-fly programming
 //-----------------------------------------------------------------------------
-struct Net_Msg
+struct OTF_Net_Msg
 {
     t_CKUINT header;
     t_CKUINT type;
@@ -60,27 +60,27 @@ struct Net_Msg
     t_CKUINT param2;
     t_CKUINT param3;
     t_CKUINT length;
-    char buffer[NET_BUFFER_SIZE];
+    char buffer[CK_NET_BUFFER_SIZE];
 
-    Net_Msg() { this->clear(); }
-    void clear() { header = NET_HEADER; type = param = param2 = param3 = length = 0;
+    OTF_Net_Msg() { this->clear(); }
+    void clear() { header = CK_NET_HEADER; type = param = param2 = param3 = length = 0;
                    memset( buffer, 0, sizeof(buffer) ); }
 };
 
 
 // host to network
-void otf_hton( Net_Msg * msg );
+void otf_hton( OTF_Net_Msg * msg );
 // network to host
-void otf_ntoh( Net_Msg * msg );
+void otf_ntoh( OTF_Net_Msg * msg );
 
 // process incoming message
 t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
-                          Net_Msg * msg, t_CKBOOL immediate, void * data );
+                          OTF_Net_Msg * msg, t_CKBOOL immediate, void * data );
 
 // send command
 t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i, const char * host, t_CKINT port, t_CKINT * is_otf = NULL );
 // send file to remote host
-t_CKINT otf_send_file( const char * filename, Net_Msg & msg, const char * op, ck_socket sock );
+t_CKINT otf_send_file( const char * filename, OTF_Net_Msg & msg, const char * op, ck_socket sock );
 // connect
 ck_socket otf_send_connect( const char * host, t_CKINT port );
 

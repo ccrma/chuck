@@ -154,6 +154,22 @@ void error_cb( RtAudioErrorType type, const std::string & errorText )
 
 
 //-----------------------------------------------------------------------------
+// print usage for the simple command prompt in this example
+//-----------------------------------------------------------------------------
+void usage()
+{
+    // print
+    cerr << "-------------------" << endl;
+    cerr << "type '+' or 'add' to add a shred" << endl;
+    cerr << "type '^' or 'status' to get VM info and print shred status" << endl;
+    cerr << "type '--' or 'remove.last' to remove last shred" << endl;
+    cerr << "type 'remove.all' to remove all shreds" << endl;
+    cerr << "type 'time' to print time" << endl;
+    cerr << "type 'exit' to quit this program" << endl;
+    cerr << "-------------------" << endl << endl;
+}
+
+//-----------------------------------------------------------------------------
 // host program entry point
 //-----------------------------------------------------------------------------
 int main( int argc, char ** argv )
@@ -207,26 +223,22 @@ int main( int argc, char ** argv )
     { goto cleanup; }
     
     // print
-    cerr << "-------------" << endl;
-    cerr << "chuck running...(press ctrl-c to quit)" << endl;
-    cerr << "-------------" << endl;
+    cerr << "chuck running...(press ctrl-c or type 'exit' to quit)" << endl;
 
-    // wait a bit to give audio callback a chance to run some
+    // wait a bit to give audio callback a chance to start up
     ck_usleep( 200000 );
 
-    // print
-    cerr << "type '+' or 'add' to add a shred" << endl;
-    cerr << "type '^' or 'status' to get VM info and print shred status" << endl;
-    cerr << "type '--' or 'remove.last' to remove last shred" << endl;
-    cerr << "type 'remove.all' to remove all shreds" << endl;
-    cerr << "type 'time' to print time" << endl;
-    cerr << "type 'exit' to exit" << endl;
-    cerr << "-------------------" << endl;
-    
     // keep going as long as a shred is still running
     // (as long as CHUCK_PARAM_VM_HALT is set to TRUE)
     while( the_chuck->vm_running() )
     {
+        // wait a bit to give audio callback function a chance to receive
+        // message reply from chuck VM and print before we print usage
+        ck_usleep( 100000 );
+        // print usage
+        usage();
+
+        // prompt
         cerr << "enter a command > ";
         // command
         string command; getline( cin, command );
@@ -309,6 +321,11 @@ int main( int argc, char ** argv )
         else if( command == "exit" )
         {
             break;
+        }
+        else
+        {
+            // what
+            cerr << "*** unrecognized command: " << command << " ***" << endl;
         }
     }
 
