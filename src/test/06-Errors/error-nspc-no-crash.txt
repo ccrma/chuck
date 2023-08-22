@@ -1,0 +1,3 @@
+error-nspc-no-crash.ck:7:1: error: undefined variable 'x'
+[7] x;
+    ^
