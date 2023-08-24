@@ -718,7 +718,10 @@ public:
         // function pointer for set_string()
         t_CKBOOL (* const set_string)( CK_DL_API, String string, const char * value );
         // array4 operations
+        t_CKBOOL (* const array4_size)( CK_DL_API, Array4 array, t_CKINT & value );
         t_CKBOOL (* const array4_push_back)( CK_DL_API, Array4 array, t_CKUINT value );
+        t_CKBOOL (* const array4_get_idx)( CK_DL_API, Array4 array, t_CKINT idx, t_CKUINT & value );
+        t_CKBOOL (* const array4_get_key)( CK_DL_API, Array4 array, const std::string & key, t_CKUINT & value );
     } * const object;
 
     Api() :
