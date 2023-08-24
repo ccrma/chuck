@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.2
+1.5.1.2 (August 2023)
 =======
 (updated) the long-time and often cryptic "cannot bind to port: 8888"
     message has been reworked: 1) an explanation has been added to the
