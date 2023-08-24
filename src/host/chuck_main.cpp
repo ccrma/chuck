@@ -253,15 +253,15 @@ void usage()
     CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
     CK_FPRINTF_STDERR( "\nusage: %s --[%s|%s] [%s] file1 file2 ...\n\n", "chuck", TC::orange("options").c_str(), TC::blue("commands").c_str(), TC::blue("+-=^").c_str() );
     CK_FPRINTF_STDERR( "%s", TC::set_orange().c_str() );
-    CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe|\n" );
-    CK_FPRINTF_STDERR( "                channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>|\n" );
-    CK_FPRINTF_STDERR( "                srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty|\n" );
-    CK_FPRINTF_STDERR( "                remote:<hostname>|port:<N>|verbose:<N>|level:<N>|\n" );
-    CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe|\n" );
+    CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe\n" );
+    CK_FPRINTF_STDERR( "                channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>\n" );
+    CK_FPRINTF_STDERR( "                srate:<N>|bufsize:<N>|bufnum:<N>|shell|empty\n" );
+    CK_FPRINTF_STDERR( "                remote:<hostname>|port:<N>|verbose:<N>|level:<N>\n" );
+    CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
-    CK_FPRINTF_STDERR( "                --color:{on|off}|--no-color|--pid-file:<path>\n" );
+    CK_FPRINTF_STDERR( "                color:{on|off}|pid-file:<path>|cmd-listener:{on|off}\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
-    CK_FPRINTF_STDERR( "   [commands] = add|remove|replace|remove.all|status|time|\n" );
+    CK_FPRINTF_STDERR( "   [commands] = add|replace|remove|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
     CK_FPRINTF_STDERR( "       [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
@@ -609,8 +609,8 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKINT  log_level = CK_LOG_CORE;
     t_CKINT  deprecate_level = 1; // 1 == warn
     t_CKINT  chugin_load = 1; // 1 == auto (variable added 1.3.0.0)
-    // whether to make this new VM the one that receives OTF commands
-    t_CKBOOL update_otf_vm = TRUE;
+    // whether to enable this VM to receive OTF commands over network
+    t_CKBOOL enableOTF = TRUE;
     // whether to print code quotes for compiler message | 1.5.0.5 (ge) added
     t_CKBOOL suppress_error_quote = FALSE;
     // color terminal output | 1.5.0.5 (ge) added
@@ -926,22 +926,36 @@ t_CKBOOL go( int argc, const char ** argv )
                     g_ck_pidfile = filename;
                 }
             }
-            // (added 1.3.0.0)
-            else if( !strcmp( argv[i], "--no-otf" ) )
-            {
-                // don't use this new vm for otf commands (use the previous one)
-                update_otf_vm = FALSE;
-            }
             else if( !strcmp( argv[i], "--probe" ) )
                 probe = TRUE;
             else if( !strcmp( argv[i], "--chugin-probe" ) )
                 probe_chugs = TRUE;
+            else if( !strcmp( argv[i], "--disable-error-show-code" ) )
+                suppress_error_quote = TRUE;
+            else if( !strncmp(argv[i], "--cmd-listener:", sizeof("--cmd-listener:")-1) )
+            {
+                // get the rest
+                string arg = tolower(argv[i]+sizeof("--cmd-listener:")-1);
+                if( arg == "off" ) enableOTF = false;
+                else if( arg == "on" || arg == "auto") enableOTF = true;
+                else
+                {
+                    // error
+                    errorMessage1 = "invalid arguments for '--cmd-listener:'...";
+                    errorMessage2 = "...(looking for ON, OFF, or AUTO)";
+                    break;
+                }
+            }
+            // (added 1.3.0.0)
+            else if( !strcmp( argv[i], "--no-cmd-listener" ) )
+            {
+                // don't use this new vm for otf commands (use the previous one)
+                enableOTF = FALSE;
+            }
             else if( !strcmp( argv[i], "--poop" ) )
                 uh();
             else if( !strcmp( argv[i], "--caution-to-the-wind" ) )
                 g_enable_system_cmd = TRUE;
-            else if( !strcmp( argv[i], "--disable-error-show-code" ) )
-                suppress_error_quote = TRUE;
             else if( !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")
                     || !strcmp(argv[i], "--about") )
             {
@@ -1044,8 +1058,6 @@ t_CKBOOL go( int argc, const char ** argv )
     //-----------------------------------------------------------------
     if( probe )
     {
-        // save log level
-        t_CKINT loglevel = the_chuck->getLogLevel();
         // ensure log level is at least SYSTEM
         if( the_chuck->getLogLevel() < CK_LOG_SYSTEM )
             the_chuck->setLogLevel( CK_LOG_SYSTEM );
@@ -1249,7 +1261,9 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_VM_ADAPTIVE, adaptive_size );
     the_chuck->setParam( CHUCK_PARAM_VM_HALT, (t_CKINT)(vm_halt) );
     the_chuck->setParam( CHUCK_PARAM_OTF_PORT, g_otf_port );
-    the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT)TRUE );
+    the_chuck->setParam( CHUCK_PARAM_OTF_ENABLE, (t_CKINT)enableOTF );
+    // only print warning if say --loop is specified, signalling interest in using this VM as a server | 1.5.1.2
+    the_chuck->setParam( CHUCK_PARAM_OTF_PRINT_WARNINGS, (t_CKINT)(vm_halt == FALSE) );
     the_chuck->setParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, (t_CKINT)dump );
     the_chuck->setParam( CHUCK_PARAM_AUTO_DEPEND, (t_CKINT)auto_depend );
     the_chuck->setParam( CHUCK_PARAM_DEPRECATE_LEVEL, deprecate_level );

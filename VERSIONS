@@ -2,6 +2,28 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.2
+=======
+(updated) the long-time and often cryptic "cannot bind to port: 8888"
+    message has been reworked: 1) an explanation has been added to the
+    possible cause (e.g., another chuck VM is running and currently
+    has the port open) and implication (this chuck VM will not receive
+    OTF commands over the network); 2) the printing of this message has
+    been moved by default to log level 2 (SYSTEM) with further information
+    on log level 5 (INFO) UNLESS the '--loop` flag is present, which
+    signals intention to use the VM as an OTF command listener (and the
+    warning is more likely to be relevant information). This should
+    hopefully reduce confusion, as well as improve automations that
+    examine the output of chuck. (thanks to @barak for elucidating the
+    issue!)
+(added) --cmd-listener:{on|off} enables or disables listening for network
+    OTF (on-the-fly programming) command messages (e.g., add, replace,
+    remove, etc.). The default is ON; setting to OFF will prevent chuck VM
+    from attempting to open network server listener. (NOTE: this option
+    does NOT affect in-language networking, e.g., with Open Sound
+    Control.)
+
+
 1.5.1.1 (August 2023)
 =======
 (note) this patch release fixes a number of issues related to recently added

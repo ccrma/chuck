@@ -85,6 +85,7 @@
 #define CHUCK_PARAM_VM_HALT                     "VM_HALT"
 #define CHUCK_PARAM_OTF_ENABLE                  "OTF_ENABLE"
 #define CHUCK_PARAM_OTF_PORT                    "OTF_PORT"
+#define CHUCK_PARAM_OTF_PRINT_WARNINGS          "OTF_PRINT_WARNINGS"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS           "DUMP_INSTRUCTIONS"
 #define CHUCK_PARAM_AUTO_DEPEND                 "AUTO_DEPEND"
 #define CHUCK_PARAM_DEPRECATE_LEVEL             "DEPRECATE_LEVEL"
