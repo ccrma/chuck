@@ -202,7 +202,7 @@ readdir(
   } else {
     /* read next directory entry from disk */
     if (FindNextFileA (dirp->search_handle, &dirp->current.data) == FALSE) {
-      /* the very last file has been processed or an error occured */
+      /* the very last file has been processed or an error occurred */
       FindClose (dirp->search_handle);
       dirp->search_handle = INVALID_HANDLE_VALUE;
       return NULL;

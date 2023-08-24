@@ -676,7 +676,7 @@ void * otf_cb( void * p )
         // REFACTOR-2017: change g_sock to per-VM socket
         client = ck_accept( carrier->otf_socket );
 
-        // check for thread shutdown, potentially occured during ck_accept
+        // check for thread shutdown, potentially occurred during ck_accept
         if(!carrier->otf_thread)
             break;
 

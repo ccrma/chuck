@@ -107,7 +107,7 @@ fun int execute( string line[] )
     {
         <<< "    available word2vec2chuck commands:", "" >>>;
         <<< "       load / l-- load a pre-trained model", "" >>>;
-        <<< "       eval / e -- evalute a word vector expression", "" >>>;
+        <<< "       eval / e -- evaluate a word vector expression", "" >>>;
         <<< "       analog / a-- query a logical analogy", "" >>>;
         <<< "       vector / v -- display vector associated with a word", "" >>>;
         <<< "       go / g -- from a word to another across a duration", "" >>>;

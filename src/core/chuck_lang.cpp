@@ -1239,7 +1239,7 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
 
     // add origin()
     func = make_new_mfun( "string", "origin", type_origin );
-    func->doc = "return a string decribing where this Type was defined (e.g., \"builtin\", \"chugin\", \"cklib\", \"user\").";
+    func->doc = "return a string describing where this Type was defined (e.g., \"builtin\", \"chugin\", \"cklib\", \"user\").";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
