@@ -65,7 +65,7 @@
 //-----------------------------------------------------------------------------
 // audio callback definition
 //-----------------------------------------------------------------------------
-typedef void (* f_audio_cb)( SAMPLE * input, SAMPLE * output,
+typedef void (* ck_f_audio_cb)( SAMPLE * input, SAMPLE * output,
     t_CKUINT numFrames, t_CKUINT numInChans, t_CKUINT numOutChans,
     void * userData );
 
@@ -120,7 +120,7 @@ public:
                                 t_CKUINT sample_rate,
                                 t_CKUINT buffer_size,
                                 t_CKUINT num_buffers,
-                                f_audio_cb callback,
+                                ck_f_audio_cb callback,
                                 void * data,
                                 t_CKBOOL force_srate, // force_srate | 1.3.1.2 (added)
                                 const char * driver // NULL means default for build | 1.5.0.0 (added)
@@ -197,7 +197,7 @@ public: // data
     static std::string m_dac_name;
     static std::string m_adc_name;
     static std::string m_driver_name;
-    static f_audio_cb m_audio_cb;
+    static ck_f_audio_cb m_audio_cb;
     static void * m_cb_user_data;
 };
 

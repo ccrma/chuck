@@ -94,7 +94,7 @@ std::string ChuckAudio::m_dac_name = "";
 std::string ChuckAudio::m_adc_name = "";
 std::string ChuckAudio::m_driver_name = "";
 RtAudio * ChuckAudio::m_rtaudio = NULL;
-f_audio_cb ChuckAudio::m_audio_cb = NULL;
+ck_f_audio_cb ChuckAudio::m_audio_cb = NULL;
 void * ChuckAudio::m_cb_user_data = NULL;
 
 
@@ -271,10 +271,23 @@ void print( const RtAudio::DeviceInfo & info )
 // name: rtAudioErrorHandler()
 // desc: the RtAudio error handler
 //-----------------------------------------------------------------------------
-static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorText)
+static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorText )
 {
-    // problem finding audio devices, most likely
-    EM_error2( 0, "%s", errorText.c_str() );
+    // check if empty string
+    if( errorText.empty() ) return;
+
+    // check if warning or not a warning
+    if( t == RTAUDIO_WARNING )
+    {
+        // output to warning log level
+        EM_log( CK_LOG_WARNING, "%s", errorText.c_str() );
+    }
+    else
+    {
+        // output as error
+        EM_error2( 0, "%s", errorText.c_str() );
+        // NOTE: problem finding audio devices, likely
+    }
 }
 
 
@@ -736,7 +749,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                                  t_CKUINT sample_rate,
                                  t_CKUINT buffer_size,
                                  t_CKUINT num_buffers,
-                                 f_audio_cb callback,
+                                 ck_f_audio_cb callback,
                                  void * data,
                                  t_CKBOOL force_srate,
                                  const char * driver )
