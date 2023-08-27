@@ -5,13 +5,22 @@ ChucK VERSIONS log
 1.5.1.3
 =======
 (fixed) various documentation misspellings (thanks @barak)
-(updated; macOS) Machine.add( filepath ) no longer introduces an 
-    real-time audio interruption ** for all filepath that does not 
-    contain ~ **; currently, path resolution for ~ or ~[username] in 
+(updated) Machine.add( filepath ) no longer introduces a potential
+    real-time audio interruption on macOS ** for all filepath that does 
+    not contain ~ **; currently, path resolution for ~ or ~[username] in 
     macOS  consistenly causes audio clicks, likely due to implementation 
     of underlying system function (e.g., wordexp()) to resolve ~ 
-    (hypothesis: the wordexp() function performs IO-blocking)
-
+    (hypothesis: wordexp() function performs IO-blocking)
+(added) function to expand platform specific file path
+	static string expandPath( string path );
+	    Expand platform-specific filepath to an absolute path, which 
+	    is returned. On macOS and Linux expandPath() will attempt to 
+	    resolve `~` or `~[username]`; on Windows expandPath() will 
+	    attempt to resolve %USERNAME%. (Known issue: (macOS) 
+	    expandPath currently introduced an audio click; it 
+	    recommended to call expandPath() at the beginning; e.g., 
+	    expanding path ahead of time could avoid a click instead of 
+	    calling Machine.add() on a filepath with `~`.)
 
 1.5.1.2 (August 2023)
 =======

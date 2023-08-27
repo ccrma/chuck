@@ -98,7 +98,6 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! returns the shred ID
     //! (see example/machine.ck)
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
-    QUERY->doc_func( QUERY, "add/run a new shred from file at 'path'." );
     QUERY->add_arg( QUERY, "string", "path" );
     QUERY->doc_func( QUERY, "Compile and spork a new shred from file at 'path' into the VM now, returns the shred ID.");
 
@@ -110,7 +109,6 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add remove
     //! remove shred from VM by shred ID (returned by add/spork)
     QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
-    QUERY->doc_func( QUERY, "remove a running shred by 'id'." );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
 
@@ -118,7 +116,6 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! replace shred with new shred from file
     //! returns shred ID , or 0 on error
     QUERY->add_sfun( QUERY, machine_replace_impl, "int", "replace" );
-    QUERY->doc_func( QUERY, "replace running shred by 'id' with new shred at 'path'." );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->add_arg( QUERY, "string", "path" );
     QUERY->doc_func( QUERY, "Replace shred with new shred from file. Returns shred ID , or 0 on error.");
@@ -127,8 +124,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! display current status of VM
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
-    QUERY->doc_func( QUERY, "display current status of virtual machine." );
-    QUERY->doc_func( QUERY, "Display the current status of VM.");
+    QUERY->doc_func( QUERY, "Display the current status of the virtual machine.");
 
 #endif // __DISABLE_OTF_SERVER__
 

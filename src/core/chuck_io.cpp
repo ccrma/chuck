@@ -35,6 +35,7 @@
 #include "chuck_type.h"
 #include "chuck_vm.h"
 #include "util_platforms.h"
+#include "util_string.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
@@ -448,6 +449,12 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "flags" );
     func->doc = "Write floating point value to file; binary mode: flags indicate float size (IO.FLOAT32 or IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add expandPath | 1.5.1.3
+    func = make_new_sfun( "string", "expandPath", fileio_expandpath_impl );
+    func->add_arg( "string", "path" );
+    func->doc = "expand platform-specific filepath to an absolute path, which is returned. On macOS and Linux expandPath() will attempt to resolve `~` or `~[username]`; on Windows expandPath() will attempt to resolve %USERNAME%. (Known issue: (macOS) expandPath currently introduced an audio click; it recommended to call expandPath() at the beginning; e.g., expanding path ahead of time could avoid a click instead of calling Machine.add() on a filepath with `~`.)";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "io/chout.ck" ) ) goto error;
@@ -1623,6 +1630,23 @@ CK_DLL_MFUN( fileio_dirlist )
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     Chuck_Array4 * a = f->dirList();
     RETURN->v_object = a;
+}
+
+
+// expandPath | 1.5.1.3
+CK_DLL_SFUN( fileio_expandpath_impl )
+{
+    Chuck_String * ckPath = GET_CK_STRING(ARGS);
+    // get arg
+    string path = ckPath != NULL ? ckPath->str() : "";
+    // expand; don't ensure path
+    string expanded = expand_filepath( path, FALSE );
+    // instantiate and initalize object
+    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( VM->env()->ckt_string, VM );
+    // set the value
+    string->set( expanded );
+    // return
+    RETURN->v_string = string;
 }
 
 /*
