@@ -730,8 +730,10 @@ std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists )
     return expandFilePathWindows( fp );
 #else
     // expand ~ to full path
-    string ep = expandTildePath( fp );
     // 1.5.0.4 (ge) always expand ~, since glob does not...
+    // 1.5.1.3 (ge) only expand if ~ detected
+    //              reason: on macOS wordexp() causes audio interruptions
+    string ep = fp.find('~') != string::npos ? expandTildePath( fp ) : fp;
 
     // if also ensure exists
     if( ensurePathExists ) { return globTildePath( ep ); }
