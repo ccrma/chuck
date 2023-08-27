@@ -54,6 +54,7 @@
 #include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
+#include <iomanip>
 #include <string>
 #include <algorithm>
 using namespace std;
@@ -908,14 +909,39 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == CK_MSG_TIME )
     {
-        float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        EM_print2magenta( "(VM) earth time: %s", timestamp_formatted().c_str() );
-        EM_print2magenta( "(VM) chuck time: %.0f::samp (now)", m_shreduler->now_system );
-        EM_print2vanilla( "%22.6f::second since VM start", m_shreduler->now_system / srate );
-        EM_print2vanilla( "%22.6f::minute", m_shreduler->now_system / srate / 60.0f );
-        EM_print2vanilla( "%22.6f::hour", m_shreduler->now_system / srate / 60.0f / 60.0f );
-        EM_print2vanilla( "%22.6f::day", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
-        EM_print2vanilla( "%22.6f::week", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
+        // string stream
+        ostringstream sout;
+        // generate string; fixed notation
+        sout << "chuck time: " << std::fixed << m_shreduler->now_system << "::samp (now)";
+        // get string
+        string ckt_str = sout.str();
+        // find occurence of ::
+        size_t where = ckt_str.find( "::" );
+        // just in case
+        if( where == string::npos ) where = 22;
+        // sample rate
+        t_CKFLOAT srate = m_srate;
+
+        // earth time
+        EM_print2magenta( "local time: %s", timestamp_formatted().c_str() );
+        // chuck time
+        EM_print2magenta( ckt_str.c_str() );
+
+        // clear and generate
+        sout.str(std::string()); sout << "%" << where << ".6f::second since VM start";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::minute";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::hour";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::day";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::week";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
     else if( msg->type == CK_MSG_RESET_ID )
     {
@@ -2639,9 +2665,9 @@ void Chuck_VM_Shreduler::status()
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    EM_print2magenta( "(VM) status | # of shreds in VM: %ld", m_status.list.size() );
-    EM_print2vanilla( "chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
-    EM_print2vanilla( "earth time: %s", timestamp_formatted().c_str() );
+    EM_print2magenta( "(VM status) # of shreds in VM: %ld", m_status.list.size() );
+    EM_print2magenta( "local time: %s", timestamp_formatted().c_str() );
+    EM_print2magenta( "chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
 
     // print status
     if( m_status.list.size() ) EM_print2vanilla( "--------" );
