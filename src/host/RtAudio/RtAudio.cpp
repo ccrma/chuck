@@ -8298,7 +8298,8 @@ RtAudioErrorType RtApiAlsa :: startStream()
   pthread_cond_signal( &apiInfo->runnable_cv );
   MUTEX_UNLOCK( &stream_.mutex );
 
-  if ( result >= 0 ) return error( RTAUDIO_SYSTEM_ERROR );
+  // chuck-1.5.1.3 change result >= 0 to result < 0 to match above
+  if ( result < 0 ) return error( RTAUDIO_SYSTEM_ERROR );
   return RTAUDIO_NO_ERROR;
 }
 
@@ -8343,7 +8344,8 @@ RtAudioErrorType RtApiAlsa :: stopStream()
   apiInfo->runnable = false; // fixes high CPU usage when stopped
   MUTEX_UNLOCK( &stream_.mutex );
 
-  if ( result >= 0 ) return error( RTAUDIO_SYSTEM_ERROR );
+  // chuck-1.5.1.3 change result >= 0 to result < 0 to match above
+  if ( result < 0 ) return error( RTAUDIO_SYSTEM_ERROR );
   return RTAUDIO_NO_ERROR;
 }
 
@@ -8385,7 +8387,8 @@ RtAudioErrorType RtApiAlsa :: abortStream()
   apiInfo->runnable = false; // fixes high CPU usage when stopped
   MUTEX_UNLOCK( &stream_.mutex );
 
-  if ( result >= 0 ) return error( RTAUDIO_SYSTEM_ERROR );
+  // chuck-1.5.1.3 change result >= 0 to result < 0 to match above
+  if ( result < 0 ) return error( RTAUDIO_SYSTEM_ERROR );
   return RTAUDIO_NO_ERROR;
 }
 

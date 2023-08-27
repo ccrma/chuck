@@ -801,7 +801,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         // error reported above
         goto error; // to clean up
     }
-        
+
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
     // note: this is to preserve previous devices numbering after RtAudio change
     if( m_num_channels_out > 0 )
