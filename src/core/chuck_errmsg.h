@@ -186,7 +186,7 @@ public:
 
     // there's probably a way to do this with templates or something
     // this is not that way
-    ChuckOutStream& operator<<( const std::string val );
+    ChuckOutStream& operator<<( const std::string & val );
     ChuckOutStream& operator<<( const char * val );
     ChuckOutStream& operator<<( const double val );
     ChuckOutStream& operator<<( const float val );
@@ -198,16 +198,23 @@ public:
     ChuckOutStream& operator<<( const int val );
     ChuckOutStream& operator<<( const bool val );
 
+    // set callback to direct this object's output
     void set_callback( void (*callback)(const char *) );
+    // flush | moved from private to public | 1.5.1.1
+    void flush();
 
 private:
-    void flush();
+    // the string stream
     std::stringstream m_stream;
+    // the callback
     void (*m_callback)(const char *);
+    // am I an error stream?
     bool m_isErr;
 };
 
+// stdout ("buffered")
 extern ChuckOutStream g_ck_stdoutstream;
+// stderr ("unbuffered")
 extern ChuckOutStream g_ck_stderrstream;
 
 #define CK_STDCOUT g_ck_stdoutstream

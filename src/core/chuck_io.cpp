@@ -35,6 +35,7 @@
 #include "chuck_type.h"
 #include "chuck_vm.h"
 #include "util_platforms.h"
+#include "util_string.h"
 
 #ifndef __DISABLE_HID__
 #include "hidio_sdl.h"
@@ -448,6 +449,12 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "flags" );
     func->doc = "Write floating point value to file; binary mode: flags indicate float size (IO.FLOAT32 or IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add expandPath | 1.5.1.3
+    func = make_new_sfun( "string", "expandPath", fileio_expandpath_impl );
+    func->add_arg( "string", "path" );
+    func->doc = "expand platform-specific filepath to an absolute path, which is returned. On macOS and Linux expandPath() will attempt to resolve `~` or `~[username]`; on Windows expandPath() will attempt to resolve %USERNAME%. (Known issue: (macOS) expandPath currently introduced an audio click; it recommended to call expandPath() at the beginning; e.g., expanding path ahead of time could avoid a click instead of calling Machine.add() on a filepath with `~`.)";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "io/chout.ck" ) ) goto error;
@@ -904,12 +911,12 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
         return FALSE;
 
     // add member variable
-    doc = "Device type that produced the messsage.";
+    doc = "Device type that produced the message.";
     HidMsg_offset_device_type = type_engine_import_mvar( env, "int", "deviceType", FALSE, doc.c_str() );
     if( HidMsg_offset_device_type == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "Device number that produced the messsage.";
+    doc = "Device number that produced the message.";
     HidMsg_offset_device_num = type_engine_import_mvar( env, "int", "deviceNum", FALSE, doc.c_str() );
     if( HidMsg_offset_device_num == CK_INVALID_OFFSET ) goto error;
 
@@ -934,7 +941,7 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     if( HidMsg_offset_fdata == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
-    doc = "Time when the HidMsg occured, relative to the start of the file.";
+    doc = "Time when the HidMsg occurred, relative to the start of the file.";
     HidMsg_offset_when = type_engine_import_mvar( env, "time", "when", FALSE, doc.c_str() );
     if( HidMsg_offset_when == CK_INVALID_OFFSET ) goto error;
 
@@ -1623,6 +1630,23 @@ CK_DLL_MFUN( fileio_dirlist )
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
     Chuck_Array4 * a = f->dirList();
     RETURN->v_object = a;
+}
+
+
+// expandPath | 1.5.1.3
+CK_DLL_SFUN( fileio_expandpath_impl )
+{
+    Chuck_String * ckPath = GET_CK_STRING(ARGS);
+    // get arg
+    string path = ckPath != NULL ? ckPath->str() : "";
+    // expand; don't ensure path
+    string expanded = expand_filepath( path, FALSE );
+    // instantiate and initalize object
+    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( VM->env()->ckt_string, VM );
+    // set the value
+    string->set( expanded );
+    // return
+    RETURN->v_string = string;
 }
 
 /*
@@ -4391,9 +4415,10 @@ void Chuck_IO_Chout::flush()
     }
     else
     {
-        // print to cout
-        cout << m_buffer.str().c_str();
-        cout.flush();
+        // send to cout
+        g_ck_stdoutstream << m_buffer.str();
+        // flush
+        g_ck_stdoutstream.flush();
     }
     // clear buffer
     m_buffer.str( std::string() );
@@ -4441,8 +4466,12 @@ t_CKBOOL Chuck_IO_Chout::eof()
 void Chuck_IO_Chout::write( const std::string & val )
 // added 1.3.0.0: the flush
 {
+    // insert into stream
     m_buffer << val;
-    if( val == "\n" ) flush();
+    // if there is an endline anywhere | 1.5.1.1
+    if( val.find("\n") != string::npos ) flush();
+    // previous: only if val == endline
+    // if( val == "\n" ) flush();
 }
 
 void Chuck_IO_Chout::write( t_CKINT val )
@@ -4564,10 +4593,10 @@ void Chuck_IO_Cherr::flush()
     }
     else
     {
-        // send to cerr
-        cerr << m_buffer.str().c_str();
-        cerr.flush();
+        // send to cerr | this should auto-flush
+        g_ck_stderrstream << m_buffer.str();
     }
+
     // clear buffer
     m_buffer.str( std::string() );
 }
@@ -4613,9 +4642,11 @@ t_CKBOOL Chuck_IO_Cherr::eof()
 
 void Chuck_IO_Cherr::write( const std::string & val )
 {
+    // insert into stream
     m_buffer << val;
-    flush(); // always flush for cerr | 1.5.0.0 (ge) added
-    // if( val == "\n" ) flush();
+    // always flush for cerr | 1.5.0.0 (ge) added
+    flush();
+    // if( val.find("\n") != string::npos ) flush();
 }
 
 void Chuck_IO_Cherr::write( t_CKINT val )

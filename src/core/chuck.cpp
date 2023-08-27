@@ -81,6 +81,7 @@
 #define CHUCK_PARAM_VM_HALT_DEFAULT                "0"
 #define CHUCK_PARAM_OTF_ENABLE_DEFAULT             "0"
 #define CHUCK_PARAM_OTF_PORT_DEFAULT               "8888"
+#define CHUCK_PARAM_OTF_PRINT_WARNINGS_DEFAULT     "0"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT      "0"
 #define CHUCK_PARAM_AUTO_DEPEND_DEFAULT            "0"
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT        "1"
@@ -197,6 +198,7 @@ void ChucK::initDefaultParams()
     initParam( CHUCK_PARAM_VM_HALT, CHUCK_PARAM_VM_HALT_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_OTF_ENABLE, CHUCK_PARAM_OTF_ENABLE_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_OTF_PORT, CHUCK_PARAM_OTF_PORT_DEFAULT, ck_param_int );
+    initParam( CHUCK_PARAM_OTF_PRINT_WARNINGS, CHUCK_PARAM_OTF_PRINT_WARNINGS_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_DUMP_INSTRUCTIONS, CHUCK_PARAM_DUMP_INSTRUCTIONS_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_AUTO_DEPEND, CHUCK_PARAM_AUTO_DEPEND_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_DEPRECATE_LEVEL, CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT, ck_param_int );
@@ -887,10 +889,11 @@ t_CKBOOL ChucK::initOTF()
     // server
     if( getParamInt( CHUCK_PARAM_OTF_ENABLE ) != 0 )
     {
+        // get the port
         m_carrier->otf_port = getParamInt( CHUCK_PARAM_OTF_PORT );
         // log
-        EM_log( CK_LOG_SYSTEM, "starting listener on port: %d...",
-               m_carrier->otf_port );
+        EM_log( CK_LOG_SYSTEM, "starting OTF command listener on port: %d...",
+                m_carrier->otf_port );
 
         // start tcp server
         m_carrier->otf_socket = ck_tcp_create( 1 );
@@ -898,7 +901,38 @@ t_CKBOOL ChucK::initOTF()
             !ck_bind( m_carrier->otf_socket, (int)m_carrier->otf_port ) ||
             !ck_listen( m_carrier->otf_socket, 10 ) )
         {
-            EM_error2( 0, "cannot bind to tcp port %li...", m_carrier->otf_port );
+            // get how to handle the warning | 1.5.1.2
+            t_CKINT printInsteadOfLog = getParamInt( CHUCK_PARAM_OTF_PRINT_WARNINGS )
+                                        && getLogLevel() < CK_LOG_SYSTEM;
+            // check
+            if( printInsteadOfLog )
+            {
+                // old school print warning
+                EM_error2( 0, "cannot bind to TCP port %li...", m_carrier->otf_port );
+                // provide more information
+                EM_error2( 0, " |- (cause: another chuck VM may currently have port %li open)", m_carrier->otf_port );
+                EM_error2( 0, " |- (implication: this VM cannot receive OTF commands)" );
+            }
+            else
+            {
+                // push log
+                EM_pushlog();
+
+                // new school log warning, as the warning can be confusing / cause automation issues | 1.5.1.2
+                // FYI see: https://github.com/ccrma/chuck/issues/352 (thanks @barak)
+                EM_log( CK_LOG_SYSTEM, TC::orange("cannot bind to TCP port %li...", true).c_str(), m_carrier->otf_port );
+                // log more information
+                EM_log( CK_LOG_INFO, "possible cause: network device unavailable..." );
+                EM_log( CK_LOG_INFO, "or another program currently has port %li open...", m_carrier->otf_port );
+                EM_pushlog();
+                EM_log( CK_LOG_INFO, "(e.g., another chuck VM)" );
+                EM_poplog();
+                EM_log( CK_LOG_INFO, "implication: this VM cannot receive OTF commands" );
+
+                // pop log
+                EM_poplog();
+            }
+
             ck_close( m_carrier->otf_socket );
             m_carrier->otf_socket = NULL;
         }
@@ -916,7 +950,7 @@ t_CKBOOL ChucK::initOTF()
     else
     {
         // log
-        EM_log( CK_LOG_SYSTEM, "OTF server/listener: OFF" );
+        EM_log( CK_LOG_SYSTEM, "OTF command listener: OFF" );
     }
 #endif
     return true;

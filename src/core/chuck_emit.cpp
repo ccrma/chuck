@@ -116,13 +116,18 @@ Chuck_Emitter * emit_engine_init( Chuck_Env * env )
     // log
     EM_log( CK_LOG_SEVERE, "initializing emitter..." );
 
-    // TODO: ensure this in a better way
+    // TODO: ensure this in a better way?
+    // whatever t_CKUINT is defined as, it must be the same size as a pointer
+    // system architecture can vary (e.g., 32-bit vs 64-bit) but this condition
+    // is assumed to be true in the virtual machine
     assert( sizeof(t_CKUINT) == sizeof(void *) );
 
     // allocate new emit
     Chuck_Emitter * emit = new Chuck_Emitter;
     // set the reference
     emit->env = env;
+    // add ref
+    CK_SAFE_ADD_REF( emit->env );
 
     return emit;
 }
@@ -136,14 +141,13 @@ Chuck_Emitter * emit_engine_init( Chuck_Env * env )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_shutdown( Chuck_Emitter *& emit )
 {
+    // check
     if( !emit ) return FALSE;
 
     // log
     EM_log( CK_LOG_SYSTEM, "shutting down emitter..." );
-
-    // delete
-    delete emit;
-    emit = NULL;
+    // shut it down; this is system cleanup -- delete instead of release
+    CK_SAFE_DELETE( emit );
 
     return TRUE;
 }

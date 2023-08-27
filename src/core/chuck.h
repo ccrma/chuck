@@ -74,7 +74,7 @@
 
 // ChucK version string -- retrieve using ChucK::version()
 // 1.5.0.0 (ge) | moved here for at-a-glance visibility (e.g., for chugins)
-#define CHUCK_VERSION_STRING                    "1.5.1.1-dev (chai)"
+#define CHUCK_VERSION_STRING                    "1.5.1.3-dev (chai)"
 
 // ChucK param names -- used in setParam(...) and getParam*(...)
 #define CHUCK_PARAM_VERSION                     "VERSION"
@@ -85,6 +85,7 @@
 #define CHUCK_PARAM_VM_HALT                     "VM_HALT"
 #define CHUCK_PARAM_OTF_ENABLE                  "OTF_ENABLE"
 #define CHUCK_PARAM_OTF_PORT                    "OTF_PORT"
+#define CHUCK_PARAM_OTF_PRINT_WARNINGS          "OTF_PRINT_WARNINGS"
 #define CHUCK_PARAM_DUMP_INSTRUCTIONS           "DUMP_INSTRUCTIONS"
 #define CHUCK_PARAM_AUTO_DEPEND                 "AUTO_DEPEND"
 #define CHUCK_PARAM_DEPRECATE_LEVEL             "DEPRECATE_LEVEL"

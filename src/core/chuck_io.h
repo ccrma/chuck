@@ -410,6 +410,7 @@ CK_DLL_MFUN( fileio_writeint );
 CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
 CK_DLL_MFUN( fileio_writefloatflags );
+CK_DLL_SFUN( fileio_expandpath_impl );
 // #endif // __DISABLE_FILEIO__
 
 

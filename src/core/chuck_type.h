@@ -729,7 +729,7 @@ public:
     // assignment - this does not touch the Chuck_VM_Object
     const Chuck_Type & operator =( const Chuck_Type & rhs );
     // make a copy of this type struct
-    Chuck_Type * copy( Chuck_Env * env ) const;
+    Chuck_Type * copy( Chuck_Env * env, Chuck_Context * context ) const;
 
 public:
     // to string: the full name of this type, e.g., "UGen" or "int[][]"
@@ -902,9 +902,9 @@ public:
 // primary chuck type checker interface
 //-----------------------------------------------------------------------------
 // initialize the type engine
-Chuck_Env * type_engine_init( Chuck_Carrier * carrier );
+t_CKBOOL type_engine_init( Chuck_Carrier * carrier );
 // shutdown the type engine
-void type_engine_shutdown( Chuck_Env * env );
+void type_engine_shutdown( Chuck_Carrier * carrier );
 // load a context to be type-checked or emitted
 t_CKBOOL type_engine_load_context( Chuck_Env * env, Chuck_Context * context );
 // unload a context after being emitted

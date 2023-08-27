@@ -1031,7 +1031,7 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     // doc string
     doc =
-        "a multilayer perceptron (MLP)--a basic artificial neural network--that maps an input layer to an output layer across a number of fully-connected hidden layers. This implemention can be trained either 1) by using one of the comprehensive .train() functions OR 2) by iteratively calling .forward() and .backprop() for each input-output observation, and using .shuffle() for each epoch. Commonly used for regression or classification.";
+        "a multilayer perceptron (MLP)--a basic artificial neural network--that maps an input layer to an output layer across a number of fully-connected hidden layers. This implementation can be trained either 1) by using one of the comprehensive .train() functions OR 2) by iteratively calling .forward() and .backprop() for each input-output observation, and using .shuffle() for each epoch. Commonly used for regression or classification.";
 
     // begin class definition
     if( !type_engine_import_class_begin( env, "MLP", "Object", env->global(), MLP_ctor, MLP_dtor, doc.c_str() ) )

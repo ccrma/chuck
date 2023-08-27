@@ -2,12 +2,54 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.1
+1.5.1.3
+=======
+(fixed) various documentation misspellings (thanks @barak)
+(updated) Machine.add( filepath ) no longer introduces a potential
+    real-time audio interruption on macOS ** for all filepath that does 
+    not contain ~ **; currently, path resolution for ~ or ~[username] in 
+    macOS  consistenly causes audio clicks, likely due to implementation 
+    of underlying system function (e.g., wordexp()) to resolve ~ 
+    (hypothesis: wordexp() function performs IO-blocking)
+(added) function to expand platform specific file path
+	static string expandPath( string path );
+	    Expand platform-specific filepath to an absolute path, which 
+	    is returned. On macOS and Linux expandPath() will attempt to 
+	    resolve `~` or `~[username]`; on Windows expandPath() will 
+	    attempt to resolve %USERNAME%. (Known issue: (macOS) 
+	    expandPath currently introduced an audio click; it 
+	    recommended to call expandPath() at the beginning; e.g., 
+	    expanding path ahead of time could avoid a click instead of 
+	    calling Machine.add() on a filepath with `~`.)
+
+1.5.1.2 (August 2023)
+=======
+(updated) the long-time and often cryptic "cannot bind to port: 8888"
+    message has been reworked: 1) an explanation has been added to the
+    possible cause (e.g., another chuck VM is running and currently
+    has the port open) and implication (this chuck VM will not receive
+    OTF commands over the network); 2) the printing of this message has
+    been moved by default to log level 2 (SYSTEM) with further information
+    on log level 5 (INFO) UNLESS the '--loop` flag is present, which
+    signals intention to use the VM as an OTF command listener (and the
+    warning is more likely to be relevant information). This should
+    hopefully reduce confusion, as well as improve automations that
+    examine the output of chuck. (thanks to @barak for elucidating the
+    issue!)
+(added) --cmd-listener:{on|off} enables or disables listening for network
+    OTF (on-the-fly programming) command messages (e.g., add, replace,
+    remove, etc.). The default is ON; setting to OFF will prevent chuck VM
+    from attempting to open network server listener. (NOTE: this option
+    does NOT affect in-language networking, e.g., with Open Sound
+    Control.)
+
+
+1.5.1.1 (August 2023)
 =======
 (note) this patch release fixes a number of issues related to recently added
-    language features; it also adds some "syntatic sugar" in the form of allowing
-    trailing commas in array initializer lists, as well as a set of range
-    functions for generating arrays of ranges of value.
+    language features; it also adds some "syntatic sugar" in the form of 
+    allowing trailing commas in array initializer lists, as well as a set 
+    of range() functions for generating arrays of ranges of value.
 
 (added) trailing commas in array initializer lists are now permitted
 ```
@@ -57,23 +99,22 @@ class Foo
 {
     // ok
     for( auto x : [1,2,3] ) { <<< x >>>; }
-
     // ok
     fun void bar() { 4 => auto y; }
-
     // ok
     if( true ) { 5 => auto x; }
-
     // ok
     { 6 => auto x; }
-
     // not ok *** compiler should report error
     7 => auto m_var;
-
     // not ok *** compiler should report error
     8 => static auto m_var;
 }
 ```
+(fixed) a memory leak associated with array declarations
+(fixed) chout and cherr now properly accounts for IO redirect out of
+    chuck; this addresses issue with miniAudicle console output, and
+    also affects other C++ hosts embedding chuck core.
 
 
 1.5.1.0 (August 2023)
@@ -875,7 +916,7 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
 - (added) MLP [ChAI] (thanks Yikai Li)
     |- a multilayer perceptron (MLP)--a basic artificial neural 
        network--that maps an input layer to an output layer across a 
-       number of fully-connected hidden layers. This implemention can be 
+       number of fully-connected hidden layers. This implementation can be 
        trained either 1) by using one of the comprehensive .train() 
        functions OR 2) by iteratively calling .forward() and .backprop() 
        for each input-output observation, and using .shuffle() for each 
@@ -1098,7 +1139,7 @@ Music Conference/. https://mcd.stanford.edu/publish/files/2007-icmc-uana.pdf
     string baseName();
         Return the base name of this Type. The base of name of an array Type is the type without the array dimensions (e.g., base name of 'int[][]' is 'int')
     string origin();
-        Return a string decribing where this Type was defined (e.g., "builtin", "chugin", "cklib", "user").
+        Return a string describing where this Type was defined (e.g., "builtin", "chugin", "cklib", "user").
     Type parent();
         Return this Type's parent Type; returns null if this Type is 'Object'.
     static Type find( string typeName );

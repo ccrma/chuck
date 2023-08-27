@@ -99,8 +99,8 @@ typedef void *lo_server_thread;
  * On callback the paramters will be set to the following values:
  *
  * \param num An error number that can be used to identify this condition.
- * \param msg An error message describing the condidtion.
- * \param where A string describing the place the error occured - typically
+ * \param msg An error message describing the condition.
+ * \param where A string describing the place the error occurred - typically
  * either a function call or method path.
  */
 typedef void (*lo_err_handler)(int num, const char *msg, const char *where);
@@ -127,7 +127,7 @@ typedef void (*lo_err_handler)(int num, const char *msg, const char *where);
  * found in argv[0]->f.
  * \param argc The number of argumets received.
  * \param msg A structure containing the original raw message as received. No
- * type coercion will have occured and the data will be in OSC byte order
+ * type coercion will have occurred and the data will be in OSC byte order
  * (bigendian).
  * \param user_data This contains the user_data value passed in the call to
  * lo_server_thread_add_method.
