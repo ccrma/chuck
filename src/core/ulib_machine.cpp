@@ -317,7 +317,7 @@ CK_DLL_SFUN( machine_add_impl )
     // compile but don't run yet (instance == 0)
     if( !VM->carrier()->chuck->compileFile( filename, args, 0 ) ) return;
 
-    // construct chuck msg (needs to be on heap, as VM will delete)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_ADD;
@@ -337,7 +337,7 @@ CK_DLL_SFUN( machine_remove_impl )
     // get the shred ID to remove
     t_CKINT v = GET_CK_INT(ARGS);
 
-    // construct chuck msg (needs to be on heap, as VM will delete)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_REMOVE;
@@ -350,7 +350,7 @@ CK_DLL_SFUN( machine_remove_impl )
 // removeLast
 CK_DLL_SFUN( machine_removeLast_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_REMOVE;
@@ -363,7 +363,7 @@ CK_DLL_SFUN( machine_removeLast_impl )
 // removeLast
 CK_DLL_SFUN( machine_removeAll_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_REMOVEALL;
@@ -393,7 +393,7 @@ CK_DLL_SFUN( machine_replace_impl )
     // compile but don't run yet (instance == 0)
     if( !VM->carrier()->chuck->compileFile( filename, args, 0 ) ) return;
 
-    // construct chuck msg (needs to be on heap, as VM will delete)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_REPLACE;
@@ -412,7 +412,7 @@ CK_DLL_SFUN( machine_replace_impl )
 // status
 CK_DLL_SFUN( machine_status_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_STATUS;
@@ -423,7 +423,7 @@ CK_DLL_SFUN( machine_status_impl )
 // timeCheck
 CK_DLL_SFUN( machine_timeCheck_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_TIME;
@@ -434,7 +434,7 @@ CK_DLL_SFUN( machine_timeCheck_impl )
 // resetID
 CK_DLL_SFUN( machine_resetID_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_RESET_ID;
@@ -445,7 +445,7 @@ CK_DLL_SFUN( machine_resetID_impl )
 // removeLast
 CK_DLL_SFUN( machine_clearVM_impl )
 {
-    // construct chuck msg (needs to be on stack, as VM will handle)
+    // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_CLEARVM;
