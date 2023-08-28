@@ -75,6 +75,10 @@ std::string snippet( const std::string & str, t_CKINT desiredLength,
 t_CKBOOL extract_args( const std::string & token,
                        std::string & filename,
                        std::vector<std::string> & args );
+// argument extraction (instead of vector, get args as one string)
+t_CKBOOL extract_args( const std::string & token,
+                       std::string & filename,
+                       std::string & args );
 
 // take existing path, and attempt to dir up
 std::string dir_go_up( const std::string & dir, t_CKINT numUp );

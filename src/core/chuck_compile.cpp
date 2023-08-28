@@ -737,9 +737,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-    #ifndef __DISABLE_OTF_SERVER__
-    machine_init( compiler, otf_process_msg );
-    #endif
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );

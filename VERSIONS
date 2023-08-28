@@ -21,8 +21,44 @@ ChucK VERSIONS log
 	    recommended to call expandPath() at the beginning; e.g., 
 	    expanding path ahead of time could avoid a click instead of 
 	    calling Machine.add() on a filepath with `~`.)
-(updated) move real-time warnings to log level "WARN"; this should result 
-    in less clutter being printed, in particular on Linux/ALSA.
+(updated) Machine.add()/replace()/remove()/status() now re-implemented
+    internally for both performance and greater compatibility (now can
+    be used with no dependencies on OTF system, make it possible to call
+    these from systems like WebChucK).
+(added) new and updated Machine functions
+	---------
+	** new ** static int removeLastShred();
+	    Remove the most recently added shred in the VM.
+	** new ** static int resetShredID();
+	    Reset shred IDs to 1 + the highest current shred ID in the VM; 
+	    can be used as shred management to keep shred IDs low, after 
+	    a lot of sporks. Returns what the next shred ID would be.
+	** new ** static int clearVM();
+	    Reset the type system, removing all user-defined types and all 
+	    global variables; removes all shreds in the VM (including the 
+	    shred calling this function). Use with care.
+	** new ** static int removeAllShreds();
+	    Remove all shreds in the VM (including the shred calling this 
+	    function).
+	** new ** static int timeCheck();
+	    Print the current time information in the VM.
+	-------------
+	** updated ** static int add( string path );
+	    Compile and spork a new shred from file at 'path' into the VM; 
+	    returns the new shred ID. It is possible to include arguments 
+	    with the file being added, e.g., `Machine.add( 
+	   "foo.ck:bar:3:5.0" )`.
+	** updated ** static int replace( int id, string path );
+	    Replace shred with new shred from file. Returns new shred ID, 
+	    or 0 on error. It is possible to include arguments, e.g., 
+	    `Machine.replace( outID, "foo.ck:bar:3:5.0" )`.
+	** updated ** static int remove( int id );
+	    Remove shred from VM by shred ID (returned by Machine.add).
+	** updated ** static int status();
+	    Print the current status of the VM.
+	-------------
+(updated) move real-time audio system warnings to log level "WARN"; this 
+    should result in less clutter printed, in particular on Linux/ALSA.
 
 
 1.5.1.2 (August 2023)

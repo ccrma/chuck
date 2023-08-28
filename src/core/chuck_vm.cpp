@@ -735,7 +735,7 @@ Chuck_Msg * Chuck_VM::get_reply()
 //       and msg will be cleaned up by the VM
 // TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
-t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
+t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
 {
     t_CKUINT retval = 0xfffffff0;
 
@@ -789,6 +789,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         else
         {
+            // TODO: this seems sus; is this ever reached? why release the shred?
+            // TODO: how do we know what failed above? the shreduler->remove(out) or shredulder->shredule(shred)?
             EM_print2blue( "(VM) shreduler replacing shred %i...", out->xid );
             shred->release();
             retval = 0;
@@ -945,13 +947,12 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == CK_MSG_RESET_ID )
     {
-        // reset ID to currently active shred ID + 1
+        // reset ID to current highest shred ID + 1
         // could be helpful to keep shred ID #'s low, especially after a lot of sporks
         EM_print2magenta( "(VM) resetting shred id to %lu...", this->reset_id() );
     }
 
 done:
-
     // set return value
     msg->replyA = retval;
 
@@ -969,7 +970,9 @@ done:
     else
     {
         // nothing further to be done; delete msg
-        CK_SAFE_DELETE(msg);
+        // FYI since msg pointer is passed into this function by reference,
+        // this will also set the external msg pointer to NULL
+        CK_SAFE_DELETE( msg );
     }
 
     return retval;
@@ -1159,8 +1162,12 @@ void Chuck_VM::removeAll()
     // itereate over sorted list
     for( vector<Chuck_VM_Shred *>::iterator s = shreds.begin(); s != shreds.end(); s++ )
     {
-        // remove and free
-        if( m_shreduler->remove( *s ) ) this->free( *s, TRUE );
+        // remove from shreduler
+        if( m_shreduler->remove( *s ) )
+        {
+            // free the shred
+            this->free( *s, TRUE );
+        }
     }
 
     // reset
@@ -1219,7 +1226,21 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // OLD: shred->release();
     this->dump_shred( shred );
     shred = NULL;
-    if( dec ) m_num_shreds--;
+
+    // decrement?
+    if( dec )
+    {
+        // make sure shred counter isn't already zero
+        if( m_num_shreds == 0 )
+        {
+            EM_print2magenta( "(VM) internal inconsistency detected: shreds counter already zero." );
+            return FALSE;
+        }
+        // decrement
+        m_num_shreds--;
+    }
+
+    // reset ID if no more shreds currently
     if( !m_num_shreds ) m_shred_id = 0;
 
     return TRUE;
@@ -1232,7 +1253,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
 // name: abort_current_shred()
 // desc: abort the current shred
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::abort_current_shred( )
+t_CKBOOL Chuck_VM::abort_current_shred()
 {
     // for threading
     Chuck_VM_Shred * shred = m_shreduler->m_current_shred;
@@ -2368,6 +2389,15 @@ t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
     if( out->event != NULL )
     {
         return remove_blocked( out );
+    }
+
+    // if current shred | 1.5.1.3 (ge) added
+    if( out == m_current_shred )
+    {
+        // flag as done, and let the VM gracefully clean up the current shred
+        m_current_shred->is_done = TRUE;
+        m_current_shred->is_abort = TRUE;
+        return TRUE;
     }
 
     // sanity check

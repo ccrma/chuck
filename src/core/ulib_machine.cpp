@@ -36,6 +36,7 @@
 #include "chuck_errmsg.h"
 #include "chuck_instr.h"
 #include "chuck.h"
+
 #include "util_string.h"
 
 #include <string>
@@ -47,8 +48,13 @@ CK_DLL_SFUN( machine_crash_impl );
 CK_DLL_SFUN( machine_add_impl );
 CK_DLL_SFUN( machine_spork_impl );
 CK_DLL_SFUN( machine_remove_impl );
+CK_DLL_SFUN( machine_removeLast_impl );
+CK_DLL_SFUN( machine_removeAll_impl );
 CK_DLL_SFUN( machine_replace_impl );
+CK_DLL_SFUN( machine_resetID_impl );
+CK_DLL_SFUN( machine_clearVM_impl );
 CK_DLL_SFUN( machine_status_impl );
+CK_DLL_SFUN( machine_timeCheck_impl );
 CK_DLL_SFUN( machine_intsize_impl );
 CK_DLL_SFUN( machine_shreds_impl );
 CK_DLL_SFUN( machine_realtime_impl );
@@ -76,12 +82,13 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->setname( QUERY, "Machine" );
 
     /*! \nameinfo
-      ChucK runtime interface to the virtual machine.
-      this interface can be used to manage shreds.
-      They are similar to the <a href="otfp.html">
-      On-the-fly Programming Commands</a>, except these are
-      invoked from within a ChucK program, and are accessible
-      to the timing mechanism.
+      Machine is the runtime interface to the ChucK Virtual Machine
+      (Ck.VM or simply VM). This interface can be used to manage shreds,
+      evaluate code, set log levels, etc. Machine's shred commands
+      (add, replace, remove, etc.) are similar to the
+      <a href="otfp.html">on-the-fly programming commands</a>,
+      except these are invoked from within a ChucK program, and benefit
+      from ChucK's strongly-timed mechanics.
     */
 
     // register deprecate
@@ -90,27 +97,15 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // class
     QUERY->begin_class( QUERY, "Machine", "Object" );
     // documentation
-    QUERY->doc_class( QUERY, "Machine is ChucK runtime interface to the virtual machine. This interface can be used to manage shreds, evaluate code, set log levels, etc. Machine's shred commands are similar to the On-the-fly Programming Commands, except these are invoked from within a ChucK program, and are subject to the timing mechanism." );
+    QUERY->doc_class( QUERY, "Machine is the runtime interface to the ChucK Virtual Machine (Ck.VM or simply VM). This interface can be used to manage shreds, evaluate code, set log levels, etc. Machine's shred commands (add, replace, remove, etc.) are similar to the on-the-fly programming commands, except these are invoked from within a ChucK program, and benefit from ChucK's strongly-timed mechanics." );
 
-#ifndef __DISABLE_OTF_SERVER__
     // add add
     //! compile and spork a new shred from file at 'path' into the VM now
     //! returns the shred ID
     //! (see example/machine.ck)
     QUERY->add_sfun( QUERY, machine_add_impl, "int", "add" );
     QUERY->add_arg( QUERY, "string", "path" );
-    QUERY->doc_func( QUERY, "Compile and spork a new shred from file at 'path' into the VM now, returns the shred ID.");
-
-    // add spork
-    //! same as add
-    // QUERY->add_sfun( QUERY, machine_add_impl, "int", "spork" );
-    // QUERY->add_arg( QUERY, "string", "path" );
-
-    // add remove
-    //! remove shred from VM by shred ID (returned by add/spork)
-    QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
-    QUERY->add_arg( QUERY, "int", "id" );
-    QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
+    QUERY->doc_func( QUERY, "Compile and spork a new shred from file at 'path' into the VM; returns the new shred ID. It is possible to include arguments with the file being added, e.g., `Machine.add( \"foo.ck:bar:3:5.0\" )`." );
 
     // add replace
     //! replace shred with new shred from file
@@ -118,20 +113,49 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_replace_impl, "int", "replace" );
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->add_arg( QUERY, "string", "path" );
-    QUERY->doc_func( QUERY, "Replace shred with new shred from file. Returns shred ID , or 0 on error.");
+    QUERY->doc_func( QUERY, "Replace shred with new shred from file. Returns new shred ID, or 0 on error. It is possible to include arguments, e.g., `Machine.replace( outID, \"foo.ck:bar:3:5.0\" )`.");
+
+    // add remove
+    //! remove shred from VM by shred ID (returned by add/spork)
+    QUERY->add_sfun( QUERY, machine_remove_impl, "int", "remove" );
+    QUERY->add_arg( QUERY, "int", "id" );
+    QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
+
+    // add remove
+    QUERY->add_sfun( QUERY, machine_removeLast_impl, "int", "removeLastShred" );
+    QUERY->doc_func( QUERY, "Remove the most recently added shred in the VM.");
+
+    // add removeAll
+    QUERY->add_sfun( QUERY, machine_removeAll_impl, "int", "removeAllShreds" );
+    QUERY->doc_func( QUERY, "Remove all shreds in the VM (including the shred calling this function).");
+
+    // add removeAll
+    QUERY->add_sfun( QUERY, machine_resetID_impl, "int", "resetShredID" );
+    QUERY->doc_func( QUERY, "Reset shred IDs to 1 + the highest current shred ID in the VM; can be used as shred management to keep shred IDs low, after a lot of sporks. Returns what the next shred ID would be.");
+
+    // add clearVM
+    QUERY->add_sfun( QUERY, machine_clearVM_impl, "int", "clearVM" );
+    QUERY->doc_func( QUERY, "Reset the type system, removing all user-defined types and all global variables; removes all shreds in the VM (including the shred calling this function). Use with care.");
 
     // add status
     //! display current status of VM
     //! (see example/status.ck)
     QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
-    QUERY->doc_func( QUERY, "Display the current status of the virtual machine.");
+    QUERY->doc_func( QUERY, "Print the current status of the VM.");
 
-#endif // __DISABLE_OTF_SERVER__
+    // add time
+    QUERY->add_sfun( QUERY, machine_timeCheck_impl, "int", "timeCheck" );
+    QUERY->doc_func( QUERY, "Print the current time information in the VM.");
 
     // add crash
     //! explicitly crash the virtual machine
     QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
     QUERY->doc_func( QUERY, "explicitly crash the virtual machine. The very last resort; or an emphatic gesture. Use with care." );
+
+    // add spork
+    //! same as add
+    // QUERY->add_sfun( QUERY, machine_add_impl, "int", "spork" );
+    // QUERY->add_arg( QUERY, "string", "path" );
 
     // add shreds
     //! get list of active shreds by id
@@ -174,7 +198,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // get version string
     QUERY->add_sfun( QUERY, machine_version_impl, "string", "version" );
-    QUERY->doc_func( QUERY, "return version string" );
+    QUERY->doc_func( QUERY, "return language and VM version string." );
 
     // get set loglevel
     QUERY->add_sfun( QUERY, machine_setloglevel_impl, "int", "loglevel" );
@@ -206,6 +230,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_ex( QUERY, "machine/eval-global.ck" );
     QUERY->add_ex( QUERY, "machine/intsize.ck" );
     QUERY->add_ex( QUERY, "machine/is-realtime.ck" );
+    QUERY->add_ex( QUERY, "machine/machine-help.ck" );
     QUERY->add_ex( QUERY, "machine/machine-shred.ck" );
     QUERY->add_ex( QUERY, "machine/version.ck" );
     QUERY->add_ex( QUERY, "book/digital-artists/chapter9/DrumMachine" );
@@ -272,70 +297,161 @@ t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
     return retval;
 }
 
-
-
-#ifndef __DISABLE_OTF_SERVER__
-
-// OTF server stuff
-static Chuck_Compiler * the_compiler = NULL;
-static proc_msg_func the_func = NULL;
-//-----------------------------------------------------------------------------
-// name: machine_init()
-// desc: initialize Machine class library
-//-----------------------------------------------------------------------------
-t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func proc_msg )
-{
-    the_compiler = compiler;
-    the_func = proc_msg;
-
-    return TRUE;
-}
-
 // add
 CK_DLL_SFUN( machine_add_impl )
 {
-    const char * v = GET_CK_STRING(ARGS)->str().c_str();
-    OTF_Net_Msg msg;
+    // get arg
+    Chuck_String * ckstr = GET_CK_STRING(ARGS);
+    // check arg; return (0 by default)
+    if( !ckstr ) return;
 
-    msg.type = CK_MSG_ADD;
-    strcpy( msg.buffer, v );
-    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
+    // get string
+    string path = ckstr->str();
+    // filename
+    string filename;
+    // arguments
+    string args;
+    // extract args FILE:arg1:arg2:arg3
+    extract_args( path, filename, args );
+
+    // compile but don't run yet (instance == 0)
+    if( !VM->carrier()->chuck->compileFile( filename, args, 0 ) ) return;
+
+    // construct chuck msg (needs to be on heap, as VM will delete)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_ADD;
+    // set code
+    msg->code = VM->carrier()->compiler->output();
+    // create args array
+    msg->args = new vector<string>;
+    // extract args again but this time into vector
+    extract_args( path, filename, *(msg->args) );
+    // process ADD message, return new shred ID
+    RETURN->v_int = VM->process_msg( msg );
 }
 
 // remove
 CK_DLL_SFUN( machine_remove_impl )
 {
+    // get the shred ID to remove
     t_CKINT v = GET_CK_INT(ARGS);
-    OTF_Net_Msg msg;
 
-    msg.type = CK_MSG_REMOVE;
-    msg.param = v;
-    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
+    // construct chuck msg (needs to be on heap, as VM will delete)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_REMOVE;
+    // set id to remove
+    msg->param = v;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
+}
+
+// removeLast
+CK_DLL_SFUN( machine_removeLast_impl )
+{
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_REMOVE;
+    // set special value to signify remove last shred
+    msg->param = CK_NO_VALUE;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
+}
+
+// removeLast
+CK_DLL_SFUN( machine_removeAll_impl )
+{
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_REMOVEALL;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
 }
 
 // replace
 CK_DLL_SFUN( machine_replace_impl )
 {
+    // shred ID to replace
     t_CKINT v = GET_NEXT_INT(ARGS);
-    const char * v2 = GET_NEXT_STRING(ARGS)->str().c_str();
-    OTF_Net_Msg msg;
+    // incoming file
+    Chuck_String * ckstr = GET_NEXT_STRING(ARGS);
+    // check and if NULL return (0 by default)
+    if( !ckstr ) return;
 
-    msg.type = CK_MSG_REPLACE;
-    msg.param = v;
-    strcpy( msg.buffer, v2 );
-    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
+    // get string
+    string path = ckstr->str();
+    // filename
+    string filename;
+    // arguments
+    string args;
+    // extract args FILE:arg1:arg2:arg3
+    extract_args( path, filename, args );
+
+    // compile but don't run yet (instance == 0)
+    if( !VM->carrier()->chuck->compileFile( filename, args, 0 ) ) return;
+
+    // construct chuck msg (needs to be on heap, as VM will delete)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_REPLACE;
+    // set shred id to replace
+    msg->param = v;
+    // set code for incoming shred
+    msg->code = VM->carrier()->compiler->output();
+    // create args array
+    msg->args = new vector<string>;
+    // extract args again but this time into vector
+    extract_args( path, filename, *(msg->args) );
+    // process ADD message, return new shred ID
+    RETURN->v_int = VM->process_msg( msg );
 }
 
 // status
 CK_DLL_SFUN( machine_status_impl )
 {
-    OTF_Net_Msg msg;
-
-    msg.type = CK_MSG_STATUS;
-    RETURN->v_int = (int)the_func( SHRED->vm_ref, the_compiler, &msg, TRUE, NULL );
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_STATUS;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
 }
 
-#endif // __DISABLE_OTF_SERVER__
+// timeCheck
+CK_DLL_SFUN( machine_timeCheck_impl )
+{
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_TIME;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
+}
+
+// resetID
+CK_DLL_SFUN( machine_resetID_impl )
+{
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_RESET_ID;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
+}
+
+// removeLast
+CK_DLL_SFUN( machine_clearVM_impl )
+{
+    // construct chuck msg (needs to be on stack, as VM will handle)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_CLEARVM;
+    // process the message
+    RETURN->v_int = VM->process_msg( msg );
+}
 
 // intsize
 CK_DLL_SFUN( machine_intsize_impl )

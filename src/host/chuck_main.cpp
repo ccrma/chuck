@@ -34,6 +34,7 @@
 #include "chuck.h"
 #include "chuck_audio.h"
 #include "chuck_console.h"
+#include "chuck_otf.h"
 #include "util_platforms.h"
 #include "util_string.h"
 #include <signal.h>
