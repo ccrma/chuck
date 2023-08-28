@@ -98,7 +98,7 @@ cd src/host-examples
 make
 ```
 ### Building ChucK Core in "Vanilla" Mode
-It is also possible to build _only_ ChucK **core** (compiler, virtual machine, and synthesis engine), without a host and without any platform-specific real-time audio I/O. This can be a helpful starting point for integrating ChucK into existing audio systems that already have audio I/O. To build ChucK core in "vanilla" mode:
+It is also possible to build _only_ ChucK **core** (compiler, virtual machine, and synthesis engine), without a host and without any platform-specific real-time audio I/O. This can be a helpful starting point for integrating ChucK into existing systems that already have audio I/O. To build ChucK core in "vanilla" mode:
 ```
 cd src/core
 make vanilla
