@@ -1,0 +1,4 @@
+error-overload-class.ck:9:5: error: cannot overload functions with identical arguments...
+[9]     fun void bar()
+        ^
+    |- 'void Foo.bar(  )' already defined elsewhere

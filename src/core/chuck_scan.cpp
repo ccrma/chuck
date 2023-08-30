@@ -3027,10 +3027,9 @@ error:
         env->func = NULL;
         // break func_ref <-> value_ref cycle, at least here
         CK_SAFE_RELEASE( func->value_ref );
-        // release
-        CK_SAFE_RELEASE(value);
-        CK_SAFE_RELEASE(type);
-        CK_SAFE_RELEASE(func);
+        // value, type, func shouldn't be released here | 1.5.1.3
+        // should be cleanup with the overall context
+        // CK_SAFE_RELEASE(value); CK_SAFE_RELEASE(type); CK_SAFE_RELEASE(func);
     }
 
     return FALSE;
