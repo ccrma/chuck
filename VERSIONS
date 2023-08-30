@@ -59,9 +59,43 @@ ChucK VERSIONS log
 	-------------
 (updated) move real-time audio system warnings to log level "WARN"; this 
     should result in less clutter printed, in particular on Linux/ALSA.
-(fixed) variable look-up priorities when multiple variables of the same 
-    name are declared in various situations in the same file
 (updated) CKDoc now prints class functions before variables
+(added, chugin development) new backend chugin <=> chuck host API 
+    functions for array.size(), array.get_idx(), array.get_key()
+    (@nshaheed) 
+(fixed) variable look-up priorities when multiple variables of the same 
+    name are declared in various situations in the same file (shadowing); 
+    this resolves issues within a subclass incorrectly accessing 
+    variables of the same name (declared as local variable vs. member in 
+    a parent class vs. global-scope variables), depending on where it's
+    accessed from.
+    ---
+    updated convention for value lookup priority (in case of shadowing)
+    1) first look in the same scope
+    2) if not found, and if inside a class def, look up-scope within 
+       class (but no further)
+    3) if not found, and if inside a class def, look in parent (for 
+       inherited value)
+    4) if still not found, look all the way up to global scope
+    ---
+    for example: chuck/src/test/01-Basic/194-value-lookup-order.ck
+    ---
+(fixed) using => to connect from/to empty UGen array declaration no longer
+    results in a crash; instead there is now a compiler error:
+```
+a.ck:8:17: error: cannot connect '=>' to empty array '[ ]' declaration...
+[8] [foo] => SinOsc bars[];
+                    ^
+a.ck: ...(hint: declare 'bars' as an non-empty array)
+a.ck: ...(or if assignment was the intent, use '@=>' instead)
+```
+(fixed) duplicate function declaration no longer causes a crash after
+    reporting the error
+```
+// example of duplicate function declarations
+fun void bar() { }
+fun void bar() { }
+```
 
 
 1.5.1.2 (August 2023)
