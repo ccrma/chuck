@@ -1,0 +1,5 @@
+error-ugen-array-link-1.ck:8:17: error: cannot connect '=>' to empty array '[ ]' declaration...
+[8] [foo] => SinOsc bars[];
+                    ^
+error-ugen-array-link-1.ck: ...(hint: declare 'bars' as an non-empty array)
+error-ugen-array-link-1.ck: ...(or if assignment was the intent, use '@=>' instead)

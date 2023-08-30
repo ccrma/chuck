@@ -2312,14 +2312,36 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 
         if( isa( left, env->ckt_array ) )
         {
+            // check LHS isn't empty array reference decl e.g., SinOsc foos[] => X | 1.5.1.3
+            if( lhs->s_type == ae_exp_decl )
+            {
+                // get var_decl; first one should do
+                a_Var_Decl var_decl = lhs->decl.var_decl_list->var_decl;
+                // is array reference e.g., declared with empty dimensions
+                t_CKBOOL is_array_ref = var_decl->array && (var_decl->array->exp_list == NULL);
+                // check it
+                if( is_array_ref )
+                {
+                    // error
+                    EM_error2( var_decl->where,
+                               "cannot connect '=>' from empty array '[ ]' declaration..." );
+                    EM_error2( 0, "...(hint: declare '%s' as an non-empty array)", var_decl->value->name.c_str() );
+                    EM_error2( 0, "...(or if assignment was the intent, use '@=>' instead)" );
+                    return FALSE;
+                }
+            }
+
+            // array type
             left_ugen_type = left->array_type;
 
+            // array depth
             if( left->array_depth > 1 )
             {
                 EM_error2( lhs->where, "array ugen type has more than one dimension - can only => one-dimensional array of mono ugens" );
                 return NULL;
             }
 
+            // # input channels
             if( left_ugen_type->ugen_info->num_outs > 1 )
             {
                 // error
@@ -2336,8 +2358,29 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 
         if( isa( right, env->ckt_array ) )
         {
+            // check RHS isn't empty array reference decl e.g., X => SinOsc bars[] | 1.5.1.3
+            if( rhs->s_type == ae_exp_decl )
+            {
+                // get var_decl; first one should do
+                a_Var_Decl var_decl = rhs->decl.var_decl_list->var_decl;
+                // is array reference e.g., declared with empty dimensions
+                t_CKBOOL is_array_ref = var_decl->array && (var_decl->array->exp_list == NULL);
+                // check it
+                if( is_array_ref )
+                {
+                    // error
+                    EM_error2( var_decl->where,
+                               "cannot connect '=>' to empty array '[ ]' declaration..." );
+                    EM_error2( 0, "...(hint: declare '%s' as an non-empty array)", var_decl->value->name.c_str() );
+                    EM_error2( 0, "...(or if assignment was the intent, use '@=>' instead)" );
+                    return FALSE;
+                }
+            }
+
+            // array type
             right_ugen_type = right->array_type;
 
+            // check array depth
             if( right->array_depth > 1 )
             {
                 EM_error2( rhs->where,
@@ -2345,6 +2388,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                 return NULL;
             }
 
+            // check # input channels
             if( right_ugen_type->ugen_info->num_ins > 1 )
             {
                 // error
@@ -2599,8 +2643,8 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
             t_CKBOOL is_ref = isobj(env, rhs->type->array_type) && rhs->decl.type->ref;
             string varName = S_name(rhs->decl.var_decl_list->var_decl->xid);
             string brackets;
-            for( t_CKINT i = 0; i < rhs->type->array_depth; i++ ) brackets += "[]";
-            EM_error2( 0, "(hint: declare right-hand-side as empty array -- e.g., %s %s%s%s)",
+            for( t_CKINT i = 0; i < rhs->type->array_depth; i++ ) brackets += "[ ]";
+            EM_error2( 0, "...(hint: declare as empty array -- e.g., %s %s%s%s)",
                        rhs->type->base_name.c_str(), is_ref ? "@ " : "", varName.c_str(), brackets.c_str());
             return NULL;
         }
@@ -3745,7 +3789,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
                 // initialization which we don't have
                 EM_error2( var_decl->where,
                     "cannot declare static non-primitive objects (yet)..." );
-                EM_error2( var_decl->where,
+                EM_error2( 0,
                     "...(hint: declare as reference (@) & initialize outside class for now)" );
                 return FALSE;
             }

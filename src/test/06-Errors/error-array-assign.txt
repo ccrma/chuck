@@ -1,4 +1,4 @@
 error-array-assign.ck:1:17: error: cannot assign '@=>' to full array declaration...
 [1] [1,2] @=> int a[0];
                     ^
-error-array-assign.ck: (hint: declare right-hand-side as empty array -- e.g., int a[])
+error-array-assign.ck: ...(hint: declare as empty array -- e.g., int a[ ])
