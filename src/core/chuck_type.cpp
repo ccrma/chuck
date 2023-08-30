@@ -2715,7 +2715,6 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 
         case ae_op_new:
             // look up the type
-            // t = env->curr->lookup_type( unary->type->xid->xid, TRUE );
             t = type_engine_find_type( env, unary->type->xid );
             if( !t )
             {
@@ -2897,24 +2896,32 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
             }
             else  // look up
             {
-                // look in local scope first
-                // v = env->curr->lookup_value( exp->var, FALSE );
+                // NOTE: could be tricky | 1.5.1.3 (2023)
+                // SEE: https://github.com/ccrma/chuck/issues/16 (from 2014)
+                // value lookup priority (in case of variable shadowing)
+                // 1) first look in the same scope
+                // 2) if inside a class def, look up scope within class (but no further)
+                // 3) if inside a class def, look up in parent (inherited)
+                // 4) if still not found, look all the way up to global scope
+
+                // look in local (same) scope first
                 v = type_engine_find_value( env, S_name(exp->var), FALSE );
                 if( !v )
                 {
                     // if in class
                     if( env->class_def )
                     {
-                        // see if in parent
-                        v = type_engine_find_value( env->class_def->parent, exp->var );
+                        // look up scope up-to class top-level (but no further); i.e., stayWithClass == TRUE
+                        v = type_engine_find_value( env, S_name(exp->var), TRUE, TRUE, exp->where );
+                        // if still not found, see if in parent (inherited)
+                        if( !v ) v = type_engine_find_value( env->class_def->parent, exp->var );
                     }
 
                     // still not found
                     if( !v )
                     {
-                        // look globally
-                        // v = env->curr->lookup_value( exp->var, TRUE );
-                        v = type_engine_find_value( env, S_name(exp->var), TRUE, exp->where );
+                        // look globally (stayWithClass == FALSE)
+                        v = type_engine_find_value( env, S_name(exp->var), TRUE, FALSE, exp->where );
 
                         // 1.5.0.8 (ge) added this check
                         // public classes cannot access variables that are:
@@ -3392,7 +3399,6 @@ t_CKTYPE type_engine_check_exp_cast( Chuck_Env * env, a_Exp_Cast cast )
     if( !t ) return NULL;
 
     // the type to cast to
-    // t_CKTYPE t2 = env->curr->lookup_type( cast->type->xid->xid, TRUE );
     t_CKTYPE t2 = type_engine_find_type( env, cast->type->xid );
     if( !t2 )
     {
@@ -4835,30 +4841,22 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: lookup_type()
-// desc: lookup type in the env
+// name: lookup_value()
+// desc: lookup value in the env; climb means to climb the scope and...
+//       climb the namespace (but the latter only if currently in classdef
+//       and !stayWithinClassDef; this is to be able to implement search
+//       up scope within a class def, but not beyond the class def, so that
+//       inherited members could be priortized over global-scope variables
+//       of the same name | 1.5.1.3 (ge) added
+//       see unit tests:
+//           test/01-Basic/194-value-lookup-order.ck
+//           test/01-Basic/195-value-lookup-order.ck
 //-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Namespace::lookup_type( const string & theName, t_CKINT climb )
+Chuck_Value * Chuck_Namespace::lookup_value( const string & theName, t_CKINT climb,
+                                             t_CKBOOL stayWithinClassDef )
 {
-    Chuck_Type * t = type.lookup( theName, climb );
-    if( climb > 0 && !t && parent )
-        return parent->lookup_type( theName, climb );
-    return t;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: lookup_type()
-// desc: lookup type in the env
-//-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb )
-{
-    Chuck_Type * t = type.lookup( theName, climb );
-    if( climb > 0 && !t && parent )
-        return parent->lookup_type( theName, climb );
-    return t;
+    // call the Symbol version
+    return lookup_value( insert_symbol(theName.c_str()), climb, stayWithinClassDef );
 }
 
 
@@ -4868,11 +4866,17 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb )
 // name: lookup_value()
 // desc: lookup value in the env
 //-----------------------------------------------------------------------------
-Chuck_Value * Chuck_Namespace::lookup_value( const string & theName, t_CKINT climb )
+Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol theName, t_CKINT climb,
+                                             t_CKBOOL stayWithinClassDef )
 {
+    // look up in current namespace
     Chuck_Value * v = value.lookup( theName, climb );
-    if( climb > 0 && !v && parent )
-        return parent->lookup_value( theName, climb );
+
+    // respect stayWithinClassDef; check if we are in class def using pre_ctor
+    t_CKBOOL keepGoing = ( this->pre_ctor && stayWithinClassDef ) == FALSE;
+    // climb up to parent namespace
+    if( climb > 0 && !v && parent && keepGoing )
+        return parent->lookup_value( theName, climb, stayWithinClassDef );
     return v;
 }
 
@@ -4880,15 +4884,33 @@ Chuck_Value * Chuck_Namespace::lookup_value( const string & theName, t_CKINT cli
 
 
 //-----------------------------------------------------------------------------
-// name: lookup_value()
-// desc: lookup value in the env
+// name: lookup_type()
+// desc: lookup type in the env
 //-----------------------------------------------------------------------------
-Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol theName, t_CKINT climb )
+Chuck_Type * Chuck_Namespace::lookup_type( const string & theName, t_CKINT climb,
+                                           t_CKBOOL stayWithinClassDef )
 {
-    Chuck_Value * v = value.lookup( theName, climb );
-    if( climb > 0 && !v && parent )
-        return parent->lookup_value( theName, climb );
-    return v;
+    // call the Symbol version
+    return lookup_type( insert_symbol(theName.c_str()), climb, stayWithinClassDef );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: lookup_type()
+// desc: lookup type in the env
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
+                                           t_CKBOOL stayWithinClassDef )
+{
+    Chuck_Type * t = type.lookup( theName, climb );
+    // respect stayWithinClassDef; check if we are in class def using pre_ctor
+    t_CKBOOL keepGoing = ( this->pre_ctor && stayWithinClassDef ) == FALSE;
+    // climb up to parent namespace
+    if( climb > 0 && !t && parent && keepGoing )
+        return parent->lookup_type( theName, climb, stayWithinClassDef );
+    return t;
 }
 
 
@@ -4898,12 +4920,11 @@ Chuck_Value * Chuck_Namespace::lookup_value( S_Symbol theName, t_CKINT climb )
 // name: lookup_func()
 // desc: lookup func in the env
 //-----------------------------------------------------------------------------
-Chuck_Func * Chuck_Namespace::lookup_func( const string & theName, t_CKINT climb )
+Chuck_Func * Chuck_Namespace::lookup_func( const string & theName, t_CKINT climb,
+                                           t_CKBOOL stayWithinClassDef )
 {
-    Chuck_Func * f = this->func.lookup( theName, climb );
-    if( climb > 0 && !f && parent )
-        return parent->lookup_func( theName, climb );
-    return f;
+    // call the Symbol version
+    return lookup_func( insert_symbol(theName.c_str()), climb, stayWithinClassDef );
 }
 
 
@@ -4913,11 +4934,15 @@ Chuck_Func * Chuck_Namespace::lookup_func( const string & theName, t_CKINT climb
 // name: lookup_func()
 // desc: lookup func in the env
 //-----------------------------------------------------------------------------
-Chuck_Func * Chuck_Namespace::lookup_func( S_Symbol theName, t_CKINT climb )
+Chuck_Func * Chuck_Namespace::lookup_func( S_Symbol theName, t_CKINT climb,
+                                           t_CKBOOL stayWithinClassDef )
 {
     Chuck_Func * f = this->func.lookup( theName, climb );
-    if( climb > 0 && !f && parent )
-        return parent->lookup_func( theName, climb );
+    // respect stayWithinClassDef; check if we are in class def using pre_ctor
+    t_CKBOOL keepGoing = ( this->pre_ctor && stayWithinClassDef ) == FALSE;
+    // climb up to parent namespace
+    if( climb > 0 && !f && parent && keepGoing )
+        return parent->lookup_func( theName, climb, stayWithinClassDef );
     return f;
 }
 
@@ -5341,7 +5366,7 @@ const char * type_path( a_Id_List thePath )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_find_type()
-// desc: ...
+// desc: find type within a namespace
 //-----------------------------------------------------------------------------
 Chuck_Type * type_engine_find_type( Chuck_Namespace * npsc, S_Symbol xid )
 {
@@ -5548,20 +5573,25 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const string & xid )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_find_value()
-// desc: from env...
+// desc: search for value within Env, climbing up scope, but possibly staying
+//       within the same class def if stayWithinClassDef == TRUE
+//       1.5.1.3 (ge) added stayWithinClassDef logic
 //-----------------------------------------------------------------------------
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const string & xid,
-                                      t_CKBOOL climb, int linepos )
+                                      t_CKBOOL climb, t_CKBOOL stayWithinClassDef,
+                                      int linepos )
 {
     Chuck_Value * value = NULL;
     string actual;
 
     // look up
-    value = env->curr->lookup_value( xid, climb );
+    value = env->curr->lookup_value( xid, climb, stayWithinClassDef );
     if( value ) return value;
 
-    // see if deprecated if climb
-    if( climb )
+    // if climb, check deprecation deprecated if climb...
+    // BUT do this only if !stayWithinClassDef, otherwise could yield false deprecation
+    // i.e., when looking for deprecation, go all the way up or don't do it here
+    if( climb && !stayWithinClassDef )
     {
         if( !type_engine_get_deprecate( env, xid, actual ) )
             return NULL;
