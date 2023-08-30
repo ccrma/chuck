@@ -101,7 +101,7 @@ doc.addGroup(
 
 // add group
 doc.addGroup(
-    [ "Centroid", "Chroma", "Flux", "Kurtosis", "MFCC", "RMS", "RollOff", "SFM", "ZeroX",
+    [ "UAna", "UAnaBlob", "Centroid", "Chroma", "Flux", "Kurtosis", "MFCC", "RMS", "RollOff", "SFM", "ZeroX",
     "AutoCorr", "DCT", "FeatureCollector", "FFT", "Flip", "IDCT", "IFFT", "UnFlip", "XCorr" ],
     // group name
     "Unit Analyzers",

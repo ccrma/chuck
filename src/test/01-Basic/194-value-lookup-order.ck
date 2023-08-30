@@ -1,5 +1,5 @@
-// this test value lookup when there are multiple values
-// in different contexts:
+// this test value lookup when there are multiple variables of the same
+// name declared in different situations
 // 1) local scope: test2()'s `8000 int foo`
 // 2) up scope within class def; second print of `foo` in test2()
 // 3) inherited member (2000 A.foo)

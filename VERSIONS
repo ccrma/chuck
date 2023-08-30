@@ -59,6 +59,9 @@ ChucK VERSIONS log
 	-------------
 (updated) move real-time audio system warnings to log level "WARN"; this 
     should result in less clutter printed, in particular on Linux/ALSA.
+(fixed) variable look-up priorities when multiple variables of the same 
+    name are declared in various situations in the same file
+(updated) CKDoc now prints class functions before variables
 
 
 1.5.1.2 (August 2023)

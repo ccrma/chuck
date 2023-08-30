@@ -1203,30 +1203,6 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
         sort(sfuncs.begin(), sfuncs.end(), comp_func);
         sort(mfuncs.begin(), mfuncs.end(), comp_func);
 
-        // static vars
-        if( svars.size() )
-        {
-            // start output
-            output->begin_static_member_vars();
-            // iterate
-            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
-                output->static_member_var(*v);
-            // end output
-            output->end_static_member_vars();
-        }
-
-        // member vars
-        if( mvars.size() )
-        {
-            // start
-            output->begin_member_vars();
-            // iterate
-            for( vector<Chuck_Value *>::iterator v = mvars.begin(); v != mvars.end(); v++ )
-                output->member_var(*v);
-            // end
-            output->end_member_vars();
-        }
-
         // static functions
         if( sfuncs.size() )
         {
@@ -1279,6 +1255,30 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             }
             // end member functions
             output->end_member_funcs();
+        }
+
+        // static vars
+        if( svars.size() )
+        {
+            // start output
+            output->begin_static_member_vars();
+            // iterate
+            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
+                output->static_member_var(*v);
+            // end output
+            output->end_static_member_vars();
+        }
+
+        // member vars
+        if( mvars.size() )
+        {
+            // start
+            output->begin_member_vars();
+            // iterate
+            for( vector<Chuck_Value *>::iterator v = mvars.begin(); v != mvars.end(); v++ )
+                output->member_var(*v);
+            // end
+            output->end_member_vars();
         }
     }
     // end the type

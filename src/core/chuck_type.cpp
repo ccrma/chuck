@@ -2900,8 +2900,8 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // SEE: https://github.com/ccrma/chuck/issues/16 (from 2014)
                 // value lookup priority (in case of variable shadowing)
                 // 1) first look in the same scope
-                // 2) if inside a class def, look up scope within class (but no further)
-                // 3) if inside a class def, look up in parent (inherited)
+                // 2) if not found, and if inside a class def, look up-scope within class (but no further)
+                // 3) if not found, and if inside a class def, look in parent (for inherited value)
                 // 4) if still not found, look all the way up to global scope
 
                 // look in local (same) scope first
