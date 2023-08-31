@@ -1005,7 +1005,7 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     t_CKUINT start_index = emit->next_index();
 
     // get data kind and size relevant to array
-    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type);
+    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type );
     t_CKUINT dataSize = stmt->theIter->type->size;
     // compare branch condition and increment loop counter
     op = new Chuck_Instr_ForEach_Inc_And_Branch( dataKind, dataSize );
@@ -2392,10 +2392,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         case te_array:
+        {
             // check size (1.3.1.0: changed to getkindof)
-            emit->append( instr = new Chuck_Instr_Array_Append( getkindof( emit->env, t_left->array_type ) ) );
+            t_CKUINT kind = getkindof( emit->env, t_left->array_type );
+            // but if array depth > 1, we are actulaly dealing with pointers, hence back to INT
+            if( t_left->array_depth > 1 ) kind = kindof_INT;
+            emit->append( instr = new Chuck_Instr_Array_Append( kind ) );
             instr->set_linepos( lhs->line );
             break;
+        }
 
         default: break;
         }
