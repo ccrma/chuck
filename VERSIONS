@@ -118,6 +118,8 @@ a.ck:17:13: error: ...(hint: to call the function, add '()' and any arguments)
 float foo[0][0]; float bar[0];
 foo << bar;
 ```
+- (fixed) an issue with OscOut on Windows, which can crash on object cleanup
+    due to incorrect windows-specific socket closing
 
 
 1.5.1.2 (August 2023)

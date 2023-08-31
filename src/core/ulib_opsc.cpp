@@ -481,15 +481,21 @@ public:
 
     ~OscOut()
     {
-        if(m_address != NULL)
+        // if we have one
+        if( m_address != NULL )
         {
-            lo_address_free(m_address);
+            // free address
+            lo_address_free( m_address );
+            // set to NULL
             m_address = NULL;
         }
 
-        if(m_message != NULL)
+        // if we have unsent message
+        if( m_message != NULL )
         {
-            lo_message_free(m_message);
+            // free message
+            lo_message_free( m_message );
+            // set to NULL
             m_message = NULL;
         }
     }
@@ -536,20 +542,25 @@ public:
         if(comma_pos != method.npos) m_path = method.substr(0, comma_pos);
         else m_path = method;
 
+        // clean up if there is an unsent message | 1.5.1.3
+        if( m_message != NULL ) lo_message_free( m_message );
+
+        // allocate new messaage
         m_message = lo_message_new();
 
-        return TRUE;
+        // return whether msg is NULL | 1.5.1.3
+        return m_message != NULL;
     }
 
     t_CKBOOL add(t_CKINT i)
     {
-        if(m_message == NULL)
+        if( m_message == NULL )
         {
             EM_error3("OscOut: error: attempt to add argument to message with no OSC address");
             return FALSE;
         }
 
-        lo_message_add_int32(m_message, (int32_t)i);
+        lo_message_add_int32( m_message, (int32_t)i );
 
         return TRUE;
     }
@@ -582,23 +593,28 @@ public:
 
     t_CKBOOL send()
     {
-        if(m_message == NULL || m_address == NULL || m_path.size() == 0)
+        // check if we have necessary info
+        if( m_message == NULL || m_address == NULL || m_path.size() == 0 )
         {
-            EM_error3("OscOut: error: attempt to send message with no destination or OSC address");
+            EM_error3( "OscOut: error: attempt to send message with no destination or OSC address" );
             return FALSE;
         }
 
-        int result = lo_send_message(m_address, m_path.c_str(), m_message);
+        // send message
+        int result = lo_send_message( m_address, m_path.c_str(), m_message );
 
-        lo_message_free(m_message);
+        // free message
+        lo_message_free( m_message );
+        // set to NULL
         m_message = NULL;
 
-        if(result == -1)
+        // check result
+        if( result == -1 )
         {
-            const char *msg = lo_address_errstr(m_address);
+            const char * msg = lo_address_errstr( m_address );
             // 1.4.1.1 (ge) updated to also print out hostname:port
-            EM_error3("OscOut: error: sending OSC message%s%s (%s:%d)",
-                      msg?": ":"", msg?msg:"", m_hostname.c_str(), m_port);
+            EM_error3( "OscOut: error: sending OSC message%s%s (%s:%d)",
+                msg ? ": " : "", msg ? msg : "", m_hostname.c_str(), m_port );
             return FALSE;
         }
 
@@ -639,7 +655,7 @@ Chuck_Type * g_OscArgType = NULL;
 
 CK_DLL_CTOR(oscout_ctor)
 {
-    OBJ_MEMBER_INT(SELF, oscout_offset_data) = (t_CKINT) new OscOut;
+    OBJ_MEMBER_INT(SELF, oscout_offset_data) = (t_CKINT)new OscOut;
 }
 
 CK_DLL_DTOR(oscout_dtor)
@@ -673,19 +689,19 @@ error:
     RETURN->v_object = NULL;
 }
 
-CK_DLL_MFUN(oscout_start)
+CK_DLL_MFUN( oscout_start )
 {
-    OscOut * out = (OscOut *) OBJ_MEMBER_INT(SELF, oscout_offset_data);
+    OscOut * out = (OscOut *)OBJ_MEMBER_INT( SELF, oscout_offset_data );
 
-    Chuck_String *method = GET_NEXT_STRING(ARGS);
+    Chuck_String * method = GET_NEXT_STRING( ARGS );
 
-    if(method == NULL)
+    if( method == NULL )
     {
-        throw_exception(SHRED, "NullPtrException", "OscOut.start: argument 'method' is null");
+        throw_exception( SHRED, "NullPtrException", "OscOut.start: argument 'method' is null" );
         goto error;
     }
 
-    if(!out->start(method->str()))
+    if( !out->start( method->str() ) )
         goto error;
 
     RETURN->v_object = SELF;
