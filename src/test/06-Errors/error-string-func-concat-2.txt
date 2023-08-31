@@ -1,0 +1,6 @@
+error-string-func-concat-2.ck:12:9: error: cannot perform '+' on '[function]' and string
+[12] Foo.bar + " ";
+             ^
+error-string-func-concat-2.ck:12:5: error: ...(hint: to call the function, add '()' and any arguments)
+[12] Foo.bar + " ";
+         ^

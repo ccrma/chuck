@@ -95,6 +95,8 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helpers
+Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
+string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member );
 a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
                             t_CKBOOL is_base_primtive );
 // make a partial deep copy, to separate type systems from AST
@@ -1774,7 +1776,7 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
 
         // process auto before we scan the right hand side
         if( !type_engine_infer_auto( env, &cr->decl, type ) )
-            return FALSE;
+            return NULL;
     }
 
     // type check the rhs
@@ -1833,7 +1835,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     // make sure not involve multiple declarations (for now)
     if( !type_engine_ensure_no_multi_decl( lhs, op2str(op) ) ||
         !type_engine_ensure_no_multi_decl( rhs, op2str(op) ) )
-        return FALSE;
+        return NULL;
 
     // if lhs is multi-value, then check separately
     if( (lhs->next && op != ae_op_chuck /*&& !isa( right, env->ckt_function)*/ ) || rhs->next )
@@ -1878,9 +1880,46 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         case ae_op_plus:
             // Object.toString
             if( isa( left, env->ckt_string ) && isa( right, env->ckt_object ) && !isa( right, env->ckt_string) )
+            {
+                // check for function (disallow for now, e.g., Math.fabs + "foo"
+                if( isa(right, env->ckt_function) )
+                {
+                    // the name
+                    string theName = right->base_name;
+                    // position
+                    t_CKINT where = rhs->where;
+                    // check for dot
+                    if( rhs->s_type == ae_exp_dot_member ) where = rhs->dot_member.where;
+                    // report error
+                    EM_error2( binary->where,
+                               "cannot perform '+' on string and '%s'", theName.c_str() );
+                    EM_error2( where,
+                              "...(hint: to call the function, add '()' and any arguments)" );
+                    return NULL;
+                }
+                // cast
                 right = rhs->cast_to = env->ckt_string;
+            }
             else if( isa( left, env->ckt_object ) && isa( right, env->ckt_string ) && !isa( left, env->ckt_string) )
+            {
+                if( isa(left, env->ckt_function) )
+                {
+                    // the name
+                    string theName = left->base_name;
+                    // position
+                    t_CKINT where = lhs->where;
+                    // check for dot
+                    if( lhs->s_type == ae_exp_dot_member ) where = lhs->dot_member.where;
+                    // check for function (disallow for now, e.g., Math.fabs + "foo"
+                    EM_error2( binary->where,
+                               "cannot perform '+' on '%s' and string", theName.c_str() );
+                    EM_error2( where,
+                               "...(hint: to call the function, add '()' and any arguments)" );
+                    return NULL;
+                }
+                // cast left type to string
                 left = lhs->cast_to = env->ckt_string;
+            }
         case ae_op_minus:
             CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
             else CK_LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
@@ -2053,12 +2092,47 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         // make sure mutable
         if( rhs->s_meta != ae_meta_var )
         {
-            EM_error2( lhs->where,
+            EM_error2( binary->where,
                 "cannot assign '%s' on types '%s' %s '%s'...",
                 op2str( op ), left->c_name(), op2str( op ), right->c_name() );
-            EM_error2( lhs->where,
-                " |- reason: right-side operand is not mutable)" );
+            EM_error2( rhs->where,
+                "...(reason: right-side operand is not mutable)" );
             return NULL;
+        }
+        else
+        {
+            // check if rhs is const
+            if( rhs->s_type == ae_exp_primary )
+            {
+                Chuck_Value * v = type_engine_check_const( env, rhs );
+                // check if const | 1.5.0.0 (ge) added
+                if( v )
+                {
+                    // error
+                    EM_error2( binary->where,
+                        "cannot chuck/assign '%s' to '%s'...", op2str(op),
+                        v->name.c_str() );
+                    EM_error2( rhs->where,
+                        "...(reason: '%s' is a constant, and is not assignable)", v->name.c_str() );
+                    return NULL;
+                }
+            }
+            else if( rhs->s_type == ae_exp_dot_member )
+            {
+                // catch things like `1 => Math.PI`
+                Chuck_Value * v = type_engine_check_const( env, rhs );
+                if( v )
+                {
+                    // the X.Y
+                    string theVar = type_engine_print_exp_dot_member(env, &rhs->dot_member);
+                    // error
+                    EM_error2( binary->where,
+                               "cannot chuck/assign '%s' to '%s'...", op2str(op), theVar.c_str() );
+                    EM_error2( rhs->where,
+                               "...(reason: '%s' is a constant, and is not assignable)", theVar.c_str() );
+                    return NULL;
+                }
+            }
         }
 
         // mark to emit var instead of value
@@ -2327,7 +2401,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                                "cannot connect '=>' from empty array '[ ]' declaration..." );
                     EM_error2( 0, "...(hint: declare '%s' as an non-empty array)", var_decl->value->name.c_str() );
                     EM_error2( 0, "...(or if assignment was the intent, use '@=>' instead)" );
-                    return FALSE;
+                    return NULL;
                 }
             }
 
@@ -2373,7 +2447,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                                "cannot connect '=>' to empty array '[ ]' declaration..." );
                     EM_error2( 0, "...(hint: declare '%s' as an non-empty array)", var_decl->value->name.c_str() );
                     EM_error2( 0, "...(or if assignment was the intent, use '@=>' instead)" );
-                    return FALSE;
+                    return NULL;
                 }
             }
 
@@ -2489,17 +2563,32 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                 // check if rhs is const
                 if( rhs->s_type == ae_exp_primary )
                 {
-                    // get the associate value
-                    Chuck_Value * v = rhs->primary.value;
+                    Chuck_Value * v = type_engine_check_const( env, rhs );
                     // check if const | 1.5.0.0 (ge) added
-                    if( v && v->is_const )
+                    if( v )
                     {
                         // error
-                        EM_error2( rhs->where,
+                        EM_error2( binary->where,
                             "cannot chuck/assign => to '%s'...",
                             v->name.c_str() );
-                        EM_error2( lhs->where,
-                            " |- reason: '%s' is a constant (and is not assignable)", v->name.c_str() );
+                        EM_error2( rhs->where,
+                            "...(reason: '%s' is a constant, and is not assignable)", v->name.c_str() );
+                        return NULL;
+                    }
+                }
+                else if( rhs->s_type == ae_exp_dot_member )
+                {
+                    // catch things like `1 => Math.PI`
+                    Chuck_Value * v = type_engine_check_const( env, rhs );
+                    if( v )
+                    {
+                        // the X.Y
+                        string theVar = type_engine_print_exp_dot_member(env, &rhs->dot_member);
+                        // error
+                        EM_error2( binary->where,
+                                   "cannot chuck/assign '=>' to '%s'...", theVar.c_str() );
+                        EM_error2( rhs->where,
+                                   "...(reason: '%s' is a constant, and is not assignable)", theVar.c_str() );
                         return NULL;
                     }
                 }
@@ -2511,11 +2600,11 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
             }
 
             // error
-            EM_error2( lhs->where,
+            EM_error2( binary->where,
                 "cannot chuck/assign '=>' on types '%s' => '%s'...",
                 left->c_name(), right->c_name() );
-            EM_error2( lhs->where,
-                " |- reason: right-side operand is not mutable" );
+            EM_error2( rhs->where,
+                "...(reason: right-side operand is not mutable)" );
             return NULL;
         }
         // aggregate types
@@ -2623,7 +2712,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
             "cannot assign '@=>' on types '%s' @=> '%s'...",
             left->c_name(), right->c_name() );
         EM_error2( lhs->where,
-            " |- reason: right-side operand is not mutable" );
+            "...(reason: right-side operand is not mutable)" );
         return NULL;
     }
 
@@ -2664,7 +2753,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
             "cannot assign '@=>' on types '%s' @=> '%s'...",
             left->c_name(), right->c_name() );
         EM_error2( lhs->where,
-            " |- reason: incompatible types for assignment" );
+            "...(reason: incompatible types for assignment)" );
         return NULL;
     }
 
@@ -3743,11 +3832,11 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         {
             // instantiate object, including array
             if( !type_engine_check_exp( env, var_decl->array->exp_list ) )
-                return FALSE;
+                return NULL;
 
             // check the subscripts
             if( !type_engine_check_array_subscripts( env, var_decl->array->exp_list ) )
-                return FALSE;
+                return NULL;
         }
 
         // member?
@@ -3772,7 +3861,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             {
                 EM_error2( decl->where,
                     "static variables must be declared at class scope" );
-                return FALSE;
+                return NULL;
             }
 
             // flag
@@ -3791,7 +3880,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
                     "cannot declare static non-primitive objects (yet)..." );
                 EM_error2( 0,
                     "...(hint: declare as reference (@) & initialize outside class for now)" );
-                return FALSE;
+                return NULL;
             }
         }
         else // local variable
@@ -3842,7 +3931,7 @@ t_CKTYPE type_engine_check_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_print_exp_dot_member()
-// desc: ...
+// desc: print a dot_member exp, e.g., Foo.bar
 //-----------------------------------------------------------------------------
 string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member )
 {
@@ -4731,7 +4820,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                             env->class_def->c_name(), S_name(f->name),
                             v->owner_class->c_name(), S_name(f->name) );
                         EM_error2( f->where,
-                            " |- reason: '%s.%s' is declared as 'static'",
+                            "...(reason: '%s.%s' is declared as 'static')",
                             v->owner_class->c_name(), S_name(f->name) );
                         goto error;
                     }
@@ -4744,7 +4833,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                             env->class_def->c_name(), S_name(f->name),
                             v->owner_class->c_name(), S_name(f->name) );
                         EM_error2( f->where,
-                            " |- reason: '%s.%s' is declared as 'static'",
+                            "...(reason: '%s.%s' is declared as 'static')",
                             env->class_def->c_name(), S_name(f->name) );
                         goto error;
                     }
@@ -4757,7 +4846,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
                             env->class_def->c_name(), S_name(f->name),
                             v->owner_class->c_name(), S_name(f->name) );
                         EM_error2( f->where,
-                            " |- reason: '%s.%s' is declared as 'pure'",
+                            "...(reason: '%s.%s' is declared as 'pure')",
                             env->class_def->c_name(), S_name(f->name) );
                         goto error;
                     }
@@ -5294,14 +5383,39 @@ t_CKVOID type_engine_enable_reserved( Chuck_Env * env, const std::string & xid, 
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_const()
-// desc: check whether exp is const
+// desc: check whether exp is const; returns value is found and const
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp exp, int pos )
+Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
 {
-//    switch( exp->s_type )
-//    {
-//    }
-    return FALSE;
+    // check if rhs is const
+    if( exp->s_type == ae_exp_primary )
+    {
+        // get the associate value
+        Chuck_Value * v = exp->primary.value;
+        // check if const | 1.5.0.0 (ge) added
+        if( v && v->is_const ) return v;
+    }
+    else if( exp->s_type == ae_exp_dot_member )
+    {
+        // catch things like `1 => Math.PI`
+        a_Exp_Dot_Member member = &exp->dot_member;
+        // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to call
+        t_CKBOOL base_static = type_engine_is_base_static( env, member->t_base );
+        // actual type
+        Chuck_Type * the_base = base_static ? member->t_base->actual_type : member->t_base;
+
+        // if value literal
+        if( member->base->s_meta != ae_meta_value ) // is literal
+        {
+            // find the value
+            Chuck_Value * value = type_engine_find_value( the_base, member->xid );
+            // if const return value
+            if( value && value->is_const ) return value;
+        }
+    }
+
+    // no indication of const
+    return NULL;
 }
 
 
@@ -6251,7 +6365,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
-    a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, FALSE, 0, 0 );
+    a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, FALSE, (int)is_const, 0, 0 );
     // add it
     if( !type_engine_scan1_exp_decl( env, &exp_decl->decl ) ||
         !type_engine_scan2_exp_decl( env, &exp_decl->decl ) ||
@@ -6312,7 +6426,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
-    a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, 0, 0 );
+    a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, (int)is_const, 0, 0 );
     // add addr
     var_decl->addr = (void *)addr;
     // add it
@@ -7043,7 +7157,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             // make var decl list
             a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
             // make exp decl
-            a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, 0, 0 );
+            a_Exp exp_decl = new_exp_decl( type_decl, var_decl_list, TRUE, (int)cl->svars[j]->is_const, 0, 0 );
             // add addr
             var_decl->addr = (void *)cl->svars[j]->static_addr;
             // append exp stmt to stmt list

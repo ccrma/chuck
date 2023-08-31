@@ -606,24 +606,24 @@ a_Exp new_exp_from_if( a_Exp cond, a_Exp if_exp, a_Exp else_exp, uint32_t lineNu
     return a;
 }
 
-a_Exp new_exp_decl_external( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, uint32_t lineNum, uint32_t posNum )
+a_Exp new_exp_decl_external( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, int is_const, uint32_t lineNum, uint32_t posNum )
 {
-    a_Exp a = new_exp_decl( type, var_decl_list, is_static, lineNum, posNum );
+    a_Exp a = new_exp_decl( type, var_decl_list, is_static, is_const, lineNum, posNum );
     a->decl.is_global = 1;
     EM_error2( posNum, "'external' keyword is deprecated. please use 'global'" );
 
     return a;
 }
 
-a_Exp new_exp_decl_global( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, uint32_t lineNum, uint32_t posNum )
+a_Exp new_exp_decl_global( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, int is_const, uint32_t lineNum, uint32_t posNum )
 {
-    a_Exp a = new_exp_decl( type, var_decl_list, is_static, lineNum, posNum );
+    a_Exp a = new_exp_decl( type, var_decl_list, is_static, is_const, lineNum, posNum );
     a->decl.is_global = 1;
 
     return a;
 }
 
-a_Exp new_exp_decl( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, uint32_t lineNum, uint32_t posNum )
+a_Exp new_exp_decl( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_static, int is_const, uint32_t lineNum, uint32_t posNum )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
     a->s_type = ae_exp_decl;
@@ -632,6 +632,7 @@ a_Exp new_exp_decl( a_Type_Decl type, a_Var_Decl_List var_decl_list, int is_stat
     a->decl.var_decl_list = var_decl_list;
     a->line = lineNum; a->where = posNum;
     a->decl.is_static = is_static;
+    a->decl.is_const = is_const; // 1.5.1.3
     a->decl.line = lineNum; a->decl.where = posNum;
     a->decl.self = a;
 

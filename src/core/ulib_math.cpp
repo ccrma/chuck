@@ -447,6 +447,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     //! see \example math.ck
     QUERY->add_svar( QUERY, "float", "PI", TRUE, &g_pi );
     QUERY->doc_var( QUERY, "An approximation of pi. (Same as global keyword 'pi'.)" );
+
     // 1.4.1.0 (ge): special disable to avoid conflict (don't forget to reenabled)
     type_engine_enable_reserved( env, "pi", FALSE );
     QUERY->add_svar( QUERY, "float", "pi", TRUE, &g_pi );

@@ -3576,7 +3576,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if( er )
         {
             CK_FPRINTF_STDERR( "[chuck](via SndBuf): sndfile error '%li' opening '%s'...\n", er, filename );
-            CK_FPRINTF_STDERR( "[chuck](via SndBuf):  |- reason: %s\n", sf_strerror( d->fd ) );
+            CK_FPRINTF_STDERR( "[chuck](via SndBuf): ...(reason: %s)\n", sf_strerror( d->fd ) );
             if( d->fd )
             {
                 sf_close( d->fd );

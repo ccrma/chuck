@@ -1,0 +1,6 @@
+error-string-func-concat-1.ck:17:9: error: cannot perform '+' on string and '[function]'
+[17] <<< " " + f.getFoo >>>;
+             ^
+error-string-func-concat-1.ck:17:13: error: ...(hint: to call the function, add '()' and any arguments)
+[17] <<< " " + f.getFoo >>>;
+                 ^

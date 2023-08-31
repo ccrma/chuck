@@ -2,16 +2,19 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.3 (August 2023)
+1.5.1.3 (September 2023)
 =======
-(fixed) various documentation misspellings (thanks @barak)
-(updated) Machine.add( filepath ) no longer introduces a potential
+(note) this release of chuck addresses a number of issues from long-time 
+    language bugs to documentation typos to expanding Machine functions 
+    for VM/shred management.
+
+- (updated) Machine.add( filepath ) no longer introduces a potential
     real-time audio interruption on macOS ** for all filepath that does 
     not contain ~ **; currently, path resolution for ~ or ~[username] in 
     macOS  consistenly causes audio clicks, likely due to implementation 
     of underlying system function (e.g., wordexp()) to resolve ~ 
     (hypothesis: wordexp() function performs IO-blocking)
-(added) function to expand platform specific file path
+- (added) function to expand platform specific file path
 	static string expandPath( string path );
 	    Expand platform-specific filepath to an absolute path, which 
 	    is returned. On macOS and Linux expandPath() will attempt to 
@@ -21,11 +24,11 @@ ChucK VERSIONS log
 	    recommended to call expandPath() at the beginning; e.g., 
 	    expanding path ahead of time could avoid a click instead of 
 	    calling Machine.add() on a filepath with `~`.)
-(updated) Machine.add()/replace()/remove()/status() now re-implemented
+- (updated) Machine.add()/replace()/remove()/status() now re-implemented
     internally for both performance and greater compatibility (now can
     be used with no dependencies on OTF system, make it possible to call
     these from systems like WebChucK).
-(added) new and updated Machine functions
+- (added) new and updated Machine functions
 	---------
 	** new ** static int removeLastShred();
 	    Remove the most recently added shred in the VM.
@@ -57,13 +60,14 @@ ChucK VERSIONS log
 	** updated ** static int status();
 	    Print the current status of the VM.
 	-------------
-(updated) move real-time audio system warnings to log level "WARN"; this 
+- (updated) move real-time audio system warnings to log level "WARN"; this 
     should result in less clutter printed, in particular on Linux/ALSA.
-(updated) CKDoc now prints class functions before variables
-(added, chugin development) new backend chugin <=> chuck host API 
+- (updated) CKDoc now prints class functions before variables
+- (added, chugin development) new backend chugin <=> chuck host API 
     functions for array.size(), array.get_idx(), array.get_key()
     (@nshaheed) 
-(fixed) variable look-up priorities when multiple variables of the same 
+- (fixed) various documentation misspellings (thanks @barak)
+- (fixed) variable look-up priorities when multiple variables of the same 
     name are declared in various situations in the same file (shadowing); 
     this resolves issues within a subclass incorrectly accessing 
     variables of the same name (declared as local variable vs. member in 
@@ -80,8 +84,8 @@ ChucK VERSIONS log
     ---
     for example: chuck/src/test/01-Basic/194-value-lookup-order.ck
     ---
-(fixed) using => to connect from/to empty UGen array declaration no longer
-    results in a crash; instead there is now a compiler error:
+- (fixed) using => to connect from/to empty UGen array declaration no 
+    longer results in a crash; instead there is now a compiler error:
 ```
 a.ck:8:17: error: cannot connect '=>' to empty array '[ ]' declaration...
 [8] [foo] => SinOsc bars[];
@@ -89,18 +93,31 @@ a.ck:8:17: error: cannot connect '=>' to empty array '[ ]' declaration...
 a.ck: ...(hint: declare 'bars' as an non-empty array)
 a.ck: ...(or if assignment was the intent, use '@=>' instead)
 ```
-(fixed) duplicate function declaration no longer causes a crash after
+- (fixed) duplicate function declaration no longer causes a crash after
     reporting the error
 ```
 // example of duplicate function declarations
 fun void bar() { }
 fun void bar() { }
 ```
+- (fixed) assigning to constants such as `pi`, `second`, or `Math.PI` now
+    results in a compiler error; previously the outcome was undefined and
+    in certain case could cause a crash.
+- (fixed) concatenating a function reference with a string now produces a
+    compiler error; previously this would lead to a runtime crash.
+```
+a.ck:17:9: error: cannot perform '+' on string and '[function]'
+[17] <<< " " + f.getFoo >>>;
+             ^
+a.ck:17:13: error: ...(hint: to call the function, add '()' and any arguments)
+[17] <<< " " + f.getFoo >>>;
+                 ^
+```
 
 
 1.5.1.2 (August 2023)
 =======
-(updated) the long-time and often cryptic "cannot bind to port: 8888"
+- (updated) the long-time and often cryptic "cannot bind to port: 8888"
     message has been reworked: 1) an explanation has been added to the
     possible cause (e.g., another chuck VM is running and currently
     has the port open) and implication (this chuck VM will not receive
@@ -112,11 +129,11 @@ fun void bar() { }
     hopefully reduce confusion, as well as improve automations that
     examine the output of chuck. (thanks to @barak for elucidating the
     issue!)
-(added) --cmd-listener:{on|off} enables or disables listening for network
-    OTF (on-the-fly programming) command messages (e.g., add, replace,
-    remove, etc.). The default is ON; setting to OFF will prevent chuck VM
-    from attempting to open network server listener. (NOTE: this option
-    does NOT affect in-language networking, e.g., with Open Sound
+- (added) --cmd-listener:{on|off} enables or disables listening for 
+    network OTF (on-the-fly programming) command messages (e.g., add, 
+    replace, remove, etc.). The default is ON; setting to OFF will prevent 
+    chuck VM from attempting to open network server listener. (NOTE: this 
+    option does NOT affect in-language networking, e.g., with Open Sound
     Control.)
 
 
@@ -127,7 +144,7 @@ fun void bar() { }
     allowing trailing commas in array initializer lists, as well as a set 
     of range() functions for generating arrays of ranges of value.
 
-(added) trailing commas in array initializer lists are now permitted
+- (added) trailing commas in array initializer lists are now permitted
 ```
 // an array initializer list (aka array literal), as usual
 [1,2,3] @=> int foo[];
@@ -135,7 +152,8 @@ fun void bar() { }
 // now also permitted: trailing comma after last element
 [1,2,3,] @=> int bar[];
 ```
-(added) Std functions for generating arrays containing a range of values (nshaheed)
+- (added) Std functions for generating arrays containing a range of 
+    values (nshaheed)
 	static int[] Std.range( int stop );
 	    Return array containing the range [0,stop).
 	static int[] Std.range( int start, int stop );
@@ -143,13 +161,13 @@ fun void bar() { }
 	static int[] Std.range( int start, int stop, int step );
 	    Return array containing values from start up to (but not including) stop,
 	    hopping by step.
-(re-added) backtick(`)-delimited strings; context: needed for FaucK
+- (re-added) backtick(`)-delimited strings; context: needed for FaucK
     (FAUST in ChucK) through the Faust chugin
-(fixed) issue related to multiple empty statements (e.g., ;;;;) being
+- (fixed) issue related to multiple empty statements (e.g., ;;;;) being
     incorrectly handled by the function control path analysis
-(fixed) issue related to incorrect out-of-order dependencies across
+- (fixed) issue related to incorrect out-of-order dependencies across
     different files / contexts (thanks Michael Heuer for investigating)
-(fixed) class member/static variables can now be accessed, as before,
+- (fixed) class member/static variables can now be accessed, as before,
     from anywhere in the same file, regardless of order of declaration
     (thanks Michael Heuer for investigating)
 ```
@@ -164,7 +182,7 @@ class Foo
     int val;
 }
 ```
-(updated) 'auto' type is now disallowed as a top-level class variables,
+- (updated) 'auto' type is now disallowed as a top-level class variables,
     instance or static; since these variables could be used from outside the class,
     1) this potentially leads to more intentional code and 2) currently there is no
     mechanism to resolve the 'auto' until type checking stage such that out-of-order
@@ -187,8 +205,8 @@ class Foo
     8 => static auto m_var;
 }
 ```
-(fixed) a memory leak associated with array declarations
-(fixed) chout and cherr now properly accounts for IO redirect out of
+- (fixed) a memory leak associated with array declarations
+- (fixed) chout and cherr now properly accounts for IO redirect out of
     chuck; this addresses issue with miniAudicle console output, and
     also affects other C++ hosts embedding chuck core.
 
@@ -212,9 +230,8 @@ command-line option, general bug fixes and stability improvements.
     incorporate ChucK core into other c++ hosts (1.5.0.7)
     https://github.com/ccrma/chuck/tree/main/src/host-examples
   * (see below for more information)
-
----
-(update) `return` statements in function definitions:
+===
+- (update) `return` statements in function definitions:
 
 PREVIOUSLY: chuck does not require all control paths in non-void 
 functions to explicitly return values -- in cases of missing `return` 
@@ -298,14 +315,14 @@ fun float foo( int v )
 
 
 1.5.0.8 (August 2023)
-===
+=======
 (note) this release introduces a for-each control structure for more 
 easily iterating over arrays, as well as an experimental 'auto' type. 
 array support has also been expanded; internally, engine support has been 
 added for a number of features in WebChucK and WebChucK IDE, including 
 retrieving and display the chuck 'now', along with a number of critical 
-chuck parameters; updated ChucK c++ integration API
-===
+chuck parameters; updated ChucK c++ integration
+
 - (added) new 'for' control structure in this general syntax:
       for( VAR : ARRAY )
       { ... }
@@ -461,9 +478,10 @@ troubleshooting recommendation:
 
 
 1.5.0.7 (July 2023)
----
-- (note) this patch release contains general internal maintenance for 
+=======
+(note) this patch release contains general internal maintenance for 
   developers; it also accompanies a critical bug fix in miniAudicle
+
 - (update/fixed) now --version and --about command-line flags will
   correctly print all available audio drivers options, e.g.,
   ```
@@ -516,13 +534,13 @@ troubleshooting recommendation:
 
 
 1.5.0.6 (July 2023)
----
+=======
 - (fixed, high priority) VM replace print crash
 - (updated) VM operation message colors
 
 
 1.5.0.5 (July 2023)
----
+=======
 - (added) color TTY support for command-line chuck is here! ChucK in
   color! compiler errors, probes, logs, on-the-fly programming (OTF),
   and other messages are now output in color, when chuck detects it is 
@@ -585,7 +603,7 @@ troubleshooting recommendation:
 
 
 1.5.0.4 (June 2023)
----
+=======
 - (added) Math.randomize() -- implicitly randomize RNG seed
   ---
   "Randomize the seed of the random number generator (RNG), using an
@@ -654,7 +672,7 @@ troubleshooting recommendation:
 
 
 1.5.0.3 (June 2023)
----
+=======
 - (fixed) chuck audio I/O now correctly carries out extended probing
   for default input and output devices with differing sample rates,
   e.g., with some bluetooth mic/headphones whose input is limited
@@ -671,9 +689,10 @@ troubleshooting recommendation:
 
 
 1.5.0.2 (June 2023)
----
-- (note) this is primarily a maintenance release; please see 1.5.0.1
+=======
+(note) this is primarily a maintenance release; please see 1.5.0.1
   and earlier release notes  to see recent feature updates
+
 - (fixed) (jack, linux/unix) port name now accounts for regex meta
   characters (thanks @gyroplast and @garyscavone)
 - (developer) house cleaning on the chuck git repository
@@ -724,7 +743,7 @@ miniAudicle (added: few helpful features)
 
 
 1.5.0.1 (June 2023)
----
+=======
 - (added) WvOut support for multiple bit-depths: 16-bit signed int,
   24-bit signed int, 32-bit signed int, 32-bit float, 64-bit float
 - (added) the above can be optionally specified in new overloaded WvOut methods:
@@ -796,8 +815,9 @@ miniAudicle
   [Many thanks to Fernando Lopez-Lezcano and Nils Tonn??tt]
 
 
+=======
 1.5.0.0 (May 2023)
----
+=======
 ***************************************************************************
 * chuck-1.5.0.0 (chai)
 ***************************************************************************
@@ -805,7 +825,6 @@ miniAudicle
 * significant update: WebChucK (ChucK in web browser) + WebChucK IDE
 * also: new features, new bug fixes, and new bugs!
 ***************************************************************************
----
 (NOTE) WebChucK (ChucK on browsers) [beta] was released during the 
 development of this version.
 
