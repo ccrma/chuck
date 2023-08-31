@@ -34,29 +34,12 @@
 
 #include "chuck_dl.h"
 
-#ifndef  __DISABLE_OTF_SERVER__
-#include "chuck_otf.h"
-#endif
-
-// forward reference
-struct Chuck_VM;
-struct Chuck_Compiler;
-
 
 // query for Machine class library
 DLL_QUERY machine_query( Chuck_DL_Query * QUERY );
 
-#ifndef __DISABLE_OTF_SERVER__
-typedef t_CKUINT (* proc_msg_func)( Chuck_VM *, Chuck_Compiler *,
-                                    OTF_Net_Msg *, t_CKBOOL, void * );
-t_CKBOOL machine_init( Chuck_Compiler * compiler, proc_msg_func func );
-// 1.4.0.1: TODO: refactor out of ulib machine; not all platforms have OTF
-#endif // __DISABLE_OTF_SERVER__
-
 // machine exports
 t_CKUINT machine_intsize();
-
-
 
 
 #endif

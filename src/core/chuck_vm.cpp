@@ -54,6 +54,7 @@
 #include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
+#include <iomanip>
 #include <string>
 #include <algorithm>
 using namespace std;
@@ -703,11 +704,27 @@ CBufferSimple * Chuck_VM::create_event_buffer()
 //-----------------------------------------------------------------------------
 // name: destroy_event_buffer()
 // desc: added 1.3.0.0 to fix uber-crash
+//       updated 1.5.13 and broken into two parts
 //-----------------------------------------------------------------------------
 void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 {
+    // always detach, even if buffer already detached by external calls
+    this->detach_event_buffer_without_delete( buffer );
+    // reclaim
+    CK_SAFE_DELETE( buffer );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: detach_event_buffer_without_delete() | 1.5.1.3
+// desc: detach event buffer from VM, without deleting buffer
+//-----------------------------------------------------------------------------
+void Chuck_VM::detach_event_buffer_without_delete( CBufferSimple * buffer )
+{
+    // detach
     m_event_buffers.remove( buffer );
-    delete buffer;
 }
 
 
@@ -734,7 +751,7 @@ Chuck_Msg * Chuck_VM::get_reply()
 //       and msg will be cleaned up by the VM
 // TODO: make thread safe for multiple consumers
 //-----------------------------------------------------------------------------
-t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
+t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
 {
     t_CKUINT retval = 0xfffffff0;
 
@@ -788,6 +805,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
         }
         else
         {
+            // TODO: this seems sus; is this ever reached? why release the shred?
+            // TODO: how do we know what failed above? the shreduler->remove(out) or shredulder->shredule(shred)?
             EM_print2blue( "(VM) shreduler replacing shred %i...", out->xid );
             shred->release();
             retval = 0;
@@ -908,24 +927,48 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * msg )
     }
     else if( msg->type == CK_MSG_TIME )
     {
-        float srate = m_srate; // 1.3.5.3; was: (float)Digitalio::sampling_rate();
-        EM_print2magenta( "(VM) earth time: %s", timestamp_formatted().c_str() );
-        EM_print2magenta( "(VM) chuck time: %.0f::samp (now)", m_shreduler->now_system );
-        EM_print2vanilla( "%22.6f::second since VM start", m_shreduler->now_system / srate );
-        EM_print2vanilla( "%22.6f::minute", m_shreduler->now_system / srate / 60.0f );
-        EM_print2vanilla( "%22.6f::hour", m_shreduler->now_system / srate / 60.0f / 60.0f );
-        EM_print2vanilla( "%22.6f::day", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
-        EM_print2vanilla( "%22.6f::week", m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
+        // string stream
+        ostringstream sout;
+        // generate string; fixed notation
+        sout << "chuck time: " << std::fixed << m_shreduler->now_system << "::samp (now)";
+        // get string
+        string ckt_str = sout.str();
+        // find occurence of ::
+        size_t where = ckt_str.find( "::" );
+        // just in case
+        if( where == string::npos ) where = 22;
+        // sample rate
+        t_CKFLOAT srate = m_srate;
+
+        // earth time
+        EM_print2magenta( "local time: %s", timestamp_formatted().c_str() );
+        // chuck time
+        EM_print2magenta( ckt_str.c_str() );
+
+        // clear and generate
+        sout.str(std::string()); sout << "%" << where << ".6f::second since VM start";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::minute";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::hour";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::day";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f );
+
+        sout.str(std::string()); sout << "%" << where << ".6f::week";
+        EM_print2vanilla( sout.str().c_str(), m_shreduler->now_system / srate / 60.0f / 60.0f / 24.0f / 7.0f );
     }
     else if( msg->type == CK_MSG_RESET_ID )
     {
-        // reset ID to currently active shred ID + 1
+        // reset ID to current highest shred ID + 1
         // could be helpful to keep shred ID #'s low, especially after a lot of sporks
         EM_print2magenta( "(VM) resetting shred id to %lu...", this->reset_id() );
     }
 
 done:
-
     // set return value
     msg->replyA = retval;
 
@@ -943,7 +986,9 @@ done:
     else
     {
         // nothing further to be done; delete msg
-        CK_SAFE_DELETE(msg);
+        // FYI since msg pointer is passed into this function by reference,
+        // this will also set the external msg pointer to NULL
+        CK_SAFE_DELETE( msg );
     }
 
     return retval;
@@ -1133,8 +1178,12 @@ void Chuck_VM::removeAll()
     // itereate over sorted list
     for( vector<Chuck_VM_Shred *>::iterator s = shreds.begin(); s != shreds.end(); s++ )
     {
-        // remove and free
-        if( m_shreduler->remove( *s ) ) this->free( *s, TRUE );
+        // remove from shreduler
+        if( m_shreduler->remove( *s ) )
+        {
+            // free the shred
+            this->free( *s, TRUE );
+        }
     }
 
     // reset
@@ -1193,7 +1242,21 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     // OLD: shred->release();
     this->dump_shred( shred );
     shred = NULL;
-    if( dec ) m_num_shreds--;
+
+    // decrement?
+    if( dec )
+    {
+        // make sure shred counter isn't already zero
+        if( m_num_shreds == 0 )
+        {
+            EM_print2magenta( "(VM) internal inconsistency detected: shreds counter already zero." );
+            return FALSE;
+        }
+        // decrement
+        m_num_shreds--;
+    }
+
+    // reset ID if no more shreds currently
     if( !m_num_shreds ) m_shred_id = 0;
 
     return TRUE;
@@ -1206,7 +1269,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
 // name: abort_current_shred()
 // desc: abort the current shred
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::abort_current_shred( )
+t_CKBOOL Chuck_VM::abort_current_shred()
 {
     // for threading
     Chuck_VM_Shred * shred = m_shreduler->m_current_shred;
@@ -2344,6 +2407,15 @@ t_CKBOOL Chuck_VM_Shreduler::remove( Chuck_VM_Shred * out )
         return remove_blocked( out );
     }
 
+    // if current shred | 1.5.1.3 (ge) added
+    if( out == m_current_shred )
+    {
+        // flag as done, and let the VM gracefully clean up the current shred
+        m_current_shred->is_done = TRUE;
+        m_current_shred->is_abort = TRUE;
+        return TRUE;
+    }
+
     // sanity check
     if( !out->prev && !out->next && out != shred_list )
         return FALSE;
@@ -2639,9 +2711,9 @@ void Chuck_VM_Shreduler::status()
     t_CKUINT h = m_status.t_hour;
     t_CKUINT m = m_status.t_minute;
     t_CKUINT sec = m_status.t_second;
-    EM_print2magenta( "(VM) status | # of shreds in VM: %ld", m_status.list.size() );
-    EM_print2vanilla( "chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
-    EM_print2vanilla( "earth time: %s", timestamp_formatted().c_str() );
+    EM_print2magenta( "(VM status) # of shreds in VM: %ld", m_status.list.size() );
+    EM_print2magenta( "local time: %s", timestamp_formatted().c_str() );
+    EM_print2magenta( "chuck time: %.0f::samp (%ldh%ldm%lds)", m_status.now_system, h, m, sec );
 
     // print status
     if( m_status.list.size() ) EM_print2vanilla( "--------" );

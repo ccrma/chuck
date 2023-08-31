@@ -7215,7 +7215,7 @@ null_pointer:
 void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     Chuck_Object **& sp = (Chuck_Object **&)shred->reg->sp;
-    Chuck_Object *src_obj, *dst_obj;
+    Chuck_Object * src_obj = NULL, * dst_obj = NULL;
     t_CKINT num_in;
 
     // pop

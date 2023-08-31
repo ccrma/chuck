@@ -9,7 +9,7 @@
 HnkyTonk g; // instance for shorthand, you'll see...
 HnkyTonk guit[6];
 NRev r => dac;  
-0.25 => r.gain; 0.07 => r.mix;
+0.15 => r.gain; 0.07 => r.mix;
 
 [0,0,0,0] @=> int waveForms[];
 [97,71,77,81] @=> int opGains[];

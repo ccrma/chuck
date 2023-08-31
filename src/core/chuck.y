@@ -410,12 +410,12 @@ array_empty
 
 decl_expression
         : conditional_expression            { $$ = $1; }
-        | type_decl var_decl_list           { $$ = new_exp_decl( $1, $2, 0, @1.first_line, @1.first_column ); }
-        | EXTERNAL type_decl var_decl_list  { $$ = new_exp_decl_external( $2, $3, 0, @1.first_line, @1.first_column ); }
-        | GLOBAL type_decl var_decl_list    { $$ = new_exp_decl_global( $2, $3, 0, @1.first_line, @1.first_column ); }
-        | STATIC type_decl var_decl_list    { $$ = new_exp_decl( $2, $3, 1, @1.first_line, @1.first_column ); }
-        | SAME var_decl_list                { $$ = new_exp_decl( NULL, $2, 0, @1.first_line, @1.first_column ); }
-        | STATIC SAME var_decl_list         { $$ = new_exp_decl( NULL, $3, 1, @1.first_line, @1.first_column ); }
+        | type_decl var_decl_list           { $$ = new_exp_decl( $1, $2, 0, 0, @1.first_line, @1.first_column ); }
+        | EXTERNAL type_decl var_decl_list  { $$ = new_exp_decl_external( $2, $3, 0, 0, @1.first_line, @1.first_column ); }
+        | GLOBAL type_decl var_decl_list    { $$ = new_exp_decl_global( $2, $3, 0, 0, @1.first_line, @1.first_column ); }
+        | STATIC type_decl var_decl_list    { $$ = new_exp_decl( $2, $3, 1, 0, @1.first_line, @1.first_column ); }
+        | SAME var_decl_list                { $$ = new_exp_decl( NULL, $2, 0, 0, @1.first_line, @1.first_column ); }
+        | STATIC SAME var_decl_list         { $$ = new_exp_decl( NULL, $3, 1, 0, @1.first_line, @1.first_column ); }
         ;
 
 var_decl_list

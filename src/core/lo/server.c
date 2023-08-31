@@ -474,7 +474,11 @@ void lo_server_free(lo_server s)
                 lo_client_sockets.tcp = -1;
             }
 
+#ifdef _WIN32 // chuck-1.5.1.3 (ge) windows use closesocket()
+            closesocket( s->sockets[i].fd );
+#else
             close(s->sockets[i].fd);
+#endif`
             s->sockets[i].fd = -1;
         }
     }
@@ -565,7 +569,11 @@ void *lo_server_recv_raw_stream(lo_server s, size_t *size)
             || s->sockets[i].revents == POLLHUP)
         {
             if (i>0) {
-                close(s->sockets[i].fd);
+#ifdef _WIN32 // chuck-1.5.1.3 (ge) windows use closesocket()
+                closesocket( s->sockets[i].fd );
+#else
+                close( s->sockets[i].fd );
+#endif`
                 lo_server_del_socket(s, i, s->sockets[i].fd);
                 continue;
             }
@@ -610,14 +618,22 @@ void *lo_server_recv_raw_stream(lo_server s, size_t *size)
             }
 
             if (i<0) {
-                close(sock);
+#ifdef _WIN32 // chuck-1.5.1.3 (ge) windows use closesocket()
+                closesocket( sock );
+#else
+                close( sock );
+#endif`
                 return NULL;
             }
 
             ret = recv(sock, &read_size, sizeof(read_size), 0);
             read_size = ntohl(read_size);
             if (read_size > LO_MAX_MSG_SIZE || ret <= 0) {
-                close(sock);
+#ifdef _WIN32 // chuck-1.5.1.3 (ge) windows use closesocket()
+                closesocket( sock );
+#else
+                close( sock );
+#endif`
                 lo_server_del_socket(s, i, sock);
                 if (ret > 0)
                     lo_throw(s, LO_TOOBIG, "Message too large", "recv()");
@@ -625,7 +641,11 @@ void *lo_server_recv_raw_stream(lo_server s, size_t *size)
             }
             ret = recv(sock, buffer, read_size, 0);
             if (ret <= 0) {
-                close(sock);
+#ifdef _WIN32 // chuck-1.5.1.3 (ge) windows use closesocket()
+                closesocket( sock );
+#else
+                close( sock );
+#endif`
                 lo_server_del_socket(s, i, sock);
                 continue;
             }

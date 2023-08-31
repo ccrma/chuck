@@ -331,15 +331,15 @@ struct Chuck_Namespace : public Chuck_VM_Object
         /* TODO: CK_SAFE_DELETE( dtor ); */
     }
 
-    // look up type
-    Chuck_Type * lookup_type( const std::string & name, t_CKINT climb = 1 );
-    Chuck_Type * lookup_type( S_Symbol name, t_CKINT climb = 1 );
     // look up value
-    Chuck_Value * lookup_value( const std::string & name, t_CKINT climb = 1 );
-    Chuck_Value * lookup_value( S_Symbol name, t_CKINT climb = 1 );
+    Chuck_Value * lookup_value( const std::string & name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
+    Chuck_Value * lookup_value( S_Symbol name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
+    // look up type
+    Chuck_Type * lookup_type( const std::string & name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
+    Chuck_Type * lookup_type( S_Symbol name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
     // look up func
-    Chuck_Func * lookup_func( const std::string & name, t_CKINT climb = 1 );
-    Chuck_Func * lookup_func( S_Symbol name, t_CKINT climb = 1 );
+    Chuck_Func * lookup_func( const std::string & name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
+    Chuck_Func * lookup_func( S_Symbol name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
 
     // commit the maps
     void commit() {
@@ -1009,7 +1009,7 @@ Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.5.0.0 (ge) added
 Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid );
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
-Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, int linepos = 0 );
+Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, t_CKBOOL stayWithClassDef = FALSE, int linepos = 0 );
 Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
 // convert a vector of type names to a vector of Types | 1.5.0.0 (ge) added
 void type_engine_names2types( Chuck_Env * env, const std::vector<std::string> & typeNames, std::vector<Chuck_Type *> & types );

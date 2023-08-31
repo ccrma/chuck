@@ -2415,9 +2415,10 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         value->addr = var_decl->addr;
         // flag it until the decl is checked
         value->is_decl_checked = FALSE;
-
         // flag as global
         value->is_global = decl->is_global;
+        // flag as const | 1.5.1.3 (ge) added
+        value->is_const = decl->is_const;
 
         // dependency tracking: remember the code position of the DECL | 1.5.0.8
         // do only if file-top-level or class-top-level, but not global
@@ -2903,6 +2904,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // function args not owned
         v->owner_class = NULL; CK_SAFE_ADD_REF( v->owner_class );
         v->is_member = FALSE;
+        v->is_const = FALSE; // 1.5.1.3 (ge) added explicitly for future reference
         // later: add as value
         // symbols.push_back( arg_list );
         // values.push_back( v );
@@ -3027,10 +3029,9 @@ error:
         env->func = NULL;
         // break func_ref <-> value_ref cycle, at least here
         CK_SAFE_RELEASE( func->value_ref );
-        // release
-        CK_SAFE_RELEASE(value);
-        CK_SAFE_RELEASE(type);
-        CK_SAFE_RELEASE(func);
+        // value, type, func shouldn't be released here | 1.5.1.3
+        // should be cleanup with the overall context
+        // CK_SAFE_RELEASE(value); CK_SAFE_RELEASE(type); CK_SAFE_RELEASE(func);
     }
 
     return FALSE;

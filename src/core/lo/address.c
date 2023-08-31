@@ -185,16 +185,22 @@ char *lo_address_get_url(lo_address a)
     return buf;
 }
 
-void lo_address_free(lo_address a)
+void lo_address_free( lo_address a )
 {
-    if (a) {
-	if (a->socket != -1) {
-	    close(a->socket);
-	}
-	if (a->host) free(a->host);
-	if (a->port) free(a->port);
-	if (a->ai) freeaddrinfo(a->ai);
-	free(a);
+    if( a ) {
+        if( a->socket != -1 ) {
+        #ifdef _WIN32
+            // windows sockets are kernel handles; use closesocket() | chuck-1.5.1.3 (ge) added
+            closesocket( a->socket );
+        #else
+            // *nix-style sockets are file descriptors; use close()
+            close( a->socket );
+        #endif
+        }
+        if( a->host ) free( a->host );
+        if( a->port ) free( a->port );
+        if( a->ai ) freeaddrinfo( a->ai );
+        free( a );
     }
 }
 

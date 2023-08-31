@@ -1005,7 +1005,7 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     t_CKUINT start_index = emit->next_index();
 
     // get data kind and size relevant to array
-    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type);
+    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type );
     t_CKUINT dataSize = stmt->theIter->type->size;
     // compare branch condition and increment loop counter
     op = new Chuck_Instr_ForEach_Inc_And_Branch( dataKind, dataSize );
@@ -2392,10 +2392,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         case te_array:
+        {
             // check size (1.3.1.0: changed to getkindof)
-            emit->append( instr = new Chuck_Instr_Array_Append( getkindof( emit->env, t_left->array_type ) ) );
+            t_CKUINT kind = getkindof( emit->env, t_left->array_type );
+            // but if array depth > 1, we are actulaly dealing with pointers, hence back to INT
+            if( t_left->array_depth > 1 ) kind = kindof_INT;
+            emit->append( instr = new Chuck_Instr_Array_Append( kind ) );
             instr->set_linepos( lhs->line );
             break;
+        }
 
         default: break;
         }
@@ -4546,38 +4551,52 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
     t_CKBOOL is_array = FALSE;
     t_CKBOOL needs_global_ctor = FALSE;
 
-    t_CKTYPE t = type_engine_find_type( emit->env, decl->type->xid );
-    te_GlobalType globalType = te_globalTypeNone; // added 1.4.0.1 (jack)
-
+    // chuck type (for global emission use)
+    t_CKTYPE tglobals = NULL;
+    // handling global decls | 1.4.0.1 (jack) added
+    te_GlobalType globalType = te_globalTypeNone;
+    // declared as global?
     if( decl->is_global )
     {
-        if( isa( t, emit->env->ckt_int ) )
+        // moved into global section | 1.5.1.3
+        // NOTE inner classes definition (experimental) is not found this way (but works otherwise)
+        tglobals = type_engine_find_type( emit->env, decl->type->xid );
+        // check return | 1.5.1.3 (ge)
+        if( !tglobals )
+        {
+            // fail if type unsupported
+            EM_error2( decl->type->where, "unsupported type for global keyword: '%s'", decl->ck_type->base_name.c_str() );
+            EM_error2( 0, "(supported types: int, float, string, Event, UGen, Object)" );
+            return FALSE;
+        }
+
+        if( isa( tglobals, emit->env->ckt_int ) )
         {
             globalType = te_globalInt;
         }
-        else if( isa( t, emit->env->ckt_float ) )
+        else if( isa( tglobals, emit->env->ckt_float ) )
         {
             globalType = te_globalFloat;
         }
-        else if( isa( t, emit->env->ckt_string ) )
+        else if( isa( tglobals, emit->env->ckt_string ) )
         {
             globalType = te_globalString;
         }
-        else if( isa( t, emit->env->ckt_event ) )
+        else if( isa( tglobals, emit->env->ckt_event ) )
         {
             // kind-of-event (te_Type for this would be te_user, which is not helpful)
             globalType = te_globalEvent;
             // need to call ctors
             needs_global_ctor = TRUE;
         }
-        else if( isa( t, emit->env->ckt_ugen ) )
+        else if( isa( tglobals, emit->env->ckt_ugen ) )
         {
             // kind-of-ugen (te_Type might not be te_ugen, so we store globalUGen in our own field)
             globalType = te_globalUGen;
             // need to call ctors
             needs_global_ctor = TRUE;
         }
-        else if( isa( t, emit->env->ckt_object ) )
+        else if( isa( tglobals, emit->env->ckt_object ) )
         {
             // kind-of-object (te_Type might not be te_object, so we store globalObject in our own field)
             globalType = te_globalObject;
@@ -4587,7 +4606,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         else
         {
             // fail if type unsupported
-            EM_error2( decl->type->where, (std::string("unsupported type for global keyword: ") + t->base_name).c_str() );
+            EM_error2( decl->type->where, (std::string("unsupported type for global keyword: ") + tglobals->base_name).c_str() );
             EM_error2( 0, "(supported types: int, float, string, Event, UGen, Object)" );
             return FALSE;
         }
@@ -4790,12 +4809,12 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     if( globalType == te_globalEvent )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->globals_manager()->init_global_event( value->name, t ) )
+                        if( !emit->env->vm()->globals_manager()->init_global_event( value->name, tglobals ) )
                         {
                             // if the type doesn't exactly match (different kinds of Event), then fail.
                             EM_error2( decl->where,
                                 "global Event '%s' has different type '%s' than already existing global Event of the same name",
-                                value->name.c_str(), t->base_name.c_str() );
+                                value->name.c_str(), tglobals->base_name.c_str() );
                             return FALSE;
                         }
                     }
@@ -4803,12 +4822,12 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     else if( globalType == te_globalUGen )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->globals_manager()->init_global_ugen( value->name, t ) )
+                        if( !emit->env->vm()->globals_manager()->init_global_ugen( value->name, tglobals ) )
                         {
                             // if the type doesn't exactly match (different kinds of UGen), then fail.
                             EM_error2( decl->where,
                                 "global UGen '%s' has different type '%s' than already existing global UGen of the same name",
-                                value->name.c_str(), t->base_name.c_str() );
+                                value->name.c_str(), tglobals->base_name.c_str() );
                             return FALSE;
                         }
                     }
@@ -4816,12 +4835,12 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     else if( globalType == te_globalObject )
                     {
                         // init and construct it now!
-                        if( !emit->env->vm()->globals_manager()->init_global_object( value->name, t ) )
+                        if( !emit->env->vm()->globals_manager()->init_global_object( value->name, tglobals ) )
                         {
                             // if the type doesn't exactly match (different types), then fail.
                             EM_error2( decl->where,
                                       "global Object '%s' has different type '%s' than already existing global Object of the same name",
-                                      value->name.c_str(), t->base_name.c_str() );
+                                      value->name.c_str(), tglobals->base_name.c_str() );
                             return FALSE;
                         }
                     }

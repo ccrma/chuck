@@ -1,0 +1,6 @@
+error-const-inc-2.ck:4:3: error: cannot chuck/assign '+=>' to 'Math.PI'...
+[4] 2 +=> Math.PI;
+      ^
+error-const-inc-2.ck:4:7: error: ...(reason: 'Math.PI' is a constant, and is not assignable)
+[4] 2 +=> Math.PI;
+          ^

@@ -1,0 +1,6 @@
+error-const-inc-1.ck:2:3: error: cannot chuck/assign '+=>' to 'pi'...
+[2] 1 +=> pi;
+      ^
+error-const-inc-1.ck:2:7: error: ...(reason: 'pi' is a constant, and is not assignable)
+[2] 1 +=> pi;
+          ^

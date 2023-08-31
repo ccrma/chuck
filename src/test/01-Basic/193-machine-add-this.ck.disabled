@@ -1,0 +1,3 @@
+// test argument passing through Machine.add()
+if( me.arg(0) == "foo" && me.arg(1) == "1" && me.arg(2) == "2" )
+    <<< "success" >>>;

@@ -677,7 +677,7 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
         EM_error2( 0, "internal error loading module '%s.%s'...",
                    nspc, name );
         if( query_failed )
-        EM_error2( 0, " |- reason: %s", dll->last_error() );
+        EM_error2( 0, "...(reason: %s)", dll->last_error() );
 
         return FALSE;
     }
@@ -737,9 +737,6 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // load
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
     if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
-    #ifndef __DISABLE_OTF_SERVER__
-    machine_init( compiler, otf_process_msg );
-    #endif
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );

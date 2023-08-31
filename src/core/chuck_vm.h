@@ -505,7 +505,7 @@ public: // shredsuck
     t_CKUINT next_id();
     // the last used spork ID
     t_CKUINT last_id() const;
-    // reset ID to lowest current ID + 1; returns what next ID would be
+    // reset ID to highest current ID + 1; returns what next ID would be
     t_CKUINT reset_id();
     // the current chuck time | 1.5.0.8
     t_CKTIME now() const;
@@ -536,15 +536,18 @@ public: // VM message queue
     // process a VM message immediately (synchronous but not thread-safe)
     // NOTE assumes msg is dynamically allocated using `new`; will be deleted by VM
     // NOTE this processes the msg immediately on calling thread
-    t_CKUINT process_msg( Chuck_Msg * msg );
+    t_CKUINT process_msg( Chuck_Msg * & msg );
     // get reply from reply buffer
     Chuck_Msg * get_reply();
 
     // CBufferSimple added 1.3.0.0 to fix uber-crash
     t_CKBOOL queue_event( Chuck_Event * event, t_CKINT num_msg = 1, CBufferSimple * buffer = NULL );
-    // added 1.3.0.0 to fix uber-crash
+    // added 1.3.0.0 to fix uber-crash (allocates and attaches new buffer)
     CBufferSimple * create_event_buffer();
+    // added 1.3.0.0 to fix uber-crash (detaches and deletes buffer)
     void destroy_event_buffer( CBufferSimple * buffer );
+    // added 1.5.1.3 for granularity in handling synchronization
+    void detach_event_buffer_without_delete( CBufferSimple * buffer );
 
 public: // get error
     const char * last_error() const

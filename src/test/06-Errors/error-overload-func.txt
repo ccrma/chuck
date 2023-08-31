@@ -1,0 +1,4 @@
+error-overload-func.ck:6:1: error: cannot overload functions with identical arguments...
+[6] fun void bar()
+    ^
+    |- 'void bar(  )' already defined elsewhere
