@@ -230,6 +230,7 @@ CK_DLL_MFUN( string_substringN);
 CK_DLL_MFUN( string_insert);
 CK_DLL_MFUN( string_replace);
 CK_DLL_MFUN( string_replaceN);
+CK_DLL_MFUN( string_replace_str);
 CK_DLL_MFUN( string_find);
 CK_DLL_MFUN( string_findStart);
 CK_DLL_MFUN( string_findStr);
