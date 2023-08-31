@@ -20,7 +20,18 @@ float foo[4];
 string keys[0];
 foo.getKeys(keys);
 
-<<< keys[0], keys[1] >>>;
+// print all keys current in foo
+for( auto key : keys )
+{
+    <<< "key:", key >>>;
+}
+
+// isInMap
+<<< "(isInMap?)",
+    "\nyiyi:", foo.isInMap("yiyi"),
+    "\nyoyo:", foo.isInMap("yoyo"),
+    "\ngaga:", foo.isInMap("gaga"),
+    "\nNONO:", foo.isInMap("NONO") >>>;
 
 // call .help() on an array to get more information about its type, methods, etc.
 // foo.help();
