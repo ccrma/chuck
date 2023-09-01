@@ -370,7 +370,7 @@ MidiInManager::MidiInManager()
 MidiInManager::~MidiInManager()
 {
     // yeah right
-    //vm->destroy_event_buffer( m_event_buffer );
+    // vm->destroy_event_buffer( m_event_buffer );
 }
 
 

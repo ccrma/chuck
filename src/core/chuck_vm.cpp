@@ -704,11 +704,27 @@ CBufferSimple * Chuck_VM::create_event_buffer()
 //-----------------------------------------------------------------------------
 // name: destroy_event_buffer()
 // desc: added 1.3.0.0 to fix uber-crash
+//       updated 1.5.13 and broken into two parts
 //-----------------------------------------------------------------------------
 void Chuck_VM::destroy_event_buffer( CBufferSimple * buffer )
 {
+    // always detach, even if buffer already detached by external calls
+    this->detach_event_buffer_without_delete( buffer );
+    // reclaim
+    CK_SAFE_DELETE( buffer );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: detach_event_buffer_without_delete() | 1.5.1.3
+// desc: detach event buffer from VM, without deleting buffer
+//-----------------------------------------------------------------------------
+void Chuck_VM::detach_event_buffer_without_delete( CBufferSimple * buffer )
+{
+    // detach
     m_event_buffers.remove( buffer );
-    delete buffer;
 }
 
 

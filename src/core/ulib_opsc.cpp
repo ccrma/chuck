@@ -57,6 +57,7 @@
 #include "util_string.h"
 #include "util_thread.h"
 
+#include <algorithm> // 1.5.1.3 | for find
 
 #if _MSC_VER
 #define snprintf _snprintf
@@ -97,7 +98,125 @@ struct CkOscMsg
 };
 
 
-class OscIn;
+
+class OscIn : public Chuck_VM_Object
+{
+public:
+    // constructor
+    OscIn(Chuck_Event * event, Chuck_VM * vm) :
+    m_event(event),
+    m_vm(vm),
+    m_port(-1),
+    m_oscMsgBuffer(CircularBuffer<OscMsg>(1024))
+    {
+        m_eventBuffer = m_vm->create_event_buffer();
+    }
+
+    // destructor | 1.5.1.3 (ge) reworked in tracking down this years-old issue
+    //-------------------------------------------------------------------------
+    // https://github.com/ccrma/chuck/issues/93 (filed 2017; resolved 2013)
+    // FYI issue was caused by two related problems, especially when multiple
+    //     OscIn and shreds are listening to the same address:
+    // 1) audio thread deletes OscIn; server thread may still call it afterwards
+    // 2) previously ADD_METHOD, REMOVE_METHOD, REMOVEALL_METHODS do not
+    //    correctly handle multiple client OscIn listening for same OSC method
+    // ---
+    // CLEANUP address 1) race condition between audio thread & server thread
+    // -> (chuck) OscIn object deletion
+    // -> (c++; VM thread) trigger this shutdown_begin()
+    //        - which sends a message to unregister all methods from server
+    //        - OscIn, an internal data structure no visibile in from chuck
+    //          now inherits Chuck_VM_Object to use its reference counting
+    //        - also sends a message to release ref count on this client
+    //        - OscIn release ref count on this OscIn (from oscin_dtor())
+    // -> (c++; server thread) eventually processes the unregistering of methods
+    //        - race condition: this thread may be within OscIn's handler with stale data
+    //          (previously caused a crash before we moved to reference-counting OscIn)
+    //        - now the there is a mechanism to release ref count on this OscIn
+    //          (this OscIn should be deleted only when both threads are done with it)
+    // ---
+    // (SERVER DISPATCH REWORK addresses part 2), throughout OscInServer above)
+    //-------------------------------------------------------------------------
+    ~OscIn()
+    {
+        // delete event buffer (see shutdown_begin() for more explanation)
+        m_vm->destroy_event_buffer( m_eventBuffer );
+        // zero the pointer
+        m_eventBuffer = NULL;
+
+        // zero out
+        m_vm = NULL;
+        m_event = NULL;
+    }
+
+    void shutdown_begin()
+    {
+        // detach event buffer from VM without deleting yet
+        // NOTE event buffer may still be in play on server thread and used in OscIn::handler()
+        m_vm->detach_event_buffer_without_delete(m_eventBuffer);
+        // unregister OSC methods
+        removeAllMethods();
+        // queue up message to release this client
+        releaseThisClient();
+    }
+
+public:
+    void addMethod(const std::string &method);
+    void removeMethod(const std::string &method);
+    void removeAllMethods();
+    void releaseThisClient();
+
+    t_CKBOOL get(OscMsg &msg)
+    {
+        return m_oscMsgBuffer.get(msg);
+    }
+
+    int port(int port)
+    {
+        m_port = port;
+        return m_port;
+    }
+
+    // get port
+    int port();
+
+public:
+    // called by OscInServer to process a message
+    int handler( const char *path, const char *types, lo_arg **argv, int argc, lo_message _msg )
+    {
+        OscMsg msg;
+        msg.path = path;
+        msg.type = types;
+
+        for(int i = 0; i < argc; i++)
+        {
+            OscMsg::OscArg arg;
+
+            switch(types[i])
+            {
+                case 'i': arg.i = argv[i]->i; break;
+                case 'f': arg.f = argv[i]->f; break;
+                case 's': arg.s = &(argv[i]->s); break;
+                default:
+                    EM_error3("OscIn: error: unhandled OSC type '%c'", types[i]);
+            }
+
+            msg.args.push_back(arg);
+        }
+
+        m_oscMsgBuffer.put(msg);
+        m_vm->queue_event(m_event, 1, m_eventBuffer);
+
+        return -1;
+    }
+
+private:
+    Chuck_VM * m_vm;
+    Chuck_Event * m_event;
+    int m_port;
+    CBufferSimple * m_eventBuffer;
+    CircularBuffer<OscMsg> m_oscMsgBuffer;
+};
 
 class OscInServer
 {
@@ -145,6 +264,17 @@ public:
         OscInMsg msg;
 
         msg.msg_type = OscInMsg::REMOVEALL_METHODS;
+        msg.obj = obj;
+
+        m_inMsgBuffer.put(msg);
+    }
+
+    // release ref for the specified client (OscIn)
+    void releaseClient(OscIn * obj)
+    {
+        OscInMsg msg;
+
+        msg.msg_type = OscInMsg::RELEASE_CLIENT;
         msg.obj = obj;
 
         m_inMsgBuffer.put(msg);
@@ -216,6 +346,7 @@ private:
             ADD_METHOD,
             REMOVE_METHOD,
             REMOVEALL_METHODS,
+            RELEASE_CLIENT, // 1.5.1.3
         };
 
         Type msg_type;
@@ -255,110 +386,147 @@ private:
         std::string type;
         t_CKBOOL notype;
 
+        // default constructor
+        Method() : nopath(FALSE), notype(FALSE) { }
+
+        // copy constructor
+        Method( const Method & m )
+        {
+            path = m.path;
+            nopath = m.nopath;
+            type = m.type;
+            notype = m.notype;
+        }
+
         bool operator==(const Method &m) const
         {
             return path == m.path && nopath == m.nopath && type == m.type && notype == m.notype;
         }
+
+        // need this operator in order to use as key in map
+        bool operator<(const Method & rhs) const
+        {
+            // comparing nopath and notype works because t_CKBOOL are really ints (but we will cast anyway)
+            return ( path < rhs.path || type < rhs.type ||
+                     (t_CKUINT)nopath < (t_CKUINT)rhs.nopath || (t_CKUINT)notype < (t_CKUINT)rhs.notype );
+        }
     };
 
+    // data structure to hold user_data for liblo callback on incoming message
+    struct HandlerData
+    {
+        OscInServer * server;
+        Method method;
+
+        HandlerData( OscInServer * s, const Method & m )
+        : server(s), method(m)
+        {
+            // std::cerr << "HANDLER DATA CREATE: " << (t_CKUINT)this << std::endl;
+        }
+
+        ~HandlerData()
+        {
+            // std::cerr << "HANDLER DATA DESTROY: " << (t_CKUINT)this << std::endl;
+        }
+
+    };
+
+    // each map entry is an OscIn and its associated list of added OSC methods
     std::map<OscIn *, std::list<Method> > m_methods;
-};
+    // handler data map to track the handler data structre for each unique OSC method | 1.5.1.3
+    std::map<Method, HandlerData *> m_handlerDataMap;
 
-std::map<int, OscInServer *> OscInServer::s_oscIn;
-
-
-
-class OscIn
-{
-public:
-    OscIn(Chuck_Event * event, Chuck_VM * vm) :
-    m_event(event),
-    m_vm(vm),
-    m_port(-1),
-    m_oscMsgBuffer(CircularBuffer<OscMsg>(1024))
+    // assess how many TOTAL OscIn clients have added a particular OSC method | 1.5.1.3
+    t_CKUINT total_instances_in_use( const Method & method )
     {
-        m_eventBuffer = m_vm->create_event_buffer();
+        // the count
+        t_CKUINT count = 0;
+        // get iterator to methods map
+        std::map<OscIn *, std::list<Method> >::iterator m;
+        // iterate over all clients
+        for( m = m_methods.begin(); m != m_methods.end(); m++)
+        {
+            // each entry is <OscIn *, list<Method> >
+            // if see this entry contains the method in question
+            if( std::find(m->second.begin(), m->second.end(), method) != m->second.end() )
+                count++;
+        }
+        // done
+        return count;
     }
 
-    ~OscIn()
-    {
-        removeAllMethods();
-
-        CBufferSimple * t_eventBuffer = m_eventBuffer;
-        m_eventBuffer = NULL;
-        m_vm->destroy_event_buffer(t_eventBuffer);
-
-        m_vm = NULL;
-        m_event = NULL;
-    }
-
-
-    void addMethod(const std::string &method) { OscInServer::forPort(m_port)->addMethod(method, this); }
-    void removeMethod(const std::string &method) { OscInServer::forPort(m_port)->removeMethod(method, this); }
-    void removeAllMethods() { OscInServer::forPort(m_port)->removeAllMethods(this); }
-
-    t_CKBOOL get(OscMsg &msg)
-    {
-        return m_oscMsgBuffer.get(msg);
-    }
-
+    // called by liblo to handle a message
     static int s_handler(const char *path, const char *types,
                          lo_arg **argv, int argc,
                          lo_message msg, void *user_data)
     {
-        OscIn * _this = (OscIn *) user_data;
-        return _this->handler(path, types, argv, argc, msg);
-    }
+        // our user data
+        HandlerData * data = (HandlerData *)user_data;
+        // call to dispatch message
+        data->server->dispatch_to_client( path, types, argv, argc, msg, data->method );
 
-    int port(int port) { m_port = port; return m_port; }
-    int port()
-    {
-        // 1.5.0.0 (ge) simply return the current m_port
-        return m_port;
-        // previously (which returns an assigned port is always set)
-        // return OscInServer::forPort(m_port)->port();
-    }
-
-private:
-
-    Chuck_VM * m_vm;
-    Chuck_Event * m_event;
-    int m_port;
-    CBufferSimple * m_eventBuffer;
-    CircularBuffer<OscMsg> m_oscMsgBuffer;
-
-    int handler(const char *path, const char *types,
-                lo_arg **argv, int argc, lo_message _msg)
-    {
-        OscMsg msg;
-        msg.path = path;
-        msg.type = types;
-
-        for(int i = 0; i < argc; i++)
-        {
-            OscMsg::OscArg arg;
-
-            switch(types[i])
-            {
-                case 'i': arg.i = argv[i]->i; break;
-                case 'f': arg.f = argv[i]->f; break;
-                case 's': arg.s = &(argv[i]->s); break;
-                default:
-                    EM_error3("OscIn: error: unhandled OSC type '%c'", types[i]);
-            }
-
-            msg.args.push_back(arg);
-        }
-
-        m_oscMsgBuffer.put(msg);
-        m_vm->queue_event(m_event, 1, m_eventBuffer);
-
+        // not sure what to return, OscIn::handler() returned -1 so...
         return -1;
+    }
+
+public:
+    // is this server tracking a particular client (OscIn)
+    t_CKBOOL is_tracking( OscIn * obj )
+    {
+        return m_methods.count(obj) > 0;
+    }
+
+    // dispatch an incoming OSC message on this port to all clients listening
+    void dispatch_to_client( const char *path, const char *types,
+                             lo_arg **argv, int argc,
+                             lo_message msg, const Method & method )
+    {
+        // get iterator to methods map
+        std::map<OscIn *, std::list<Method> >::iterator m;
+        // iterate over all clients
+        for( m = m_methods.begin(); m != m_methods.end(); m++)
+        {
+            // each entry is <OscIn *, list<Method> >
+            // FILTER if see this entry contains the method in question
+            if( std::find(m->second.begin(), m->second.end(), method) != m->second.end() )
+            {
+                // call this entry/client's handler
+                m->first->handler( path, types, argv, argc, msg );
+            }
+        }
     }
 };
 
+std::map<int, OscInServer *> OscInServer::s_oscIn;
 
-void *OscInServer::server_cb()
+void OscIn::addMethod(const std::string &method)
+{ OscInServer::forPort(m_port)->addMethod(method, this); }
+
+void OscIn::removeMethod(const std::string &method)
+{ OscInServer::forPort(m_port)->removeMethod(method, this); }
+
+void OscIn::removeAllMethods()
+{ OscInServer::forPort(m_port)->removeAllMethods(this); }
+
+void OscIn::releaseThisClient()
+{ OscInServer::forPort(m_port)->releaseClient(this); }
+
+int OscIn::port()
+{
+    // 1.5.0.0 (ge) simply return the current m_port
+    if( m_port > 0 ) return m_port;
+
+    // 1.5.1.3 (ge) if m_port is 0, check for auto-assigned port
+    // NOTE auto-port is assigned on server thread, so chuck-side code
+    //      may wait for say a few hundred milliseconds to see port #
+    int port = OscInServer::forPort(m_port)->port();
+    if( port > 0 ) return port;
+
+    // out of ideas return 0
+    return 0;
+}
+
+void * OscInServer::server_cb()
 {
     lo_server m_server = NULL;
 
@@ -399,71 +567,137 @@ void *OscInServer::server_cb()
 
                 case OscInMsg::ADD_METHOD:
                 {
-                    if(lo_server_add_method(m_server,
-                                            msg.nopath ? NULL : msg.path.c_str(),
-                                            msg.notype ? NULL : msg.type.c_str(),
-                                            OscIn::s_handler, msg.obj))
-                    {
-                        if(!m_methods.count(msg.obj))
-                            m_methods[msg.obj] = std::list<Method>();
+                    Method m;
+                    m.path = msg.path;
+                    m.nopath = msg.nopath;
+                    m.type = msg.type;
+                    m.notype = msg.notype;
 
-                        Method m;
-                        m.path = msg.path;
-                        m.nopath = msg.nopath;
-                        m.type = msg.type;
-                        m.notype = msg.notype;
-                        m_methods[msg.obj].push_back(m);
-                    }
-                    else
+                    // check how many different OscIn care about this OSC method on this server | 1.5.1.3
+                    if( total_instances_in_use(m) == 0 )
                     {
-                        EM_error3("OscIn: error: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
+                        // instantiate handler data
+                        HandlerData * data = new HandlerData(this, m);
+                        // add to map so we can delete later
+                        m_handlerDataMap[m] = data;
+                        // add method
+                        if(!lo_server_add_method(m_server,
+                                                 msg.nopath ? NULL : msg.path.c_str(),
+                                                 msg.notype ? NULL : msg.type.c_str(),
+                                                 OscInServer::s_handler, (void *)data) )
+                        {
+                            EM_error3("OscIn: error: add_method failed for %s, %s", msg.path.c_str(), msg.type.c_str());
+                        }
+                    }
+
+                    // if no entry for this client OscIn, add one
+                    if( !m_methods.count(msg.obj) )
+                    {
+                        // add ref for the first
+                        CK_SAFE_ADD_REF(msg.obj);
+                        // create entry with empty list
+                        m_methods[msg.obj] = std::list<Method>();
+                    }
+
+                    // check whether already added for this client
+                    if( std::find(m_methods[msg.obj].begin(), m_methods[msg.obj].end(), m) == m_methods[msg.obj].end() )
+                    {
+                        // if not already added, add OSC method to list
+                        m_methods[msg.obj].push_back( m );
                     }
                 }
                 break;
 
                 case OscInMsg::REMOVE_METHOD:
                 {
-                    lo_server_del_method(m_server,
-                                         msg.nopath ? NULL : msg.path.c_str(),
-                                         msg.notype ? NULL : msg.type.c_str());
-                    if(m_methods.count(msg.obj))
+                    if( m_methods.count(msg.obj) )
                     {
                         Method m;
                         m.path = msg.path;
                         m.nopath = msg.nopath;
                         m.type = msg.type;
                         m.notype = msg.notype;
-                        m_methods[msg.obj].remove(m);
+
+                        // check this client cares
+                        if( std::find(m_methods[msg.obj].begin(), m_methods[msg.obj].end(), m) != m_methods[msg.obj].end() )
+                        {
+                            // remove from ourselves
+                            m_methods[msg.obj].remove(m);
+                        }
+
+                        // check how many different OscIn still care about this OSC method on this server
+                        t_CKUINT count = total_instances_in_use(m);
+                        // no one cares; no one is thinking about you (on the positive side, as one grows older, this realization can be quite liberating)
+                        if( count == 0 )
+                        {
+                            // remove from liblo
+                            lo_server_del_method( m_server,
+                                                  msg.nopath ? NULL : msg.path.c_str(),
+                                                  msg.notype ? NULL : msg.type.c_str());
+                            // free memory
+                            CK_SAFE_DELETE( m_handlerDataMap[m] );
+                            // erase the entry
+                            m_handlerDataMap.erase(m);
+                        }
                     }
                 }
                 break;
 
                 case OscInMsg::REMOVEALL_METHODS:
                 {
-                    if(m_methods.count(msg.obj))
+                    // if there is an entry for the client OscIn
+                    if( m_methods.count(msg.obj) )
                     {
-                        for(std::list<Method>::iterator i = m_methods[msg.obj].begin();
-                            i != m_methods[msg.obj].end(); i++)
+                        // iterate
+                        std::list<Method>::iterator i;
+                        for( i = m_methods[msg.obj].begin(); i != m_methods[msg.obj].end(); i++ )
                         {
-                            lo_server_del_method(m_server,
-                                                 i->nopath ? NULL : i->path.c_str(),
-                                                 i->notype ? NULL : i->type.c_str());
+                            // check how many different OscIn care about this OSC method on this server
+                            t_CKUINT count = total_instances_in_use(*i);
+                            // count == 1 means we are the only one
+                            // count > 1 means others care as well so we should leave it be)
+                            if( count == 1 )
+                            {
+                                // delete OSC method from liblo
+                                lo_server_del_method( m_server,
+                                                      i->nopath ? NULL : i->path.c_str(),
+                                                      i->notype ? NULL : i->type.c_str());
+                                // free memory for handler data
+                                CK_SAFE_DELETE( m_handlerDataMap[*i] );
+                                // erase the entry from the handler data map
+                                m_handlerDataMap.erase(*i);
+                            }
                         }
 
+                        // clear the contents of the list
                         m_methods[msg.obj].clear();
+                        // erase the entry in the methods map
                         m_methods.erase(msg.obj);
                     }
+                }
+                break;
+
+                // release ref count for client | 1.5.1.3
+                case OscInMsg::RELEASE_CLIENT:
+                {
+                    // release ref | 1.5.1.3
+                    CK_SAFE_RELEASE( msg.obj );
                 }
                 break;
             }
         }
 
+        // FYI this should be the server thread (not audio thread)
+        // check for new message with a 2ms timeout; there are are incoming message,
+        // a mechanism within this call will call us back on s_handler()
         lo_server_recv_noblock(m_server, 2);
     }
 
-    lo_server_free(m_server);
+    // done with this OscInServer
+    lo_server_free( m_server );
 
-    EM_log(CK_LOG_INFO, "OscIn: shutting down OSC server", m_port);
+    // local
+    EM_log( CK_LOG_INFO, "OscIn: shutting down OSC server on port %i", m_port );
 
     return NULL;
 }
@@ -853,13 +1087,16 @@ CK_DLL_DTOR(oscarg_dtor)
 
 CK_DLL_CTOR(oscin_ctor)
 {
-    OBJ_MEMBER_INT(SELF, oscin_offset_data) = (t_CKINT) new OscIn((Chuck_Event *) SELF, SHRED->vm_ref);
+    OscIn * oscin = new OscIn((Chuck_Event *) SELF, SHRED->vm_ref);
+    CK_SAFE_ADD_REF(oscin);
+    OBJ_MEMBER_INT(SELF, oscin_offset_data) = (t_CKINT) oscin;
 }
 
 CK_DLL_DTOR(oscin_dtor)
 {
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
-    CK_SAFE_DELETE(in);
+    in->shutdown_begin();
+    CK_SAFE_RELEASE(in);
     OBJ_MEMBER_INT(SELF, oscin_offset_data) = 0;
 }
 
@@ -930,16 +1167,6 @@ CK_DLL_MFUN(oscin_listenAll)
     OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
 
     in->addMethod("");
-
-// error:
-    return;
-}
-
-CK_DLL_MFUN(oscin_msg)
-{
-    OscIn * in = (OscIn *) OBJ_MEMBER_INT(SELF, oscin_offset_data);
-
-    in->removeAllMethods();
 
 // error:
     return;

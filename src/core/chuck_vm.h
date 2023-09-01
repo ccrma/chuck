@@ -542,9 +542,12 @@ public: // VM message queue
 
     // CBufferSimple added 1.3.0.0 to fix uber-crash
     t_CKBOOL queue_event( Chuck_Event * event, t_CKINT num_msg = 1, CBufferSimple * buffer = NULL );
-    // added 1.3.0.0 to fix uber-crash
+    // added 1.3.0.0 to fix uber-crash (allocates and attaches new buffer)
     CBufferSimple * create_event_buffer();
+    // added 1.3.0.0 to fix uber-crash (detaches and deletes buffer)
     void destroy_event_buffer( CBufferSimple * buffer );
+    // added 1.5.1.3 for granularity in handling synchronization
+    void detach_event_buffer_without_delete( CBufferSimple * buffer );
 
 public: // get error
     const char * last_error() const
