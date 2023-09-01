@@ -120,6 +120,9 @@ foo << bar;
 ```
 - (fixed) an issue with OscOut on Windows, which can crash on object cleanup
     due to incorrect windows-specific socket closing
+- (fixed; reworked) OSC dispatch for multiple OscIn clients listening on 
+    the same OSC address; the crash has bee resolved, and the OSC 
+    incoming server message dispatch has been reworked
 
 
 1.5.1.2 (August 2023)
