@@ -1,3 +1,8 @@
+// strops.ck some basic string operations
+//
+// for string API documentation, see:
+// https://chuck.stanford.edu/doc/reference/base.html#string
+
 // three strings
 "hello" => string foo;
 "hello" => string bar;

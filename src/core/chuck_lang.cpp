@@ -820,7 +820,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "void", "replace", string_replace );
     func->add_arg( "int", "position" );
     func->add_arg( "string", "str" );
-    func->doc = "get characters from the start position to the end of the string with str.";
+    func->doc = "replace characters from 'position' with contents of 'str'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add replace()
@@ -828,14 +828,14 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "position" );
     func->add_arg( "int", "length" );
     func->add_arg( "string", "str" );
-    func->doc = "get length characters from the start position with str.";
+    func->doc = "replace 'length' characters from 'position' with contents of 'str'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // substring replace() | 1.5.1.3 (nshaheed) added
     func = make_new_mfun( "void", "replace", string_replace_str );
     func->add_arg( "string", "from" );
     func->add_arg( "string", "to" );
-    func->doc = "find all instances of 'from' in the string and replace them with 'to'.";
+    func->doc = "replace all instances of 'from' in the string with 'to'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
@@ -932,6 +932,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add examples | 1.5.0.0 (ge) added
     if( !type_engine_import_add_ex( env, "string/strops.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/strops2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/replace.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/token.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/escape.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/tostr.ck" ) ) goto error;

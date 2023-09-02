@@ -1,3 +1,7 @@
+// testing string.replace( from, to )
+// added 1.5.1.3 (nshaheed)
+
+// Replace something
 "Hello, world!" => string replaced;
 replaced.replace("world", "Chuck");
 
@@ -42,4 +46,5 @@ if (replaced != "No replacement here!") {
    me.exit();
 }
 
+// done
 <<< "success" >>>;
