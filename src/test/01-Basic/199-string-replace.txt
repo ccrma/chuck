@@ -1,0 +1,13 @@
+"Hello, ChucK! Hello, ChucK!" :(string)
+"hello the world" :(string)
+"hello cat world" :(string)
+replace( 6, 0 ): hello kittycat world 
+replace( 6, 1 ): hello kittyat world 
+replace( 6, 2 ): hello kittyt world 
+replace( 6, 3 ): hello kitty world 
+replace( 6, 4 ): hello kittyworld 
+replace( 6, 5 ): hello kittyorld 
+replace( 6, 6 ): hello kittyrld 
+replace( 6, 7 ): hello kittyld 
+replace( 6, 8 ): hello kittyd 
+replace( 6, 9 ): hello kitty 

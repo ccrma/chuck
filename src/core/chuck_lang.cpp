@@ -820,7 +820,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "void", "replace", string_replace );
     func->add_arg( "int", "position" );
     func->add_arg( "string", "str" );
-    func->doc = "get characters from the start position to the end of the string with str.";
+    func->doc = "replace characters from 'position' with contents of 'str'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add replace()
@@ -828,7 +828,14 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "position" );
     func->add_arg( "int", "length" );
     func->add_arg( "string", "str" );
-    func->doc = "get length characters from the start position with str.";
+    func->doc = "replace 'length' characters from 'position' with contents of 'str'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // substring replace() | 1.5.1.3 (nshaheed) added
+    func = make_new_mfun( "void", "replace", string_replace_str );
+    func->add_arg( "string", "from" );
+    func->add_arg( "string", "to" );
+    func->doc = "replace all instances of 'from' in the string with 'to'.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add find()
@@ -925,6 +932,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // add examples | 1.5.0.0 (ge) added
     if( !type_engine_import_add_ex( env, "string/strops.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/strops2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "string/replace.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/token.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/escape.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "string/tostr.ck" ) ) goto error;
@@ -2552,6 +2560,29 @@ CK_DLL_MFUN(string_replaceN)
     std::string s = str->str();
     s.replace( position, length, str2->str() );
     str->set( s );
+}
+
+// string.replace(old, new) | 1.5.1.3 (nshaheed) added
+CK_DLL_MFUN(string_replace_str)
+{
+    // this is just a wrapper around std::replace
+    Chuck_String * str = (Chuck_String *) SELF;
+    std::string from = GET_NEXT_STRING_SAFE(ARGS);
+    std::string to = GET_NEXT_STRING_SAFE(ARGS);
+
+    std::string s = str->str();
+
+    // Taken from https://stackoverflow.com/a/3418285/20065423
+    if(from.empty())
+        return;
+    size_t start_pos = 0;
+
+    while((start_pos = s.find(from, start_pos)) != std::string::npos) {
+        s.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+
+    str->set(s);
 }
 
 CK_DLL_MFUN(string_find)

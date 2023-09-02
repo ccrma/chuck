@@ -60,6 +60,15 @@ ChucK VERSIONS log
 	** updated ** static int status();
 	    Print the current status of the VM.
 	-------------
+- (added) a new (3rd) string.replace() function
+	void replace( string from, string to );
+	    Replace all instances of 'from' in the string with 'to'.
+  (for referencethe existing string.replace() function)
+	void replace( int position, string str );
+	    Replace characters from 'position' with contents of 'str'.
+	void replace( int position, int length, string str );
+	    Replace 'length' characters from 'position' with contents of 'str'.
+- (added) examples/string/replace.ck
 - (updated) move real-time audio system warnings to log level "WARN"; this 
     should result in less clutter printed, in particular on Linux/ALSA.
 - (updated) CKDoc now prints class functions before variables
