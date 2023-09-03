@@ -487,7 +487,9 @@ void all_stop()
 {
     if( g_enable_realtime_audio )
     {
-        ChuckAudio::shutdown();
+        // argument is time to wait in ms | 1.5.1.3 (ge)
+        // this also seems to get rid of audio stutter on some macOS audio devices
+        ChuckAudio::shutdown( 100 );
     }
     // REFACTOR-2017: TODO: other things? le_cb?
 }

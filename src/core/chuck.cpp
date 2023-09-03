@@ -1471,7 +1471,7 @@ void ChucK::globalCleanup()
 
     #ifndef __ALTER_HID__
     // shutdown HID
-    HidInManager::cleanup();
+    HidInManager::cleanup( 100 );
     #endif // __ALTER_HID__
 
     #ifndef __DISABLE_SERIAL__

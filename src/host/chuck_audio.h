@@ -125,7 +125,7 @@ public:
                                 t_CKBOOL force_srate, // force_srate | 1.3.1.2 (added)
                                 const char * driver // NULL means default for build | 1.5.0.0 (added)
                                 );
-    static void shutdown();
+    static void shutdown( t_CKUINT msWait = 0 );
     static t_CKBOOL start();
     static t_CKBOOL stop();
 

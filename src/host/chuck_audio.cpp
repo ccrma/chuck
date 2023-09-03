@@ -1273,7 +1273,7 @@ t_CKBOOL ChuckAudio::stop( )
 // name: shutdown()
 // desc: ...
 //-----------------------------------------------------------------------------
-void ChuckAudio::shutdown()
+void ChuckAudio::shutdown( t_CKUINT msWait )
 {
     // check flag
     if( !m_init ) return;
@@ -1288,6 +1288,9 @@ void ChuckAudio::shutdown()
         // m_rtaudio->cancelStreamCallback();
         // m_rtaudio->stopStream();
         stop();
+
+        // wait for thread to wrap up | 1.5.1.3 (ge) added
+        if( msWait > 0 ) ck_usleep( msWait * 1000 );
     }
 
     // close stream

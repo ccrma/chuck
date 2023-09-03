@@ -36,6 +36,7 @@
 #include "util_hid.h"
 #include "chuck_errmsg.h"
 #include "chuck_vm.h"
+#include "util_platforms.h" // for ck_usleep()
 
 #ifndef __PLATFORM_WINDOWS__
 #include <unistd.h>
@@ -622,7 +623,7 @@ void HidInManager::init_default_drivers()
     default_drivers[CK_HID_DEV_MULTITOUCH].driver_name = "multitouch";
 }
 
-void HidInManager::cleanup()
+void HidInManager::cleanup( t_CKUINT msWait )
 {
     // log
     EM_log( CK_LOG_INFO, "shutting down HID..." );
@@ -642,6 +643,10 @@ void HidInManager::cleanup()
 
         // flag
         thread_going = FALSE;
+
+        // wait for thread to wrap up | 1.5.1.3 (ge) added
+        // appears needed to avert sometimes-crash on shutdown
+        if( msWait > 0 ) ck_usleep( msWait * 1000 );
 
         // break Hid_poll();
         Hid_quit();
