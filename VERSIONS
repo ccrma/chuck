@@ -12,22 +12,6 @@ ChucK VERSIONS log
     (One of our ongoing priorities is to make the language + tools 
     better for teaching, research, and of course music making.)
 
-- (updated) Machine.add( filepath ) no longer introduces a potential
-    real-time audio interruption on macOS ** for all filepath that does 
-    not contain ~ **; currently, path resolution for ~ or ~[username] in 
-    macOS  consistenly causes audio clicks, likely due to implementation 
-    of underlying system function (e.g., wordexp()) to resolve ~ 
-    (hypothesis: wordexp() function performs IO-blocking)
-- (added) function to expand platform specific file path
-	static string expandPath( string path );
-	    Expand platform-specific filepath to an absolute path, which 
-	    is returned. On macOS and Linux expandPath() will attempt to 
-	    resolve `~` or `~[username]`; on Windows expandPath() will 
-	    attempt to resolve %USERNAME%. (Known issue: (macOS) 
-	    expandPath currently introduced an audio click; it 
-	    recommended to call expandPath() at the beginning; e.g., 
-	    expanding path ahead of time could avoid a click instead of 
-	    calling Machine.add() on a filepath with `~`.)
 - (updated) Machine.add()/replace()/remove()/status() now re-implemented
     internally for both performance and greater compatibility (now can
     be used with no dependencies on OTF system, make it possible to call
@@ -64,6 +48,22 @@ ChucK VERSIONS log
 	** updated ** static int status();
 	    Print the current status of the VM.
 	-------------
+- (updated) Machine.add( filepath ) no longer introduces a potential
+    real-time audio interruption on macOS ** for all filepath that does 
+    not contain ~ **; currently, path resolution for ~ or ~[username] in 
+    macOS  consistenly causes audio clicks, likely due to implementation 
+    of underlying system function (e.g., wordexp()) to resolve ~ 
+    (hypothesis: wordexp() function performs IO-blocking)
+- (added) function to expand platform specific file path
+	static string expandPath( string path );
+	    Expand platform-specific filepath to an absolute path, which 
+	    is returned. On macOS and Linux expandPath() will attempt to 
+	    resolve `~` or `~[username]`; on Windows expandPath() will 
+	    attempt to resolve %USERNAME%. (Known issue: (macOS) 
+	    expandPath currently introduced an audio click; it 
+	    recommended to call expandPath() at the beginning; e.g., 
+	    expanding path ahead of time could avoid a click instead of 
+	    calling Machine.add() on a filepath with `~`.)
 - (added) a new (3rd) string.replace() function
 	void replace( string from, string to );
 	    Replace all instances of 'from' in the string with 'to'.
@@ -137,9 +137,9 @@ foo << bar;
     the same OSC address; the crash has bee resolved, and the OSC 
     incoming server message dispatch has been reworked
 - (re-added) 'Chubgraph' has been "re-deprecated", which actually means 
-    older code that use 'Chubraph' instead of 'Chugraph" will still work,
-    with the deprecation warning (previously `Chubgraph` would result in
-    a compiler error). Now will work with this deprecation warning:
+    older code that use 'Chubraph' instead of 'Chugraph" will now work
+    again, with the deprecation warning (previously `Chubgraph` would 
+    result in a compiler error):
     `deprecated: 'Chubgraph' --> use: 'Chugraph' instead`
 - (updated) minor improvements in compiler error reporting; more 
     accurate position accuracy for binary operators, including =>,
@@ -147,6 +147,16 @@ foo << bar;
 - (updated) log level 3 (SEVERE) has been renamed to (HERALD)
 - (updated) improved stability on ctrl-c shutdown for real-time audio
     and HID management
+---
+- (added) WebChucK support for Machine.add()/replace()/remove()/removeAll()
+- (added) WebChucK IDE now supports the ability to upload .ck files for 
+    Machine (@terryzfeng) https://chuck.stanford.edu/ide/
+- (updated) for Chugin developers, the `chuginate` tool has been 
+    modernized (@spencer and @gewang) -- 0) chuginate updated from using
+    python2 to python3; 1) in addition to a boilerplate C++ project for 
+    a chugin, chuginate now also generates a boilerplate NAME-test.ck 
+    ChucK program; 2) more informative comments in the boilerplate C++ 
+    code; 3) updated makefiles for all platforms.
 
 
 1.5.1.2 (August 2023)
