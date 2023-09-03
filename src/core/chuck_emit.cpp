@@ -5549,12 +5549,20 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
         // emit as this.v
         // BUG: passing "this" below might be bad if the exp is freed and string with it
-        a_Exp base = new_exp_from_id( (char *)"this", line, where );
-        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), line, where, where ); // TODO: 1.5.0.5 check this last memberPos
+        // ACTUALLY: this might be ok, since this would result in a S_symbol which allocates
+        //           new memory for the xid that would be "this" | 1.5.1.3
+        a_Exp base = new_exp_from_id( (char *)"this", (uint32_t)line, (uint32_t)where );
+        a_Exp dot = new_exp_from_member_dot( base, (char *)v->name.c_str(), (uint32_t)line, (uint32_t)where, (uint32_t)where ); // TODO: 1.5.0.5 check this last memberPos
+
+        // add information
         base->type = v->owner_class;
+        CK_SAFE_ADD_REF( base->type ); // 1.5.1.3
         dot->type = v->type;
+        CK_SAFE_ADD_REF( dot->type ); // 1.5.1.3
         dot->dot_member.t_base = v->owner_class;
+        CK_SAFE_ADD_REF( dot->dot_member.t_base ); // 1.5.1.3
         dot->emit_var = emit_var;
+
         // emit it
         if( !emit_engine_emit_exp_dot_member( emit, &dot->dot_member ) )
         {
@@ -5564,6 +5572,14 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             return FALSE;
         }
 
+        // delete locally-allocated case and dot | 1.5.1.3
+        // FYI: dot will implicitly delete base, so ONLY delete_exp( dot )
+        // TODO: is this safe? hopefully nothing within exp_dot_member() keeps a reference to either base or dot
+        delete_exp( dot );
+        // zero out for good measure
+        base = NULL; dot = NULL;
+
+        // done
         return TRUE;
     }
 
