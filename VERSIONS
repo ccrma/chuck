@@ -152,7 +152,7 @@ foo << bar;
 - (added) WebChucK IDE now supports the ability to upload .ck files for 
     Machine (@terryzfeng) https://chuck.stanford.edu/ide/
 - (updated) for Chugin developers, the `chuginate` tool has been 
-    modernized (@spencer and @gewang) -- 0) chuginate updated from using
+    modernized (spencer and ge) -- 0) chuginate updated from using
     python2 to python3; 1) in addition to a boilerplate C++ project for 
     a chugin, chuginate now also generates a boilerplate NAME-test.ck 
     ChucK program; 2) more informative comments in the boilerplate C++ 
