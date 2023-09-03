@@ -516,9 +516,22 @@ void EM_error2( t_CKINT pos, const char * message, ... )
 
     if( pos )
     {
+        // check for special message types | 1.5.1.3
+        const char * msgType = "error: ";
+        // copy into c++ string
+        string msg = message;
+        // look for special strings
+        if( msg.find("deprecated: ") == 0 )
+        {
+            // update msgType
+            msgType = "deprecated: ";
+            // skip the msgType
+            message += string(msgType).length();
+        }
+
         // print error only if there is non-zero line number
-        CK_FPRINTF_STDERR( "%s", TC::red("error: ", true).c_str() );
-        lastErrorCat( "error: " );
+        CK_FPRINTF_STDERR( "%s", TC::red(msgType,true).c_str() );
+        lastErrorCat( msgType );
     }
 
     va_start( ap, message );

@@ -132,6 +132,14 @@ foo << bar;
 - (fixed; reworked) OSC dispatch for multiple OscIn clients listening on 
     the same OSC address; the crash has bee resolved, and the OSC 
     incoming server message dispatch has been reworked
+- (re-added) 'Chubgraph' has been "re-deprecated", which actually means 
+    older code that use 'Chubraph' instead of 'Chugraph" will still work,
+    with the deprecation warning (previously `Chubgraph` would result in
+    a compiler error). Now will work with this deprecation warning:
+    `deprecated: 'Chubgraph' --> use: 'Chugraph' instead`
+- (updated) minor improvements in compiler error reporting; more 
+    accurate position accuracy for binary operators, including =>,
+    @=>, and =^
 
 
 1.5.1.2 (August 2023)

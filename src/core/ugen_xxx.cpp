@@ -139,7 +139,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     type_engine_register_deprecate( env, "delayp", "DelayP" );
     type_engine_register_deprecate( env, "sndbuf", "SndBuf" );
     // 1.5.0.0 (ge) removed deprecate; allow both
-    // type_engine_register_deprecate( env, "Chubgraph", "Chugraph" );
+    type_engine_register_deprecate( env, "Chubgraph", "Chugraph" );
 
     //! \section audio output
 

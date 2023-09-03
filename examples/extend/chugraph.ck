@@ -1,10 +1,11 @@
 // name: chugraph.ck
-// desc: pronounced "chuh-graph" -- rhymes with "subgraph"
+// desc: pronounced "chu-graph" -- rhymes with "chew-graph"
 //       create new UGens by compositing existing UGens!
 // note: (chuck-1.4.1.0 and up) "Chubgraph" deprecated; use "Chugraph"
+//       BTW deprecated Chubgraph rhymes with "subgraph"
 
 // make a plucked string
-class PluckedString extends Chubgraph // Chugraph
+class PluckedString extends Chugraph // Chubgraph
 {
     // karplus + strong plucked string filter
     // Ge Wang (gewang@cs.princeton.edu)

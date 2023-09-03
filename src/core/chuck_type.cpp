@@ -69,9 +69,9 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
-t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs );
-t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs );
-t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs );
+t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
+t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
+t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary );
 t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp );
@@ -2150,13 +2150,13 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         return type_engine_check_op_chuck( env, lhs, rhs, binary );
 
     case ae_op_unchuck:
-        return type_engine_check_op_unchuck( env, lhs, rhs );
+        return type_engine_check_op_unchuck( env, lhs, rhs, binary );
 
     case ae_op_upchuck:
-        return type_engine_check_op_upchuck( env, lhs, rhs );
+        return type_engine_check_op_upchuck( env, lhs, rhs, binary );
 
     case ae_op_at_chuck:
-        return type_engine_check_op_at_chuck( env, lhs, rhs );
+        return type_engine_check_op_at_chuck( env, lhs, rhs, binary );
 
     case ae_op_plus_chuck:
         if( isa( left, env->ckt_string ) && isa( right, env->ckt_string ) ) return env->ckt_string;
@@ -2354,7 +2354,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_op_chuck()
-// desc: ...
+// desc: type check chuck operator =>
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
                                      a_Exp_Binary binary )
@@ -2613,10 +2613,10 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
             // TODO: check overloading of =>
 
             // no match
-            EM_error2( lhs->where,
+            EM_error2( binary->where,
                 "cannot resolve operator '=>' on types '%s' and '%s'...",
                 left->c_name(), right->c_name() );
-            EM_error2( lhs->where,
+            EM_error2( binary->where,
                 "...(note: use '@=>' for object reference assignment)" );
             return NULL;
         }
@@ -2625,7 +2625,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     // TODO: check overloading of =>
 
     // no match
-    EM_error2( lhs->where,
+    EM_error2( binary->where,
         "cannot resolve operator '=>' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
@@ -2637,9 +2637,9 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_op_unchuck()
-// desc: ...
+// desc: type check unchuck operator =<
 //-----------------------------------------------------------------------------
-t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
+t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
     t_CKTYPE left = lhs->type, right = rhs->type;
 
@@ -2649,7 +2649,7 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     // TODO: check overloading of =<
 
     // no match
-    EM_error2( lhs->where,
+    EM_error2( binary->where,
         "cannot resolve operator '=<' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
@@ -2661,9 +2661,9 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_op_upchuck()
-// desc: ...
+// desc: type check upchuck operator =^
 //-----------------------------------------------------------------------------
-t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
+t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
     t_CKTYPE left = lhs->type, right = rhs->type;
 
@@ -2673,7 +2673,7 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     // TODO: check overloading of =^
 
     // no match
-    EM_error2( lhs->where,
+    EM_error2( binary->where,
         "cannot resolve operator '=^' on types '%s' and '%s'",
         left->c_name(), right->c_name() );
 
@@ -2685,9 +2685,9 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_op_at_chuck()
-// desc: ...
+// desc: type check at-chuck operator @=>
 //-----------------------------------------------------------------------------
-t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
+t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
     t_CKTYPE left = lhs->type, right = rhs->type;
 
@@ -2708,10 +2708,10 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     // make sure mutable
     if( rhs->s_meta != ae_meta_var )
     {
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "cannot assign '@=>' on types '%s' @=> '%s'...",
             left->c_name(), right->c_name() );
-        EM_error2( lhs->where,
+        EM_error2( rhs->where,
             "...(reason: right-side operand is not mutable)" );
         return NULL;
     }
@@ -2749,10 +2749,10 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs )
     // primitive
     if( !isa( left, right ) )
     {
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "cannot assign '@=>' on types '%s' @=> '%s'...",
             left->c_name(), right->c_name() );
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "...(reason: incompatible types for assignment)" );
         return NULL;
     }
@@ -5595,7 +5595,7 @@ Chuck_Type * type_engine_find_deprecated_type( Chuck_Env * env, a_Id_List thePat
         // check level
         if( env->deprecate_level < 2 )
         {
-            EM_error2( thePath->where, "deprecated: '%s' --> use: '%s'",
+            EM_error2( thePath->where, "deprecated: '%s' --> use: '%s' instead",
                 type_path( thePath ), actual.c_str() );
         }
     }
@@ -5762,7 +5762,7 @@ Chuck_Value * type_engine_find_value( Chuck_Env * env, const string & xid,
             // check level
             if( env->deprecate_level < 2 )
             {
-                EM_error2( linepos, "deprecated: '%s' --> use: '%s'",
+                EM_error2( linepos, "deprecated: '%s' --> use: '%s' instead",
                     xid.c_str(), actual.c_str() );
             }
         }
@@ -6082,7 +6082,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     {
         // error
         EM_error2( 0,
-            "imported class '%s' does not have a ugen as parent",
+            "imported class '%s' adds ugen_func() but is not a `UGen`",
             type->c_name() );
         return NULL;
     }
@@ -6372,17 +6372,17 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         !type_engine_check_exp_decl( env, &exp_decl->decl ) )
     {
         // clean up locally created id list
+        // TODO 2023 1.5.0.5 -- clean up the various decls?
         delete_id_list( thePath );
         return CK_INVALID_OFFSET;
     }
-
-    // TODO 2023 1.5.0.5 -- clean up the various decls?
 
     if( doc != NULL )
         var_decl->value->doc = doc;
 
     // clean up locally created id list
     delete_id_list( thePath );
+    // TODO 2023 1.5.0.5 -- clean up the various decls?
 
     // return the offset
     return var_decl->value->offset;
