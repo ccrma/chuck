@@ -2,11 +2,15 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.3 (September 2023)
+1.5.1.3 (September 2023) "ChucK to School"
 =======
 (note) this release of chuck addresses a number of issues from long-time 
-    language bugs to documentation typos to expanding Machine functions 
-    for VM/shred management.
+    language bugs to documentation updates to expanding Machine functions 
+    for VM/shred management to improved Open Sound Control support. Over 
+    the dozen releases since chuck-1.5.0.0, this release is strongly-timed
+    for students and instructors coming back to school in Fall 2023!
+    (One of our ongoing priorities is to make the language + tools 
+    better for teaching, research, and of course music making.)
 
 - (updated) Machine.add( filepath ) no longer introduces a potential
     real-time audio interruption on macOS ** for all filepath that does 
