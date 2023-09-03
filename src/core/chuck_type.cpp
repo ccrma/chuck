@@ -6082,7 +6082,7 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     {
         // error
         EM_error2( 0,
-            "imported class '%s' adds ugen_func() but is not a `UGen`",
+            "imported class '%s' adds ugen_func() but is not a 'UGen'",
             type->c_name() );
         return NULL;
     }
@@ -7249,17 +7249,48 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
 {
     Chuck_DL_Func * ctor = NULL, * dtor = c->dtor;
 
+    // test name | 1.5.1.3 (ge) added
+    if( trim(c->name) == "" )
+    {
+        // error
+        EM_log( CK_LOG_SYSTEM, TC::orange("imported chugin class with no name...").c_str() );
+        // if more info
+        if( c->hint_dll_filepath != "" )
+            EM_log( CK_LOG_SYSTEM, TC::orange(" |- (origin: %s)").c_str(), c->hint_dll_filepath.c_str() );
+        // before ugen begin, can just return
+        return FALSE;
+    }
+
+    // if no parent name, set parent to "Object" | 1.5.1.3
+    if( trim(c->parent) == "" ) c->parent = env->ckt_object->name();
+
     // check for duplicates | 1.5.0.0 (ge) added
     if( type_engine_find_type( env, c->name ) )
     {
-        EM_log( CK_LOG_SYSTEM,
-                TC::orange("error importing class '%s' from chugin...",true).c_str(),
-                c->name.c_str() );
-        EM_pushlog();
-        EM_log( CK_LOG_SYSTEM,
-                TC::orange("type with the same name already exists",true).c_str() );
-        EM_poplog();
+        EM_log( CK_LOG_SYSTEM, TC::orange("(error) importing class '%s' from chugin...").c_str(), c->name.c_str() );
+        EM_log( CK_LOG_SYSTEM, TC::orange(" |- type with the same name already exists").c_str() );
+        // more info?
+        if( c->hint_dll_filepath != "" )
+        {
+            // log the path
+            EM_log( CK_LOG_SYSTEM, TC::orange(" |- (duplicate: %s)").c_str(), c->hint_dll_filepath.c_str() );
+        }
+        // before ugen begin, can just return
+        return FALSE;
+    }
 
+    // check this wasn't added as an UGen without a tick | 1.5.1.3 (ge and nshaheed) added
+    Chuck_Type * parent = type_engine_find_type( env, c->parent );
+    // e.g., a chugin that named a UGen as parent but didn't call QUERY->add_ugen_func()
+    if( (!c->ugen_tick && !c->ugen_tickf) && parent && isa(parent,env->ckt_ugen) )
+    {
+        // error
+        EM_log( CK_LOG_SYSTEM, TC::orange("(error) imported class '%s' extends 'UGen'...").c_str(), c->name.c_str() );
+        EM_log( CK_LOG_SYSTEM, TC::orange(" |- but does not contain UGen functions (e.g., tick)").c_str() );
+        EM_log( CK_LOG_SYSTEM, TC::orange(" |- (hint: chugin missing QUERY->add_ugen_func()?)").c_str(), c->name.c_str() );
+        // if more info
+        if( c->hint_dll_filepath != "" )
+            EM_log( CK_LOG_SYSTEM, TC::orange(" |- (origin: %s)").c_str(), c->hint_dll_filepath.c_str() );
         // before ugen begin, can just return
         return FALSE;
     }
@@ -7268,7 +7299,8 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
     if(c->ctors.size() > 0)
         ctor = c->ctors[0]; // TODO: uh, is more than one possible?
 
-    if((c->ugen_tick || c->ugen_tickf) && c->ugen_num_out)
+    // check whether to import as UGen or other
+    if( (c->ugen_tick || c->ugen_tickf) && c->ugen_num_out )
     {
         // begin import as ugen
         if(!type_engine_import_ugen_begin(env, c->name.c_str(),

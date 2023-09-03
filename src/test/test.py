@@ -52,8 +52,7 @@ def run_test(exe, path, filename, attempt):
         # for color terminal text) from showing up in chuck output;
         # FYI chuck implicitly checks for TTY; if not will disable printing
         # escape codes; but leaving this note here FYI
-        "--disable-error-show-code"
-        result = subprocess.check_output([exe, "--silent", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
+        result = subprocess.check_output([exe, "--silent", "--chugin-load:off", "%s" % path], stderr=subprocess.STDOUT).decode("utf-8")
 
         if result.strip().endswith(("\"success\" :(string)",)):
             successes += 1

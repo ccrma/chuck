@@ -417,7 +417,7 @@ public:
     t_CKBOOL errorEncountered;
 
     // constructor
-    Chuck_DL_Query( Chuck_Carrier * carrier );
+    Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll = NULL );
     // desctructor
     ~Chuck_DL_Query() { this->clear(); }
     // clear
@@ -463,11 +463,14 @@ struct Chuck_DL_Class
     std::vector<Chuck_DL_Class *> classes;
     // current mvar offset
     t_CKUINT current_mvar_offset;
-
+    // # of ugen input and output channels
     t_CKUINT ugen_num_in, ugen_num_out;
-
+    // ckdoc: class description
     std::string doc;
+    // ckdoc: examples
     std::vector<std::string> examples;
+    // origin string (e.g., filepath if coming from chugin DLL)
+    std::string hint_dll_filepath;
 
     // constructor
     Chuck_DL_Class() { dtor = NULL; ugen_tick = NULL; ugen_tickf = NULL; ugen_pmsg = NULL; uana_tock = NULL; ugen_pmsg = NULL; current_mvar_offset = 0; ugen_num_in = ugen_num_out = 0; }
@@ -634,7 +637,7 @@ public:
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
         m_done_query(FALSE), m_version_func(NULL), m_query_func(NULL),
-        m_query( carrier ), m_versionMajor(0), m_versionMinor(0)
+        m_query( carrier, this ), m_versionMajor(0), m_versionMinor(0)
     { }
     // destructor
     ~Chuck_DLL() { this->unload(); }

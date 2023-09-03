@@ -124,17 +124,28 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
 
     // add class
     if( query->curr_class )
+    {
         // recursive
         query->curr_class->classes.push_back( c );
+    }
     // 1.3.2.0: do not save class for later import (will import it on class close)
-//    else
-//        // first level
-//        query->classes.push_back( c );
+    // else
+    // // first level
+    // query->classes.push_back( c );
 
     // remember info
     c->name = name ? name : "";
     c->parent = parent ? parent : "";
     c->current_mvar_offset = parent_offset;
+
+    // if more info is available | 1.5.1.3 (ge)
+    if( query->dll_ref && string(query->dll_ref->filepath()) != "" ) {
+        // set chugin file path for error reporting
+        c->hint_dll_filepath = query->dll_ref->filepath();
+    } else {
+        // set DLL name for error reporting
+        c->hint_dll_filepath = query->dll_name;
+    }
 
     // curr
     query->curr_class = c;
@@ -1032,7 +1043,7 @@ t_CKBOOL Chuck_DLL::compatible()
 // name: Chuck_DL_Query
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
+Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 {
     // set the pointers to functions so the module can call
     setname = ck_setname;
@@ -1055,6 +1066,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier )
     add_ex = ck_add_example; // 1.5.0.0 (ge) added
     create_main_thread_hook = ck_create_main_thread_hook;
     m_carrier = carrier;
+    dll_ref = dll; // 1.5.1.3 (ge) added
 
     dll_name = "[noname]";
     reserved = NULL;
@@ -1093,7 +1105,7 @@ void Chuck_DL_Query::clear()
     // line pos
     linepos = 0;
     // delete classes
-    for( t_CKUINT i = 0; i < classes.size(); i++ ) delete classes[i];
+    for( t_CKUINT i = 0; i < classes.size(); i++ ) CK_SAFE_DELETE( classes[i] );
     // clear
     classes.clear();
 }

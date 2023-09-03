@@ -97,7 +97,7 @@ static const char * g_str[] = {
     "NONE",         // 0
     "CKCORE",       // 1
     "SYSTEM",       // 2
-    "SEVERE",       // 3
+    "HERALD",       // 3 <-- 1.5.1.3 changed from "SEVERE" to "HERALD"
     "WARN!!",       // 4
     "INFORM",       // 5
     "DEBUG!",       // 6 <-- 1.5.0.5 changed from "CONFIG" to "DEBUG!"
