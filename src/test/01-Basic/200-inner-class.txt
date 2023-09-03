@@ -1,0 +1,5 @@
+1 :(int)
+2 :(int)
+in inner class, y = 2 
+in inner class, y = 3 
+in inner class, y = 5 
