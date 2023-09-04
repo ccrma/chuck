@@ -41,10 +41,11 @@ cherr <= "reading input file: '" <= filename <= "'..." <= IO.nl();
 // convert to full path relative to this file; read into SndBuf
 me.dir() + filename => obama.read;
 
-// modify '0' to '1' to record a wav file of the output
-// FYI to render faster-than-realtime, change to '1' and
-// run this example with --silent: `chuck autotune.ck --silent`
-if( 0 )
+// modify the '0' to '1' to record a wav file of the output in real-time
+// FYI to render faster-than-realtime, run this example with `--silent`
+//     > chuck autotune.ck --silent
+// FYI this code always records if --silent is enabled
+if( 0 || !Machine.realtime() )
 {
     dac => WvOut2 record => blackhole;
     // output file name
