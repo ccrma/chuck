@@ -109,25 +109,25 @@ spork ~ ostinato();
 while( now < endtime )
 {
     // one sample at a time
-	samp => now;
+    samp => now;
     // get pitch estimate
-	tracker.get() => float track;
-	
-	// find closest pitch
-	closest( track, pentatonic ) => float target;
+    tracker.get() => float track;
 
-	// only trigger new note if different from previous
-	if( target > 60 && Std.fabs(target - last_target) > 0.1 )
-	{
-		1 => env.keyOn;
-		target => tri.freq;
-		target => last_target;
-	}
+    // find closest pitch
+    closest( track, pentatonic ) => float target;
 
-	// perform autotune
-	if( track > 0 ) target / track => autotune.shift;
-	// begin fade out if the time is right
-	if( now >= fadetime ) 0 => fade.target;
+    // only trigger new note if different from previous
+    if( target > 60 && Std.fabs(target - last_target) > 0.1 )
+    {
+        1 => env.keyOn;
+        target => tri.freq;
+        target => last_target;
+    }
+
+    // perform autotune
+    if( track > 0 ) target / track => autotune.shift;
+    // begin fade out if the time is right
+    if( now >= fadetime ) 0 => fade.target;
 }
 
 // wait a little extra time
@@ -136,57 +136,57 @@ while( now < endtime )
 // hold pitch
 fun void hold_pitch( float t )
 {
-	t => last_target;
-	250::ms => now;
-	-100 => last_target;
+    t => last_target;
+    250::ms => now;
+    -100 => last_target;
 }
 
 // scale switcher (chord progression generator)
 fun void switchScale()
 {
-	while( true )
-	{
-		12::second => now;
-		pentatonic[0]--;
-		pentatonic[2]--;
-		pentatonic[3]++;
-		11.5::second => now;
-		pentatonic[0]--;
-		2 -=> pentatonic[1];
-		pentatonic[2]--;
-		3 -=> pentatonic[3];
-		for (int i; i<pentatonic.size(); i++)
-		{
-			if (pentatonic[i] < -5) 12 +=> pentatonic[i];
-		}
-	}
+    while( true )
+    {
+        12::second => now;
+        pentatonic[0]--;
+        pentatonic[2]--;
+        pentatonic[3]++;
+        11.5::second => now;
+        pentatonic[0]--;
+        2 -=> pentatonic[1];
+        pentatonic[2]--;
+        3 -=> pentatonic[3];
+        for (int i; i<pentatonic.size(); i++)
+        {
+            if (pentatonic[i] < -5) 12 +=> pentatonic[i];
+        }
+    }
 }
 
 // our repeated pattern
 fun void ostinato()
 {
     // modal bar into revert
-	ModalBar mb => GVerb rev => fade;
+    ModalBar mb => GVerb rev => fade;
     // set gain
-	0.5 => mb.gain;
+    0.5 => mb.gain;
     // which Modal Bar preset
-	1 => mb.preset;
-	// 0.01 => rev.mix;
+    1 => mb.preset;
+    // 0.01 => rev.mix;
 
     // time loop
-	while( true )
-	{
+    while( true )
+    {
         // go through the scale
-		for( int degree : pentatonic )
-		{
+        for( int degree : pentatonic )
+        {
             // pitch to frequency and set in modal bar
-			(degree + 48) => Std.mtof => mb.freq;
+            (degree + 48) => Std.mtof => mb.freq;
             // note one!
-			1 => mb.noteOn;
+            1 => mb.noteOn;
             // for an 1/8 of a second
-			125::ms => now;
-		}
-	}
+            125::ms => now;
+        }
+    }
 }
 
 
@@ -195,47 +195,47 @@ fun void ostinato()
 fun float closest( float testval, int list[] )
 {
     // list length
-	list.size() => int len;
+    list.size() => int len;
 
-	int octave;
+    int octave;
     // freq to midi note number
-	Std.ftom(testval) => float testmidi;
+    Std.ftom(testval) => float testmidi;
     // calculate octave
-	while( testmidi - (list[len-1] + octave) > 12 )
-	{
-		12 +=> octave;
-	}
+    while( testmidi - (list[len-1] + octave) > 12 )
+    {
+        12 +=> octave;
+    }
 
-	48000.0 => float lowdiff;
-	int closest_index;
-	int closest_octave;
+    48000.0 => float lowdiff;
+    int closest_index;
+    int closest_octave;
 
     // loop over list
     for( int i; i<len; i++ )
-	{
-		Std.mtof(octave + list[i]) => float listnote;
-		Math.fabs(listnote - testval) => float diff;
-		if (diff < lowdiff)
-		{
-			i => closest_index;
-			diff => lowdiff;
-			octave => closest_octave;
-		}
-	}
+    {
+        Std.mtof(octave + list[i]) => float listnote;
+        Math.fabs(listnote - testval) => float diff;
+        if (diff < lowdiff)
+        {
+            i => closest_index;
+            diff => lowdiff;
+            octave => closest_octave;
+        }
+    }
 
     // loop over list 8va
-	for( int i; i<len; i++ )
-	{
-		Std.mtof(octave + 12 + list[i]) => float listnote;
-		Math.fabs(listnote - testval) => float diff;
-		if (diff < lowdiff)
-		{
-			i => closest_index;
-			diff => lowdiff;
-			octave + 12 => closest_octave;
-		}
-	}
+    for( int i; i<len; i++ )
+    {
+        Std.mtof(octave + 12 + list[i]) => float listnote;
+        Math.fabs(listnote - testval) => float diff;
+        if (diff < lowdiff)
+        {
+            i => closest_index;
+            diff => lowdiff;
+            octave + 12 => closest_octave;
+        }
+    }
 
     // convert back to freq
-	return Std.mtof( closest_octave + list[closest_index] );
+    return Std.mtof( closest_octave + list[closest_index] );
 }

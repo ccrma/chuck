@@ -147,6 +147,7 @@ foo << bar;
 - (updated) log level 3 (SEVERE) has been renamed to (HERALD)
 - (updated) improved stability on ctrl-c shutdown for real-time audio
     and HID management
+- (added) examples/effects/autotune.ck
 ---
 - (added) WebChucK support for Machine.add()/replace()/remove()/removeAll()
 - (added) WebChucK IDE now supports the ability to upload .ck files for 
