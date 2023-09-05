@@ -774,8 +774,9 @@ private:
           void * dlsym( void * handle, const char * symbol );
           const char * dlerror( void );
           int dlclose( void * handle );
-          // 1.4.2.0 (ge) | added DLERROR_BUFFER_LENGTH
-          #define DLERROR_BUFFER_LENGTH 128
+          // 1.4.2.0 (ge) added DLERROR_BUFFER_LENGTH
+          // 1.5.1.4 (ge) increased DLERROR_BUFFER_LENGTH from 128 to 512
+          #define DLERROR_BUFFER_LENGTH 512
           static char dlerror_buffer[DLERROR_BUFFER_LENGTH];
 
           #ifdef __cplusplus
