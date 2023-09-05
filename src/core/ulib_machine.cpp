@@ -53,8 +53,8 @@ CK_DLL_SFUN( machine_removeAll_impl );
 CK_DLL_SFUN( machine_replace_impl );
 CK_DLL_SFUN( machine_resetID_impl );
 CK_DLL_SFUN( machine_clearVM_impl );
-CK_DLL_SFUN( machine_status_impl );
-CK_DLL_SFUN( machine_timeCheck_impl );
+CK_DLL_SFUN( machine_printStatus_impl );
+CK_DLL_SFUN( machine_printTimeCheck_impl );
 CK_DLL_SFUN( machine_intsize_impl );
 CK_DLL_SFUN( machine_shreds_impl );
 CK_DLL_SFUN( machine_realtime_impl );
@@ -121,31 +121,33 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "int", "id" );
     QUERY->doc_func( QUERY, "Remove shred from VM by shred ID (returned by Machine.add).");
 
-    // add remove
+    // add removeLastShred
     QUERY->add_sfun( QUERY, machine_removeLast_impl, "int", "removeLastShred" );
-    QUERY->doc_func( QUERY, "Remove the most recently added shred in the VM.");
+    QUERY->doc_func( QUERY, "Remove the most recently added shred in the VM (could be the shred calling this function); returns the ID of the removed shred.");
 
-    // add removeAll
-    QUERY->add_sfun( QUERY, machine_removeAll_impl, "int", "removeAllShreds" );
+    // add removeAllShreds
+    QUERY->add_sfun( QUERY, machine_removeAll_impl, "void", "removeAllShreds" );
     QUERY->doc_func( QUERY, "Remove all shreds in the VM (including the shred calling this function).");
 
-    // add removeAll
+    // add resetShredID
     QUERY->add_sfun( QUERY, machine_resetID_impl, "int", "resetShredID" );
-    QUERY->doc_func( QUERY, "Reset shred IDs to 1 + the highest current shred ID in the VM; can be used as shred management to keep shred IDs low, after a lot of sporks. Returns what the next shred ID would be.");
+    QUERY->doc_func( QUERY, "Reset shred IDs to 1 + the highest current shred ID in the VM; can be used as shred management to keep shred IDs low, after a lot of sporks; returns what the next shred ID would be.");
 
     // add clearVM
-    QUERY->add_sfun( QUERY, machine_clearVM_impl, "int", "clearVM" );
-    QUERY->doc_func( QUERY, "Reset the type system, removing all user-defined types and all global variables; removes all shreds in the VM (including the shred calling this function). Use with care.");
+    QUERY->add_sfun( QUERY, machine_clearVM_impl, "void", "clearVM" );
+    QUERY->doc_func( QUERY, "Reset the type system, removing all user-defined types and all global variables; removes all shreds in the VM (including the shred calling this function); use with care.");
 
-    // add status
-    //! display current status of VM
-    //! (see example/status.ck)
-    QUERY->add_sfun( QUERY, machine_status_impl, "int", "status" );
-    QUERY->doc_func( QUERY, "Print the current status of the VM.");
+    // add status (legacy version of printStatus; has return value)
+    QUERY->add_sfun( QUERY, machine_printStatus_impl, "int", "status" );
+    QUERY->doc_func( QUERY, "Print the current status of the VM; legacy version of printStatus().");
 
-    // add time
-    QUERY->add_sfun( QUERY, machine_timeCheck_impl, "int", "timeCheck" );
-    QUERY->doc_func( QUERY, "Print the current time information in the VM.");
+    // add printStatus
+    QUERY->add_sfun( QUERY, machine_printStatus_impl, "void", "printStatus" );
+    QUERY->doc_func( QUERY, "Print (to terminal or console) the current status of the VM.");
+
+    // add printTimeCheck
+    QUERY->add_sfun( QUERY, machine_printTimeCheck_impl, "void", "printTimeCheck" );
+    QUERY->doc_func( QUERY, "Print (to terminal or console) the current time information in the VM.");
 
     // add crash
     //! explicitly crash the virtual machine
@@ -207,10 +209,10 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
                      "       |- 0: NONE\n"
                      "       |- 1: CORE\n"
                      "       |- 2: SYSTEM\n"
-                     "       |- 3: SEVERE\n"
+                     "       |- 3: HERALD\n"
                      "       |- 4: WARNING\n"
                      "       |- 5: INFO\n"
-                     "       |- 6: CONFIG\n"
+                     "       |- 6: DEBUG\n"
                      "       |- 7: FINE\n"
                      "       |- 8: FINER\n"
                      "       |- 9: FINEST\n"
@@ -368,7 +370,7 @@ CK_DLL_SFUN( machine_removeAll_impl )
     // set type
     msg->type = CK_MSG_REMOVEALL;
     // process the message
-    RETURN->v_int = VM->process_msg( msg );
+    VM->process_msg( msg );
 }
 
 // replace
@@ -409,26 +411,26 @@ CK_DLL_SFUN( machine_replace_impl )
     RETURN->v_int = VM->process_msg( msg );
 }
 
-// status
-CK_DLL_SFUN( machine_status_impl )
+// printStatus (and also for status)
+CK_DLL_SFUN( machine_printStatus_impl )
 {
     // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_STATUS;
-    // process the message
-    RETURN->v_int = VM->process_msg( msg );
+    // process the message; set return for status() which returns an int
+    RETURN->v_int = (VM->process_msg( msg ) != 0);
 }
 
-// timeCheck
-CK_DLL_SFUN( machine_timeCheck_impl )
+// printTimeCheck
+CK_DLL_SFUN( machine_printTimeCheck_impl )
 {
     // construct chuck msg (must allocate on heap, as VM will clean up)
     Chuck_Msg * msg = new Chuck_Msg();
     // set type
     msg->type = CK_MSG_TIME;
     // process the message
-    RETURN->v_int = VM->process_msg( msg );
+    VM->process_msg( msg );
 }
 
 // resetID
@@ -450,7 +452,7 @@ CK_DLL_SFUN( machine_clearVM_impl )
     // set type
     msg->type = CK_MSG_CLEARVM;
     // process the message
-    RETURN->v_int = VM->process_msg( msg );
+    VM->process_msg( msg );
 }
 
 // intsize

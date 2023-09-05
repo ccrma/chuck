@@ -2275,7 +2275,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             else if( isa( right, env->ckt_vec4 ) ) return left;
             else // error
             {
-                EM_error2( lhs->where, "on suitable IO action for '%s' <= '%s'",
+                EM_error2( binary->where, "no suitable IO action for '%s' <= '%s'",
                     left->c_name(), right->c_name() );
                 return NULL;
             }

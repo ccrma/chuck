@@ -37,14 +37,14 @@ Machine.replace( id, me.dir() + "test2.ck:bar:5" ) => id;
 me.yield();
 
 // print current VM status (list of shreds)
-Machine.status();
+Machine.printStatus();
 // remove shred
 Machine.remove( id );
 
 // keep informed
 <<< "\ntrying more Machine functions...", "" >>>;
 // print current VM time
-Machine.timeCheck();
+Machine.printTimeCheck();
 // reset shred IDs to current highest + 1
 Machine.resetShredID();
 // remove all shreds (including this one!)
