@@ -1594,7 +1594,7 @@ array4_get_key(ck_array4_get_key)
 
 // windows
 #if defined(__PLATFORM_WINDOWS__)
-#include <system_error>
+#include <system_error> // std::system_category() | 1.5.1.4
 extern "C"
 {
 #ifndef __CHUNREAL_ENGINE__
@@ -1629,12 +1629,15 @@ void *dlsym( void * handle, const char *symbol )
 
 const char * dlerror( void )
 {
+    // get windows error code
     int error = GetLastError();
+    // no error
     if( error == 0 ) return NULL;
-    // 1.4.2.0 (ge) | changed to snprintf
-    // 1.5.1.3 (azaday) | convert error code to system message
-    std::string error_msg = std::system_category().message(error);
+    // 1.5.1.4 (azaday) convert error code to system message
+    std::string error_msg = std::system_category().message( error );
+    // 1.4.2.0 (ge) changed to snprintf
     snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%s", error_msg.c_str() );
+    // return error buffer
     return dlerror_buffer;
 }
 }

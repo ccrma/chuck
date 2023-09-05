@@ -2,6 +2,14 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.4
+=======
+- (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin 
+    fails to load, instead of displaying a cryptic error code (e.g., 
+    "reason: 1920"), the error code is translating into an error message 
+    and displayed (azaday)
+
+
 1.5.1.3 (September 2023) "ChucK to School"
 =======
 (note) this release of chuck addresses a number of issues from long-time 
