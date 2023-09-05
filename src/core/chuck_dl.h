@@ -694,7 +694,12 @@ public:
     struct VMApi
     {
         VMApi();
+        // get sample rate
         t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
+        // create a new lock-free one-producer, one-consumer buffer
+        CBufferSimple * (* const create_event_buffer)( CK_DL_API, Chuck_VM * vm );
+        // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above
+        t_CKBOOL (* const queue_event)( CK_DL_API, Chuck_VM_Shred *, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
     } * const vm;
 
     struct ObjectApi
@@ -725,6 +730,7 @@ public:
         t_CKBOOL (* const array4_push_back)( CK_DL_API, Array4 array, t_CKUINT value );
         t_CKBOOL (* const array4_get_idx)( CK_DL_API, Array4 array, t_CKINT idx, t_CKUINT & value );
         t_CKBOOL (* const array4_get_key)( CK_DL_API, Array4 array, const std::string & key, t_CKUINT & value );
+
     } * const object;
 
     Api() :

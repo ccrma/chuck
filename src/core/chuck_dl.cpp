@@ -1211,6 +1211,27 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
 
 
 //-----------------------------------------------------------------------------
+// name: create_event_buffer()
+// desc: host-side hoook implemenation for
+//       creatinga new lock-free one-producer, one-consumer buffer
+//-----------------------------------------------------------------------------
+static CBufferSimple * ck_create_event_buffer( CK_DL_API, Chuck_VM * vm )
+{
+    return vm->create_event_buffer();
+}
+
+//-----------------------------------------------------------------------------
+// name: queue_event()
+// desc: host-side hoook implemenation for queuing an event
+//       NOTE num_msg must be 1; buffer created using create_event_buffer()
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_queue_event( CK_DL_API, Chuck_VM_Shred * shred, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer )
+{
+    return shred->vm_ref->queue_event( event, num_msg, buffer );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: ck_get_type()
 // desc: host-side hook implementation for retrieving a type by name
 //-----------------------------------------------------------------------------
@@ -1570,10 +1591,21 @@ static t_CKBOOL ck_array4_get_key( CK_DL_API api, Chuck_DL_Api::Array4 a, const 
 
 
 
-Chuck_DL_Api::Api::VMApi::VMApi() :
-get_srate(ck_get_srate) { }
+//-----------------------------------------------------------------------------
+// constructor for the VMApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
+Chuck_DL_Api::Api::VMApi::VMApi()
+  : get_srate(ck_get_srate),
+    create_event_buffer(ck_create_event_buffer),
+    queue_event(ck_queue_event)
+{ }
 
 
+
+
+//-----------------------------------------------------------------------------
+// constructor for the ObjectApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
 create(ck_create),
@@ -1590,6 +1622,8 @@ array4_push_back(ck_array4_push_back),
 array4_get_idx(ck_array4_get_idx),
 array4_get_key(ck_array4_get_key)
 { }
+
+
 
 
 // windows
