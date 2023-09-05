@@ -1841,7 +1841,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     if( (lhs->next && op != ae_op_chuck /*&& !isa( right, env->ckt_function)*/ ) || rhs->next )
     {
         // TODO: implement this
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "multi-value (%s) operation not supported/implemented",
             op2str(op));
         return NULL;
@@ -2371,7 +2371,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     // multi-value not supported beyond this for now
     if( lhs->next || rhs->next )
     {
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "multi-value (=>) operation not supported/implemented" );
         return NULL;
     }
