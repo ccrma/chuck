@@ -1636,7 +1636,7 @@ const char * dlerror( void )
     // 1.5.1.4 (azaday) convert error code to system message
     std::string error_msg = std::system_category().message( error );
     // 1.4.2.0 (ge) changed to snprintf
-    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%s", error_msg.c_str() );
+    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "(%i) %s", error, error_msg.c_str() );
     // return error buffer
     return dlerror_buffer;
 }
