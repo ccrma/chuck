@@ -341,6 +341,7 @@ public:
     Chuck_VM * vm() const { return m_carrier->vm; }
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_Carrier * carrier() const { return m_carrier; }
+    CK_DL_API api() const;
 
 public:
     // function pointers - to be called from client module

@@ -1096,7 +1096,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 
 //-----------------------------------------------------------------------------
 // name: clear()
-// desc: ...
+// desc: clear the query
 //-----------------------------------------------------------------------------
 void Chuck_DL_Query::clear()
 {
@@ -1108,6 +1108,18 @@ void Chuck_DL_Query::clear()
     for( t_CKUINT i = 0; i < classes.size(); i++ ) CK_SAFE_DELETE( classes[i] );
     // clear
     classes.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: api()
+// desc: get the host-client api
+//-----------------------------------------------------------------------------
+CK_DL_API Chuck_DL_Query::api() const
+{
+    return Chuck_DL_Api::Api::instance();
 }
 
 
