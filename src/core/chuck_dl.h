@@ -341,7 +341,7 @@ public:
     Chuck_VM * vm() const { return m_carrier->vm; }
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_Carrier * carrier() const { return m_carrier; }
-    CK_DL_API api() const;
+    CK_DL_API api() const { return m_api; }
 
 public:
     // function pointers - to be called from client module
@@ -385,6 +385,9 @@ public:
 
     // re-added 1.4.0.1
     f_create_main_thread_hook create_main_thread_hook;
+
+    // DL API reference | 1.5.2.0
+    CK_DL_API m_api;
 
     // NOTE: everything below std::anything cannot be reliably accessed
     // by offset between dynamic modules, since std::anything could be variable
@@ -695,12 +698,14 @@ public:
     struct VMApi
     {
         VMApi();
-        // get sample rate
+        // get sample rate (legacy as of 1.5.2.0)
         t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
-        // create a new lock-free one-producer, one-consumer buffer
-        CBufferSimple * (* const create_event_buffer)( CK_DL_API, Chuck_VM * vm );
-        // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above
-        t_CKBOOL (* const queue_event)( CK_DL_API, Chuck_VM_Shred *, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+        // get sample rate | 1.5.2.0
+        t_CKUINT (* const srate)( Chuck_VM * vm );
+        // create a new lock-free one-producer, one-consumer buffer | 1.5.2.0
+        CBufferSimple * (* const create_event_buffer)( Chuck_VM * vm );
+        // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.2.0
+        t_CKBOOL (* const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
     } * const vm;
 
     struct ObjectApi

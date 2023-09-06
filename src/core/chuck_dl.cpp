@@ -1087,6 +1087,9 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
         srate = 0;
     }
 
+    // get DL API reference
+    m_api = Chuck_DL_Api::Api::instance();
+
     linepos = 0;
     errorEncountered = FALSE;
 }
@@ -1108,18 +1111,6 @@ void Chuck_DL_Query::clear()
     for( t_CKUINT i = 0; i < classes.size(); i++ ) CK_SAFE_DELETE( classes[i] );
     // clear
     classes.clear();
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: api()
-// desc: get the host-client api
-//-----------------------------------------------------------------------------
-CK_DL_API Chuck_DL_Query::api() const
-{
-    return Chuck_DL_Api::Api::instance();
 }
 
 
@@ -1213,10 +1204,20 @@ namespace Chuck_DL_Api
 
 
 //-----------------------------------------------------------------------------
-// name: ck_get_srate()
+// name: ck_srate() | add 1.5.2.0
 // desc: host-side hook implementation for getting system srate
 //-----------------------------------------------------------------------------
-static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
+static t_CKUINT ck_srate( Chuck_VM * vm )
+{
+    return vm->srate();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_srate() | legacy as of 1.5.2.0
+// desc: host-side hook implementation for getting system srate
+//-----------------------------------------------------------------------------
+static t_CKUINT ck_get_srate( CK_DL_API api, Chuck_VM_Shred * shred )
 {
     return shred->vm_ref->srate();
 }
@@ -1227,7 +1228,7 @@ static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
 // desc: host-side hoook implemenation for
 //       creatinga new lock-free one-producer, one-consumer buffer
 //-----------------------------------------------------------------------------
-static CBufferSimple * ck_create_event_buffer( CK_DL_API, Chuck_VM * vm )
+static CBufferSimple * ck_create_event_buffer( Chuck_VM * vm )
 {
     return vm->create_event_buffer();
 }
@@ -1237,9 +1238,9 @@ static CBufferSimple * ck_create_event_buffer( CK_DL_API, Chuck_VM * vm )
 // desc: host-side hoook implemenation for queuing an event
 //       NOTE num_msg must be 1; buffer created using create_event_buffer()
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_queue_event( CK_DL_API, Chuck_VM_Shred * shred, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer )
+static t_CKBOOL ck_queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer )
 {
-    return shred->vm_ref->queue_event( event, num_msg, buffer );
+    return vm->queue_event( event, num_msg, buffer );
 }
 
 
@@ -1606,10 +1607,11 @@ static t_CKBOOL ck_array4_get_key( CK_DL_API api, Chuck_DL_Api::Array4 a, const 
 //-----------------------------------------------------------------------------
 // constructor for the VMApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
-Chuck_DL_Api::Api::VMApi::VMApi()
-  : get_srate(ck_get_srate),
-    create_event_buffer(ck_create_event_buffer),
-    queue_event(ck_queue_event)
+Chuck_DL_Api::Api::VMApi::VMApi() :
+get_srate(ck_get_srate),
+srate(ck_srate),
+create_event_buffer(ck_create_event_buffer),
+queue_event(ck_queue_event)
 { }
 
 
