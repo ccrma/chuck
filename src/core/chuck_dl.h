@@ -696,11 +696,14 @@ public:
     {
         VMApi();
         // get sample rate
-        t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
+        t_CKUINT (* const srate)( Chuck_VM * vm );
         // create a new lock-free one-producer, one-consumer buffer
-        CBufferSimple * (* const create_event_buffer)( CK_DL_API, Chuck_VM * vm );
+        CBufferSimple * (* const create_event_buffer)( Chuck_VM * vm );
         // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above
-        t_CKBOOL (* const queue_event)( CK_DL_API, Chuck_VM_Shred *, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+        t_CKBOOL (* const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+
+        // get sample rate (legacy)
+        t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
     } * const vm;
 
     struct ObjectApi
