@@ -1087,7 +1087,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
         srate = 0;
     }
 
-    // get DL API reference
+    // get DL API reference | 1.5.1.4
     m_api = Chuck_DL_Api::Api::instance();
 
     linepos = 0;
@@ -1204,7 +1204,7 @@ namespace Chuck_DL_Api
 
 
 //-----------------------------------------------------------------------------
-// name: ck_srate() | add 1.5.2.0
+// name: ck_srate() | add 1.5.1.4
 // desc: host-side hook implementation for getting system srate
 //-----------------------------------------------------------------------------
 static t_CKUINT ck_srate( Chuck_VM * vm )
@@ -1214,7 +1214,7 @@ static t_CKUINT ck_srate( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
-// name: ck_get_srate() | legacy as of 1.5.2.0
+// name: ck_get_srate() | legacy as of 1.5.1.4
 // desc: host-side hook implementation for getting system srate
 //-----------------------------------------------------------------------------
 static t_CKUINT ck_get_srate( CK_DL_API api, Chuck_VM_Shred * shred )
@@ -1224,7 +1224,7 @@ static t_CKUINT ck_get_srate( CK_DL_API api, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
-// name: create_event_buffer()
+// name: create_event_buffer() | 1.5.1.4 (ge, andrew) added
 // desc: host-side hoook implemenation for
 //       creatinga new lock-free one-producer, one-consumer buffer
 //-----------------------------------------------------------------------------
@@ -1234,7 +1234,7 @@ static CBufferSimple * ck_create_event_buffer( Chuck_VM * vm )
 }
 
 //-----------------------------------------------------------------------------
-// name: queue_event()
+// name: queue_event() | 1.5.1.4 (ge, andrew) added
 // desc: host-side hoook implemenation for queuing an event
 //       NOTE num_msg must be 1; buffer created using create_event_buffer()
 //-----------------------------------------------------------------------------
