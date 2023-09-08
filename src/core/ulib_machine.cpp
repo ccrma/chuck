@@ -57,6 +57,7 @@ CK_DLL_SFUN( machine_printStatus_impl );
 CK_DLL_SFUN( machine_printTimeCheck_impl );
 CK_DLL_SFUN( machine_intsize_impl );
 CK_DLL_SFUN( machine_shreds_impl );
+CK_DLL_SFUN( machine_numshreds_impl );
 CK_DLL_SFUN( machine_realtime_impl );
 CK_DLL_SFUN( machine_silent_impl );
 CK_DLL_SFUN( machine_eval_impl );
@@ -152,7 +153,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // add crash
     //! explicitly crash the virtual machine
     QUERY->add_sfun( QUERY, machine_crash_impl, "void", "crash" );
-    QUERY->doc_func( QUERY, "explicitly crash the virtual machine. The very last resort; or an emphatic gesture. Use with care." );
+    QUERY->doc_func( QUERY, "Explicitly crash the virtual machine. The very last resort; or an emphatic gesture. Use with care." );
 
     // add spork
     //! same as add
@@ -163,6 +164,10 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     //! get list of active shreds by id
     QUERY->add_sfun( QUERY, machine_shreds_impl, "int[]", "shreds" );
     QUERY->doc_func( QUERY, "Retrieve an array of active shred ids." );
+
+    // add numShreds
+    QUERY->add_sfun( QUERY, machine_numshreds_impl, "int", "numShreds" );
+    QUERY->doc_func( QUERY, "Get the number of shreds currently in the VM." );
 
     // add eval
     //! evaluate a string as ChucK code, compiling it and adding it to the the virtual machine
@@ -488,6 +493,16 @@ CK_DLL_SFUN( machine_shreds_impl )
     status.clear();
 
     RETURN->v_object = array;
+}
+
+CK_DLL_SFUN( machine_numshreds_impl )
+{
+    // vector of shreds
+    vector<Chuck_VM_Shred *> shreds;
+    // get all shreds in the VM
+    SHRED->vm_ref->shreduler()->get_all_shreds( shreds );
+    // return the size
+    RETURN->v_int = shreds.size();
 }
 
 CK_DLL_SFUN( machine_eval_impl )

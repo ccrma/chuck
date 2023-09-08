@@ -1434,7 +1434,10 @@ void LineEvent::prompt( const string & what )
 {
     // set what
     g_le_what = what;
-    if( g_le_what != "" ) g_le_what += " ";
+
+    // remove the extra space
+    // if( g_le_what != "" ) g_le_what += " ";
+
     // signal
     g_le_wait = FALSE;
 }

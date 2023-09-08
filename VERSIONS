@@ -4,11 +4,17 @@ ChucK VERSIONS log
 
 1.5.1.4
 =======
+- (added) new Machine function
+	static int numShreds();
+	    Get the number of shreds currently in the VM.
 - (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin 
     fails to load, instead of displaying a cryptic error code (e.g., 
     "reason: 1920"), the error code is translating into an error message 
     and displayed (e.g., "reason: The file cannot be accessed by the system.")
     (azaday)
+- (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
+    space (" ") after prompt text
+- (added; chugins development) new dyanmic linking API for VM operations
 
 
 1.5.1.3 (September 2023) "ChucK to School"
