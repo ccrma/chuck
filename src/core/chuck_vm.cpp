@@ -1349,6 +1349,7 @@ Chuck_VM_Stack::Chuck_VM_Stack()
     stack = sp = sp_max = NULL;
     prev = next = NULL;
     m_is_init = FALSE;
+    m_size = 0;
 }
 
 
@@ -1407,34 +1408,43 @@ Chuck_VM_Code::~Chuck_VM_Code()
 
 
 
+// minimum stack size | 1.5.1.4 (ge) added
+#define VM_STACK_MINIMUM_SIZE 2048
 // offset in bytes at the beginning of a stack for initializing data
-#define VM_STACK_OFFSET  16
-// 1/factor of stack is left blank, to give room to detect overflow
-#define VM_STACK_PADDING_FACTOR 16
+#define VM_STACK_OFFSET 16
+// overflow padding in bytes, to allow some overflow before detection
+#define VM_STACK_OVERFLOW_PADDING 512
 //-----------------------------------------------------------------------------
 // name: initialize()
-// desc: initialize VM stack
+// desc: initialize VM stack, with at least 'size' bytes
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 {
-    if( m_is_init )
-        return FALSE;
+    // check if already initialized
+    if( m_is_init ) return FALSE;
 
-    // make room for header
-    size += VM_STACK_OFFSET;
+    // ensure stack size >= minimum size | 1.5.1.4
+    if( size < VM_STACK_MINIMUM_SIZE ) size = VM_STACK_MINIMUM_SIZE;
+    // actual size in bytes to allocate; stack header + size + overflow pad
+    t_CKUINT alloc_size = VM_STACK_OFFSET + size + VM_STACK_OVERFLOW_PADDING;
+
     // allocate stack
-    stack = new t_CKBYTE[size];
+    stack = new t_CKBYTE[alloc_size];
     if( !stack ) goto out_of_memory;
-
-    // zero
-    memset( stack, 0, size );
+    // zero the memory
+    memset( stack, 0, alloc_size );
 
     // advance stack after the header
     stack += VM_STACK_OFFSET;
     // set the sp
     sp = stack;
-    // upper limit (padding factor)
-    sp_max = sp + size - (size / VM_STACK_PADDING_FACTOR);
+    // upper limit (beyond which is the overflow padding)
+    sp_max = stack + size;
+    // remember size
+    m_size = size;
+
+    // log
+    EM_log( CK_LOG_FINER, "allocated VM stack (size:%d alloc:%d)", size, alloc_size );
 
     // set flag and return
     return m_is_init = TRUE;
@@ -1442,7 +1452,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    EM_error2( 0, "(VM) OutOfMemory: while allocating stack" );
+    EM_exception( "OutOfMemory: VM stack [size=%d alloc=%d]", size, alloc_size );
 
     // return FALSE
     return FALSE;
@@ -1460,13 +1470,17 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
     if( !m_is_init )
         return FALSE;
 
-    // free the stack
+    // return stack to the allocation point
     stack -= VM_STACK_OFFSET;
+    // free the stack
     CK_SAFE_DELETE_ARRAY( stack );
+    // zero out the stack pointer
     sp = sp_max = NULL;
 
     // set the flag to false
     m_is_init = FALSE;
+    // set size to 0 | 1.5.1.4
+    m_size = 0;
 
     return TRUE;
 }

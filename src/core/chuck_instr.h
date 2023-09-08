@@ -4207,7 +4207,9 @@ void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * des
 // stack overflow detection
 #define overflow_( stack )       ( stack->sp > stack->sp_max )
 #define underflow_( stack )      ( stack->sp < stack->stack )
-
+// test if a particular sp would overflow the stack
+#define would_overflow_( sp, stack )  ( (t_CKBYTE *)(sp) > stack->sp_max )
+#define would_underflow_( sp, stack ) ( (t_CKBYTE *)(sp) < stack->stack )
 
 
 

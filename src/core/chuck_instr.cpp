@@ -147,8 +147,8 @@ void Chuck_Instr::set_linepos(t_CKUINT linepos)
 static void handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
     // we have a problem
-    CK_FPRINTF_STDERR(
-        "[chuck](VM): Exception StackOverflow in shred[id=%lu:%s], PC=[%lu]\n",
+    EM_exception(
+        "StackOverflow in shred [ID=%lu:%s] [PC=%lu]",
         shred->xid, shred->name.c_str(), shred->pc );
     // do something!
     shred->is_running = FALSE;
@@ -4731,15 +4731,21 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // set the instruction to the function instruction
     shred->instr = func->instr;
 
+    // detect overflow
+    if( overflow_( shred->mem ) ) goto error_overflow;
+
     // if there are arguments to be passed
     if( stack_depth )
     {
         // pop the arguments, by number of words
         pop_( reg_sp, stack_depth );
 
-        // make copies
+        // make copies (but without modifying actual stack pointers)
         t_CKUINT * mem_sp2 = (t_CKUINT *)mem_sp;
         t_CKUINT * reg_sp2 = (t_CKUINT *)reg_sp;
+
+        // detect would-be overflow | 1.5.1.4 (ge) added
+        if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // need this
         if( func->need_this )
@@ -4762,9 +4768,6 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         for( t_CKUINT i = 0; i < stack_depth; i++ )
             *mem_sp2++ = *reg_sp2++;
     }
-
-    // detect overflow/underflow
-    if( overflow_( shred->mem ) ) goto error_overflow;
 
     return;
 
@@ -4805,15 +4808,21 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // push the mem stack passed the current function variables and arguments
     mem_sp += push;
 
+    // detect overflow
+    if( overflow_( shred->mem ) ) goto error_overflow;
+
     // pass args
     if( stack_depth )
     {
         // pop the arguments for pass to callee function
         reg_sp -= stack_depth;
 
-        // make copies
+        // make copies (without modifying actual stack pointers)
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
+
+        // detect would-be overflow | 1.5.1.4 (ge) added
+        if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // need this
         if( func->need_this )
@@ -4827,9 +4836,6 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         for( t_CKUINT i = 0; i < stack_depth; i++ )
             *mem_sp2++ = *reg_sp2++;
     }
-
-    // detect overflow/underflow
-    if( overflow_( shred->mem ) ) goto error_overflow;
 
     // check the type
     if( func->native_func_type == Chuck_VM_Code::NATIVE_CTOR )
@@ -4949,15 +4955,21 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // push the mem stack past the current function variables and arguments
     mem_sp += push;
 
+    // detect overflow
+    if( overflow_( shred->mem ) ) goto error_overflow;
+
     // pass args
     if( stack_depth )
     {
         // pop the arguments for pass to callee function
         reg_sp -= stack_depth;
 
-        // make copies
+        // make copies (without modifying actual stack pointers)
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
+
+        // detect would-be overflow | 1.5.1.4 (ge) added
+        if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // need type
         if( func->is_static )
@@ -4971,9 +4983,6 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         for( t_CKUINT i = 0; i < stack_depth; i++ )
             *mem_sp2++ = *reg_sp2++;
     }
-
-    // detect overflow/underflow
-    if( overflow_( shred->mem ) ) goto error_overflow;
 
     // call the function
     // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())

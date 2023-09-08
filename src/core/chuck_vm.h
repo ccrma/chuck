@@ -89,7 +89,7 @@ public:
     ~Chuck_VM_Stack();
 
 public:
-    // initialize stack
+    // initialize stack of at least 'size' bytes
     t_CKBOOL initialize( t_CKUINT size );
     // shutdown and cleanup stack
     t_CKBOOL shutdown();
@@ -108,6 +108,7 @@ public: // linked list
 
 public: // state
     t_CKBOOL m_is_init;
+    t_CKUINT m_size; // 1.5.1.4
 };
 
 
