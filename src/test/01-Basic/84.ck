@@ -1,3 +1,3 @@
 int arr[][];
 // null exception
-<<< arr[0][0] >>>;
+<<< arr[1][2] >>>;

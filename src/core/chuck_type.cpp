@@ -2033,8 +2033,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     switch( op )
     {
     case ae_op_plus:
-    case ae_op_plus_chuck:
-        // take care of string
+        // string + int/float
         if( isa( left, env->ckt_string ) )
         {
             // right is string or int/float
@@ -2042,8 +2041,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
                 || isa( right, env->ckt_float ) )
                 break;
         }
-        else if( isa( left, env->ckt_string ) || isa( left, env->ckt_int )
-                 || isa( left, env->ckt_float ) )
+    case ae_op_plus_chuck:
+        // int/float + string
+        if( isa( left, env->ckt_string ) || isa( left, env->ckt_int ) || isa( left, env->ckt_float ) )
         {
             // right is string
             if( isa( right, env->ckt_string ) )
@@ -2101,6 +2101,17 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         }
         else
         {
+            // check if rhs is a decl
+            if( rhs->s_type == ae_exp_decl )
+            {
+                // error
+                EM_error2( binary->where,
+                    "cannot perform '%s' on a variable declaration...", op2str(op) );
+                EM_error2( 0,
+                    "...(hint: use '=>' instead to initialize the variable)" );
+                return NULL;
+            }
+
             // check if rhs is const
             if( rhs->s_type == ae_exp_primary )
             {

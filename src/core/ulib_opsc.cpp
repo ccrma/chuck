@@ -1199,7 +1199,7 @@ CK_DLL_MFUN( oscout_dest )
 
     if( host == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscOut.start: argument 'host' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscOut.start: argument 'host' is null" );
         goto error;
     }
 
@@ -1222,7 +1222,7 @@ CK_DLL_MFUN( oscout_start )
 
     if( method == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscOut.start: argument 'method' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscOut.start: argument 'method' is null" );
         goto error;
     }
 
@@ -1247,13 +1247,13 @@ CK_DLL_MFUN( oscout_startDest )
 
     if( method == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscOut.start: argument 'method' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscOut.start: argument 'method' is null" );
         goto error;
     }
 
     if( host == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscOut.start: argument 'host' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscOut.start: argument 'host' is null" );
         goto error;
     }
 
@@ -1424,7 +1424,7 @@ CK_DLL_MFUN( oscin_addAddress )
     // check the arg
     if( address == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscIn.address: argument 'address' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscIn.address: argument 'address' is null" );
         goto error;
     }
     // add OSC method associated with this OscIn
@@ -1444,7 +1444,7 @@ CK_DLL_MFUN( oscin_removeAddress )
     // check the arg
     if( address == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscIn.address: argument 'address' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscIn.address: argument 'address' is null" );
         goto error;
     }
     // remove OSC method associated with this OscIn
@@ -1488,7 +1488,7 @@ CK_DLL_MFUN( oscin_recv )
     // check for NULL
     if( msg_obj == NULL )
     {
-        throw_exception( SHRED, "NullPtrException", "OscIn.recv: argument 'msg' is null" );
+        ck_throw_exception( SHRED, "NullPointer", "OscIn.recv: argument 'msg' is null" );
         goto error;
     }
 

@@ -635,7 +635,7 @@ void EM_exception( const char * message, ... )
     va_list ap;
 
     // preamble
-    CK_FPRINTF_STDERR( "[%s] (%s) ",
+    CK_FPRINTF_STDERR( "[%s]:(%s) ",
                        TC::orange("chuck",true).c_str(),
                        TC::red("EXCEPTION",true).c_str() );
 

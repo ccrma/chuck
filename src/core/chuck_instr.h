@@ -4189,10 +4189,10 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 // initialize object using Type
 t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type );
 // "throw exception" (halt current shred, print message)
-void throw_exception(Chuck_VM_Shred * shred, const char * name);
-void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc);
-void throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc);
-void throw_exception(Chuck_VM_Shred * shred, const char * name, const char * desc);
+void ck_throw_exception(Chuck_VM_Shred * shred, const char * name);
+void ck_throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKINT desc);
+void ck_throw_exception(Chuck_VM_Shred * shred, const char * name, t_CKFLOAT desc);
+void ck_throw_exception(Chuck_VM_Shred * shred, const char * name, const char * desc);
 
 
 // define SP offset

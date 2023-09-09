@@ -2407,7 +2407,7 @@ CK_DLL_MFUN(string_charAt)
 
     if(index < 0 || index >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", index);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", index);
         RETURN->v_int = -1;
         return;
     }
@@ -2423,7 +2423,7 @@ CK_DLL_MFUN(string_setCharAt)
 
     if(index < 0 || index >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", index);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", index);
         RETURN->v_int = -1;
         return;
     }
@@ -2442,7 +2442,7 @@ CK_DLL_MFUN(string_substring)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_string = NULL;
         return;
     }
@@ -2461,14 +2461,14 @@ CK_DLL_MFUN(string_substringN)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_string = NULL;
         return;
     }
 
     if(length < 0 || start+length > str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", length);
         RETURN->v_string = NULL;
         return;
     }
@@ -2487,12 +2487,12 @@ CK_DLL_MFUN(string_insert)
 
     if(position < 0 || position >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", position);
         return;
     }
     if(str2 == NULL)
     {
-        throw_exception(SHRED, "NullPointerException");
+        ck_throw_exception(SHRED, "NullPointer");
         return;
     }
 
@@ -2510,12 +2510,12 @@ CK_DLL_MFUN(string_replace)
 
     if(position < 0 || position >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", position);
         return;
     }
     if(str2 == NULL)
     {
-        throw_exception(SHRED, "NullPointerException");
+        ck_throw_exception(SHRED, "NullPointer");
         return;
     }
 
@@ -2540,19 +2540,19 @@ CK_DLL_MFUN(string_replaceN)
 
     if(position < 0 || position >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", position);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", position);
         return;
     }
 
     if(length < 0 || position+length > str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", length);
         return;
     }
 
     if(str2 == NULL)
     {
-        throw_exception(SHRED, "NullPointerException");
+        ck_throw_exception(SHRED, "NullPointer");
         return;
     }
 
@@ -2606,7 +2606,7 @@ CK_DLL_MFUN(string_findStart)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_int = -1;
         return;
     }
@@ -2640,7 +2640,7 @@ CK_DLL_MFUN(string_findStrStart)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_int = -1;
         return;
     }
@@ -2674,7 +2674,7 @@ CK_DLL_MFUN(string_rfindStart)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_int = -1;
         return;
     }
@@ -2708,7 +2708,7 @@ CK_DLL_MFUN(string_rfindStrStart)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         RETURN->v_int = -1;
         return;
     }
@@ -2729,13 +2729,13 @@ CK_DLL_MFUN(string_erase)
 
     if(start < 0 || start >= str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", start);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
         return;
     }
 
     if(length < 0 || start+length > str->str().length())
     {
-        throw_exception(SHRED, "IndexOutOfBoundsException", length);
+        ck_throw_exception(SHRED, "IndexOutOfBounds", length);
         return;
     }
 
