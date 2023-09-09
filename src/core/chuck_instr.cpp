@@ -142,15 +142,17 @@ void Chuck_Instr::set_linepos(t_CKUINT linepos)
 
 
 //-----------------------------------------------------------------------------
-// name: handle_overflow()
-// desc: stack overflow
+// name: ck_handle_overflow()
+// desc: take evasive action upon detecting stack overflow
 //-----------------------------------------------------------------------------
-static void handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm )
+void ck_handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm, const string & reason )
 {
     // we have a problem
-    EM_exception(
-        "StackOverflow in shred[id=%lu:%s] [pc=%lu]",
-        shred->xid, shred->name.c_str(), shred->pc );
+    EM_exception( "StackOverflow in shred[id=%lu:%s] [pc=%lu]",
+                  shred->xid, shred->name.c_str(), shred->pc );
+    if( reason != "" )
+        EM_error3( "...(possible cause: %s)", reason.c_str() );
+
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
@@ -3514,17 +3516,27 @@ void Chuck_Instr_EOC::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc local
+// desc: alloc local variable (int)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
+    // overflow detection | 1.5.1.4 (ge) added
+    if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
+
     // zero out the memory stack
     *( (t_CKUINT *)(mem_sp + m_val) ) = 0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+
+    // done
+    return;
+
+overflow:
+    // handle overflow
+    ck_handle_overflow( shred, vm, "too many local variables" );
 }
 
 
@@ -3532,17 +3544,27 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc local
+// desc: alloc local variable (float)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
+    // overflow detection | 1.5.1.4 (ge) added
+    if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
+
     // zero out the memory stack
     *( (t_CKFLOAT *)(mem_sp + m_val) ) = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+
+    // done
+    return;
+
+overflow:
+    // handle overflow
+    ck_handle_overflow( shred, vm, "too many local variables" );
 }
 
 
@@ -3550,18 +3572,28 @@ void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc local
+// desc: alloc local variable (complex or polar)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
+    // overflow detection | 1.5.1.4 (ge) added
+    if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
+
     // zero out the memory stack
     ( (t_CKCOMPLEX *)(mem_sp + m_val) )->re = 0.0;
     ( (t_CKCOMPLEX *)(mem_sp + m_val) )->im = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+
+    // done
+    return;
+
+overflow:
+    // handle overflow
+    ck_handle_overflow( shred, vm, "too many local variables" );
 }
 
 
@@ -3569,12 +3601,15 @@ void Chuck_Instr_Alloc_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc local
+// desc: alloc local variable (vec3)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // overflow detection | 1.5.1.4 (ge) added
+    if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
     ( (t_CKVEC3 *)(mem_sp + m_val) )->x = 0.0;
@@ -3582,6 +3617,13 @@ void Chuck_Instr_Alloc_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     ( (t_CKVEC3 *)(mem_sp + m_val) )->z = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+
+    // done
+    return;
+
+overflow:
+    // handle overflow
+    ck_handle_overflow( shred, vm, "too many local variables" );
 }
 
 
@@ -3589,12 +3631,15 @@ void Chuck_Instr_Alloc_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc local
+// desc: alloc local variable (vec4)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // overflow detection | 1.5.1.4 (ge) added
+    if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
     ( (t_CKVEC4 *)(mem_sp + m_val) )->x = 0.0;
@@ -3603,6 +3648,13 @@ void Chuck_Instr_Alloc_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     ( (t_CKVEC4 *)(mem_sp + m_val) )->w = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(mem_sp + m_val) );
+
+    // done
+    return;
+
+overflow:
+    // handle overflow
+    ck_handle_overflow( shred, vm, "too many local variables" );
 }
 
 
@@ -3610,7 +3662,7 @@ void Chuck_Instr_Alloc_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc member
+// desc: alloc member variable (int)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Member_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3619,7 +3671,7 @@ void Chuck_Instr_Alloc_Member_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // get the object
     Chuck_Object * obj = (Chuck_Object *)*(mem_sp);
-    // zero out the memory stack
+    // zero out the object data block entry
     *( (t_CKUINT *)(obj->data + m_val) ) = 0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(obj->data + m_val) );
@@ -3630,7 +3682,7 @@ void Chuck_Instr_Alloc_Member_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc member
+// desc: alloc member variable (float)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Member_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3639,7 +3691,7 @@ void Chuck_Instr_Alloc_Member_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
     // get the object
     Chuck_Object * obj = (Chuck_Object *)*(mem_sp);
-    // zero out the memory stack
+    // zero out the object data block entry
     *( (t_CKFLOAT *)(obj->data + m_val) ) = 0.0;
     // push addr onto operand stack
     push_( reg_sp, (t_CKUINT)(obj->data + m_val) );
@@ -3650,7 +3702,7 @@ void Chuck_Instr_Alloc_Member_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc member
+// desc: alloc member variable (complex or polar)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Member_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3659,7 +3711,7 @@ void Chuck_Instr_Alloc_Member_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
     // get the object
     Chuck_Object * obj = (Chuck_Object *)*(mem_sp);
-    // zero out the memory stack
+    // zero out the object data block entry
     ( (t_CKCOMPLEX *)(obj->data + m_val) )->re = 0.0;
     ( (t_CKCOMPLEX *)(obj->data + m_val) )->im = 0.0;
     // push addr onto operand stack
@@ -3671,7 +3723,7 @@ void Chuck_Instr_Alloc_Member_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc member
+// desc: alloc member variable (vec3)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Member_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3680,7 +3732,7 @@ void Chuck_Instr_Alloc_Member_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // get the object
     Chuck_Object * obj = (Chuck_Object *)*(mem_sp);
-    // zero out the memory stack
+    // zero out the object data block entry
     ( (t_CKVEC3 *)(obj->data + m_val) )->x = 0.0;
     ( (t_CKVEC3 *)(obj->data + m_val) )->y = 0.0;
     ( (t_CKVEC3 *)(obj->data + m_val) )->z = 0.0;
@@ -3693,7 +3745,7 @@ void Chuck_Instr_Alloc_Member_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: alloc member
+// desc: alloc member variable (vec4)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3702,7 +3754,7 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
     // get the object
     Chuck_Object * obj = (Chuck_Object *)*(mem_sp);
-    // zero out the memory stack
+    // zero out the object data block entry
     ( (t_CKVEC4 *)(obj->data + m_val) )->x = 0.0;
     ( (t_CKVEC4 *)(obj->data + m_val) )->y = 0.0;
     ( (t_CKVEC4 *)(obj->data + m_val) )->z = 0.0;
@@ -4778,7 +4830,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 error_overflow:
 
-    handle_overflow( shred, vm );
+    ck_handle_overflow( shred, vm, "too many nested/recursive function calls" );
 }
 
 
@@ -4925,7 +4977,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 error_overflow:
 
-    handle_overflow( shred, vm );
+    ck_handle_overflow( shred, vm, "too many nested/recursive function calls" );
 }
 
 
@@ -5061,7 +5113,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 error_overflow:
 
-    handle_overflow( shred, vm );
+    ck_handle_overflow( shred, vm, "too many nested/recursive function calls" );
 }
 
 

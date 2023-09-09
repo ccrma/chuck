@@ -63,6 +63,17 @@ using namespace std;
 
 
 //-----------------------------------------------------------------------------
+// uncomment AND set to 1 to compile VM stack observe messages
+//-----------------------------------------------------------------------------
+#define CK_VM_STACK_OBSERVE_ENABLE 0
+// vm statck observe macros
+#if CK_VM_STACK_OBSERVE_ENABLE
+#define CK_VM_STACK_OBSERVE(x) x
+#else
+#define CK_VM_STACK_OBSERVE(x)
+#endif
+
+//-----------------------------------------------------------------------------
 // uncomment AND set to 1 to compile VM stack debug messages
 //-----------------------------------------------------------------------------
 #define CK_VM_STACK_DEBUG_ENABLE 0
@@ -73,6 +84,7 @@ using namespace std;
 #else
 #define CK_VM_STACK_DEBUG(x)
 #endif
+
 
 
 
@@ -1744,6 +1756,46 @@ t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
 
 
 //-----------------------------------------------------------------------------
+// mechanism to observe the growth of maximum stacks depth (reg and mem) across
+// all shreds;  when enabled, this is called every instruction in the VM;
+// used to gauge stack utilization and to assess default shred stacks sizes
+// 1.5.1.4 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKUINT g_mem_stack_depth_reached = 0;
+static t_CKUINT g_reg_stack_depth_reached = 0;
+static void ckvm_observe_stackdepth_across_all_shreds( Chuck_VM_Shred * currentShred )
+{
+    // track stack depth
+    t_CKBOOL printStackInfo = FALSE;
+
+    // mem stack (for local variables)
+    t_CKUINT mem_depth = currentShred->mem->sp - currentShred->mem->stack;
+    if( mem_depth > g_mem_stack_depth_reached )
+    {
+        g_mem_stack_depth_reached = mem_depth;
+        printStackInfo = TRUE;
+    }
+
+    // mem stack (for operands, e.g., in expression or in array initializer lists)
+    t_CKUINT reg_depth = currentShred->reg->sp - currentShred->reg->stack;
+    if( reg_depth > g_reg_stack_depth_reached )
+    {
+        g_reg_stack_depth_reached = reg_depth;
+        printStackInfo = TRUE;
+    }
+
+    // something new to print
+    if( printStackInfo )
+    {
+        CK_FPRINTF_STDERR( "[chuck]:(VM DEBUG) global max stack depths -> mem:%lu reg:%lu\n",
+                           g_mem_stack_depth_reached, g_reg_stack_depth_reached );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: run()
 // desc: run this shred's VM code
 //-----------------------------------------------------------------------------
@@ -1774,12 +1826,23 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08
 CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
                    (unsigned long)t_reg_sp, (unsigned long)this->reg->sp ) );
 //-----------------------------------------------------------------------------
+//        // detect operand stack overflow | 1.5.1.4
+//        if( overflow_( this->reg ) )
+//        { ck_handle_overflow( this, vm_ref, "shred operand stack exceeded" ); break; }
+//        // detect mem stack overflow ("catch all") | 1.5.1.4
+//        // NOTE func-call & alloc instrucions already detect
+//        if( overflow_( this->mem ) && is_running ) // <- is_running==FALSE if already detected
+//        { ck_handle_overflow( this, vm_ref, "shred memory stack exceeded" ); break; }
+
         // set to next_pc;
         pc = next_pc;
+        // advance program counter
         next_pc++;
 
         // track number of cycles
         CK_TRACK( this->stat->cycles++ );
+        // if enabled, update shred stacks depth observation | 1.5.1.4
+        CK_VM_STACK_OBSERVE( ckvm_observe_stackdepth_across_all_shreds( this ) );
     }
 
     // check abort

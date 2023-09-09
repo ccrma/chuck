@@ -1,0 +1,4 @@
+error-add-assign-decl.ck:1:7: error: cannot perform '+=>' on a variable declaration...
+[1] "foo" +=> string s;
+          ^
+error-add-assign-decl.ck: ...(hint: use '=>' instead to initialize the variable)

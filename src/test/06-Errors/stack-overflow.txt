@@ -1,0 +1,2 @@
+[chuck]:(EXCEPTION) StackOverflow in shred[id=1:06-Errors/stack-overflow.ck] [pc=3]
+...(possible cause: too many nested/recursive function calls)
