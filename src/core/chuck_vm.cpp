@@ -813,6 +813,70 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
             goto done;
         }
     }
+    // add-replace will will replace the current shred at msg->param.
+    // If the shred doesn't exist it will add it. Added 1.5.1.4 (nshaheed)
+    else if (msg->type == CK_MSG_ADD_OR_REPLACE)
+    {
+        Chuck_VM_Shred* out = m_shreduler->lookup(msg->param);
+
+        Chuck_VM_Shred* shred = msg->shred;
+        if (!shred)
+        {
+            shred = new Chuck_VM_Shred;
+            shred->vm_ref = this;
+            shred->initialize(msg->code);
+            shred->name = msg->code->name;
+            shred->base_ref = shred->mem;
+            shred->add_ref();
+        }
+        // set the current time
+        shred->start = m_shreduler->now_system;
+        // set the id
+        shred->xid = msg->param;
+        // set the now
+        shred->now = shred->wake_time = m_shreduler->now_system;
+        // set the vm
+        shred->vm_ref = this;
+        // set args
+        if (msg->args) shred->args = *(msg->args);
+        // add it to the parent
+        if (shred->parent)
+            shred->parent->children[shred->xid] = shred;
+
+        // add
+        if (!out) {
+            t_CKUINT xid = 0;
+            shred = this->spork(shred);
+            xid = shred->xid;
+
+            const char* s = (msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str());
+            EM_print2green("(VM) sporking incoming shred: %i (%s)...", xid, mini(s));
+            retval = xid;
+            goto done;
+        }
+        // replace
+        else if (m_shreduler->remove(out) && m_shreduler->shredule(shred))
+        {
+            EM_print2blue("(VM) replacing shred %i (%s) with %i (%s)...",
+                out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()));
+            this->free(out, TRUE, FALSE);
+            retval = shred->xid;
+
+            // tracking new shred
+            CK_TRACK(Chuck_Stats::instance()->add_shred(shred));
+
+            goto done;
+        }
+        else
+        {
+            // TODO: this seems sus; is this ever reached? why release the shred?
+            // TODO: how do we know what failed above? the shreduler->remove(out) or shredulder->shredule(shred)?
+            EM_print2blue("(VM) shreduler replacing shred %i...", out->xid);
+            shred->release();
+            retval = 0;
+            goto done;
+        }
+    }
     else if( msg->type == CK_MSG_REMOVE )
     {
         if( msg->param == CK_NO_VALUE )

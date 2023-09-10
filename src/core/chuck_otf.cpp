@@ -157,7 +157,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     t_CKUINT ret = 0;
 
     // CK_FPRINTF_STDERR( "UDP message recv...\n" );
-    if( msg->type == CK_MSG_REPLACE || msg->type == CK_MSG_ADD )
+    if( msg->type == CK_MSG_REPLACE || msg->type == CK_MSG_ADD || msg->type == CK_MSG_ADD_OR_REPLACE)
     {
         string filename;
         vector<string> args;
@@ -215,7 +215,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // set the flags for the command
         cmd->type = msg->type;
         cmd->code = code;
-        if( msg->type == CK_MSG_REPLACE )
+        if( msg->type == CK_MSG_REPLACE || msg->type == CK_MSG_ADD_OR_REPLACE )
             cmd->param = msg->param;
     }
     else if( msg->type == CK_MSG_STATUS || msg->type == CK_MSG_REMOVE || msg->type == CK_MSG_REMOVEALL
@@ -504,6 +504,36 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( !otf_send_file( argv[i], msg, "replace", dest ) )
             goto error;
         EM_poplog();
+    }
+    // add-replace will will replace the current shred at msg->param.
+    // If the shred doesn't exist it will add it. Added 1.5.1.4 (nshaheed)
+    else if (!strcmp(argv[i], "--add.replace") || !strcmp(argv[i], "+="))
+    {
+        if (++i >= argc)
+        {
+            EM_error2(0, "not enough arguments following [add-replace]...");
+            goto error;
+        }
+
+        if (i <= 0)
+            msg.param = CK_NO_VALUE;
+        else
+            msg.param = atoi(argv[i]);
+
+        if (++i >= argc)
+        {
+            EM_error2(0, "not enough arguments following [add-replace]...");
+            goto error;
+        }
+
+        if (!(dest = otf_send_connect(host, port))) return 0;
+        EM_pushlog();
+        EM_log(CK_LOG_INFO, "requesting ADD or REPLACE shred '%i' with '%s'...", msg.param, mini(argv[i]));
+        msg.type = CK_MSG_ADD_OR_REPLACE;
+        if (!otf_send_file(argv[i], msg, "replace", dest))
+            goto error;
+        EM_poplog();
+
     }
     else if( !strcmp( argv[i], "--removeall" ) || !strcmp( argv[i], "--remall" ) || !strcmp( argv[i], "--remove.all" ) )
     {

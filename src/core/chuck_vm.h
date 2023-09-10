@@ -655,6 +655,7 @@ enum Chuck_Msg_Type
     CK_MSG_ERROR, // added 1.3.0.0
     CK_MSG_CLEARVM,
     CK_MSG_CLEARGLOBALS,
+    CK_MSG_ADD_OR_REPLACE, // added 1.5.1.4 (nshaheed)
 };
 
 
