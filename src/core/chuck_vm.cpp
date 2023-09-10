@@ -1826,13 +1826,13 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08
 CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
                    (unsigned long)t_reg_sp, (unsigned long)this->reg->sp ) );
 //-----------------------------------------------------------------------------
-//        // detect operand stack overflow | 1.5.1.4
-//        if( overflow_( this->reg ) )
-//        { ck_handle_overflow( this, vm_ref, "shred operand stack exceeded" ); break; }
-//        // detect mem stack overflow ("catch all") | 1.5.1.4
-//        // NOTE func-call & alloc instrucions already detect
-//        if( overflow_( this->mem ) && is_running ) // <- is_running==FALSE if already detected
-//        { ck_handle_overflow( this, vm_ref, "shred memory stack exceeded" ); break; }
+        // detect operand stack overflow | 1.5.1.4
+        if( overflow_( this->reg ) )
+        { ck_handle_overflow( this, vm_ref, "shred operand stack exceeded" ); break; }
+        // detect mem stack overflow ("catch all") | 1.5.1.4
+        // NOTE func-call & alloc instrucions already detect
+        if( overflow_( this->mem ) && is_running ) // <- is_running==FALSE if already detected
+        { ck_handle_overflow( this, vm_ref, "shred memory stack exceeded" ); break; }
 
         // set to next_pc;
         pc = next_pc;
