@@ -210,12 +210,18 @@ public: // machine components
     // ref to base stack - if this is the root, then base is mem
     Chuck_VM_Stack * base_ref;
 
-    // code
+    // current vm code being run (this could change, e.g., across func calls)
     Chuck_VM_Code * code;
-    Chuck_VM_Code * code_orig; // the one to release
+    // the original vm code attached to this shred (also: the one to release)
+    Chuck_VM_Code * code_orig;
+    // instructions
     Chuck_Instr ** instr;
+
+    // parent shred
     Chuck_VM_Shred * parent;
+    // children shreds
     std::map<t_CKUINT, Chuck_VM_Shred *> children;
+    // program counter
     t_CKUINT pc;
 
     // time

@@ -3963,6 +3963,9 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 //-----------------------------------------------------------------------------
 t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
 {
+    // check if already initialized | 1.5.1.4
+    if( object->vtable != NULL ) return TRUE;
+
     // sanity
     assert( type != NULL );
     assert( type->info != NULL );
@@ -4096,8 +4099,14 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         // TODO: is this ok?
         else if( isa( type, vm->env()->ckt_shred ) )
         {
-            object = new Chuck_VM_Shred;
-            ((Chuck_VM_Shred * )object)->vm_ref = vm; // REFACTOR-2017
+            // instantiate shred
+            Chuck_VM_Shred * newShred = new Chuck_VM_Shred();
+            // set vm_ref
+            newShred->vm_ref = vm;
+            // initialize shred | 1.5.1.4 (ge) added
+            if( !newShred->initialize( NULL ) ) goto error;
+            // copy to object reference
+            object = newShred;
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );

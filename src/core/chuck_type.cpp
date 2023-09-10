@@ -5928,7 +5928,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     {
         // flag it
         type->has_constructor = TRUE;
-        // allocate vm code for pre_ctor
+        // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;

@@ -1506,14 +1506,12 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred::Chuck_VM_Shred()
 {
-    mem = new Chuck_VM_Stack;
-    reg = new Chuck_VM_Stack;
+    mem = NULL;
+    reg = NULL;
     code = code_orig = NULL;
     next = prev = NULL;
     instr = NULL;
     parent = NULL;
-    // obj_array = NULL;
-    // obj_array_size = 0;
     base_ref = NULL;
     vm_ref = NULL;
     event = NULL;
@@ -1560,17 +1558,27 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
                                      t_CKUINT mem_stack_size,
                                      t_CKUINT reg_stack_size )
 {
-    // allocate mem and reg
-    if( !mem->initialize( mem_stack_size ) ) return FALSE;
-    if( !reg->initialize( reg_stack_size ) ) return FALSE;
+    // ensure we don't multi-initialize the shred | 1.5.1.4
+    // FYI explicitly call shutdown() before re-initializing shred
+    if( mem ) return FALSE;
+
+    // allocate new stacks
+    mem = new Chuck_VM_Stack;
+    reg = new Chuck_VM_Stack;
+
+    // initialize mem and reg
+    if( !mem->initialize( mem_stack_size ) ) goto error;
+    if( !reg->initialize( reg_stack_size ) ) goto error;
 
     // program counter
     pc = 0;
     next_pc = 1;
-    // code pointer
-    code_orig = code = c;
-    // add reference
-    code_orig->add_ref();
+    // copy vm code for this shred
+    CK_SAFE_REF_ASSIGN( code_orig, c );
+    // initialize code to shred origin code
+    code = code_orig;
+    // set the instr | possible shred origin code == NULL (e.g., `Shred s;`)
+    instr = code ? code->instr : NULL;
     // shred in dump (all done)
     is_dumped = FALSE;
     // shred done
@@ -1579,8 +1587,6 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     is_running = FALSE;
     // shred abort
     is_abort = FALSE;
-    // set the instr
-    instr = c->instr;
     // zero out the id
     xid = 0;
 
@@ -1588,6 +1594,12 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     initialize_object( this, vm_ref->env()->ckt_shred );
 
     return TRUE;
+
+error:
+    // clean up what has been allocated so far
+    shutdown();
+
+    return FALSE;
 }
 
 
@@ -1599,90 +1611,94 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
-    // spencer - March 2012 (added 1.3.0.0)
-    // can't dealloc ugens while they are still keys to a map;
-    // add reference, store them in a vector, and release them after
-    // SPENCERTODO: is there a better way to do this????
-    std::vector<Chuck_UGen *> release_v;
-    release_v.reserve(m_ugen_map.size());
-
-    // get iterator to our map
-    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
-    while( iter != m_ugen_map.end() )
+    // check if we have anything in ugen map for this shred
+    if( m_ugen_map.size() )
     {
-        // get the ugen
-        Chuck_UGen * ugen = iter->first;
-        // CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        // spencer - March 2012 (added 1.3.0.0)
+        // can't dealloc ugens while they are still keys to a map;
+        // add reference, store them in a vector, and release them after
+        // SPENCERTODO: is there a better way to do this????
+        std::vector<Chuck_UGen *> release_v;
+        release_v.reserve( m_ugen_map.size() );
 
-        // store ref in array for now (added 1.3.0.0)
-        release_v.push_back(ugen);
-        // no need to bump reference since now ugen_map ref counts
-        // ugen->add_ref();
+        // get iterator to our map
+        map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+        while( iter != m_ugen_map.end() )
+        {
+            // get the ugen
+            Chuck_UGen * ugen = iter->first;
 
-        // disconnect
-        ugen->disconnect( TRUE );
+            // store ref in array for now (added 1.3.0.0)
+            // NOTE no need to bump reference since now ugen_map ref counts
+            release_v.push_back(ugen);
 
-        // advance the iterator
-        iter++;
+            // disconnect
+            ugen->disconnect( TRUE );
+
+            // advance the iterator
+            iter++;
+        }
+        // clear map
+        m_ugen_map.clear();
+
+        // loop over vector
+        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
+             rvi != release_v.end(); rvi++ )
+        {
+            // release it
+            CK_SAFE_RELEASE( *rvi );
+        }
+        // clear the release vector
+        release_v.clear();
     }
 
-    // clear map
-    m_ugen_map.clear();
-
-    // loop over vector
-    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-         rvi != release_v.end(); rvi++ )
+    // check if we have parent object references to clean up
+    if( m_parent_objects.size() )
     {
-        // release it
-        (*rvi)->release();
+        // loop over parent object references (added 1.3.1.2)
+        for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
+             it != m_parent_objects.end(); it++ )
+        {
+            // release it
+            CK_SAFE_RELEASE( *it );
+        }
+        // clear the vectors (added 1.3.1.2)
+        m_parent_objects.clear();
     }
-
-    // loop over parent object references (added 1.3.1.2)
-    for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
-         it != m_parent_objects.end(); it++ )
-    {
-        // release it
-        (*it)->release();
-    }
-
-    // clear the vectors (added 1.3.1.2)
-    release_v.clear();
-    m_parent_objects.clear();
 
     // reclaim the stacks
     CK_SAFE_DELETE( mem );
     CK_SAFE_DELETE( reg );
     base_ref = NULL;
 
-    // delete temp pointer space
-    // CK_SAFE_DELETE_ARRAY( obj_array );
-    // obj_array_size = 0;
-
-    // TODO: is this right?
-    if( code_orig )
-        code_orig->release();
+    // release vm code
+    CK_SAFE_RELEASE( code_orig );
     // clear it
     code_orig = code = NULL;
 
     #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
-    if(m_serials != NULL)
+    if( m_serials != NULL )
     {
-        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
+        for( list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++ )
         {
-            (*i)->release();
+            // close first
             (*i)->close();
+            // release
+            CK_SAFE_RELEASE( *i );
         }
-
+        // clear list
         m_serials->clear();
-        CK_SAFE_DELETE(m_serials);
+        // clean up list
+        CK_SAFE_DELETE( m_serials );
     }
     #endif
 
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
 
-    // TODO: what to do with next and prev?
+    // NOTE what to do with next and prev? for now, nothing...
+    // next/prev should be handled externally, e.g., by shreduler
 
     return TRUE;
 }
