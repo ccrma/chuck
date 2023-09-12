@@ -558,6 +558,28 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the enclosing directory, the specified number of parent directories up.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add childMemSize() | 1.5.1.4
+    func = make_new_mfun( "int", "childMemSize", shred_ctrl_hintChildMemSize );
+    func->add_arg( "int", "sizeInBytes" );
+    func->doc = "set size hint of per-shred call stack (\"mem\") for children shreds subsequently sporked from the calling shred (NOTE this size hint does not affect the calling shred--only its descendants); if sizeInBytes <= 0, the size hint is set to the VM default. (FYI This is an arcane functionality that most programmers never need to worry about. Advanced usage: set size hint to small values (e.g., 1K) to support A LOT (e.g., >10000) of simultaneous shreds; set size hint to large values (e.g., >65K) to spork functions with extremely deep recursion, or to support A LOT (>10000) of declared local variables. Use with care.)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add childMemSize() | 1.5.1.4
+    func = make_new_mfun( "int", "childMemSize", shred_cget_hintChildMemSize );
+    func->doc = "get the memory stack size hint (in bytes) for shreds sporked from this one.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add childRegSize() | 1.5.1.4
+    func = make_new_mfun( "int", "childRegSize", shred_ctrl_hintChildRegSize );
+    func->add_arg( "int", "sizeInBytes" );
+    func->doc = "set size hint of per-shred operand stack (\"reg\") for children shreds subsequently sporked from the calling shred (NOTE this size hint does not affect the calling shred--only its descendants); if sizeInBytes <= 0, the size hint is set to the VM default. (FYI This is an arcane functionality that most programmers never need to worry about. Advanced usage: set size hint to small values (e.g., 256 bytes) to support A LOT (>10000) of simultaneous shreds; set size hint to large values (e.g., >20K) to spork functions with extremely lengthy (>10000) statements, including array initializer lists. Use with care.)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add childRegSize() | 1.5.1.4
+    func = make_new_mfun( "int", "childRegSize", shred_cget_hintChildRegSize );
+    func->doc = "get the operand stack size hint (in bytes) for shreds sporked from this one.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
@@ -2342,6 +2364,38 @@ CK_DLL_SFUN( shred_fromId ) // added 1.3.2.0
     Chuck_VM_Shred * derhs = SHRED->vm_ref->shreduler()->lookup(shred_id);
 
     RETURN->v_object = derhs;
+}
+
+
+CK_DLL_MFUN( shred_ctrl_hintChildMemSize ) // 1.5.1.4
+{
+    // get arg
+    t_CKINT sizeInBytes = GET_NEXT_INT(ARGS);
+    // set
+    RETURN->v_int = SHRED->childSetMemSize( sizeInBytes );
+}
+
+
+CK_DLL_MFUN( shred_cget_hintChildMemSize ) // 1.5.1.4
+{
+    // set
+    RETURN->v_int = SHRED->childGetMemSize();
+}
+
+
+CK_DLL_MFUN( shred_ctrl_hintChildRegSize ) // 1.5.1.4
+{
+    // get arg
+    t_CKINT sizeInBytes = GET_NEXT_INT(ARGS);
+    // set
+    RETURN->v_int = SHRED->childSetRegSize( sizeInBytes );
+}
+
+
+CK_DLL_MFUN( shred_cget_hintChildRegSize ) // 1.5.1.4
+{
+    // set
+    RETURN->v_int = SHRED->childGetRegSize();
 }
 
 
