@@ -1841,7 +1841,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     if( (lhs->next && op != ae_op_chuck /*&& !isa( right, env->ckt_function)*/ ) || rhs->next )
     {
         // TODO: implement this
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "multi-value (%s) operation not supported/implemented",
             op2str(op));
         return NULL;
@@ -2033,8 +2033,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     switch( op )
     {
     case ae_op_plus:
-    case ae_op_plus_chuck:
-        // take care of string
+        // string + int/float
         if( isa( left, env->ckt_string ) )
         {
             // right is string or int/float
@@ -2042,8 +2041,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
                 || isa( right, env->ckt_float ) )
                 break;
         }
-        else if( isa( left, env->ckt_string ) || isa( left, env->ckt_int )
-                 || isa( left, env->ckt_float ) )
+    case ae_op_plus_chuck:
+        // int/float + string
+        if( isa( left, env->ckt_string ) || isa( left, env->ckt_int ) || isa( left, env->ckt_float ) )
         {
             // right is string
             if( isa( right, env->ckt_string ) )
@@ -2101,6 +2101,17 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         }
         else
         {
+            // check if rhs is a decl
+            if( rhs->s_type == ae_exp_decl )
+            {
+                // error
+                EM_error2( binary->where,
+                    "cannot perform '%s' on a variable declaration...", op2str(op) );
+                EM_error2( 0,
+                    "...(hint: use '=>' instead to initialize the variable)" );
+                return NULL;
+            }
+
             // check if rhs is const
             if( rhs->s_type == ae_exp_primary )
             {
@@ -2275,7 +2286,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             else if( isa( right, env->ckt_vec4 ) ) return left;
             else // error
             {
-                EM_error2( lhs->where, "on suitable IO action for '%s' <= '%s'",
+                EM_error2( binary->where, "no suitable IO action for '%s' <= '%s'",
                     left->c_name(), right->c_name() );
                 return NULL;
             }
@@ -2371,7 +2382,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     // multi-value not supported beyond this for now
     if( lhs->next || rhs->next )
     {
-        EM_error2( lhs->where,
+        EM_error2( binary->where,
             "multi-value (=>) operation not supported/implemented" );
         return NULL;
     }
@@ -5917,7 +5928,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     {
         // flag it
         type->has_constructor = TRUE;
-        // allocate vm code for pre_ctor
+        // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;

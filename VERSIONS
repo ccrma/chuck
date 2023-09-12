@@ -2,6 +2,21 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.4
+=======
+- (added) new Machine function
+	static int numShreds();
+	    Get the number of shreds currently in the VM.
+- (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin 
+    fails to load, instead of displaying a cryptic error code (e.g., 
+    "reason: 1920"), the error code is translating into an error message 
+    and displayed (e.g., "reason: The file cannot be accessed by the system.")
+    (azaday)
+- (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
+    space (" ") after prompt text
+- (added; chugins development) new dyanmic linking API for VM operations
+
+
 1.5.1.3 (September 2023) "ChucK to School"
 =======
 (note) this release of chuck addresses a number of issues from long-time 
@@ -19,20 +34,25 @@ ChucK VERSIONS log
 - (added) new and updated Machine functions
 	---------
 	** new ** static int removeLastShred();
-	    Remove the most recently added shred in the VM.
+	    Remove the most recently added shred in the VM (could be the
+	    shred calling this function); returns the ID of the removed 
+	    shred.
 	** new ** static int resetShredID();
 	    Reset shred IDs to 1 + the highest current shred ID in the VM; 
 	    can be used as shred management to keep shred IDs low, after 
 	    a lot of sporks. Returns what the next shred ID would be.
-	** new ** static int clearVM();
+	** new ** static void removeAllShreds();
+	    Remove all shreds in the VM (including the shred calling this 
+	    function).
+	** new ** static void clearVM();
 	    Reset the type system, removing all user-defined types and all 
 	    global variables; removes all shreds in the VM (including the 
 	    shred calling this function). Use with care.
-	** new ** static int removeAllShreds();
-	    Remove all shreds in the VM (including the shred calling this 
-	    function).
-	** new ** static int timeCheck();
-	    Print the current time information in the VM.
+	** new ** static void printStatus();
+	    Print (to terminal or console) the current status of the VM.
+	** new ** static void printTimeCheck();
+	    Print (to terminal or console) the current time information in
+	    the VM.
 	-------------
 	** updated ** static int add( string path );
 	    Compile and spork a new shred from file at 'path' into the VM; 
@@ -46,7 +66,8 @@ ChucK VERSIONS log
 	** updated ** static int remove( int id );
 	    Remove shred from VM by shred ID (returned by Machine.add).
 	** updated ** static int status();
-	    Print the current status of the VM.
+	    Print the current status of the VM;
+	    legacy version of printStatus().
 	-------------
 - (updated) Machine.add( filepath ) no longer introduces a potential
     real-time audio interruption on macOS ** for all filepath that does 

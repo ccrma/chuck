@@ -627,6 +627,32 @@ void EM_error3( const char * message, ... )
 
 
 //-----------------------------------------------------------------------------
+// name: EM_exception()
+// desc: prints exception message
+//-----------------------------------------------------------------------------
+void EM_exception( const char * message, ... )
+{
+    va_list ap;
+
+    // preamble
+    CK_FPRINTF_STDERR( "[%s]:(%s) ",
+                       TC::orange("chuck",true).c_str(),
+                       TC::red("EXCEPTION",true).c_str() );
+
+    // actual exception message text
+    va_start( ap, message );
+    CK_VFPRINTF_STDERR( TC::orange(message,true).c_str(), ap );
+    va_end( ap );
+
+    // end line and flush to be extra sure
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_print2vanilla()
 // format: like EM_error() minus the error and the line
 //-----------------------------------------------------------------------------

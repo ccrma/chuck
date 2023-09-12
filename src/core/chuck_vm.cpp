@@ -63,6 +63,17 @@ using namespace std;
 
 
 //-----------------------------------------------------------------------------
+// uncomment AND set to 1 to compile VM stack observe messages
+//-----------------------------------------------------------------------------
+#define CK_VM_STACK_OBSERVE_ENABLE 0
+// vm statck observe macros
+#if CK_VM_STACK_OBSERVE_ENABLE
+#define CK_VM_STACK_OBSERVE(x) x
+#else
+#define CK_VM_STACK_OBSERVE(x)
+#endif
+
+//-----------------------------------------------------------------------------
 // uncomment AND set to 1 to compile VM stack debug messages
 //-----------------------------------------------------------------------------
 #define CK_VM_STACK_DEBUG_ENABLE 0
@@ -73,6 +84,7 @@ using namespace std;
 #else
 #define CK_VM_STACK_DEBUG(x)
 #endif
+
 
 
 
@@ -1147,8 +1159,11 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
     // set the vm
     shred->vm_ref = this;
+    // get stack size hints | 1.5.1.4
+    t_CKINT mems = parent ? parent->childGetMemSize() : 0;
+    t_CKINT regs = parent ? parent->childGetRegSize() : 0;
     // initialize the shred (default stack size)
-    shred->initialize( code );
+    shred->initialize( code, mems, regs );
     // set the name
     shred->name = code->name;
     // set the parent
@@ -1413,6 +1428,7 @@ Chuck_VM_Stack::Chuck_VM_Stack()
     stack = sp = sp_max = NULL;
     prev = next = NULL;
     m_is_init = FALSE;
+    m_size = 0;
 }
 
 
@@ -1471,34 +1487,43 @@ Chuck_VM_Code::~Chuck_VM_Code()
 
 
 
+// minimum stack size | 1.5.1.4 (ge) added
+#define VM_STACK_MINIMUM_SIZE 2048
 // offset in bytes at the beginning of a stack for initializing data
-#define VM_STACK_OFFSET  16
-// 1/factor of stack is left blank, to give room to detect overflow
-#define VM_STACK_PADDING_FACTOR 16
+#define VM_STACK_OFFSET 16
+// overflow padding in bytes, to allow some overflow before detection
+#define VM_STACK_OVERFLOW_PADDING 512
 //-----------------------------------------------------------------------------
 // name: initialize()
-// desc: initialize VM stack
+// desc: initialize VM stack, with at least 'size' bytes
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 {
-    if( m_is_init )
-        return FALSE;
+    // check if already initialized
+    if( m_is_init ) return FALSE;
 
-    // make room for header
-    size += VM_STACK_OFFSET;
+    // ensure stack size >= minimum size | 1.5.1.4
+    if( size < VM_STACK_MINIMUM_SIZE ) size = VM_STACK_MINIMUM_SIZE;
+    // actual size in bytes to allocate; stack header + size + overflow pad
+    t_CKUINT alloc_size = VM_STACK_OFFSET + size + VM_STACK_OVERFLOW_PADDING;
+
     // allocate stack
-    stack = new t_CKBYTE[size];
+    stack = new t_CKBYTE[alloc_size];
     if( !stack ) goto out_of_memory;
-
-    // zero
-    memset( stack, 0, size );
+    // zero the memory
+    memset( stack, 0, alloc_size );
 
     // advance stack after the header
     stack += VM_STACK_OFFSET;
     // set the sp
     sp = stack;
-    // upper limit (padding factor)
-    sp_max = sp + size - (size / VM_STACK_PADDING_FACTOR);
+    // upper limit (beyond which is the overflow padding)
+    sp_max = stack + size;
+    // remember size
+    m_size = size;
+
+    // log
+    EM_log( CK_LOG_FINER, "allocated VM stack (size:%d alloc:%d)", size, alloc_size );
 
     // set flag and return
     return m_is_init = TRUE;
@@ -1506,7 +1531,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    EM_error2( 0, "(VM) OutOfMemory: while allocating stack" );
+    EM_exception( "OutOfMemory: VM stack [size=%d alloc=%d]", size, alloc_size );
 
     // return FALSE
     return FALSE;
@@ -1524,13 +1549,17 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
     if( !m_is_init )
         return FALSE;
 
-    // free the stack
+    // return stack to the allocation point
     stack -= VM_STACK_OFFSET;
+    // free the stack
     CK_SAFE_DELETE_ARRAY( stack );
+    // zero out the stack pointer
     sp = sp_max = NULL;
 
     // set the flag to false
     m_is_init = FALSE;
+    // set size to 0 | 1.5.1.4
+    m_size = 0;
 
     return TRUE;
 }
@@ -1544,14 +1573,12 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 //-----------------------------------------------------------------------------
 Chuck_VM_Shred::Chuck_VM_Shred()
 {
-    mem = new Chuck_VM_Stack;
-    reg = new Chuck_VM_Stack;
+    mem = NULL;
+    reg = NULL;
     code = code_orig = NULL;
     next = prev = NULL;
     instr = NULL;
     parent = NULL;
-    // obj_array = NULL;
-    // obj_array_size = 0;
     base_ref = NULL;
     vm_ref = NULL;
     event = NULL;
@@ -1566,6 +1593,10 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     now = 0;
     start = 0;
     wake_time = 0;
+
+    // set children stack size hints to default | 1.5.1.4
+    childSetMemSize( 0 );
+    childSetRegSize( 0 );
 
 #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
@@ -1598,17 +1629,31 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
                                      t_CKUINT mem_stack_size,
                                      t_CKUINT reg_stack_size )
 {
-    // allocate mem and reg
-    if( !mem->initialize( mem_stack_size ) ) return FALSE;
-    if( !reg->initialize( reg_stack_size ) ) return FALSE;
+    // ensure we don't multi-initialize the shred | 1.5.1.4
+    // FYI explicitly call shutdown() before re-initializing shred
+    if( mem ) return FALSE;
+
+    // allocate new stacks
+    mem = new Chuck_VM_Stack;
+    reg = new Chuck_VM_Stack;
+
+    // check for default | 1.5.1.4
+    if( mem_stack_size == 0 ) mem_stack_size = CKVM_MEM_STACK_SIZE;
+    if( reg_stack_size == 0 ) reg_stack_size = CKVM_REG_STACK_SIZE;
+
+    // initialize mem and reg
+    if( !mem->initialize( mem_stack_size ) ) goto error;
+    if( !reg->initialize( reg_stack_size ) ) goto error;
 
     // program counter
     pc = 0;
     next_pc = 1;
-    // code pointer
-    code_orig = code = c;
-    // add reference
-    code_orig->add_ref();
+    // copy vm code for this shred
+    CK_SAFE_REF_ASSIGN( code_orig, c );
+    // initialize code to shred origin code
+    code = code_orig;
+    // set the instr | possible shred origin code == NULL (e.g., `Shred s;`)
+    instr = code ? code->instr : NULL;
     // shred in dump (all done)
     is_dumped = FALSE;
     // shred done
@@ -1617,15 +1662,23 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     is_running = FALSE;
     // shred abort
     is_abort = FALSE;
-    // set the instr
-    instr = c->instr;
     // zero out the id
     xid = 0;
 
     // initialize
-    initialize_object( this, vm_ref->env()->ckt_shred );
+    if( !initialize_object( this, vm_ref->env()->ckt_shred ) ) goto error;
+
+    // inherit size hints for shreds sporked from this shred | 1.5.1.4
+    childSetMemSize( mem_stack_size );
+    childSetRegSize( reg_stack_size );
 
     return TRUE;
+
+error:
+    // clean up what has been allocated so far
+    shutdown();
+
+    return FALSE;
 }
 
 
@@ -1637,90 +1690,98 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::shutdown()
 {
-    // spencer - March 2012 (added 1.3.0.0)
-    // can't dealloc ugens while they are still keys to a map;
-    // add reference, store them in a vector, and release them after
-    // SPENCERTODO: is there a better way to do this????
-    std::vector<Chuck_UGen *> release_v;
-    release_v.reserve(m_ugen_map.size());
-
-    // get iterator to our map
-    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
-    while( iter != m_ugen_map.end() )
+    // check if we have anything in ugen map for this shred
+    if( m_ugen_map.size() )
     {
-        // get the ugen
-        Chuck_UGen * ugen = iter->first;
-        // CK_GC_LOG("Chuck_VM_Shred::shutdown() disconnect: 0x%08x", ugen);
+        // spencer - March 2012 (added 1.3.0.0)
+        // can't dealloc ugens while they are still keys to a map;
+        // add reference, store them in a vector, and release them after
+        // SPENCERTODO: is there a better way to do this????
+        std::vector<Chuck_UGen *> release_v;
+        release_v.reserve( m_ugen_map.size() );
 
-        // store ref in array for now (added 1.3.0.0)
-        release_v.push_back(ugen);
-        // no need to bump reference since now ugen_map ref counts
-        // ugen->add_ref();
+        // get iterator to our map
+        map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+        while( iter != m_ugen_map.end() )
+        {
+            // get the ugen
+            Chuck_UGen * ugen = iter->first;
 
-        // disconnect
-        ugen->disconnect( TRUE );
+            // store ref in array for now (added 1.3.0.0)
+            // NOTE no need to bump reference since now ugen_map ref counts
+            release_v.push_back(ugen);
 
-        // advance the iterator
-        iter++;
+            // disconnect
+            ugen->disconnect( TRUE );
+
+            // advance the iterator
+            iter++;
+        }
+        // clear map
+        m_ugen_map.clear();
+
+        // loop over vector
+        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
+             rvi != release_v.end(); rvi++ )
+        {
+            // release it
+            CK_SAFE_RELEASE( *rvi );
+        }
+        // clear the release vector
+        release_v.clear();
     }
 
-    // clear map
-    m_ugen_map.clear();
-
-    // loop over vector
-    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-         rvi != release_v.end(); rvi++ )
+    // check if we have parent object references to clean up
+    if( m_parent_objects.size() )
     {
-        // release it
-        (*rvi)->release();
+        // loop over parent object references (added 1.3.1.2)
+        for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
+             it != m_parent_objects.end(); it++ )
+        {
+            // release it
+            CK_SAFE_RELEASE( *it );
+        }
+        // clear the vectors (added 1.3.1.2)
+        m_parent_objects.clear();
     }
-
-    // loop over parent object references (added 1.3.1.2)
-    for( vector<Chuck_Object *>::iterator it = m_parent_objects.begin();
-         it != m_parent_objects.end(); it++ )
-    {
-        // release it
-        (*it)->release();
-    }
-
-    // clear the vectors (added 1.3.1.2)
-    release_v.clear();
-    m_parent_objects.clear();
 
     // reclaim the stacks
     CK_SAFE_DELETE( mem );
     CK_SAFE_DELETE( reg );
     base_ref = NULL;
 
-    // delete temp pointer space
-    // CK_SAFE_DELETE_ARRAY( obj_array );
-    // obj_array_size = 0;
-
-    // TODO: is this right?
-    if( code_orig )
-        code_orig->release();
+    // release vm code
+    CK_SAFE_RELEASE( code_orig );
     // clear it
     code_orig = code = NULL;
 
+    // set children stack size hints to default | 1.5.1.4
+    childSetMemSize( 0 );
+    childSetRegSize( 0 );
+
     #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
-    if(m_serials != NULL)
+    if( m_serials != NULL )
     {
-        for(list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++)
+        for( list<Chuck_IO_Serial *>::iterator i = m_serials->begin(); i != m_serials->end(); i++ )
         {
-            (*i)->release();
+            // close first
             (*i)->close();
+            // release
+            CK_SAFE_RELEASE( *i );
         }
-
+        // clear list
         m_serials->clear();
-        CK_SAFE_DELETE(m_serials);
+        // clean up list
+        CK_SAFE_DELETE( m_serials );
     }
     #endif
 
     // 1.3.5.3 pop all loop counters
     while( this->popLoopCounter() );
 
-    // TODO: what to do with next and prev?
+    // NOTE what to do with next and prev? for now, nothing...
+    // next/prev should be handled externally, e.g., by shreduler
 
     return TRUE;
 }
@@ -1794,6 +1855,86 @@ t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
 
 
 //-----------------------------------------------------------------------------
+// name: childSetMemSize() | 1.5.1.3
+// desc: set hint; affects children shreds sporked from this one
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM_Shred::childSetMemSize( t_CKINT sizeInBytes )
+{
+    // check for negative
+    if( sizeInBytes < 0 ) sizeInBytes = 0;
+    // mem is call stack (for function calls / local vars)
+    memStackSize = sizeInBytes;
+    // return
+    return childGetMemSize();
+}
+// get value (if 0, return default)
+t_CKINT Chuck_VM_Shred::childGetMemSize()
+{ return memStackSize > 0 ? memStackSize : CKVM_MEM_STACK_SIZE; }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: childSetRegSize() | 1.5.1.3
+// desc: set hint; affects children shreds sporked from this one
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM_Shred::childSetRegSize( t_CKINT sizeInBytes )
+{
+    // check for negative
+    if( sizeInBytes < 0 ) sizeInBytes = 0;
+    // reg is operand stack (for evaluating expressions)
+    regStackSize = sizeInBytes;
+    // return
+    return regStackSize;
+}
+// get value (if 0, return default)
+t_CKINT Chuck_VM_Shred::childGetRegSize()
+{ return regStackSize > 0 ? regStackSize : CKVM_REG_STACK_SIZE; }
+
+
+
+
+//-----------------------------------------------------------------------------
+// mechanism to observe the growth of maximum stacks depth (reg and mem) across
+// all shreds;  when enabled, this is called every instruction in the VM;
+// used to gauge stack utilization and to assess default shred stacks sizes
+// 1.5.1.4 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKUINT g_mem_stack_depth_reached = 0;
+static t_CKUINT g_reg_stack_depth_reached = 0;
+static void ckvm_observe_stackdepth_across_all_shreds( Chuck_VM_Shred * currentShred )
+{
+    // track stack depth
+    t_CKBOOL printStackInfo = FALSE;
+
+    // mem stack (for local variables)
+    t_CKUINT mem_depth = currentShred->mem->sp - currentShred->mem->stack;
+    if( mem_depth > g_mem_stack_depth_reached )
+    {
+        g_mem_stack_depth_reached = mem_depth;
+        printStackInfo = TRUE;
+    }
+
+    // mem stack (for operands, e.g., in expression or in array initializer lists)
+    t_CKUINT reg_depth = currentShred->reg->sp - currentShred->reg->stack;
+    if( reg_depth > g_reg_stack_depth_reached )
+    {
+        g_reg_stack_depth_reached = reg_depth;
+        printStackInfo = TRUE;
+    }
+
+    // something new to print
+    if( printStackInfo )
+    {
+        CK_FPRINTF_STDERR( "[chuck]:(VM DEBUG) global max stack depths -> mem:%lu reg:%lu\n",
+                           g_mem_stack_depth_reached, g_reg_stack_depth_reached );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: run()
 // desc: run this shred's VM code
 //-----------------------------------------------------------------------------
@@ -1824,12 +1965,23 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08
 CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
                    (unsigned long)t_reg_sp, (unsigned long)this->reg->sp ) );
 //-----------------------------------------------------------------------------
+        // detect operand stack overflow | 1.5.1.4
+        if( overflow_( this->reg ) )
+        { ck_handle_overflow( this, vm_ref, "shred operand stack exceeded" ); break; }
+        // detect mem stack overflow ("catch all") | 1.5.1.4
+        // NOTE func-call & alloc instrucions already detect
+        if( overflow_( this->mem ) && is_running ) // <- is_running==FALSE if already detected
+        { ck_handle_overflow( this, vm_ref, "shred memory stack exceeded" ); break; }
+
         // set to next_pc;
         pc = next_pc;
+        // advance program counter
         next_pc++;
 
         // track number of cycles
         CK_TRACK( this->stat->cycles++ );
+        // if enabled, update shred stacks depth observation | 1.5.1.4
+        CK_VM_STACK_OBSERVE( ckvm_observe_stackdepth_across_all_shreds( this ) );
     }
 
     // check abort

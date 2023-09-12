@@ -1087,6 +1087,9 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
         srate = 0;
     }
 
+    // get DL API reference | 1.5.1.4
+    m_api = Chuck_DL_Api::Api::instance();
+
     linepos = 0;
     errorEncountered = FALSE;
 }
@@ -1096,7 +1099,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 
 //-----------------------------------------------------------------------------
 // name: clear()
-// desc: ...
+// desc: clear the query
 //-----------------------------------------------------------------------------
 void Chuck_DL_Query::clear()
 {
@@ -1201,12 +1204,43 @@ namespace Chuck_DL_Api
 
 
 //-----------------------------------------------------------------------------
-// name: ck_get_srate()
+// name: ck_srate() | add 1.5.1.4
 // desc: host-side hook implementation for getting system srate
 //-----------------------------------------------------------------------------
-static t_CKUINT ck_get_srate(CK_DL_API api, Chuck_VM_Shred * shred)
+static t_CKUINT ck_srate( Chuck_VM * vm )
+{
+    return vm->srate();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_srate() | legacy as of 1.5.1.4
+// desc: host-side hook implementation for getting system srate
+//-----------------------------------------------------------------------------
+static t_CKUINT ck_get_srate( CK_DL_API api, Chuck_VM_Shred * shred )
 {
     return shred->vm_ref->srate();
+}
+
+
+//-----------------------------------------------------------------------------
+// name: create_event_buffer() | 1.5.1.4 (ge, andrew) added
+// desc: host-side hoook implemenation for
+//       creatinga new lock-free one-producer, one-consumer buffer
+//-----------------------------------------------------------------------------
+static CBufferSimple * ck_create_event_buffer( Chuck_VM * vm )
+{
+    return vm->create_event_buffer();
+}
+
+//-----------------------------------------------------------------------------
+// name: queue_event() | 1.5.1.4 (ge, andrew) added
+// desc: host-side hoook implemenation for queuing an event
+//       NOTE num_msg must be 1; buffer created using create_event_buffer()
+//-----------------------------------------------------------------------------
+static t_CKBOOL ck_queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer )
+{
+    return vm->queue_event( event, num_msg, buffer );
 }
 
 
@@ -1570,10 +1604,22 @@ static t_CKBOOL ck_array4_get_key( CK_DL_API api, Chuck_DL_Api::Array4 a, const 
 
 
 
+//-----------------------------------------------------------------------------
+// constructor for the VMApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::VMApi::VMApi() :
-get_srate(ck_get_srate) { }
+get_srate(ck_get_srate),
+srate(ck_srate),
+create_event_buffer(ck_create_event_buffer),
+queue_event(ck_queue_event)
+{ }
 
 
+
+
+//-----------------------------------------------------------------------------
+// constructor for the ObjectApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
 create(ck_create),
@@ -1592,8 +1638,11 @@ array4_get_key(ck_array4_get_key)
 { }
 
 
+
+
 // windows
 #if defined(__PLATFORM_WINDOWS__)
+#include <system_error> // std::system_category() | 1.5.1.4
 extern "C"
 {
 #ifndef __CHUNREAL_ENGINE__
@@ -1628,10 +1677,15 @@ void *dlsym( void * handle, const char *symbol )
 
 const char * dlerror( void )
 {
+    // get windows error code
     int error = GetLastError();
+    // no error
     if( error == 0 ) return NULL;
-    // 1.4.2.0 (ge) | changed to snprintf
-    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "%i", error );
+    // 1.5.1.4 (azaday) convert error code to system message
+    std::string error_msg = std::system_category().message( error );
+    // 1.4.2.0 (ge) changed to snprintf
+    snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "(%i) %s", error, error_msg.c_str() );
+    // return error buffer
     return dlerror_buffer;
 }
 }

@@ -85,6 +85,8 @@ void EM_error2( t_CKINT, c_constr, ... );
 void EM_error2b( t_CKINT, c_constr, ... );
 // prints message, no line number
 void EM_error3( c_constr, ... );
+// prints exception message
+void EM_exception( c_constr, ... );
 
 // like EM_error2() minus line arg and error
 void EM_print2vanilla( c_constr, ... );

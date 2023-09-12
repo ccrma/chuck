@@ -1357,7 +1357,7 @@ CK_DLL_CTRL( BPF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for BPF is negative");
     }
 
@@ -1394,7 +1394,7 @@ CK_DLL_CTRL( BPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for BPF is negative");
     }
 
@@ -1432,11 +1432,11 @@ CK_DLL_CTRL( BPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for BPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for BPF is negative");
     }
 
@@ -1493,7 +1493,7 @@ CK_DLL_CTRL( BRF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for BRF is negative");
     }
 
@@ -1530,7 +1530,7 @@ CK_DLL_CTRL( BRF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for BRF is negative");
     }
 
@@ -1568,11 +1568,11 @@ CK_DLL_CTRL( BRF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for BRF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for BRF is negative");
     }
 
@@ -1633,7 +1633,7 @@ CK_DLL_CTRL( RLPF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for LPF is negative");
     }
 
@@ -1669,7 +1669,7 @@ CK_DLL_CTRL( RLPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for LPF is negative");
     }
 
@@ -1707,11 +1707,11 @@ CK_DLL_CTRL( RLPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for LPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for LPF is negative");
     }
 
@@ -1773,7 +1773,7 @@ CK_DLL_CTRL( ResonZ_ctrl_freq )
     // commented out for now: main culprits LPF HPF BPF BRF; still
     //     hoping to retain experimental possibilties for other filters (ge)
     // if( freq < 0 ) {
-    //     throw_exception(SHRED, "NegativeFrequencyException",
+    //     ck_throw_exception(SHRED, "NegativeFrequency",
     //                            "freq value for ResonZ is negative");
     // }
 
@@ -1811,7 +1811,7 @@ CK_DLL_CTRL( ResonZ_ctrl_Q )
     // commented out for now: main culprits LPF HPF BPF BRF; still
     //     hoping to retain experimental possibilties for other filters (ge)
     // if( Q < 0 ) {
-    //     throw_exception(SHRED, "NegativeQException",
+    //     ck_throw_exception(SHRED, "NegativeQ",
     //                            "Q value for ResonZ is negative");
     // }
 
@@ -1851,11 +1851,11 @@ CK_DLL_CTRL( ResonZ_ctrl_set )
     // commented out for now: main culprits LPF HPF BPF BRF; still
     //     hoping to retain experimental possibilties for other filters (ge)
     // if( freq < 0 ) {
-    //    throw_exception(SHRED, "NegativeFrequencyException",
+    //    ck_throw_exception(SHRED, "NegativeFrequency",
     //                           "freq value for ResonZ is negative");
     // }
     // if( Q < 0 ) {
-    //     throw_exception(SHRED, "NegativeQException",
+    //     ck_throw_exception(SHRED, "NegativeQ",
     //                            "Q value for ResonZ is negative");
     // }
 
@@ -1918,7 +1918,7 @@ CK_DLL_CTRL( RHPF_ctrl_freq )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for HPF is negative");
     }
 
@@ -1954,7 +1954,7 @@ CK_DLL_CTRL( RHPF_ctrl_Q )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for HPF is negative");
     }
 
@@ -1992,11 +1992,11 @@ CK_DLL_CTRL( RHPF_ctrl_set )
 
     // added: 1.4.0.1 (Nathan Tindall)
     if( freq < 0 ) {
-        throw_exception(SHRED, "NegativeFrequencyException",
+        ck_throw_exception(SHRED, "NegativeFrequency",
                                "freq value for LPF is negative");
     }
     if( Q < 0 ) {
-        throw_exception(SHRED, "NegativeQException",
+        ck_throw_exception(SHRED, "NegativeQ",
                                "Q value for LPF is negative");
     }
 

@@ -9,7 +9,7 @@ StringTokenizer tok;
 while( true )
 {
     // prompt
-    in.prompt( "enter line of text:" ) => now;
+    in.prompt( "enter line of text: " ) => now;
 
     // read
     while( in.more() )

@@ -1606,7 +1606,8 @@ CK_DLL_CTOR( foogen_ctor )
 
         data->shred = new Chuck_VM_Shred;
         data->shred->vm_ref = SHRED->vm_ref;
-        data->shred->initialize(code);
+        // initialize with stack size hints | 1.5.1.4
+        data->shred->initialize( code, SHRED->childGetMemSize(), SHRED->childGetRegSize() );
     }
     else
     {
