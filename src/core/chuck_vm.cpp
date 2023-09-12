@@ -1095,8 +1095,11 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
     // set the vm
     shred->vm_ref = this;
+    // get stack size hints | 1.5.1.4
+    t_CKINT mems = parent ? parent->childGetMemSize() : 0;
+    t_CKINT regs = parent ? parent->childGetRegSize() : 0;
     // initialize the shred (default stack size)
-    shred->initialize( code );
+    shred->initialize( code, mems, regs );
     // set the name
     shred->name = code->name;
     // set the parent
@@ -1527,6 +1530,10 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     start = 0;
     wake_time = 0;
 
+    // set children stack size hints to default | 1.5.1.4
+    childSetMemSize( 0 );
+    childSetRegSize( 0 );
+
 #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
 #endif
@@ -1566,6 +1573,10 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     mem = new Chuck_VM_Stack;
     reg = new Chuck_VM_Stack;
 
+    // check for default | 1.5.1.4
+    if( mem_stack_size == 0 ) mem_stack_size = CKVM_MEM_STACK_SIZE;
+    if( reg_stack_size == 0 ) reg_stack_size = CKVM_REG_STACK_SIZE;
+
     // initialize mem and reg
     if( !mem->initialize( mem_stack_size ) ) goto error;
     if( !reg->initialize( reg_stack_size ) ) goto error;
@@ -1591,7 +1602,11 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    initialize_object( this, vm_ref->env()->ckt_shred );
+    if( !initialize_object( this, vm_ref->env()->ckt_shred ) ) goto error;
+
+    // inherit size hints for shreds sporked from this shred | 1.5.1.4
+    childSetMemSize( mem_stack_size );
+    childSetRegSize( reg_stack_size );
 
     return TRUE;
 
@@ -1675,6 +1690,10 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     CK_SAFE_RELEASE( code_orig );
     // clear it
     code_orig = code = NULL;
+
+    // set children stack size hints to default | 1.5.1.4
+    childSetMemSize( 0 );
+    childSetRegSize( 0 );
 
     #ifndef __DISABLE_SERIAL__
     // HACK (added 1.3.2.0): close serial devices
@@ -1767,6 +1786,46 @@ t_CKVOID Chuck_VM_Shred::add_parent_ref( Chuck_Object * obj )
     // add it to vector
     m_parent_objects.push_back( obj );
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: childSetMemSize() | 1.5.1.3
+// desc: set hint; affects children shreds sporked from this one
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM_Shred::childSetMemSize( t_CKINT sizeInBytes )
+{
+    // check for negative
+    if( sizeInBytes < 0 ) sizeInBytes = 0;
+    // mem is call stack (for function calls / local vars)
+    memStackSize = sizeInBytes;
+    // return
+    return childGetMemSize();
+}
+// get value (if 0, return default)
+t_CKINT Chuck_VM_Shred::childGetMemSize()
+{ return memStackSize > 0 ? memStackSize : CKVM_MEM_STACK_SIZE; }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: childSetRegSize() | 1.5.1.3
+// desc: set hint; affects children shreds sporked from this one
+//-----------------------------------------------------------------------------
+t_CKINT Chuck_VM_Shred::childSetRegSize( t_CKINT sizeInBytes )
+{
+    // check for negative
+    if( sizeInBytes < 0 ) sizeInBytes = 0;
+    // reg is operand stack (for evaluating expressions)
+    regStackSize = sizeInBytes;
+    // return
+    return regStackSize;
+}
+// get value (if 0, return default)
+t_CKINT Chuck_VM_Shred::childGetRegSize()
+{ return regStackSize > 0 ? regStackSize : CKVM_REG_STACK_SIZE; }
 
 
 

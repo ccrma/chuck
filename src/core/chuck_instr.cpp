@@ -4103,10 +4103,14 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             Chuck_VM_Shred * newShred = new Chuck_VM_Shred();
             // set vm_ref
             newShred->vm_ref = vm;
-            // initialize shred | 1.5.1.4 (ge) added
-            if( !newShred->initialize( NULL ) ) goto error;
-            // copy to object reference
+            // copy to object reference (in case of error, object will be deleted)
             object = newShred;
+
+            // get stack size hints | 1.5.1.4
+            t_CKINT mems = shred ? shred->childGetMemSize() : 0;
+            t_CKINT regs = shred ? shred->childGetRegSize() : 0;
+            // initialize shred | 1.5.1.4 (ge) added, along with child mem and reg stack size hints
+            if( !newShred->initialize( NULL, mems, regs ) ) goto error;
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
