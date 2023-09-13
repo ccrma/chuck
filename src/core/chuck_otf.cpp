@@ -46,11 +46,21 @@
 #include <time.h>
 
 #ifndef __PLATFORM_WINDOWS__
-#include <unistd.h>
+  #include <unistd.h>
+  // linux 64-bit byte ordering | 1.5.1.4
+  #if defined(__PLATFORM_LINUX__)
+    #include <endian.h>
+    #ifndef htonll
+      #define htonll htobe64
+    #endif
+    #ifndef ntohll
+      #define ntohll be64toh
+    #endif
+  #endif
 #else // 2022 QTSIN
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+  #include <windows.h>
 #endif
 
 using namespace std;

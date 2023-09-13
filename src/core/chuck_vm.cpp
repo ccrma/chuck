@@ -54,6 +54,7 @@
 #include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
+#include <limits.h> // 1.5.1.4 | for ULONG_MAX
 #include <iomanip>
 #include <string>
 #include <algorithm>
