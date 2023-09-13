@@ -51,7 +51,8 @@ typedef int a_Pos;
 
 // enum oper
 typedef enum {
-    ae_op_plus = 0, ae_op_minus, ae_op_times, ae_op_divide,
+    ae_op_none = 0,
+    ae_op_plus, ae_op_minus, ae_op_times, ae_op_divide,
     ae_op_eq, ae_op_neq, ae_op_lt, ae_op_le, ae_op_gt,
     ae_op_ge, ae_op_and, ae_op_or, ae_op_s_or, ae_op_s_and,
     ae_op_shift_left, ae_op_shift_right, ae_op_percent,
@@ -60,8 +61,10 @@ typedef enum {
     ae_op_s_or_chuck, ae_op_s_xor_chuck, ae_op_shift_right_chuck,
     ae_op_shift_left_chuck, ae_op_percent_chuck,
     ae_op_plusplus, ae_op_minusminus, ae_op_tilda, ae_op_exclamation,
-    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck, ae_op_spork,
-    ae_op_typeof, ae_op_sizeof, ae_op_new, ae_op_arrow_left, ae_op_arrow_right
+    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck,
+    ae_op_assign, ae_op_dollar, ae_op_at_at, ae_op_coloncolon,
+    ae_op_spork, ae_op_typeof, ae_op_sizeof, ae_op_new,
+    ae_op_arrow_left, ae_op_arrow_right, ae_op_gruck_left, ae_op_gruck_right
 } ae_Operator;
 
 const char * op2str( ae_Operator op );
@@ -211,6 +214,10 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
                          uint32_t line, uint32_t where );
+a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
+                            a_Type_Decl type_decl, ae_Operator oper,
+                            a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
+                            uint32_t line, uint32_t where );
 
 
 //------------------------------------------------------------------------------
@@ -467,6 +474,7 @@ struct a_Func_Def_ {
     a_Type_Decl type_decl;
     t_CKTYPE ret_type;
     S_Symbol name;
+    ae_Operator op2overload; // 1.5.1.4 (ge) added
     a_Arg_List arg_list;
     a_Stmt code;
     t_CKFUNC ck_func;

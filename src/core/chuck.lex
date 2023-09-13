@@ -356,8 +356,10 @@ global                  { adjust(); return GLOBAL; }
 "%=>"                   { adjust(); return PERCENT_CHUCK; }
 "@"                     { adjust(); return AT_SYM; }
 "@@"                    { adjust(); return ATAT_SYM; }
+"@op"                   { adjust(); return AT_OP; }
 "->"                    { adjust(); return ARROW_RIGHT; }
 "<-"                    { adjust(); return ARROW_LEFT; }
+"-->"                   { adjust(); return GRUCK_RIGHT; }
 
 [A-Za-z_][A-Za-z0-9_]*  { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 
