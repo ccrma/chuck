@@ -2718,7 +2718,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( overload )
     {
         // make the new name
-        func_name += "@" + itoa( ++overload->func_num_overloads ) + "@" + env->curr->name;
+        func_name += "@" + ck_itoa( ++overload->func_num_overloads ) + "@" + env->curr->name;
     }
     else
     {

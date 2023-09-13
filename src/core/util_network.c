@@ -370,7 +370,7 @@ int ck_recv( ck_socket sock, char * buffer, int len )
 {
     if( sock->prot == SOCK_STREAM )
     {
-        int ret;
+        ssize_t ret;
         int togo = len;
         char * p = buffer;
         while( togo > 0 )

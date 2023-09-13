@@ -253,7 +253,7 @@ void usage()
 {
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
-    CK_FPRINTF_STDERR( "\nusage: %s --[%s|%s] [%s] file1 file2 ...\n\n", "chuck", TC::orange("options").c_str(), TC::blue("commands").c_str(), TC::blue("+-=^ +=").c_str() );
+    CK_FPRINTF_STDERR( "\nusage: %s --[%s|%s] [%s] file1 file2 ...\n\n", "chuck", TC::orange("options").c_str(), TC::blue("commands").c_str(), TC::blue("+-=^").c_str() );
     CK_FPRINTF_STDERR( "%s", TC::set_orange().c_str() );
     CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe\n" );
     CK_FPRINTF_STDERR( "                channels:<N>|out:<N>|in:<N>|dac:<N>|adc:<N>|driver:<name>\n" );
@@ -263,9 +263,9 @@ void usage()
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "                color:{on|off}|pid-file:<path>|cmd-listener:{on|off}\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
-    CK_FPRINTF_STDERR( "   [commands] = add|replace|add.replace|remove|remove.all|status|time|\n" );
+    CK_FPRINTF_STDERR( "   [commands] = add|replace|remove|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
-    CK_FPRINTF_STDERR( "    [+-=^ +=] = shortcuts for add, remove, replace, status, add-replace\n" );
+    CK_FPRINTF_STDERR( "       [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
 }
 

@@ -258,7 +258,7 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
         line = replace_tabs( line, ' ' );
 
         // line position
-        string posLine = itoa(lineNumber);
+        string posLine = ck_itoa(lineNumber);
         // spaces due to lineNumber + [] + space
         t_CKINT posLineIndent = posLine.length() + 3;
 
@@ -435,7 +435,7 @@ void EM_error( t_CKINT pos, const char * message, ... )
     // if found
     if( pos > 0 && actualPos > 0 )
     {
-        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(itoa(line),bold).c_str(), COLON.c_str(), TC::green(itoa(actualPos),bold).c_str() );
+        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(ck_itoa(line),bold).c_str(), COLON.c_str(), TC::green(ck_itoa(actualPos),bold).c_str() );
         snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)line, (int)actualPos );
         lastErrorCat( g_buffer );
     }
@@ -507,7 +507,7 @@ void EM_error2( t_CKINT pos, const char * message, ... )
     // if given a valid line number
     if( pos )
     {
-        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(itoa(line),bold).c_str(), COLON.c_str(), TC::green(itoa(actualPos),bold).c_str() );
+        CK_FPRINTF_STDERR( "%s%s%s%s", COLON.c_str(), TC::blue(ck_itoa(line),bold).c_str(), COLON.c_str(), TC::green(ck_itoa(actualPos),bold).c_str() );
         snprintf( g_buffer, CK_ERR_BUF_LENGTH, ":%d:%d", (int)line, (int)actualPos );
         lastErrorCat( g_buffer );
     }
@@ -798,7 +798,7 @@ void EM_log( t_CKINT level, const char * message, ... )
     TC::off();
     CK_FPRINTF_STDERR( "[%s:%s:%s]: ",
                        TC::blue("chuck", true).c_str(),
-                       TC::blue( itoa(level), false ).c_str(),
+                       TC::blue( ck_itoa(level), false ).c_str(),
                        TC::blue( g_str[level] ).c_str() );
     TC::on();
 

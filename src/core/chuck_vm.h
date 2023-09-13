@@ -634,6 +634,7 @@ protected:
     Chuck_VM_Shred * m_shreds;
     t_CKUINT m_num_shreds;
     t_CKUINT m_shred_id;
+    t_CKBOOL m_shred_check4dupes; // 1.5.1.4
     Chuck_VM_Shreduler * m_shreduler;
     // place to put dumped shreds
     std::vector<Chuck_VM_Shred *> m_shred_dump;
@@ -675,7 +676,6 @@ enum Chuck_Msg_Type
     CK_MSG_ERROR, // added 1.3.0.0
     CK_MSG_CLEARVM,
     CK_MSG_CLEARGLOBALS,
-    CK_MSG_ADD_OR_REPLACE, // added 1.5.1.4 (nshaheed)
 };
 
 
@@ -704,6 +704,8 @@ struct Chuck_Msg
     t_CKTIME when;
     // pointer to status struct, as applicable
     Chuck_VM_Status * status;
+    // whether to always add | 1.5.1.4
+    t_CKBOOL alwaysAdd;
 
     // reply callback
     ck_msg_func reply_cb;
