@@ -248,6 +248,9 @@ long htol( c_str str )
  will test using isatty()) */
 %option never-interactive
 
+/* 1.5.1.4 (ge) reentrant lexer */
+/* %option reentrant */
+
 /* float exponent | 1.5.0.5 (ge) */
 EXP ([Ee][-+]?[0-9]+)
 /* universal character name */
@@ -256,9 +259,16 @@ UCN (\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})
    https://web.iitd.ac.in/~sumeet/flex__bison.pdf */
 
 %%
-
-"//"                    { char c; adjust(); comment_hack; continue; }
-"<--"                   { char c; adjust(); comment_hack; continue; }
+ /* --------------------- RULES SECTION --------------------------
+    NOTE in this section, begin comments on a new line AND
+         with one or more whitespaces before comment
+    --------------------------------------------------------------
+    NOTE since . matches anything except a newline,
+         .* will gobble up the rest of the line
+    (from /Flex & Bison/ by John Levin, published O'Reilly 2009)
+  ---------------------------------------------------------------*/
+"//".*                  { char c; adjust(); /*comment_hack;*/ continue; }
+"<--".*                 { char c; adjust(); /*comment_hack;*/ continue; }
 "/*"                    { char c, c1; adjust(); block_comment_hack; continue; }
 " "                     { adjust(); continue; }
 "\t"                    { adjust(); continue; }
