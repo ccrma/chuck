@@ -7,11 +7,53 @@ ChucK VERSIONS log
 - (added) new Machine function
 	static int numShreds();
 	    Get the number of shreds currently in the VM.
-- (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin 
+- (added) improved exception reporting and stack-overflow detection and 
+    handling. Overall, these change improve system robustness and runtime
+    information.
+- (added) two new (and somewhat arcane) Shred methods to support "extreme 
+    shredding" use cases:
+        ----
+	int childMemSize( int sizeInBytes );
+	    Set size hint of per-shred call stack ("mem") for children 
+	    shreds subsequently sporked from the calling shred (NOTE this 
+	    size hint does not affect the calling shred--only its 
+	    descendants); if sizeInBytes <= 0, the size hint is set to 
+	    the VM default. (FYI This is an arcane functionality that 
+	    most programmers never need to worry about. Advanced usage: 
+	    set size hint to small values (e.g., 1K) to support A LOT 
+	    (e.g., >10000) of simultaneous shreds; set size hint to large 
+	    values (e.g., >65K) to spork functions with extremely deep 
+	    recursion, or to support A LOT (>10000) of declared local 
+	    variables. Use with care.)
+	int childMemSize();
+	    Get the memory stack size hint (in bytes) for shreds sporked 
+	    from this one.
+	int childRegSize( int sizeInBytes );
+	    Set size hint of per-shred operand stack ("reg") for children 
+	    shreds subsequently sporked from the calling shred (NOTE this 
+	    size hint does not affect the calling shred--only its 
+	    descendants); if sizeInBytes <= 0, the size hint is set to 
+	    the VM default. (FYI This is an arcane functionality 
+	    that most programmers never need to worry about. Advanced 
+	    usage: set size hint to small values (e.g., 256 bytes) to 
+	    support A LOT (>10000) of simultaneous shreds; set size hint 
+	    to large values (e.g., >20K) to spork functions with 
+	    extremely lengthy (>10000) statements, including array 
+	    initializer lists. Use with care.)
+	int childRegSize();
+	    Get the operand stack size hint (in bytes) for shreds sporked 
+	    from this one.
+        ----
+- (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin
     fails to load, instead of displaying a cryptic error code (e.g., 
     "reason: 1920"), the error code is translating into an error message 
     and displayed (e.g., "reason: The file cannot be accessed by the system.")
     (azaday)
+- (fixed) on certain systems, program ending with a single-line // comment
+    could crash; affects miniAudicle, WebChucK, Machine.eval() containing
+    code that ending with a trailing comment
+- (fixed) on-the-fly programming (OTF) system was incorrectly cleaning
+    up file descriptors and leading to instability
 - (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
     space (" ") after prompt text
 - (added; chugins development) new dyanmic linking API for VM operations
