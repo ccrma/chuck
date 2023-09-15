@@ -1026,10 +1026,27 @@ done:
 // name: next_id()
 // desc: first increments the shred id, then returns it
 //-----------------------------------------------------------------------------
-t_CKUINT Chuck_VM::next_id( )
+t_CKUINT Chuck_VM::next_id( const Chuck_VM_Shred * shred )
 {
     // max id
     const t_CKUINT MAX_ID = ULONG_MAX;
+
+    // see if shred passed in and already has an ID to use (e.g., from REPLACE)
+    if( shred && shred->xid != 0 )
+    {
+        // check if we need to raise m_shred_id as highest shred ID...
+        // NOTE if check4dupes is enabled, m_shred_id may no longer be the
+        // highest ID but instead is a counter for possible next shred IDs,
+        // which will repeatedly increment+check for duplicates until an
+        // available ID is found | 1.5.1.4 (ge and nshaheed) added
+        if( !m_shred_check4dupes && shred->xid > m_shred_id )
+        {
+            // update as highest ID so far
+            m_shred_id = shred->xid;
+        }
+        // return the shred's ID back
+        return m_shred_id;
+    }
 
     // test for bound
     if( m_shred_id == MAX_ID )
@@ -1041,8 +1058,6 @@ t_CKUINT Chuck_VM::next_id( )
         m_shred_id = 0;
         // set to check for duplicates, since there now could be collisions
         m_shred_check4dupes = TRUE;
-        // with the changes above, let's try again
-        return next_id();
     }
 
     // check for dupes (after shred id wraps from MAX_ID) | 1.5.1.4
@@ -1191,9 +1206,8 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     // set the now
     shred->now = shred->wake_time = m_shreduler->now_system;
     // set the id, if one hasn't been assigned yet | 1.5.0.8 (ge) add check
-    if( !shred->xid ) shred->xid = next_id();
-    // check if need to raise | 1.5.1.4
-    if( !m_shred_check4dupes && shred->xid > m_shred_id ) m_shred_id = shred->xid;
+    // pass in the shred into next_id() instead of checking here | 1.5.1.4
+    shred->xid = next_id( shred );
     // add ref
     CK_SAFE_ADD_REF( shred );
     // add it to the parent

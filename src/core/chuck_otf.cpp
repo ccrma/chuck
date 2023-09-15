@@ -149,7 +149,6 @@ error:
     fclose( fd );
     // zero it out
     fd = NULL;
-    // return null
     return NULL;
 }
 
@@ -335,7 +334,6 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     }
 
     // check to see if at least parses
-    // TODO: calling chuck_parse in this way (with calling reset_parse) could result
     if( !chuck_parse( filename ) )
     {
         // error message
@@ -344,7 +342,6 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
         reset_parse();
         // close file descriptor
         fclose( fd );
-        // return false
         return FALSE;
     }
     // reset parser (clean up) | 1.5.1.4

@@ -522,7 +522,7 @@ public: // shredsuck
     // get reference to shreduler
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
-    t_CKUINT next_id();
+    t_CKUINT next_id( const Chuck_VM_Shred * shred = NULL );
     // the last used spork ID
     t_CKUINT last_id() const;
     // reset ID to highest current ID + 1; returns what next ID would be
