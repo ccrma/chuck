@@ -778,7 +778,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         Chuck_VM_Shred * out = m_shreduler->lookup( msg->param );
         if( !out && !msg->alwaysAdd )
         {
-            EM_print2orange( "(VM) replacing shred: no shred with id %i...", msg->param );
+            EM_print2orange( "(VM) replacing shred: no shred with id %lu...", msg->param );
             retval = 0;
             goto done;
         }
@@ -821,7 +821,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         // modified shredule(shred) -> spork(shred) | 1.5.1.4 (ge)
         else if( m_shreduler->remove( out ) && this->spork( shred ) )
         {
-            EM_print2blue( "(VM) replacing shred %i (%s) with %i (%s)...",
+            EM_print2blue( "(VM) replacing shred %lu (%s) with %lu (%s)...",
                             out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
             this->free( out, TRUE, FALSE );
             retval = shred->xid;
@@ -832,7 +832,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         else
         {
             // shouldn't get here!
-            EM_print2blue( "(VM) (internal error) replacing shred %i...", out->xid );
+            EM_print2blue( "(VM) (internal error) replacing shred %lu...", out->xid );
             shred->release();
             retval = 0;
             goto done;
@@ -855,8 +855,8 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
                 xid--;
             if( xid >= 0 )
             {
-                EM_print2orange( "(VM) removing recent shred: %i (%s)...",
-                                xid, mini(shred->name.c_str()) );
+                EM_print2orange( "(VM) removing recent shred: %lu (%s)...",
+                                 xid, mini(shred->name.c_str()) );
                 this->free( shred, TRUE );
                 retval = xid;
             }
@@ -872,17 +872,17 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
             Chuck_VM_Shred * shred = m_shreduler->lookup( msg->param );
             if( !shred )
             {
-                EM_print2orange( "(VM) cannot remove: no shred with id %i...", msg->param );
+                EM_print2orange( "(VM) cannot remove: no shred with id %lu...", msg->param );
                 retval = 0;
                 goto done;
             }
             if( shred != m_shreduler->m_current_shred && !m_shreduler->remove( shred ) )  // was lookup
             {
-                EM_print2orange( "(VM) shreduler: cannot remove shred %i...", msg->param );
+                EM_print2orange( "(VM) shreduler: cannot remove shred %lu...", msg->param );
                 retval = 0;
                 goto done;
             }
-            EM_print2orange( "(VM) removing shred: %i (%s)...", msg->param, mini(shred->name.c_str()) );
+            EM_print2orange( "(VM) removing shred: %lu (%s)...", msg->param, mini(shred->name.c_str()) );
             this->free( shred, TRUE );
             retval = msg->param;
         }
@@ -890,7 +890,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
     else if( msg->type == CK_MSG_REMOVEALL )
     {
         // print
-        EM_print2magenta( "(VM) removing all (%i) shreds...", m_num_shreds );
+        EM_print2magenta( "(VM) removing all (%lu) shreds...", m_num_shreds );
         // remove all shreds
         this->removeAll();
     }
@@ -920,7 +920,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         if( msg->args ) shred->args = *(msg->args);
 
         const char * s = ( msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str() );
-        EM_print2green( "(VM) sporking incoming shred: %i (%s)...", xid, mini(s) );
+        EM_print2green( "(VM) sporking incoming shred: %lu (%s)...", xid, mini(s) );
         retval = xid;
         goto done;
     }
