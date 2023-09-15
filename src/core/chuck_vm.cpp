@@ -849,7 +849,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
                 goto done;
             }
 
-            t_CKINT xid = m_shred_id;
+            t_CKUINT xid = m_shred_id;
             Chuck_VM_Shred * shred = NULL;
             while( xid >= 0 && m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) == 0 )
                 xid--;
