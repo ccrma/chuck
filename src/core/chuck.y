@@ -271,7 +271,9 @@ function_definition
         | function_decl static_decl type_decl2 ID LPAREN RPAREN SEMICOLON
             { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 AT_OP overloadable_operator LPAREN arg_list RPAREN code_segment
-            { $$ = new_op_overload( $1, $2, $3, $5, $7, $9, TRUE, @1.first_line, @1.first_column ); }
+            { $$ = new_op_overload( $1, $2, $3, $5, $7, $9, TRUE, FALSE, @1.first_line, @1.first_column ); }
+        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN overloadable_operator code_segment
+            { $$ = new_op_overload( $1, $2, $3, $8, $6, $9, TRUE, TRUE, @1.first_line, @1.first_column ); }
         ;
 
 class_decl
