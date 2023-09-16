@@ -899,6 +899,186 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// forward reference for operator loading structs | 1.5.1.4
+//-----------------------------------------------------------------------------
+struct Chuck_Op_Semantics;
+struct Chuck_Op_Overload;
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: enum te_Op_OverloadKind
+// desc: enumeration for kinds of operator overload | 1.5.1.4
+//-----------------------------------------------------------------------------
+enum te_Op_OverloadKind
+{
+    te_op_overload_none,
+    te_op_overload_binary,    // LHS op RHS
+    te_op_overload_unary_pre, //     op RHS
+    te_op_overload_unary_post // LHS op
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Op_Registry | 1.5.1.4 (ge) added
+// desc: operator overloading registry
+//-----------------------------------------------------------------------------
+struct Chuck_Op_Registry
+{
+public:
+    Chuck_Op_Registry();
+    ~Chuck_Op_Registry();
+
+public: // look up a particular operator
+    // add semantics for particular operator
+    Chuck_Op_Semantics * add( ae_Operator op );
+    // get semantics for particular operator
+    Chuck_Op_Semantics * lookup( ae_Operator op );
+
+    // clear (what to clear? everything but native?)
+    void clear();
+
+public: // add / look up a particular overload
+    // add binary operator overload: lhs OP rhs
+    t_CKBOOL add_overload( const Chuck_Type * lhs, ae_Operator op, const Chuck_Type * rhs,
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+    // add prefix unary operator overload: OP rhs
+    t_CKBOOL add_overload( ae_Operator op, const Chuck_Type * rhs,
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+    // add postfix unary operator overload: lhs OP
+    t_CKBOOL add_overload( const Chuck_Type * lhs, ae_Operator op,
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+
+    // look up binary operator overload: lhs OP rhs
+    Chuck_Op_Overload * lookup_overload( const Chuck_Type * lhs, ae_Operator op, const Chuck_Type * rhs );
+    // look up prefix unary operator overload: OP rhs
+    Chuck_Op_Overload * lookup_overload( ae_Operator op, const Chuck_Type * rhs );
+    // look up postfix unary operator overload: lhs OP
+    Chuck_Op_Overload * lookup_overload( const Chuck_Type * lhs, ae_Operator op );
+
+protected:
+    // map of operator to its semantic mappings
+    std::map<ae_Operator, Chuck_Op_Semantics *> m_operatorMap;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_TypePair
+//-----------------------------------------------------------------------------
+struct Chuck_TypePair
+{
+    Chuck_Type * lhs;
+    Chuck_Type * rhs;
+
+    // constructor
+    Chuck_TypePair() : lhs(NULL), rhs(NULL) { }
+    // copy constructor
+    Chuck_TypePair( const Chuck_TypePair & other ) : lhs(other.lhs), rhs(other.rhs) { }
+    // operator
+    bool operator <( const Chuck_TypePair & other );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Op_Semantics
+// desc: all overloading information for a particualr operator
+//-----------------------------------------------------------------------------
+struct Chuck_Op_Semantics
+{
+protected:
+    // the operator
+    ae_Operator m_op;
+    // is binary overloadable?
+    bool is_overloadable_binary;
+    // is unary prefix overloadable?
+    bool is_overloadable_unary_pre;
+    // is unary postfix overloadable?
+    bool is_overloadable_unary_post;
+    // binary overload map
+    std::map<Chuck_TypePair, Chuck_Op_Overload *> m_overloads;
+
+public:
+    // constructor
+    Chuck_Op_Semantics();
+    // destructor
+    ~Chuck_Op_Semantics();
+    // configure how operator could be overloaded
+    void configure( bool binary_OL, bool unary_pre_OL, bool unary_post_OL );
+    // is binary overloadable
+    bool isBinaryOL() const { return is_overloadable_binary; }
+    bool isUnaryPreOL() const { return is_overloadable_unary_pre; }
+    bool isUnaryPostOL() const { return is_overloadable_unary_post; }
+
+    // retrieve all overloads for an operator
+    void getOverloads( std::vector<const Chuck_Op_Overload *> & results );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Op_Overload
+// desc: a particular overloading
+//-----------------------------------------------------------------------------
+struct Chuck_Op_Overload
+{
+    // the operator
+    ae_Operator m_op;
+    // which kind of overload?
+    te_Op_OverloadKind m_kind;
+
+    // where this overload was defined
+    te_Origin m_origin;
+    // origin name
+    std::string m_originName;
+    // origin parse position (if applicable)
+    t_CKINT m_originWhere;
+
+protected:
+    // left hand side
+    Chuck_Type * m_lhs;
+    // right hand side
+    Chuck_Type * m_rhs;
+    // set left hand side type
+    void setLHS( Chuck_Type * type );
+    // set right hand side type
+    void setRHS( Chuck_Type * type );
+    // zero out
+    void zero();
+
+public:
+    // constructor: binary
+    Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs );
+    // constructor: postfix
+    Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op );
+    // constructor: prefix
+    Chuck_Op_Overload( ae_Operator op, Chuck_Type * rhs );
+    // copy constructor
+    Chuck_Op_Overload( const Chuck_Op_Overload & other );
+    // destructor
+    ~Chuck_Op_Overload();
+    // operator < for overload
+    bool operator <( const Chuck_Op_Overload & other ) const;
+
+    // has origin been set?
+    t_CKBOOL hasOrigin() const { return m_origin != te_originUnknown; }
+    // overloading natively handled? (e.g., in chuck_type)
+    t_CKBOOL isNative() const;
+    // update origin info
+    void updateOrigin( te_Origin origin, const std::string & name = "", t_CKINT where = 0 );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // primary chuck type checker interface
 //-----------------------------------------------------------------------------
 // initialize the type engine

@@ -8736,3 +8736,289 @@ void Chuck_Type::dump_obj( Chuck_Object * obj, std::string & output )
 {
     // TODO
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// operator < for type pairs
+//-----------------------------------------------------------------------------
+bool Chuck_TypePair::operator <( const Chuck_TypePair & other )
+{
+    // cases considered this is less than other
+    if( lhs && other.lhs && lhs->name() < other.lhs->name() ) return true;
+    if( rhs && other.rhs && rhs->name() < other.rhs->name() ) return true;
+    if( !lhs && other.lhs ) return true;
+    if( !rhs && other.rhs ) return true;
+    // all other cases
+    return false;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Semantics()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Semantics::Chuck_Op_Semantics()
+{
+    // defaults
+    m_op = ae_op_none;
+    is_overloadable_binary = false;
+    is_overloadable_unary_pre = false;
+    is_overloadable_unary_post = false;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Semantics()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Semantics::~Chuck_Op_Semantics()
+{
+    // iterator
+    map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
+    // iterate
+    for( it = m_overloads.begin(); it != m_overloads.end(); it++ )
+    {
+        // delete the overload
+        CK_SAFE_DELETE( it->second );
+    }
+    // clear map
+    m_overloads.clear();
+
+    // set back to defaults
+    m_op = ae_op_none;
+    is_overloadable_binary = false;
+    is_overloadable_unary_pre = false;
+    is_overloadable_unary_post = false;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: configure()
+// desc: configure how operator could be overloaded
+//-----------------------------------------------------------------------------
+void Chuck_Op_Semantics::configure( bool binary_OL, bool unary_pre_OL, bool unary_post_OL )
+{
+    is_overloadable_binary = binary_OL;
+    is_overloadable_unary_pre = unary_pre_OL;
+    is_overloadable_unary_post = unary_post_OL;
+}
+
+
+
+
+// comparer for sorting with const Chuck_Op_Overload *
+bool CkOpOverloadCmp( const Chuck_Op_Overload * lhs, const Chuck_Op_Overload * rhs )
+   { return (*lhs) < (*rhs); }
+//-----------------------------------------------------------------------------
+// name: getOverloads()
+// desc: retrieve all overloads for an operator
+//-----------------------------------------------------------------------------
+void Chuck_Op_Semantics::getOverloads( std::vector<const Chuck_Op_Overload *> & results )
+{
+    // clear results
+    results.clear();
+
+    // iterator
+    map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
+    // iterate
+    for( it = m_overloads.begin(); it != m_overloads.end(); it++ )
+    {
+        // append the it
+        results.push_back( it->second );
+    }
+
+    // sort it
+    sort( results.begin(), results.end(), CkOpOverloadCmp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Overload()
+// desc: constructor for binary op overload
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs )
+{
+    // zero out
+    zero();
+
+    // set op
+    m_op = op;
+    // set kind
+    m_kind = te_op_overload_binary;
+    // set lhs
+    setLHS( lhs );
+    // set rhs
+    setRHS( rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Overload()
+// desc: constructor for unary postfix op overload
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op )
+{
+    // zero out
+    zero();
+
+    // set op
+    m_op = op;
+    // set as postfix
+    m_kind = te_op_overload_unary_post;
+    // set lhs
+    setLHS( lhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Overload()
+// desc: constructor for unary prefix op overload
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * rhs )
+{
+    // zero out
+    zero();
+
+    // set op
+    m_op = op;
+    // set as prefix
+    m_kind = te_op_overload_unary_pre;
+    // set rhs
+    setRHS( rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Op_Overload()
+// desc: copy constructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload::Chuck_Op_Overload( const Chuck_Op_Overload & other )
+{
+    // zero out
+    zero();
+
+    m_op = other.m_op;
+    m_kind = other.m_kind;
+    // set LHS
+    setLHS( other.m_lhs );
+    // set RHS
+    setRHS( other.m_rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Op_Overload()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload::~Chuck_Op_Overload()
+{
+    // release
+    CK_SAFE_RELEASE( m_lhs );
+    CK_SAFE_RELEASE( m_rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: updateOrigin()
+// desc: update origin info
+//-----------------------------------------------------------------------------
+void Chuck_Op_Overload::updateOrigin( te_Origin origin, const string & name, t_CKINT where )
+{
+    m_origin = origin;
+    m_originName = name;
+    m_originWhere = where;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: isNative()
+// desc: overloading natively handled? (e.g., in chuck_type)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Op_Overload::isNative() const
+{
+    // check originated
+    return m_origin == te_originBuiltin;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: zero()
+// desc: zero out (for initialization)
+//-----------------------------------------------------------------------------
+void Chuck_Op_Overload::zero()
+{
+    m_op = ae_op_none;
+    m_kind = te_op_overload_none;
+    m_origin = te_originUnknown;
+    m_originWhere = 0;
+    m_lhs = NULL;
+    m_rhs = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setLHS()
+// desc: set left hand side
+//-----------------------------------------------------------------------------
+void Chuck_Op_Overload::setLHS( Chuck_Type * type )
+{
+    CK_SAFE_REF_ASSIGN( m_lhs, type );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setRHS()
+// desc: set right hand side
+//-----------------------------------------------------------------------------
+void Chuck_Op_Overload::setRHS( Chuck_Type * type )
+{
+    CK_SAFE_REF_ASSIGN( m_rhs, type );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// operator < for overload
+//-----------------------------------------------------------------------------
+bool Chuck_Op_Overload::operator <( const Chuck_Op_Overload & other ) const
+{
+    Chuck_Type * lhs1 = this->m_lhs; Chuck_Type * lhs2 = other.m_lhs;
+    Chuck_Type * rhs1 = this->m_rhs; Chuck_Type * rhs2 = other.m_rhs;
+
+    // cases considered this is less than other
+    if( lhs1 && lhs2 && lhs1->name() < lhs2->name() ) return true;
+    if( rhs1 && rhs2 && rhs1->name() < rhs2->name() ) return true;
+    if( !lhs1 && lhs2 ) return true;
+    if( !rhs1 && rhs2 ) return true;
+    // all other cases
+    return false;
+}
