@@ -542,15 +542,15 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         {
             // arg as c++ string
             string arg = trim(argv[i]);
-            // check for '#' | 1.5.1.4 (nshaheed & ge)
-            if( arg.length() && arg[0] == '#' )
+            // check for '%' | 1.5.1.4 (nshaheed & ge)
+            if( arg.length() && arg[0] == '%' )
             {
                 // convert into number
                 msg.param = ck_atoul( argv[i]+1 );
                 // flag this for always add (whether the remove ID is present or not)
                 msg.param3 = TRUE;
             }
-            else // no '#'
+            else // no '%'
             {
                 // convert
                 msg.param = ck_atoul( argv[i] );

@@ -809,7 +809,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
 
             // print
             const char * s = (msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str());
-            EM_print2orange( "(VM) (optional) replacing shred: #%lu not found...", msg->param );
+            EM_print2orange( "(VM) (optional) replacing shred: %%%lu not found...", msg->param );
             EM_print2green( "(VM) sporking incoming shred: %lu (%s)...", shred->xid, mini(s) );
 
             // return value
