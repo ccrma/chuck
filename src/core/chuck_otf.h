@@ -65,6 +65,18 @@ struct OTF_Net_Msg
     OTF_Net_Msg() { this->clear(); }
     void clear() { header = CK_NET_HEADER; type = param = param2 = param3 = length = 0;
                    memset( buffer, 0, sizeof(buffer) ); }
+
+    // copy constructor | 1.5.1.4
+    OTF_Net_Msg( const OTF_Net_Msg & rhs )
+    {
+        header = rhs.header;
+        type = rhs.type;
+        param = rhs.param;
+        param2 = rhs.param2;
+        param3 = rhs.param3;
+        length = rhs.length;
+        memcpy( buffer, rhs.buffer, sizeof(rhs.buffer) );
+    }
 };
 
 
@@ -85,7 +97,7 @@ t_CKINT otf_send_file( const char * filename, OTF_Net_Msg & msg, const char * op
 ck_socket otf_send_connect( const char * host, t_CKINT port );
 
 // callback
-void * otf_cb( void * p );
+void * otf_recv_cb( void * p );
 
 // --poop
 void uh();

@@ -1031,7 +1031,7 @@ t_CKBOOL Chuck_DLL::compatible()
     { return TRUE; }
     else {
         m_last_error = string("version incompatible with host ") +
-                       itoa(CK_DLL_VERSION_MAJOR) + "." + itoa(CK_DLL_VERSION_MINOR);
+                       ck_itoa(CK_DLL_VERSION_MAJOR) + "." + ck_itoa(CK_DLL_VERSION_MINOR);
         return FALSE;
     }
 }

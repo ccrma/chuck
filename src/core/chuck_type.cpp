@@ -7772,7 +7772,7 @@ void Chuck_Func::funcdef_connect( a_Func_Def f )
 
     // log
     EM_log( CK_LOG_FINEST, "funcdef_connect() for '%s' | AST-owned: %s vm_refs: %s",
-            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? ck_itoa(f->vm_refs).c_str() : "N/A" );
 }
 
 
@@ -7802,7 +7802,7 @@ void Chuck_Func::funcdef_decouple_ast()
 
     // log
     EM_log( CK_LOG_FINEST, "funcdef_decouple_ast() for '%s' | AST-owned: %s vm_refs: %s",
-            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? ck_itoa(f->vm_refs).c_str() : "N/A" );
 }
 
 
@@ -7822,7 +7822,7 @@ void Chuck_Func::funcdef_cleanup()
 
     // log
     EM_log( CK_LOG_FINEST, "funcdef_cleanup() for '%s' | AST-owned: %s vm_refs: %s",
-            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? itoa(f->vm_refs).c_str() : "N/A" );
+            S_name(f->name), f->ast_owned ? "YES" : "NO", f->ast_owned ? ck_itoa(f->vm_refs).c_str() : "N/A" );
 
     // if AST owned
     if( f->ast_owned )

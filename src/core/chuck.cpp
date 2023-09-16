@@ -304,7 +304,7 @@ t_CKBOOL ChucK::setParam( const std::string & name, t_CKINT value )
         // enact processing, as needed
         enactParam( key, value );
         // insert into map
-        m_params[key] = itoa(value);
+        m_params[key] = ck_itoa(value);
         return TRUE;
     }
     else
@@ -330,7 +330,7 @@ t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
     if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_float )
     {
         // insert into map
-        m_params[key] = ftoa( value, 32 );
+        m_params[key] = ck_ftoa( value, 32 );
         return TRUE;
     }
     else
@@ -939,10 +939,10 @@ t_CKBOOL ChucK::initOTF()
         else
         {
 #if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
-            pthread_create( &m_carrier->otf_thread, NULL, otf_cb, m_carrier );
+            pthread_create( &m_carrier->otf_thread, NULL, otf_recv_cb, m_carrier );
 #else
             m_carrier->otf_thread = CreateThread( NULL, 0,
-                                                  (LPTHREAD_START_ROUTINE)otf_cb,
+                                                  (LPTHREAD_START_ROUTINE)otf_recv_cb,
                                                   m_carrier, 0, 0 );
 #endif
         }

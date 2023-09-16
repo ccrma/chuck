@@ -46,11 +46,21 @@
 #include <time.h>
 
 #ifndef __PLATFORM_WINDOWS__
-#include <unistd.h>
+  #include <unistd.h>
+  // linux 64-bit byte ordering | 1.5.1.4
+  #if defined(__PLATFORM_LINUX__)
+    #include <endian.h>
+    #ifndef htonll
+      #define htonll htobe64
+    #endif
+    #ifndef ntohll
+      #define ntohll be64toh
+    #endif
+  #endif
 #else // 2022 QTSIN
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
+  #include <windows.h>
 #endif
 
 using namespace std;
@@ -63,16 +73,16 @@ t_CKUINT g_otf_log = CK_LOG_INFO;
 
 //-----------------------------------------------------------------------------
 // name: otf_hton( )
-// desc: ...
+// desc: host to network endian byte-ordering
 //-----------------------------------------------------------------------------
 void otf_hton( OTF_Net_Msg * msg )
 {
-    msg->header = htonl( msg->header );
-    msg->type = htonl( msg->type );
-    msg->param = htonl( msg->param );
-    msg->param2 = htonl( msg->param2 );
-    msg->param3 = htonl( msg->param3 );
-    msg->length = htonl( msg->length );
+    msg->header = htonll( msg->header );
+    msg->type = htonll( msg->type );
+    msg->param = htonll( msg->param );
+    msg->param2 = htonll( msg->param2 );
+    msg->param3 = htonll( msg->param3 );
+    msg->length = htonll( msg->length );
 }
 
 
@@ -80,16 +90,16 @@ void otf_hton( OTF_Net_Msg * msg )
 
 //-----------------------------------------------------------------------------
 // name: otf_ntoh( )
-// desc: ...
+// desc: network to host endian byte-ordering
 //-----------------------------------------------------------------------------
 void otf_ntoh( OTF_Net_Msg * msg )
 {
-    msg->header = ntohl( msg->header );
-    msg->type = ntohl( msg->type );
-    msg->param = ntohl( msg->param );
-    msg->param2 = ntohl( msg->param2 );
-    msg->param3 = ntohl( msg->param3 );
-    msg->length = ntohl( msg->length );
+    msg->header = ntohll( msg->header );
+    msg->type = ntohll( msg->type );
+    msg->param = ntohll( msg->param );
+    msg->param2 = ntohll( msg->param2 );
+    msg->param3 = ntohll( msg->param3 );
+    msg->length = ntohll( msg->length );
 }
 
 
@@ -97,14 +107,11 @@ void otf_ntoh( OTF_Net_Msg * msg )
 
 //-----------------------------------------------------------------------------
 // name: recv_file()
-// desc: ...
+// desc: receive a file over network
 //-----------------------------------------------------------------------------
 FILE * recv_file( const OTF_Net_Msg & msg, ck_socket sock )
 {
     OTF_Net_Msg buf;
-
-    // what is left
-    // t_CKUINT left = msg.param2;
 
     // make a temp file
     FILE * fd = ck_tmpfile();
@@ -117,11 +124,12 @@ FILE * recv_file( const OTF_Net_Msg & msg, ck_socket sock )
 
     do {
         // msg
-        if( !ck_recv( sock, (char *)&buf, sizeof(buf) ) )
-            goto error;
+        if( !ck_recv( sock, (char *)&buf, sizeof(buf) ) ) goto error;
+        // network to host byte ordering
         otf_ntoh( &buf );
         // write
         fwrite( buf.buffer, sizeof(char), buf.length, fd );
+        // while there is more
     }while( buf.param2 > 0 );
 
     // check for error
@@ -133,10 +141,13 @@ FILE * recv_file( const OTF_Net_Msg & msg, ck_socket sock )
         goto error;
     }
 
+    // return file descriptor
     return fd;
 
 error:
+    // close file descriptor
     fclose( fd );
+    // zero it out
     fd = NULL;
     return NULL;
 }
@@ -146,7 +157,10 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: otf_process_msg()
-// desc: ...
+// desc: process incoming OTF mes from network
+//       FYI previous to 1.5.1.3, this was also called by Machine.add() etc...
+//       however, but no longer, as of 1.5.1.3 Machine directly calls in VM,
+//       removing dependency on OTF and the socket code
 //-----------------------------------------------------------------------------
 t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
                           OTF_Net_Msg * msg, t_CKBOOL immediate, void * data )
@@ -157,7 +171,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
     t_CKUINT ret = 0;
 
     // CK_FPRINTF_STDERR( "UDP message recv...\n" );
-    if( msg->type == CK_MSG_REPLACE || msg->type == CK_MSG_ADD )
+    if( msg->type == CK_MSG_ADD || msg->type == CK_MSG_REPLACE )
     {
         string filename;
         vector<string> args;
@@ -215,8 +229,24 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // set the flags for the command
         cmd->type = msg->type;
         cmd->code = code;
-        if( msg->type == CK_MSG_REPLACE )
+        // copy param
+        if( cmd->type == CK_MSG_REPLACE )
             cmd->param = msg->param;
+
+        // interpret param3 | 1.5.1.4 (nshaheed & ge)
+        if( msg->param3 )
+        {
+            // flag this for always-add replace
+            cmd->alwaysAdd = TRUE;
+            // if add message
+            if( msg->type == CK_MSG_ADD )
+            {
+                // rewrite as an always-add replace message
+                cmd->type = CK_MSG_REPLACE;
+                // copy the param for replace
+                cmd->param = msg->param;
+            }
+        }
     }
     else if( msg->type == CK_MSG_STATUS || msg->type == CK_MSG_REMOVE || msg->type == CK_MSG_REMOVEALL
              || msg->type == CK_MSG_EXIT || msg->type == CK_MSG_TIME || msg->type == CK_MSG_RESET_ID
@@ -267,7 +297,7 @@ cleanup:
 
 //-----------------------------------------------------------------------------
 // name: otf_send_file()
-// desc: ...
+// desc: send a chuck program over network
 //-----------------------------------------------------------------------------
 t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
                        ck_socket dest )
@@ -277,6 +307,10 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     string filename;
     vector<string> args;
     string buf;
+    t_CKUINT amountRead = 0;
+
+    // use this to send | 1.5.1.4
+    OTF_Net_Msg msg2send;
 
     // parse out command line arguments
     if( !extract_args( fname, filename, args ) )
@@ -299,12 +333,19 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
         return FALSE;
     }
 
+    // check to see if at least parses
     if( !chuck_parse( filename ) )
     {
-        EM_error2( 0, "skipping file '%s' for [%s]...", filename.c_str(), op );
+        // error message
+        EM_error2( 0, "(parse error) skipping file '%s' for [%s]...", filename.c_str(), op );
+        // reset parser (clean up) | 1.5.1.4
+        reset_parse();
+        // close file descriptor
         fclose( fd );
         return FALSE;
     }
+    // reset parser (clean up) | 1.5.1.4
+    reset_parse();
 
     // stat it
     memset( &fs, 0, sizeof(fs) );
@@ -318,9 +359,12 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     // send the first packet
     msg.param2 = (t_CKUINT)fs.st_size;
     msg.length = 0;
-    otf_hton( &msg );
+    // copy it (to preserve the endianness of the original msg)
+    msg2send = msg;
+    // host to network byte ordering
+    otf_hton( &msg2send );
     // go
-    ck_send( dest, (char *)&msg, sizeof(msg) );
+    ck_send( dest, (char *)&msg2send, sizeof(msg2send) );
 
     // send the whole thing
     t_CKUINT left = (t_CKUINT)fs.st_size;
@@ -331,9 +375,9 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
         // amount to send
         msg.length = left > CK_NET_BUFFER_SIZE ? CK_NET_BUFFER_SIZE : left;
         // read
-        msg.param3 = fread( msg.buffer, sizeof(char), msg.length, fd );
+        amountRead = fread( msg.buffer, sizeof(char), msg.length, fd );
         // check for error
-        if( !msg.param3 )
+        if( !amountRead )
         {
             // error encountered
             EM_error2( 0, "error while reading '%s'...", filename.c_str() );
@@ -345,16 +389,19 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
         else
         {
             // amount left
-            left -= msg.param3;
+            left -= amountRead;
             // what's left
             msg.param2 = left;
         }
 
         // log
-        EM_log( CK_LOG_FINER, "sending buffer %03d length %03d...", msg.param3, msg.length );
+        EM_log( CK_LOG_FINER, "sending buffer %03d length %03d...", amountRead, msg.length );
+        // copy it (to preserve the endianness of the original msg)
+        msg2send = msg;
+        // host to network byte order
+        otf_hton( &msg2send );
         // send it
-        otf_hton( &msg );
-        ck_send( dest, (char *)&msg, sizeof(msg) );
+        ck_send( dest, (char *)&msg2send, sizeof(msg2send) );
     }
 
     // pop log
@@ -405,14 +452,14 @@ ck_socket otf_send_connect( const char * host, t_CKINT port )
 
 //-----------------------------------------------------------------------------
 // name: otf_send_cmd()
-// desc: ...
+// desc: parse for OTF commands from args and send as OTF messages
 //-----------------------------------------------------------------------------
 t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
                       const char * host, t_CKINT port, t_CKINT * is_otf )
 {
     OTF_Net_Msg msg;
     // REFACTOR-2017 TODO: wat is global sigpipe mode
-//    g_sigpipe_mode = 1;
+    // g_sigpipe_mode = 1;
     int tasks_total = 0, tasks_done = 0;
     ck_socket dest = NULL;
     if( is_otf ) *is_otf = TRUE;
@@ -457,8 +504,11 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         do {
             // log
             EM_log( CK_LOG_INFO, "requesting REMOVE of shred '%i'..." );
-            msg.param = atoi( argv[i] );
+            // set param
+            msg.param = ck_atoul( argv[i] );
+            // set type
             msg.type = CK_MSG_REMOVE;
+            // host to network byte ordering
             otf_hton( &msg );
             ck_send( dest, (char *)&msg, sizeof(msg) );
         } while( ++i < argc );
@@ -489,7 +539,23 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         if( i <= 0 )
             msg.param = CK_NO_VALUE;
         else
-            msg.param = atoi( argv[i] );
+        {
+            // arg as c++ string
+            string arg = trim(argv[i]);
+            // check for '%' | 1.5.1.4 (nshaheed & ge)
+            if( arg.length() && arg[0] == '%' )
+            {
+                // convert into number
+                msg.param = ck_atoul( argv[i]+1 );
+                // flag this for always add (whether the remove ID is present or not)
+                msg.param3 = TRUE;
+            }
+            else // no '%'
+            {
+                // convert
+                msg.param = ck_atoul( argv[i] );
+            }
+        }
 
         if( ++i >= argc )
         {
@@ -537,7 +603,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         msg.type = CK_MSG_EXIT;
-        msg.param = (i+1)<argc ? atoi(argv[++i]) : 0;
+        msg.param = (i+1)<argc ? ck_atoul(argv[++i]) : 0;
         otf_hton( &msg );
         ck_send( dest, (char *)&msg, sizeof(msg) );
         EM_poplog();
@@ -597,6 +663,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     otf_hton( &msg );
     // log
     EM_log( CK_LOG_INFO, "otf sending request..." );
+    // send done message
     ck_send( dest, (char *)&msg, sizeof(msg) );
 
     // set timeout
@@ -606,6 +673,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
     // reply
     if( ck_recv( dest, (char *)&msg, sizeof(msg) ) )
     {
+        // network to host byte ordering
         otf_ntoh( &msg );
         if( !msg.param )
         {
@@ -650,10 +718,10 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: otf_cb()
-// desc: ...
+// name: otf_recv_cb()
+// desc: OTF server thread for receiving OTF message over network
 //-----------------------------------------------------------------------------
-void * otf_cb( void * p )
+void * otf_recv_cb( void * p )
 {
     OTF_Net_Msg msg;
     OTF_Net_Msg ret;
@@ -677,7 +745,7 @@ void * otf_cb( void * p )
         client = ck_accept( carrier->otf_socket );
 
         // check for thread shutdown, potentially occurred during ck_accept
-        if(!carrier->otf_thread)
+        if( !carrier->otf_thread )
             break;
 
         if( !client )
@@ -691,8 +759,11 @@ void * otf_cb( void * p )
         msg.clear();
         // set time out
         ck_recv_timeout( client, 0, 5000000 );
+        // receive packet
         n = ck_recv( client, (char *)&msg, sizeof(msg) );
+        // network to host byte ordering
         otf_ntoh( &msg );
+        // check
         if( n != sizeof(msg) )
         {
             EM_error2( 0, "0-length packet..." );
@@ -701,57 +772,76 @@ void * otf_cb( void * p )
             continue;
         }
 
+        // check header
         if( msg.header != CK_NET_HEADER )
         {
-            EM_error2( 0, "header mismatch - possible endian lunacy..." );
+            EM_error2( 0, "header discrepancy: possible client/server version mismatch..." );
             ck_close( client );
             continue;
         }
 
+        // while not done
         while( msg.type != CK_MSG_DONE )
         {
             if( carrier->vm )
             {
+                // process incoming OTF message
                 if( !otf_process_msg( carrier->vm, carrier->compiler, &msg, FALSE, client ) )
                 {
+                    // problem
                     ret.param = FALSE;
+                    // error message
                     strcpy( (char *)ret.buffer, EM_lasterror() );
+                    // drain network data
                     while( msg.type != CK_MSG_DONE && n )
                     {
+                        // get next packet
                         n = ck_recv( client, (char *)&msg, sizeof(msg) );
+                        // network to host byte ordering (not that it matters here; just draining)
                         otf_ntoh( &msg );
                     }
                     break;
                 }
                 else
                 {
+                    // made it
                     ret.param = TRUE;
+                    // success code
                     strcpy( (char *)ret.buffer, "success" );
+                    // receive next packet (done msg)
                     n = ck_recv( client, (char *)&msg, sizeof(msg) );
+                    // network to host byte ordering
                     otf_ntoh( &msg );
                 }
             }
             else
             {
+                // wait if no VM on the carrier
                 ck_usleep( 10000 );
             }
         }
 
+        // host to network byte ordering
         otf_hton( &ret );
+        // send return acknoledgement
         ck_send( client, (char *)&ret, sizeof(ret) );
+        // close socket to client
         ck_close( client );
     }
 
+    // reach here only if thread shutdown
     return NULL;
 }
 
 
 
+
+// we got yer errors, yer problems, yer worst nightmares right here folks
 const char * poop[] = {
     "[chuck]: bus error...",
     "[chuck]: segmentation fault, core dumped...",
     "[chuck]: access violation, NULL pointer...",
-    "[chuck]: Unhandled exception in chuck: 0xC0000005: Access violation",
+    "[chuck]: unhandled exception in chuck: 0xC0000005: access violation",
     "[chuck]: malloc: damage after normal block...",
     "[chuck]: virtual machine panic!!!",
     "[chuck]: confused by earlier errors, bailing out...",
@@ -765,7 +855,7 @@ const char * poop[] = {
     "[chuck]: (internal error) too many errors!!!",
     "[chuck]: error printing error message. cannot continue 2#%%HGAFf9a0x"
 };
-
+// poop size
 long poop_size = sizeof( poop ) / sizeof( char * );
 
 

@@ -54,6 +54,7 @@
 #include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
+#include <limits.h> // 1.5.1.4 | for ULONG_MAX
 #include <iomanip>
 #include <string>
 #include <algorithm>
@@ -182,7 +183,12 @@ Chuck_VM::Chuck_VM()
     // REFACTOR-2017: refs
     m_carrier = NULL;
 
-    // data
+    // machine state
+    m_init = FALSE;
+    m_halt = TRUE;
+    m_is_running = FALSE;
+
+    // shred management
     m_num_shreds = 0;
     m_shreduler = NULL;
     m_num_dumped_shreds = 0;
@@ -191,16 +197,15 @@ Chuck_VM::Chuck_VM()
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
     m_shred_id = 0;
-    m_halt = TRUE;
-    m_is_running = FALSE;
+    m_shred_check4dupes = FALSE; // 1.5.1.4 (ge)
 
+    // audio hookups
     m_dac = NULL;
     m_adc = NULL;
     m_bunghole = NULL;
     m_srate = 0;
     m_num_dac_channels = 0;
     m_num_adc_channels = 0;
-    m_init = FALSE;
     m_input_ref = NULL;
     m_output_ref = NULL;
     m_current_buffer_frames = 0;
@@ -771,14 +776,16 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
     if( msg->type == CK_MSG_REPLACE )
     {
         Chuck_VM_Shred * out = m_shreduler->lookup( msg->param );
-        if( !out )
+        if( !out && !msg->alwaysAdd )
         {
-            EM_print2orange( "(VM) replacing shred: no shred with id %i...", msg->param );
+            EM_print2orange( "(VM) replacing shred: no shred with id %lu...", msg->param );
             retval = 0;
             goto done;
         }
 
+        // get a shred one way or another
         Chuck_VM_Shred * shred = msg->shred;
+        // if shred wasn't created on the outside
         if( !shred )
         {
             shred = new Chuck_VM_Shred;
@@ -786,40 +793,46 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
             shred->initialize( msg->code );
             shred->name = msg->code->name;
             shred->base_ref = shred->mem;
-            shred->add_ref();
+            // NOTE no add_ref() since we spork() later
         }
-        // set the current time
-        shred->start = m_shreduler->now_system;
-        // set the id
+        // set the id (even if out is NULL)
         shred->xid = msg->param;
-        // set the now
-        shred->now = shred->wake_time = m_shreduler->now_system;
-        // set the vm
-        shred->vm_ref = this;
         // set args
         if( msg->args ) shred->args = *(msg->args);
-        // add it to the parent
-        if( shred->parent )
-            shred->parent->children[shred->xid] = shred;
 
-        // replace
-        if( m_shreduler->remove( out ) && m_shreduler->shredule( shred ) )
+        // check for different scenarios of replace
+        // replace-target absent | 1.5.1.4 (nshaheed) added
+        if( !out )
         {
-            EM_print2blue( "(VM) replacing shred %i (%s) with %i (%s)...",
+            // spork it
+            this->spork( shred );
+
+            // print
+            const char * s = (msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str());
+            EM_print2orange( "(VM) (optional) replacing shred: %%%lu not found...", msg->param );
+            EM_print2green( "(VM) sporking incoming shred: %lu (%s)...", shred->xid, mini(s) );
+
+            // return value
+            retval = shred->xid;
+            // done
+            goto done;
+        }
+        // replace-target present
+        // modified shredule(shred) -> spork(shred) | 1.5.1.4 (ge)
+        else if( m_shreduler->remove( out ) && this->spork( shred ) )
+        {
+            EM_print2blue( "(VM) replacing shred %lu (%s) with %lu (%s)...",
                             out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
             this->free( out, TRUE, FALSE );
             retval = shred->xid;
-
             // tracking new shred
             CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
-
             goto done;
         }
         else
         {
-            // TODO: this seems sus; is this ever reached? why release the shred?
-            // TODO: how do we know what failed above? the shreduler->remove(out) or shredulder->shredule(shred)?
-            EM_print2blue( "(VM) shreduler replacing shred %i...", out->xid );
+            // shouldn't get here!
+            EM_print2blue( "(VM) (internal error) replacing shred %lu...", out->xid );
             shred->release();
             retval = 0;
             goto done;
@@ -836,14 +849,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
                 goto done;
             }
 
-            t_CKINT xid = m_shred_id;
+            t_CKUINT xid = m_shred_id;
             Chuck_VM_Shred * shred = NULL;
             while( xid >= 0 && m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) == 0 )
                 xid--;
             if( xid >= 0 )
             {
-                EM_print2orange( "(VM) removing recent shred: %i (%s)...",
-                                xid, mini(shred->name.c_str()) );
+                EM_print2orange( "(VM) removing recent shred: %lu (%s)...",
+                                 xid, mini(shred->name.c_str()) );
                 this->free( shred, TRUE );
                 retval = xid;
             }
@@ -859,17 +872,17 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
             Chuck_VM_Shred * shred = m_shreduler->lookup( msg->param );
             if( !shred )
             {
-                EM_print2orange( "(VM) cannot remove: no shred with id %i...", msg->param );
+                EM_print2orange( "(VM) cannot remove: no shred with id %lu...", msg->param );
                 retval = 0;
                 goto done;
             }
             if( shred != m_shreduler->m_current_shred && !m_shreduler->remove( shred ) )  // was lookup
             {
-                EM_print2orange( "(VM) shreduler: cannot remove shred %i...", msg->param );
+                EM_print2orange( "(VM) shreduler: cannot remove shred %lu...", msg->param );
                 retval = 0;
                 goto done;
             }
-            EM_print2orange( "(VM) removing shred: %i (%s)...", msg->param, mini(shred->name.c_str()) );
+            EM_print2orange( "(VM) removing shred: %lu (%s)...", msg->param, mini(shred->name.c_str()) );
             this->free( shred, TRUE );
             retval = msg->param;
         }
@@ -877,7 +890,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
     else if( msg->type == CK_MSG_REMOVEALL )
     {
         // print
-        EM_print2magenta( "(VM) removing all (%i) shreds...", m_num_shreds );
+        EM_print2magenta( "(VM) removing all (%lu) shreds...", m_num_shreds );
         // remove all shreds
         this->removeAll();
     }
@@ -907,7 +920,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         if( msg->args ) shred->args = *(msg->args);
 
         const char * s = ( msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str() );
-        EM_print2green( "(VM) sporking incoming shred: %i (%s)...", xid, mini(s) );
+        EM_print2green( "(VM) sporking incoming shred: %lu (%s)...", xid, mini(s) );
         retval = xid;
         goto done;
     }
@@ -1013,9 +1026,48 @@ done:
 // name: next_id()
 // desc: first increments the shred id, then returns it
 //-----------------------------------------------------------------------------
-t_CKUINT Chuck_VM::next_id( )
+t_CKUINT Chuck_VM::next_id( const Chuck_VM_Shred * shred )
 {
-    return ++m_shred_id;
+    // max id
+    const t_CKUINT MAX_ID = ULONG_MAX;
+
+    // see if shred passed in and already has an ID to use (e.g., from REPLACE)
+    if( shred && shred->xid != 0 )
+    {
+        // check if we need to raise m_shred_id as highest shred ID...
+        // NOTE if check4dupes is enabled, m_shred_id may no longer be the
+        // highest ID but instead is a counter for possible next shred IDs,
+        // which will repeatedly increment+check for duplicates until an
+        // available ID is found | 1.5.1.4 (ge and nshaheed) added
+        if( !m_shred_check4dupes && shred->xid > m_shred_id )
+        {
+            // update as highest ID so far
+            m_shred_id = shred->xid;
+        }
+        // return the shred's ID back
+        return m_shred_id;
+    }
+
+    // test for bound
+    if( m_shred_id == MAX_ID )
+    {
+        // print congratulatory message
+        EM_print2orange( "(VM) you have surpassed max shred ID: %lu", m_shred_id );
+        EM_print2orange( "(VM) congratulations! resetting IDs back to 1 and up..." );
+        // reset ID back to 0
+        m_shred_id = 0;
+        // set to check for duplicates, since there now could be collisions
+        m_shred_check4dupes = TRUE;
+    }
+
+    // check for dupes (after shred id wraps from MAX_ID) | 1.5.1.4
+    if( !m_shred_check4dupes ) return ++m_shred_id;
+
+    // find next unused shred ID | 1.5.1.4
+    while( m_shreduler->lookup( ++m_shred_id ) );
+
+    // return it
+    return m_shred_id;
 }
 
 
@@ -1154,9 +1206,10 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     // set the now
     shred->now = shred->wake_time = m_shreduler->now_system;
     // set the id, if one hasn't been assigned yet | 1.5.0.8 (ge) add check
-    if( !shred->xid ) shred->xid = next_id();
+    // pass in the shred into next_id() instead of checking here | 1.5.1.4
+    shred->xid = next_id( shred );
     // add ref
-    shred->add_ref();
+    CK_SAFE_ADD_REF( shred );
     // add it to the parent
     if( shred->parent )
         shred->parent->children[shred->xid] = shred;
@@ -1204,6 +1257,9 @@ void Chuck_VM::removeAll()
     // reset
     m_shred_id = 0;
     m_num_shreds = 0;
+
+    // can safely reset this as well | 1.5.1.4
+    m_shred_check4dupes = FALSE;
 }
 
 
@@ -1218,7 +1274,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
     assert( cascade );
 
     // log
-    EM_log( CK_LOG_FINER, "freeing shred (id==%d | ptr==%p)", shred->xid,
+    EM_log( CK_LOG_FINER, "freeing shred (id==%lu | ptr==%p)", shred->xid,
             (t_CKUINT)shred );
 
     // abort on the double free
@@ -1293,7 +1349,7 @@ t_CKBOOL Chuck_VM::abort_current_shred()
     if( shred )
     {
         // log
-        EM_log( CK_LOG_SEVERE, "trying to abort current shred (id: %d)", shred->xid );
+        EM_log( CK_LOG_SEVERE, "trying to abort current shred (id: %lu)", shred->xid );
         // flag it
         shred->is_abort = TRUE;
     }
@@ -1316,7 +1372,7 @@ t_CKBOOL Chuck_VM::abort_current_shred()
 void Chuck_VM::dump_shred( Chuck_VM_Shred * shred )
 {
     // log
-    EM_log( CK_LOG_FINER, "dumping shred (id==%d | ptr==%p)", shred->xid,
+    EM_log( CK_LOG_FINER, "dumping shred (id==%lu | ptr==%p)", shred->xid,
             (t_CKUINT)shred );
     // add
     m_shred_dump.push_back( shred );
@@ -1459,7 +1515,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
     m_size = size;
 
     // log
-    EM_log( CK_LOG_FINER, "allocated VM stack (size:%d alloc:%d)", size, alloc_size );
+    EM_log( CK_LOG_FINER, "allocated VM stack (size:%lu alloc:%lu)", size, alloc_size );
 
     // set flag and return
     return m_is_init = TRUE;
@@ -1467,7 +1523,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
 out_of_memory:
 
     // we have a problem
-    EM_exception( "OutOfMemory: VM stack [size=%d alloc=%d]", size, alloc_size );
+    EM_exception( "OutOfMemory: VM stack [size=%lu alloc=%lu]", size, alloc_size );
 
     // return FALSE
     return FALSE;
@@ -1924,7 +1980,7 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08
     if( is_abort )
     {
         // log
-        EM_log( CK_LOG_SYSTEM, "aborting shred (id: %d)", this->xid );
+        EM_log( CK_LOG_SYSTEM, "aborting shred (id: %lu)", this->xid );
         // done
         is_done = TRUE;
     }
@@ -3141,7 +3197,7 @@ std::string Chuck_VM_Debug::info( Chuck_VM_Object * obj )
     // get the type
     string type = mini_type(typeid(*obj).name());
     // info str [POINTER:REFCOUNT](TYPE)
-    string ret = string("[") + ptoa(obj) + ":" + TC::blue(itoa(obj->refcount()),true) + "](" + TC::green(type,true) + "): ";
+    string ret = string("[") + ptoa(obj) + ":" + TC::blue(ck_itoa(obj->refcount()),true) + "](" + TC::green(type,true) + "): ";
 
     // match on type name
     if( type == "Chuck_Object" ) ret += info_obj( (Chuck_Object *)obj );

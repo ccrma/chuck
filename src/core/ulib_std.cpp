@@ -795,7 +795,7 @@ CK_DLL_SFUN( itoa_impl )
     t_CKINT i = GET_CK_INT(ARGS);
     // TODO: memory leak, please fix.  Thanks.
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
-    a->set( itoa( i ) );
+    a->set( ck_itoa( i ) );
     RETURN->v_string = a;
 }
 
@@ -805,7 +805,7 @@ CK_DLL_SFUN( ftoa_impl )
     t_CKFLOAT f = GET_NEXT_FLOAT(ARGS);
     t_CKINT p = GET_NEXT_INT(ARGS);
     Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
-    a->set( ftoa( f, (t_CKUINT)p ) );
+    a->set( ck_ftoa( f, (t_CKUINT)p ) );
     RETURN->v_string = a;
 }
 
