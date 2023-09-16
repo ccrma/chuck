@@ -522,7 +522,7 @@ public: // shredsuck
     // get reference to shreduler
     Chuck_VM_Shreduler * shreduler() const;
     // the next spork ID
-    t_CKUINT next_id();
+    t_CKUINT next_id( const Chuck_VM_Shred * shred = NULL );
     // the last used spork ID
     t_CKUINT last_id() const;
     // reset ID to highest current ID + 1; returns what next ID would be
@@ -634,6 +634,7 @@ protected:
     Chuck_VM_Shred * m_shreds;
     t_CKUINT m_num_shreds;
     t_CKUINT m_shred_id;
+    t_CKBOOL m_shred_check4dupes; // 1.5.1.4
     Chuck_VM_Shreduler * m_shreduler;
     // place to put dumped shreds
     std::vector<Chuck_VM_Shred *> m_shred_dump;
@@ -703,6 +704,8 @@ struct Chuck_Msg
     t_CKTIME when;
     // pointer to status struct, as applicable
     Chuck_VM_Status * status;
+    // whether to always add | 1.5.1.4
+    t_CKBOOL alwaysAdd;
 
     // reply callback
     ck_msg_func reply_cb;

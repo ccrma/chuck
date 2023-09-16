@@ -40,9 +40,14 @@
 
 
 // int to ascii
-std::string itoa( t_CKINT val );
+std::string ck_itoa( t_CKINT val );
 // float to ascii
-std::string ftoa( t_CKFLOAT val, t_CKUINT precision );
+std::string ck_ftoa( t_CKFLOAT val, t_CKUINT precision );
+// ascii to unsigned long
+unsigned long ck_atoul( const std::string & s, int base = 10 );
+// ascii to signed long
+long ck_atol( const std::string & s, int base = 10 );
+
 // pointer to ascii
 std::string ptoa( void * val );
 // lower-case string

@@ -547,7 +547,7 @@ ck_OSVersion ck_macOS_version()
 //-----------------------------------------------------------------------------
 std::string ck_OSVersion::str()
 {
-    return itoa(major) + "." + itoa(minor) + "." + itoa(patch);
+    return ck_itoa(major) + "." + ck_itoa(minor) + "." + ck_itoa(patch);
 }
 
 
