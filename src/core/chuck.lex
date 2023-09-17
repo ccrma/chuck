@@ -205,23 +205,22 @@ long htol( c_str str )
         if( c == '\n' ) { a_newline(); } \
         else { advance_m(); adjust(); } \
     } \
-    if( c == EOF ) { \
-        adjust(); \
-    } else if( (c1 = input()) != '/' && c != 0 ) { \
+    if( c == EOF || c == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    if( (c1 = input()) != '/' && c != 0 && c != EOF ) { \
         advance_m(); \
         adjust(); \
         unput(c1); \
         goto loop; \
     } \
-    if( c != 0 ) { advance_m(); advance_m(); adjust(); };
+    if( c1 == EOF || c1 == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    else { advance_m(); advance_m(); adjust(); };
 
 
 // comment hack
 #define comment_hack \
     while( (c = input()) != '\n' && c != '\r' && c != 0 && c != EOF ) ; \
-    if( c != 0 ) { \
-        if( c == '\n' ) { a_newline(); } \
-    }
+    if( c == EOF || c == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    if( c == '\n' ) { a_newline(); }
 
 
 // 1.5.0.5 added for tracking | (thanks ekeyser + Becca Royal-Gordon)
@@ -266,9 +265,10 @@ UCN (\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})
     NOTE since . matches anything except a newline,
          .* will gobble up the rest of the line
     (from /Flex & Bison/ by John Levin, published O'Reilly 2009)
+    ALTERNATIVE "//".* { char c; adjust(); continue; }
   ---------------------------------------------------------------*/
-"//".*                  { char c; adjust(); /*comment_hack;*/ continue; }
-"<--".*                 { char c; adjust(); /*comment_hack;*/ continue; }
+"//"                    { char c; adjust(); comment_hack; continue; }
+"<--"                   { char c; adjust(); comment_hack; continue; }
 "/*"                    { char c, c1; adjust(); block_comment_hack; continue; }
 " "                     { adjust(); continue; }
 "\t"                    { adjust(); continue; }
