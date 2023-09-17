@@ -79,6 +79,14 @@ typedef DWORD uint32_t;
 #endif
 #endif
 
+// for legacy use of disable fileio | 1.5.1.4
+#ifdef __DISABLE_FILEIO__
+  // auto define new, more granular macro
+  #ifndef __DISABLE_ASYNCH_IO__
+  #define __DISABLE_ASYNCH_IO__
+  #endif
+#endif
+
 
 // global
 static Chuck_String * g_newline = new Chuck_String();
@@ -258,7 +266,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     // add MODE_SYNC
     if( !type_engine_import_svar( env, "int", "MODE_SYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_SYNC, "Flag denoting synchronous IO." ) ) goto error;
-#ifndef __DISABLE_FILEIO__
+#ifndef __DISABLE_ASYNCH_IO__
     // add MODE_ASYNC
     if( !type_engine_import_svar( env, "int", "MODE_ASYNC",
                                  TRUE, (t_CKUINT)&Chuck_IO::MODE_ASYNC, "Flag denoting asychronous IO." ) ) goto error;
@@ -292,7 +300,6 @@ error:
 
 
 
-// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: init_class_fileio()
 // desc: ...
@@ -481,7 +488,6 @@ error:
 
     return FALSE;
 }
-// #endif // __DISABLE_FILEIO__
 
 
 
@@ -1537,7 +1543,6 @@ CK_DLL_SFUN( io_newline )
 }
 
 
-// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // FileIO API
 //-----------------------------------------------------------------------------
@@ -1762,7 +1767,7 @@ CK_DLL_MFUN( fileio_writestring )
     std::string val = GET_NEXT_STRING(ARGS)->str();
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_ASYNCH_IO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1790,7 +1795,7 @@ CK_DLL_MFUN( fileio_writestring )
     }
 #else
     f->write(val);
-#endif // __DISABLE_FILEIO__
+#endif // __DISABLE_ASYNCH_IO__
 }
 
 CK_DLL_MFUN( fileio_writeint )
@@ -1798,7 +1803,7 @@ CK_DLL_MFUN( fileio_writeint )
     t_CKINT val = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_ASYNCH_IO__ // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1826,7 +1831,7 @@ CK_DLL_MFUN( fileio_writeint )
     }
 #else
     f->write(val);
-#endif // __DISABLE_FILEIO__
+#endif // __DISABLE_ASYNCH_IO__
 }
 
 CK_DLL_MFUN( fileio_writeintflags )
@@ -1835,7 +1840,7 @@ CK_DLL_MFUN( fileio_writeintflags )
     t_CKINT flags = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_ASYNCH_IO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // TODO: pass flags in args
@@ -1864,7 +1869,7 @@ CK_DLL_MFUN( fileio_writeintflags )
     }
 #else
     f->write(val, flags);
-#endif // __DISABLE_FILEIO__
+#endif // __DISABLE_ASYNCH_IO__
 
 }
 
@@ -1874,7 +1879,7 @@ CK_DLL_MFUN( fileio_writefloat )
     t_CKINT flagsDefault = Chuck_IO::FLOAT32;
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_ASYNCH_IO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1903,7 +1908,7 @@ CK_DLL_MFUN( fileio_writefloat )
     }
 #else
     f->write( val, flagsDefault );
-#endif //__DISABLE_FILEIO__
+#endif //__DISABLE_ASYNCH_IO__
 }
 
 CK_DLL_MFUN( fileio_writefloatflags )
@@ -1912,7 +1917,7 @@ CK_DLL_MFUN( fileio_writefloatflags )
     t_CKINT flags = GET_NEXT_INT(ARGS);
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
 
-#ifndef __DISABLE_FILEIO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
+#ifndef __DISABLE_ASYNCH_IO__  // 1.5.0.0 (ge) | made more granular (e.g., for WebChucK)
     if (f->mode() == Chuck_IO::MODE_ASYNC)
     {
         // set up arguments
@@ -1941,10 +1946,8 @@ CK_DLL_MFUN( fileio_writefloatflags )
     }
 #else
     f->write( val,flags );
-#endif //__DISABLE_FILEIO__
+#endif //__DISABLE_ASYNCH_IO__
 }
-
-// #endif // __DISABLE_FILEIO__
 
 
 
@@ -2978,7 +2981,6 @@ Chuck_IO::~Chuck_IO()
 
 
 
-// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // name: Chuck_IO_File()
 // desc: constructor
@@ -4364,7 +4366,6 @@ THREAD_RETURN( THREAD_TYPE Chuck_IO_File::writeFloat_thread ) (void * data)
     return (THREAD_RETURN)0;
 }
 #endif // __DISABLE_THREADS__
-// #endif // __DISABLE_FILEIO__
 
 
 
