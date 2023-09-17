@@ -4270,23 +4270,22 @@ long htol( c_str str )
         if( c == '\n' ) { a_newline(); } \
         else { advance_m(); adjust(); } \
     } \
-    if( c == EOF ) { \
-        adjust(); \
-    } else if( (c1 = input()) != '/' && c != 0 ) { \
+    if( c == EOF || c == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    if( (c1 = input()) != '/' && c != 0 && c != EOF ) { \
         advance_m(); \
         adjust(); \
         unput(c1); \
         goto loop; \
     } \
-    if( c != 0 ) { advance_m(); advance_m(); adjust(); };
+    if( c1 == EOF || c1 == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    else { advance_m(); advance_m(); adjust(); };
 
 
 // comment hack
 #define comment_hack \
     while( (c = input()) != '\n' && c != '\r' && c != 0 && c != EOF ) ; \
-    if( c != 0 ) { \
-        if( c == '\n' ) { a_newline(); } \
-    }
+    if( c == EOF || c == 0 ) /* EOF; return 0 */ { adjust(); return 0; } \
+    if( c == '\n' ) { a_newline(); }
 
 
 // 1.5.0.5 added for tracking | (thanks ekeyser + Becca Royal-Gordon)
@@ -4297,7 +4296,7 @@ long htol( c_str str )
     yycolumn += yyleng;
 
 
-#line 958 "chuck.yy.c"
+#line 957 "chuck.yy.c"
 /* generate line number */
 /* 1.5.0.7 (ge) added to remove dependecy on isatty() and unistd.h
  without the above option, flex/bison will check isatty() to determine
@@ -4308,11 +4307,13 @@ long htol( c_str str )
  TTY input. (FYI the opposite of this option is `%option interactive`
  if neither `never-interactive` nor `interactive` is specified, bison
  will test using isatty()) */
+/* 1.5.1.4 (ge) reentrant lexer */
+/* %option reentrant */
 /* float exponent | 1.5.0.5 (ge) */
 /* universal character name */
 /* thanks O'Reilly book for the above recipes for STRING_LIT / CHAR_LIT / FLOAT_VAL
    https://web.iitd.ac.in/~sumeet/flex__bison.pdf */
-#line 973 "chuck.yy.c"
+#line 974 "chuck.yy.c"
 
 #define INITIAL 0
 
@@ -4521,10 +4522,19 @@ YY_DECL
 		}
 
 	{
-#line 258 "chuck.lex"
+#line 260 "chuck.lex"
 
-
-#line 1185 "chuck.yy.c"
+#line 262 "chuck.lex"
+ /* --------------------- RULES SECTION --------------------------
+    NOTE in this section, begin comments on a new line AND
+         with one or more whitespaces before comment
+    --------------------------------------------------------------
+    NOTE since . matches anything except a newline,
+         .* will gobble up the rest of the line
+    (from /Flex & Bison/ by John Levin, published O'Reilly 2009)
+    ALTERNATIVE "//".* { char c; adjust(); continue; }
+  ---------------------------------------------------------------*/
+#line 1195 "chuck.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -4589,545 +4599,545 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 260 "chuck.lex"
+#line 271 "chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 261 "chuck.lex"
+#line 272 "chuck.lex"
 { char c; adjust(); comment_hack; continue; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 262 "chuck.lex"
+#line 273 "chuck.lex"
 { char c, c1; adjust(); block_comment_hack; continue; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 263 "chuck.lex"
+#line 274 "chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 264 "chuck.lex"
+#line 275 "chuck.lex"
 { adjust(); continue; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 265 "chuck.lex"
+#line 276 "chuck.lex"
 { adjust(); a_newline(); continue; }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 266 "chuck.lex"
+#line 277 "chuck.lex"
 { adjust(); a_newline(); continue; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 268 "chuck.lex"
+#line 279 "chuck.lex"
 { adjust(); return PLUSPLUS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 269 "chuck.lex"
+#line 280 "chuck.lex"
 { adjust(); return MINUSMINUS; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 270 "chuck.lex"
+#line 281 "chuck.lex"
 { adjust(); return POUNDPAREN; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 271 "chuck.lex"
+#line 282 "chuck.lex"
 { adjust(); return PERCENTPAREN; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 272 "chuck.lex"
+#line 283 "chuck.lex"
 { adjust(); return ATPAREN; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 274 "chuck.lex"
+#line 285 "chuck.lex"
 { adjust(); return COMMA; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 275 "chuck.lex"
+#line 286 "chuck.lex"
 { adjust(); return COLON; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 276 "chuck.lex"
+#line 287 "chuck.lex"
 { adjust(); return DOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 277 "chuck.lex"
+#line 288 "chuck.lex"
 { adjust(); return PLUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 278 "chuck.lex"
+#line 289 "chuck.lex"
 { adjust(); return MINUS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 279 "chuck.lex"
+#line 290 "chuck.lex"
 { adjust(); return TIMES; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 280 "chuck.lex"
+#line 291 "chuck.lex"
 { adjust(); return DIVIDE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 281 "chuck.lex"
+#line 292 "chuck.lex"
 { adjust(); return PERCENT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 282 "chuck.lex"
+#line 293 "chuck.lex"
 { adjust(); return POUND; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 283 "chuck.lex"
+#line 294 "chuck.lex"
 { adjust(); return DOLLAR; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 285 "chuck.lex"
+#line 296 "chuck.lex"
 { adjust(); return COLONCOLON; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 286 "chuck.lex"
+#line 297 "chuck.lex"
 { adjust(); return EQ; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 287 "chuck.lex"
+#line 298 "chuck.lex"
 { adjust(); return NEQ; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 288 "chuck.lex"
+#line 299 "chuck.lex"
 { adjust(); return LT; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 289 "chuck.lex"
+#line 300 "chuck.lex"
 { adjust(); return GT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 290 "chuck.lex"
+#line 301 "chuck.lex"
 { adjust(); return LE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 291 "chuck.lex"
+#line 302 "chuck.lex"
 { adjust(); return GE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 292 "chuck.lex"
+#line 303 "chuck.lex"
 { adjust(); return AND; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 293 "chuck.lex"
+#line 304 "chuck.lex"
 { adjust(); return OR; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 294 "chuck.lex"
+#line 305 "chuck.lex"
 { adjust(); return S_AND; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 295 "chuck.lex"
+#line 306 "chuck.lex"
 { adjust(); return S_OR; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 296 "chuck.lex"
+#line 307 "chuck.lex"
 { adjust(); return S_XOR; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 297 "chuck.lex"
+#line 308 "chuck.lex"
 { adjust(); return SHIFT_RIGHT; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 298 "chuck.lex"
+#line 309 "chuck.lex"
 { adjust(); return SHIFT_LEFT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 299 "chuck.lex"
+#line 310 "chuck.lex"
 { adjust(); return ASSIGN; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 300 "chuck.lex"
+#line 311 "chuck.lex"
 { adjust(); return LPAREN; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 301 "chuck.lex"
+#line 312 "chuck.lex"
 { adjust(); return RPAREN; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 302 "chuck.lex"
+#line 313 "chuck.lex"
 { adjust(); return LBRACK; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 303 "chuck.lex"
+#line 314 "chuck.lex"
 { adjust(); return RBRACK; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 304 "chuck.lex"
+#line 315 "chuck.lex"
 { adjust(); return LBRACE; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 305 "chuck.lex"
+#line 316 "chuck.lex"
 { adjust(); return RBRACE; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 306 "chuck.lex"
+#line 317 "chuck.lex"
 { adjust(); return SEMICOLON; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 307 "chuck.lex"
+#line 318 "chuck.lex"
 { adjust(); return QUESTION; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 308 "chuck.lex"
+#line 319 "chuck.lex"
 { adjust(); return EXCLAMATION; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 309 "chuck.lex"
+#line 320 "chuck.lex"
 { adjust(); return TILDA; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 310 "chuck.lex"
+#line 321 "chuck.lex"
 { adjust(); return FOR; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 311 "chuck.lex"
+#line 322 "chuck.lex"
 { adjust(); return WHILE; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 312 "chuck.lex"
+#line 323 "chuck.lex"
 { adjust(); return UNTIL; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 313 "chuck.lex"
+#line 324 "chuck.lex"
 { adjust(); return LOOP; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 314 "chuck.lex"
+#line 325 "chuck.lex"
 { adjust(); return CONTINUE; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 315 "chuck.lex"
+#line 326 "chuck.lex"
 { adjust(); return BREAK; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 316 "chuck.lex"
+#line 327 "chuck.lex"
 { adjust(); return IF; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 317 "chuck.lex"
+#line 328 "chuck.lex"
 { adjust(); return ELSE; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 318 "chuck.lex"
+#line 329 "chuck.lex"
 { adjust(); return DO; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 319 "chuck.lex"
+#line 330 "chuck.lex"
 { adjust(); return L_HACK; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 320 "chuck.lex"
+#line 331 "chuck.lex"
 { adjust(); return R_HACK; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 322 "chuck.lex"
+#line 333 "chuck.lex"
 { adjust(); return RETURN; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 324 "chuck.lex"
+#line 335 "chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 325 "chuck.lex"
+#line 336 "chuck.lex"
 { adjust(); return FUNCTION; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 326 "chuck.lex"
+#line 337 "chuck.lex"
 { adjust(); return NEW; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 327 "chuck.lex"
+#line 338 "chuck.lex"
 { adjust(); return CLASS; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 328 "chuck.lex"
+#line 339 "chuck.lex"
 { adjust(); return INTERFACE; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 329 "chuck.lex"
+#line 340 "chuck.lex"
 { adjust(); return EXTENDS; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 330 "chuck.lex"
+#line 341 "chuck.lex"
 { adjust(); return IMPLEMENTS; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 331 "chuck.lex"
+#line 342 "chuck.lex"
 { adjust(); return PUBLIC; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 332 "chuck.lex"
+#line 343 "chuck.lex"
 { adjust(); return PROTECTED; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 333 "chuck.lex"
+#line 344 "chuck.lex"
 { adjust(); return PRIVATE; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 334 "chuck.lex"
+#line 345 "chuck.lex"
 { adjust(); return STATIC; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 335 "chuck.lex"
+#line 346 "chuck.lex"
 { adjust(); return ABSTRACT; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 336 "chuck.lex"
+#line 347 "chuck.lex"
 { adjust(); return CONST; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 337 "chuck.lex"
+#line 348 "chuck.lex"
 { adjust(); return SPORK; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 338 "chuck.lex"
+#line 349 "chuck.lex"
 { adjust(); return TYPEOF; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 339 "chuck.lex"
+#line 350 "chuck.lex"
 { adjust(); return EXTERNAL; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 340 "chuck.lex"
+#line 351 "chuck.lex"
 { adjust(); return GLOBAL; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 342 "chuck.lex"
+#line 353 "chuck.lex"
 { adjust(); return CHUCK; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 343 "chuck.lex"
+#line 354 "chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 344 "chuck.lex"
+#line 355 "chuck.lex"
 { adjust(); return UNCHUCK; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 345 "chuck.lex"
+#line 356 "chuck.lex"
 { adjust(); return UPCHUCK; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 346 "chuck.lex"
+#line 357 "chuck.lex"
 { adjust(); return AT_CHUCK; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 347 "chuck.lex"
+#line 358 "chuck.lex"
 { adjust(); return PLUS_CHUCK; }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 348 "chuck.lex"
+#line 359 "chuck.lex"
 { adjust(); return MINUS_CHUCK; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 349 "chuck.lex"
+#line 360 "chuck.lex"
 { adjust(); return TIMES_CHUCK; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 350 "chuck.lex"
+#line 361 "chuck.lex"
 { adjust(); return DIVIDE_CHUCK; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 351 "chuck.lex"
+#line 362 "chuck.lex"
 { adjust(); return S_AND_CHUCK; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 352 "chuck.lex"
+#line 363 "chuck.lex"
 { adjust(); return S_OR_CHUCK; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 353 "chuck.lex"
+#line 364 "chuck.lex"
 { adjust(); return S_XOR_CHUCK; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 354 "chuck.lex"
+#line 365 "chuck.lex"
 { adjust(); return SHIFT_RIGHT_CHUCK; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 355 "chuck.lex"
+#line 366 "chuck.lex"
 { adjust(); return SHIFT_LEFT_CHUCK; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 356 "chuck.lex"
+#line 367 "chuck.lex"
 { adjust(); return PERCENT_CHUCK; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 357 "chuck.lex"
+#line 368 "chuck.lex"
 { adjust(); return AT_SYM; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 358 "chuck.lex"
+#line 369 "chuck.lex"
 { adjust(); return ATAT_SYM; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 359 "chuck.lex"
+#line 370 "chuck.lex"
 { adjust(); return ARROW_RIGHT; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 360 "chuck.lex"
+#line 371 "chuck.lex"
 { adjust(); return ARROW_LEFT; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 362 "chuck.lex"
+#line 373 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 364 "chuck.lex"
+#line 375 "chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 365 "chuck.lex"
+#line 376 "chuck.lex"
 { adjust(); yylval.ival=atoi(yytext); return INT_VAL; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 366 "chuck.lex"
+#line 377 "chuck.lex"
 { adjust(); yylval.ival=htol(yytext); return INT_VAL; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 368 "chuck.lex"
+#line 379 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 369 "chuck.lex"
+#line 380 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 370 "chuck.lex"
+#line 381 "chuck.lex"
 { adjust(); yylval.fval=atof(yytext); return FLOAT_VAL; }
 	YY_BREAK
 case 103:
 /* rule 103 can match eol */
 YY_RULE_SETUP
-#line 372 "chuck.lex"
+#line 383 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 	YY_BREAK
 case 104:
 /* rule 104 can match eol */
 YY_RULE_SETUP
-#line 373 "chuck.lex"
+#line 384 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return STRING_LIT; }
 	YY_BREAK
 case 105:
 /* rule 105 can match eol */
 YY_RULE_SETUP
-#line 374 "chuck.lex"
+#line 385 "chuck.lex"
 { adjust(); yylval.sval=alloc_str(strip_lit(yytext)); return CHAR_LIT; }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 376 "chuck.lex"
+#line 387 "chuck.lex"
 { adjust(); EM_error( EM_tokPos, "illegal token" ); }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 378 "chuck.lex"
+#line 389 "chuck.lex"
 ECHO;
 	YY_BREAK
-#line 1788 "chuck.yy.c"
+#line 1798 "chuck.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -6145,7 +6155,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 378 "chuck.lex"
+#line 389 "chuck.lex"
 
 
 // older

@@ -12,4 +12,14 @@
 //
 // https://github.com/ccrma/chuck/issues/366
 
+// try single-line comment
 Machine.eval( "<<< \"success\" >>>; // " );
+
+// try block comment
+Machine.eval( "<<< \"success\" >>>; /*" );
+Machine.eval( "<<< \"success\" >>>; /* " );
+Machine.eval( "<<< \"success\" >>>; /*  " );
+Machine.eval( "<<< \"success\" >>>; /**" );
+Machine.eval( "<<< \"success\" >>>; /* *" );
+Machine.eval( "<<< \"success\" >>>; /* */" );
+Machine.eval( "<<< \"success\" >>>; /* */ " );
