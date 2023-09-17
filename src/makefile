@@ -51,12 +51,11 @@ emscripten: host-web/webchuck/js/webchuck.js
 web: host-web/webchuck/js/webchuck.js
 # recipe
 host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
-	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 \
-	-Icore -D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ \
-	-D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_RTAUDIO__ \
+	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 -Icore \
+	-D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ -D__DISABLE_NETWORK__ \
 	-D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
-	-D__DISABLE_SERIAL__ -D__DISABLE_FILEIO__ -D__DISABLE_THREADS__ \
-	-D__DISABLE_NETWORK__ -D__DISABLE_SHELL__ \
+	-D__DISABLE_SERIAL__ -D__DISABLE_ASYNCH_IO__ -D__DISABLE_THREADS__ \
+	-D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_SHELL__ \
 	-D__CHUCK_USE_PLANAR_BUFFERS__ -D__OLDSCHOOL_RANDOM__ \
 	-Wformat=0 $(EMSCRIPTENSRCS) -o host-web/webchuck/js/webchuck.js \
 	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \

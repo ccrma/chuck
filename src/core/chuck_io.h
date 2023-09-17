@@ -53,9 +53,7 @@ t_CKBOOL init_class_MidiRW( Chuck_Env * env );
 t_CKBOOL init_class_HID( Chuck_Env * env );
 #endif
 t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type );
-// #ifndef __DISABLE_FILEIO__
 t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type );
-// #endif
 // added 1.3.0.0 -- moved to be full-fledged class
 t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type );
 // added 1.3.0.0 -- moved to be full-fledged class
@@ -158,7 +156,6 @@ public:
 
 
 
-// #ifndef __DISABLE_FILEIO__
 
 #ifndef __PLATFORM_WINDOWS__
 #include <dirent.h>
@@ -250,7 +247,6 @@ protected:
     // vm and shred
     Chuck_VM * m_vmRef;
 };
-// #endif // __DISABLE_FILEIO__
 
 
 
@@ -376,7 +372,6 @@ CK_DLL_SFUN( io_newline );
 CK_DLL_SFUN( io_openfile );
 
 
-// #ifndef __DISABLE_FILEIO__
 //-----------------------------------------------------------------------------
 // fileio API
 //-----------------------------------------------------------------------------
@@ -411,7 +406,6 @@ CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
 CK_DLL_MFUN( fileio_writefloatflags );
 CK_DLL_SFUN( fileio_expandpath_impl );
-// #endif // __DISABLE_FILEIO__
 
 
 //-----------------------------------------------------------------------------
