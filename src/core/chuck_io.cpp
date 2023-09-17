@@ -79,6 +79,14 @@ typedef DWORD uint32_t;
 #endif
 #endif
 
+// for legacy use of disable fileio | 1.5.1.4
+#ifdef __DISABLE_FILEIO__
+  // auto define new, more granular macro
+  #ifndef __DISABLE_ASYNCH_IO__
+  #define __DISABLE_ASYNCH_IO__
+  #endif
+#endif
+
 
 // global
 static Chuck_String * g_newline = new Chuck_String();
