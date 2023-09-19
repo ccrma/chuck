@@ -1392,11 +1392,6 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
-    // t_CKBOOL has_code = FALSE;
-    // Chuck_Value * v = NULL;
-
-    // if not imported, then check to make sure no reserved word conflict
-    // if( f->s_type != ae_func_builtin )  // TODO: fix this
 
     // check if reserved
     if( type_engine_check_reserved( env, f->name, f->where ) )

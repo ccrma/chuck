@@ -225,6 +225,9 @@ t_CKBOOL Chuck_Env::init()
     // ckt_thread = new Chuck_Type( this, te_thread, "Thread", ckt_object, sizeof(void *) );
     ckt_class = new Chuck_Type( this, te_class, "Type", ckt_object, sizeof(void *) );
 
+    // initialize operator mappings
+    if( !type_engine_init_op_overload( this ) ) return FALSE;
+
     return true;
 }
 
@@ -316,6 +319,9 @@ void Chuck_Env::reset()
 
     // make sure this is 0
     class_scope = 0;
+
+    // reset operator registry
+    op_registry.reset();
 }
 
 
@@ -670,6 +676,9 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 
     // commit the global namespace
     env->global()->commit();
+
+    // initialize operators registry
+    type_engine_init_op_overload( env );
 
     // pop indent level
     EM_poplog();
@@ -6502,6 +6511,117 @@ t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_init_op_overload() | 1.5.1.4 (ge) added
+// desc: initialize operator overload
+//       NOTE this is typically called from init_type_system()
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
+{
+    EM_log( CK_LOG_SEVERE, "initializing operator mappings..." );
+    EM_pushlog();
+
+    // the registry
+    Chuck_Op_Registry * registry = &env->op_registry;
+
+    // for each overloadable operator, create semantics
+    registry->add( ae_op_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_plus )->configure( TRUE, false, false );
+    registry->add( ae_op_minus )->configure( TRUE, false, false );
+    registry->add( ae_op_times )->configure( TRUE, false, false );
+    registry->add( ae_op_divide )->configure( TRUE, false, false );
+    registry->add( ae_op_percent )->configure( TRUE, false, false );
+    registry->add( ae_op_eq )->configure( TRUE, false, false );
+    registry->add( ae_op_neq )->configure( TRUE, false, false );
+    registry->add( ae_op_lt )->configure( TRUE, false, false );
+    registry->add( ae_op_le )->configure( TRUE, false, false );
+    registry->add( ae_op_gt )->configure( TRUE, false, false );
+    registry->add( ae_op_ge )->configure( TRUE, false, false );
+    registry->add( ae_op_and )->configure( TRUE, false, false );
+    registry->add( ae_op_or )->configure( TRUE, false, false );
+    registry->add( ae_op_assign )->configure( false, false, false );
+    registry->add( ae_op_exclamation )->configure( false, TRUE, false );
+    registry->add( ae_op_s_or )->configure( TRUE, false, false );
+    registry->add( ae_op_s_and )->configure( TRUE, false, false );
+    registry->add( ae_op_s_xor )->configure( TRUE, false, false );
+    registry->add( ae_op_plusplus )->configure( false, TRUE, TRUE );
+    registry->add( ae_op_minusminus )->configure( false, TRUE, TRUE );
+    registry->add( ae_op_dollar )->configure( TRUE, false, false );
+    registry->add( ae_op_at_at )->configure( TRUE, false, false );
+    registry->add( ae_op_plus_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_minus_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_times_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_divide_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_s_and_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_s_or_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_s_xor_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_shift_right_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_shift_left_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_percent_chuck )->configure( TRUE, false, false );
+    registry->add( ae_op_shift_right )->configure( TRUE, false, false );
+    registry->add( ae_op_shift_left )->configure( TRUE, false, false );
+    registry->add( ae_op_tilda )->configure( false, false, false );
+    registry->add( ae_op_coloncolon )->configure( TRUE, false, false );
+    registry->add( ae_op_at_chuck )->configure( false, false, false );
+    registry->add( ae_op_unchuck )->configure( TRUE, false, false );
+    registry->add( ae_op_upchuck )->configure( TRUE, false, false );
+    registry->add( ae_op_arrow_right )->configure( TRUE, false, false );
+    registry->add( ae_op_arrow_left )->configure( TRUE, false, false );
+    registry->add( ae_op_gruck_right )->configure( TRUE, false, false );
+    registry->add( ae_op_gruck_left )->configure( TRUE, false, false );
+
+    // mark built-in overload
+
+    // pop log
+    EM_poplog();
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan_op_overload() | 1.5.1.4 (ge) added
+// desc: verify an operator overload
+//       NOTE this is typically called from scan2_func_def()
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan_op_overload( Chuck_Env * env, a_Func_Def func_def )
+{
+    // get the operator being overloaded
+    ae_Operator op = func_def->op2overload;
+    // if the func wasn't an op overload, then no problem
+    if( op == ae_op_none ) return TRUE;
+
+    // get operator semantics
+    // Chuck_Op_Semantics * semantics = env->
+    // check that operator is overloadable
+
+    // count the number of arguments
+    // t_CKUINT numArgs = 0; a_Arg_List args = func_def->arg_list;
+    // while( args ) { numArgs++; args = args->next; }
+
+    // get kind of overload
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_op_overload()
+// desc: type-check an operator overload | 1.5.1.4 (ge) added
+//       NOTE this is typically called from check_func_def()
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_op_overload( Chuck_Env * env, ae_Operator op, a_Func_Def func_def )
+{
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: new_Chuck_Type()
 // desc: instantiate new chuck type
 //-----------------------------------------------------------------------------
@@ -8758,13 +8878,106 @@ bool Chuck_TypePair::operator <( const Chuck_TypePair & other )
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Op_Registry()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Registry::Chuck_Op_Registry()
+{
+    // nothing to do
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Op_Register()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Op_Registry::~Chuck_Op_Registry()
+{
+    // TODO: reset everything, including preserved
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: preserve()
+// desc: mark everything in registry as "preserve"
+//-----------------------------------------------------------------------------
+void Chuck_Op_Registry::preserve()
+{
+    // TODO
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: reset()
+// desc: remove all overload not marked for "preserve"
+//-----------------------------------------------------------------------------
+void Chuck_Op_Registry::reset()
+{
+    // TODO
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add()
+// desc: add semantics for particular operator
+//-----------------------------------------------------------------------------
+Chuck_Op_Semantics * Chuck_Op_Registry::add( ae_Operator op )
+{
+    // if not in map
+    if( m_operatorMap.find( op ) == m_operatorMap.end() )
+    {
+        // create new
+        m_operatorMap[op] = new Chuck_Op_Semantics( op );
+    }
+
+    // look it up
+    return lookup( op );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add()
+// desc: get semantics for particular operator
+//-----------------------------------------------------------------------------
+Chuck_Op_Semantics * Chuck_Op_Registry::lookup( ae_Operator op )
+{
+    // if not in map
+    if( m_operatorMap.find( op ) == m_operatorMap.end() )
+    {
+        // return empty
+        return NULL;
+    }
+
+    // get it
+    Chuck_Op_Semantics * semantics = m_operatorMap[op];
+    // this should not happen
+    assert( semantics != NULL );
+    // return
+    return semantics;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Op_Semantics()
 // desc: constructor
 //-----------------------------------------------------------------------------
-Chuck_Op_Semantics::Chuck_Op_Semantics()
+Chuck_Op_Semantics::Chuck_Op_Semantics( ae_Operator op )
 {
+    // set
+    m_op = op;
     // defaults
-    m_op = ae_op_none;
     is_overloadable_binary = false;
     is_overloadable_unary_pre = false;
     is_overloadable_unary_post = false;
@@ -8977,6 +9190,7 @@ void Chuck_Op_Overload::zero()
     m_originWhere = 0;
     m_lhs = NULL;
     m_rhs = NULL;
+    m_preserve = FALSE;
 }
 
 

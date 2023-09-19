@@ -34,6 +34,7 @@
 #include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string> // 1.5.1.4 for string concat
 
 
 // 1.5.0.5 (ge) option to include in case we need something from flex/bison
@@ -812,7 +813,9 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
     a->func_decl = func_decl;
     a->static_decl = static_decl;
     a->type_decl = type_decl;
-    a->name = insert_symbol( "@op" );
+    // construct op overload function name
+    std::string s( "@op" ); s += op2str(oper);
+    a->name = insert_symbol( s.c_str() );
     a->op2overload = oper;
     a->arg_list = arg_list;
     a->s_type = ae_func_user;
