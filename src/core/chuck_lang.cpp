@@ -412,7 +412,12 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
 
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", event_can_wait );
-    func->doc = "can the event can be waited on? Internally used by virtual machine for synthronization.";
+    func->doc = "can the event can be waited on? (internal) used by virtual machine for synchronization.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add waiting_on()
+    func = make_new_mfun( "void", "waiting_on", event_waiting_on );
+    func->doc = "(internal) used by virtual machine to be notified when a shred starts waiting on this Event.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -440,6 +445,13 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     assert( value->func_ref != NULL );
     // remember it
     Chuck_Event::our_can_wait = value->func_ref->vt_index;
+
+    // find the offset for waiting_on
+    value = type_engine_find_value( type, "waiting_on" );
+    assert( value != NULL );
+    assert( value->func_ref != NULL );
+    // remember it
+    Chuck_Event::our_waiting_on = value->func_ref->vt_index;
 
     return TRUE;
 
@@ -2051,9 +2063,17 @@ CK_DLL_MFUN( event_wait )
     assert( FALSE );
 }
 
+// default implementation
 CK_DLL_MFUN( event_can_wait )
 {
     RETURN->v_int = TRUE;
+}
+
+// 1.5.1.4 (ge/andrew) added; default implementation
+CK_DLL_MFUN( event_waiting_on )
+{
+    // do nothing here; this function could be overridden as needed
+    // FYI get the calling shred with 'SHRED' parameter to this function
 }
 
 
