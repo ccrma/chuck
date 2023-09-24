@@ -2919,6 +2919,7 @@ void Chuck_Array32::sort()
 
 // Chuck_Event static instantiation
 t_CKUINT Chuck_Event::our_can_wait = 0;
+t_CKUINT Chuck_Event::our_waiting_on = 0;
 
 //-----------------------------------------------------------------------------
 // name: signal_local()
@@ -3442,6 +3443,11 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
 
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );
+
+        // get the virtual function for waiting_on()
+        f_mfun waiting_on = (f_mfun)this->vtable->funcs[our_waiting_on]->code->native_func;
+        // call to nofify event that a shred has starting waiting on it
+        waiting_on( this, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
     }
     else // can't wait
     {

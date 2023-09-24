@@ -211,6 +211,7 @@ CK_DLL_MFUN( event_signal );
 CK_DLL_MFUN( event_broadcast );
 CK_DLL_MFUN( event_wait );
 CK_DLL_MFUN( event_can_wait );
+CK_DLL_MFUN( event_waiting_on );
 
 
 //-----------------------------------------------------------------------------
