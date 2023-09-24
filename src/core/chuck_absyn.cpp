@@ -806,7 +806,7 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
                             a_Type_Decl type_decl, ae_Operator oper,
                             a_Arg_List arg_list, a_Stmt code,
                             uint32_t is_from_ast, uint32_t overload_post,
-                            uint32_t lineNum, uint32_t posNum )
+                            uint32_t lineNum, uint32_t posNum, uint32_t operPos )
 {
     a_Func_Def a = (a_Func_Def)checked_malloc(
         sizeof( struct a_Func_Def_ ) );
@@ -822,7 +822,7 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
     a->code = code;
     a->ast_owned = is_from_ast != 0; // 1.5.0.5 (ge) added
     a->overload_post = overload_post; // 1.5.1.4 (ge) added
-    a->line = lineNum; a->where = posNum;
+    a->line = lineNum; a->where = posNum; a->operWhere = operPos;
 
     return a;
 }

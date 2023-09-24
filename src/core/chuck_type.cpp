@@ -225,9 +225,6 @@ t_CKBOOL Chuck_Env::init()
     // ckt_thread = new Chuck_Type( this, te_thread, "Thread", ckt_object, sizeof(void *) );
     ckt_class = new Chuck_Type( this, te_class, "Type", ckt_object, sizeof(void *) );
 
-    // initialize operator mappings
-    if( !type_engine_init_op_overload( this ) ) return FALSE;
-
     return true;
 }
 
@@ -677,8 +674,8 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // commit the global namespace
     env->global()->commit();
 
-    // initialize operators registry
-    type_engine_init_op_overload( env );
+    // initialize operator mappings
+    if( !type_engine_init_op_overload( env ) ) return FALSE;
 
     // pop indent level
     EM_poplog();
@@ -8863,7 +8860,7 @@ void Chuck_Type::dump_obj( Chuck_Object * obj, std::string & output )
 //-----------------------------------------------------------------------------
 // operator < for type pairs
 //-----------------------------------------------------------------------------
-bool Chuck_TypePair::operator <( const Chuck_TypePair & other )
+bool Chuck_TypePair::operator <( const Chuck_TypePair & other ) const
 {
     // cases considered this is less than other
     if( lhs && other.lhs && lhs->name() < other.lhs->name() ) return true;
@@ -8883,7 +8880,10 @@ bool Chuck_TypePair::operator <( const Chuck_TypePair & other )
 //-----------------------------------------------------------------------------
 Chuck_Op_Registry::Chuck_Op_Registry()
 {
-    // nothing to do
+    // set to 1
+    m_stackID = 1;
+    // set to 0 no preserve)
+    m_stackPreserveID = 0;
 }
 
 
@@ -8895,7 +8895,68 @@ Chuck_Op_Registry::Chuck_Op_Registry()
 //-----------------------------------------------------------------------------
 Chuck_Op_Registry::~Chuck_Op_Registry()
 {
-    // TODO: reset everything, including preserved
+    // remove preserve status
+    this->unpreserve();
+    // reset everything, including previously preserved
+    this->pop( 0 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: push()
+// desc: push overload stack ID
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Op_Registry::push()
+{
+    // return current ID (and then increment)
+    return ++m_stackID;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pop()
+// desc: remove all overload greater than pushID;
+//       return how many levels were popped
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Op_Registry::pop( t_CKUINT pushID )
+{
+    // nothing to pop
+    if( pushID > m_stackID ) return 0;
+    // must be at or above preserve ID
+    if( pushID < m_stackPreserveID ) pushID = m_stackPreserveID;
+    // iterator
+    map<ae_Operator, Chuck_Op_Semantics *>::iterator it;
+    // iterate over all operators
+    for( it = m_operatorMap.begin(); it != m_operatorMap.end(); it++ )
+    {
+        // remove all overloads > pushID
+        it->second->removeAbove( pushID );
+    }
+    // get difference
+    t_CKUINT diff = m_stackID - pushID;
+    // set push ID
+    m_stackID = pushID+1;
+    // return how many levels
+    return diff;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pop()
+// desc: remove all overload greater than previous pushID
+//       return how many levels were popped (1 or 0)
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_Op_Registry::pop()
+{
+    t_CKUINT aboveThisID = m_stackID;
+    if( aboveThisID ) aboveThisID--;
+    return pop( aboveThisID );
 }
 
 
@@ -8903,11 +8964,14 @@ Chuck_Op_Registry::~Chuck_Op_Registry()
 
 //-----------------------------------------------------------------------------
 // name: preserve()
-// desc: mark everything in registry as "preserve"
+// desc: preserve current state (cannot be popped normally)
 //-----------------------------------------------------------------------------
 void Chuck_Op_Registry::preserve()
 {
-    // TODO
+    // remember current stack ID as preserve ID
+    m_stackPreserveID = m_stackID;
+    // push stack so all subsequent additions are beyond the preserve
+    push();
 }
 
 
@@ -8915,11 +8979,25 @@ void Chuck_Op_Registry::preserve()
 
 //-----------------------------------------------------------------------------
 // name: reset()
-// desc: remove all overload not marked for "preserve"
+// desc: reset pop to preserved state
 //-----------------------------------------------------------------------------
 void Chuck_Op_Registry::reset()
 {
-    // TODO
+    // pop everything above preserved
+    pop( m_stackPreserveID );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: unpreserve()
+// desc: remove preserve status (allowing pops for all stack levels)
+//-----------------------------------------------------------------------------
+void Chuck_Op_Registry::unpreserve()
+{
+    // set back to 0
+    m_stackPreserveID = 0;
 }
 
 
@@ -8970,6 +9048,134 @@ Chuck_Op_Semantics * Chuck_Op_Registry::lookup( ae_Operator op )
 
 
 //-----------------------------------------------------------------------------
+// name: add_overload()
+// desc: add binary operator overload: lhs OP rhs
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Op_Registry::add_overload(
+    Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs,
+    te_Origin origin, const std::string & originName, t_CKINT originWhere )
+{
+    // get semantics
+    Chuck_Op_Semantics * semantics = lookup( op );
+    // check
+    if( !semantics )
+    {
+        EM_error2( originWhere, "cannot overload operator '%s'...", op2str(op) );
+        return FALSE;
+    }
+
+    // check
+    Chuck_Op_Overload * overload = semantics->getOverload( lhs, rhs );
+    // check
+    if( overload )
+    {
+        // check which kind
+        if( overload->kind() == te_op_overload_binary )
+            EM_error2( originWhere, "binary operator '%s' already overloaded on types '%s' and '%s'...", op2str(op), lhs->c_name(), rhs->c_name() );
+        else if( overload->kind() == te_op_overload_unary_pre )
+            EM_error2( originWhere, "unary (prefix) operator '%s' already overloaded on type '%s'...", op2str(op), rhs->c_name() );
+        else if( overload->kind() == te_op_overload_unary_post )
+            EM_error2( originWhere, "unary (postfix) operator '%s' already overloaded on type '%s'...", op2str(op), lhs->c_name() );
+        else
+            EM_error2( originWhere, "(internal error) operator '%s' already overloaded...", op2str(op) );
+
+        return FALSE;
+    }
+
+    // create new overload
+    overload = new Chuck_Op_Overload( lhs, op, rhs );
+    // set origin
+    overload->updateOrigin( origin, originName, originWhere );
+    // set stack level ID
+    overload->mark( m_stackID );
+    // add it
+    semantics->add( overload );
+
+    // ok
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_overload()
+// desc: add prefix unary operator overload: OP rhs
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs,
+                       te_Origin origin, const std::string & originName, t_CKINT originWhere )
+{
+    return this->add_overload( NULL, op, rhs, origin, originName, originWhere );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_overload()
+// desc: add postfix unary operator overload: lhs OP
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Op_Registry::add_overload( Chuck_Type * lhs, ae_Operator op,
+                       te_Origin origin, const std::string & originName, t_CKINT originWhere )
+{
+    return this->add_overload( lhs, op, NULL, origin, originName, originWhere );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: lookup_overload()
+// desc: look up binary operator overload: lhs OP rhs
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload * Chuck_Op_Registry::lookup_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs )
+{
+    // get semantics
+    Chuck_Op_Semantics * semantics = lookup( op );
+    // check
+    if( !semantics ) return NULL;
+    // return overload
+    return semantics->getOverload( lhs, rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: lookup_overload()
+// desc: look up prefix unary operator overload: OP rhs
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload * Chuck_Op_Registry::lookup_overload( ae_Operator op, Chuck_Type * rhs )
+{
+    // get semantics
+    Chuck_Op_Semantics * semantics = lookup( op );
+    // check
+    if( !semantics ) return NULL;
+    // return overload
+    return semantics->getOverload( NULL, rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: lookup_overload()
+// desc: look up postfix unary operator overload: lhs OP
+//-----------------------------------------------------------------------------
+Chuck_Op_Overload * Chuck_Op_Registry::lookup_overload( Chuck_Type * lhs, ae_Operator op )
+{
+    // get semantics
+    Chuck_Op_Semantics * semantics = lookup( op );
+    // check
+    if( !semantics ) return NULL;
+    // return overload
+    return semantics->getOverload( lhs, NULL );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Op_Semantics()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -8995,13 +9201,13 @@ Chuck_Op_Semantics::~Chuck_Op_Semantics()
     // iterator
     map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
     // iterate
-    for( it = m_overloads.begin(); it != m_overloads.end(); it++ )
+    for( it = overloads.begin(); it != overloads.end(); it++ )
     {
         // delete the overload
         CK_SAFE_DELETE( it->second );
     }
     // clear map
-    m_overloads.clear();
+    overloads.clear();
 
     // set back to defaults
     m_op = ae_op_none;
@@ -9027,6 +9233,52 @@ void Chuck_Op_Semantics::configure( bool binary_OL, bool unary_pre_OL, bool unar
 
 
 
+//-----------------------------------------------------------------------------
+// name: add()
+// desc: add overload
+//-----------------------------------------------------------------------------
+void Chuck_Op_Semantics::add( Chuck_Op_Overload * overload )
+{
+    // type pair
+    Chuck_TypePair tp( overload->lhs(), overload->rhs() );
+    // if currently in map?
+    map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it = overloads.find( tp );
+    // delete existing entry, if there is one
+    if( it != overloads.end() ) CK_SAFE_DELETE( it->second );
+    // insert into map
+    overloads[tp] = overload;
+ }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: removeAbove()
+// desc: remove overloads with mark > pushID
+//-----------------------------------------------------------------------------
+void Chuck_Op_Semantics::removeAbove( t_CKUINT pushID )
+{
+    // iterator
+    map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it = overloads.begin();
+    // iterate
+    while( it != overloads.end() )
+    {
+        // check the mark
+        if( it->second->pushID() > pushID )
+        {
+            // erase while iterating | c++11 or higher
+            it = overloads.erase( it );
+        }
+        else
+        {
+            it++;
+        }
+    }
+}
+
+
+
+
 // comparer for sorting with const Chuck_Op_Overload *
 bool CkOpOverloadCmp( const Chuck_Op_Overload * lhs, const Chuck_Op_Overload * rhs )
    { return (*lhs) < (*rhs); }
@@ -9042,7 +9294,7 @@ void Chuck_Op_Semantics::getOverloads( std::vector<const Chuck_Op_Overload *> & 
     // iterator
     map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
     // iterate
-    for( it = m_overloads.begin(); it != m_overloads.end(); it++ )
+    for( it = overloads.begin(); it != overloads.end(); it++ )
     {
         // append the it
         results.push_back( it->second );
@@ -9056,10 +9308,28 @@ void Chuck_Op_Semantics::getOverloads( std::vector<const Chuck_Op_Overload *> & 
 
 
 //-----------------------------------------------------------------------------
+// name: getOverload()
+// desc: get overload entry by types
+//-----------------------------------------------------------------------------
+// get entry by types
+Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Type * rhs )
+{
+    // key
+    Chuck_TypePair key( lhs, rhs );
+    // look up, return NULL if not found
+    if( overloads.find( key ) == overloads.end() ) return NULL;
+    // get the overload
+    return overloads[key];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Op_Overload()
 // desc: constructor for binary op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs )
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS )
 {
     // zero out
     zero();
@@ -9069,9 +9339,9 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Ty
     // set kind
     m_kind = te_op_overload_binary;
     // set lhs
-    setLHS( lhs );
+    setLHS( LHS );
     // set rhs
-    setRHS( rhs );
+    setRHS( RHS );
 }
 
 
@@ -9081,7 +9351,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Ty
 // name: Chuck_Op_Overload()
 // desc: constructor for unary postfix op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op )
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op )
 {
     // zero out
     zero();
@@ -9091,7 +9361,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op )
     // set as postfix
     m_kind = te_op_overload_unary_post;
     // set lhs
-    setLHS( lhs );
+    setLHS( LHS );
 }
 
 
@@ -9101,7 +9371,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op )
 // name: Chuck_Op_Overload()
 // desc: constructor for unary prefix op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * rhs )
+Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS )
 {
     // zero out
     zero();
@@ -9111,7 +9381,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * rhs )
     // set as prefix
     m_kind = te_op_overload_unary_pre;
     // set rhs
-    setRHS( rhs );
+    setRHS( RHS );
 }
 
 
@@ -9166,6 +9436,18 @@ void Chuck_Op_Overload::updateOrigin( te_Origin origin, const string & name, t_C
 
 
 //-----------------------------------------------------------------------------
+// name: mark()
+// desc: set overload stack push ID
+//-----------------------------------------------------------------------------
+void Chuck_Op_Overload::mark( t_CKUINT pushID )
+{
+    m_pushID = pushID;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: isNative()
 // desc: overloading natively handled? (e.g., in chuck_type)
 //-----------------------------------------------------------------------------
@@ -9190,7 +9472,7 @@ void Chuck_Op_Overload::zero()
     m_originWhere = 0;
     m_lhs = NULL;
     m_rhs = NULL;
-    m_preserve = FALSE;
+    m_pushID = 0;
 }
 
 

@@ -429,8 +429,8 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_Op_OverloadKind
-// desc: enumeration for kinds of operator overload | 1.5.1.4
+// name: enum te_Op_OverloadKind | 1.5.1.4 (ge) added
+// desc: enumeration for kinds of operator overload
 //-----------------------------------------------------------------------------
 enum te_Op_OverloadKind
 {
@@ -461,58 +461,79 @@ public:
     // get semantics for particular operator
     Chuck_Op_Semantics * lookup( ae_Operator op );
 
-    // mark everything in registry as "preserve"
+public:
+    // push registry stack; mark all unmarked overloads with current ID
+    // returns pushID associated with this push
+    t_CKUINT push();
+    // remove all overload greater than pushID
+    // return how many levels were popped
+    t_CKUINT pop( t_CKUINT pushID );
+    // remove all overload greater than previous pushID
+    // return how many levels were popped (1 or 0)
+    t_CKUINT pop();
+    // get the current stack ID
+    t_CKUINT stackLevel() const { return m_stackID; }
+    // preserve current state (cannot be popped normally)
     void preserve();
-    // remove all overload not marked for "preserve"
+    // reset pop to preserved state
     void reset();
+    // remove preserve status (allowing pops for all stack levels)
+    void unpreserve();
 
-public: // add / look up a particular overload
+public:
     // add binary operator overload: lhs OP rhs
-    t_CKBOOL add_overload( const Chuck_Type * lhs, ae_Operator op, const Chuck_Type * rhs,
+    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
     // add prefix unary operator overload: OP rhs
-    t_CKBOOL add_overload( ae_Operator op, const Chuck_Type * rhs,
+    t_CKBOOL add_overload( ae_Operator op, Chuck_Type * rhs,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
     // add postfix unary operator overload: lhs OP
-    t_CKBOOL add_overload( const Chuck_Type * lhs, ae_Operator op,
+    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
 
     // look up binary operator overload: lhs OP rhs
-    Chuck_Op_Overload * lookup_overload( const Chuck_Type * lhs, ae_Operator op, const Chuck_Type * rhs );
+    Chuck_Op_Overload * lookup_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs );
     // look up prefix unary operator overload: OP rhs
-    Chuck_Op_Overload * lookup_overload( ae_Operator op, const Chuck_Type * rhs );
+    Chuck_Op_Overload * lookup_overload( ae_Operator op, Chuck_Type * rhs );
     // look up postfix unary operator overload: lhs OP
-    Chuck_Op_Overload * lookup_overload( const Chuck_Type * lhs, ae_Operator op );
+    Chuck_Op_Overload * lookup_overload( Chuck_Type * lhs, ae_Operator op );
 
 protected:
     // map of operator to its semantic mappings
     std::map<ae_Operator, Chuck_Op_Semantics *> m_operatorMap;
+    // operator overload stack level
+    t_CKUINT m_stackID;
+    // level (and below) to preserve
+    t_CKUINT m_stackPreserveID;
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_TypePair
+// name: struct Chuck_TypePair | 1.5.1.4 (ge) added
+// desc: a type pair, used as key in operator overload map
 //-----------------------------------------------------------------------------
 struct Chuck_TypePair
 {
+    // left hand side type
     Chuck_Type * lhs;
+    // right hand side type
     Chuck_Type * rhs;
 
     // constructor
-    Chuck_TypePair() : lhs(NULL), rhs(NULL) { }
+    Chuck_TypePair( Chuck_Type * LHS = NULL, Chuck_Type * RHS = NULL ) : lhs(LHS), rhs(RHS) { }
     // copy constructor
     Chuck_TypePair( const Chuck_TypePair & other ) : lhs(other.lhs), rhs(other.rhs) { }
     // operator
-    bool operator <( const Chuck_TypePair & other );
+    bool operator <( const Chuck_TypePair & other ) const;
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Op_Semantics
+// name: struct Chuck_Op_Semantics | 1.5.1.4 (ge) added
 // desc: all overloading information for a particualr operator
 //-----------------------------------------------------------------------------
 struct Chuck_Op_Semantics
@@ -527,13 +548,15 @@ protected:
     // is unary postfix overloadable?
     bool is_overloadable_unary_post;
     // binary overload map
-    std::map<Chuck_TypePair, Chuck_Op_Overload *> m_overloads;
+    std::map<Chuck_TypePair, Chuck_Op_Overload *> overloads;
 
 public:
     // constructor
     Chuck_Op_Semantics( ae_Operator op = ae_op_none );
     // destructor
     ~Chuck_Op_Semantics();
+
+public:
     // configure how operator could be overloaded
     void configure( bool binary_OL, bool unary_pre_OL, bool unary_post_OL );
     // is binary overloadable
@@ -541,38 +564,47 @@ public:
     bool isUnaryPreOL() const { return is_overloadable_unary_pre; }
     bool isUnaryPostOL() const { return is_overloadable_unary_post; }
 
+public:
+    // add overload
+    void add( Chuck_Op_Overload * overload );
+    // remove overloads with mark > pushID
+    void removeAbove( t_CKUINT pushID );
     // retrieve all overloads for an operator
     void getOverloads( std::vector<const Chuck_Op_Overload *> & results );
+    // get entry by types
+    Chuck_Op_Overload * getOverload( Chuck_Type * lhs, Chuck_Type * rhs );
 };
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Op_Overload
+// name: struct Chuck_Op_Overload | 1.5.1.4 (ge) added
 // desc: a particular overloading
 //-----------------------------------------------------------------------------
 struct Chuck_Op_Overload
 {
-    // the operator
-    ae_Operator m_op;
-    // which kind of overload?
-    te_Op_OverloadKind m_kind;
-
     // where this overload was defined
     te_Origin m_origin;
     // origin name
     std::string m_originName;
     // origin parse position (if applicable)
     t_CKINT m_originWhere;
+    // function to call (depending on origin)
+    // TODO
 
 protected:
-    // left hand side
+    // the operator
+    ae_Operator m_op;
+    // which kind of overload?
+    te_Op_OverloadKind m_kind;
+   // left hand side
     Chuck_Type * m_lhs;
     // right hand side
     Chuck_Type * m_rhs;
-    // whether to preserve across reset
-    t_CKBOOL m_preserve;
+    // ID associated with when this overload was created
+    t_CKUINT m_pushID;
+
     // set left hand side type
     void setLHS( Chuck_Type * type );
     // set right hand side type
@@ -582,11 +614,11 @@ protected:
 
 public:
     // constructor: binary
-    Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs );
+    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS );
     // constructor: postfix
-    Chuck_Op_Overload( Chuck_Type * lhs, ae_Operator op );
+    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op );
     // constructor: prefix
-    Chuck_Op_Overload( ae_Operator op, Chuck_Type * rhs );
+    Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS );
     // copy constructor
     Chuck_Op_Overload( const Chuck_Op_Overload & other );
     // destructor
@@ -594,12 +626,26 @@ public:
     // operator < for overload
     bool operator <( const Chuck_Op_Overload & other ) const;
 
+    // update origin info
+    void updateOrigin( te_Origin origin, const std::string & name = "", t_CKINT where = 0 );
+    // update overload stack push ID
+    void mark( t_CKUINT pushID );
+
+public:
+    // get op
+    ae_Operator op() const { return m_op; }
+    // get the kind of overload
+    te_Op_OverloadKind kind() const { return m_kind; }
+    // get left hand side type
+    Chuck_Type * lhs() const { return m_lhs; }
+    // get right hand side type
+    Chuck_Type * rhs() const { return m_rhs; }
+    // get overload stack push ID
+    t_CKUINT pushID() const { return m_pushID; }
     // has origin been set?
     t_CKBOOL hasOrigin() const { return m_origin != te_originUnknown; }
     // overloading natively handled? (e.g., in chuck_type)
     t_CKBOOL isNative() const;
-    // update origin info
-    void updateOrigin( te_Origin origin, const std::string & name = "", t_CKINT where = 0 );
 };
 
 

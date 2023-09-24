@@ -217,7 +217,8 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
 a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
                             a_Type_Decl type_decl, ae_Operator oper,
                             a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
-                            uint32_t overload_post, uint32_t line, uint32_t where );
+                            uint32_t overload_post, uint32_t line, uint32_t where,
+                            uint32_t operPos );
 
 
 //------------------------------------------------------------------------------
@@ -485,7 +486,7 @@ struct a_Func_Def_ {
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
     uint32_t overload_post; // 1.5.1.4 (ge) overload as post? e.g., @op (args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references
-    uint32_t line; uint32_t where;
+    uint32_t line; uint32_t where; uint32_t operWhere;
 };
 
 // enum values for section types
