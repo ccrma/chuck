@@ -2983,6 +2983,14 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         }
     }
 
+    // operator overload | 1.5.1.4 (ge) added
+    if( f->op2overload != ae_op_none )
+    {
+        // scan operator overload
+        if( !type_engine_scan_func_op_overload( env, f ) )
+            return FALSE;
+    }
+
     // add as value
     env->curr->value.add( value->name, value );
     // enter the name into the function table

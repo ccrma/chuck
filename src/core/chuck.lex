@@ -267,8 +267,9 @@ UCN (\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8})
     (from /Flex & Bison/ by John Levin, published O'Reilly 2009)
     ALTERNATIVE "//".* { char c; adjust(); continue; }
   ---------------------------------------------------------------*/
+ /* "<--"               { char c; adjust(); comment_hack; continue; } */
+ /* ------------------------------------------------------------ */
 "//"                    { char c; adjust(); comment_hack; continue; }
-"<--"                   { char c; adjust(); comment_hack; continue; }
 "/*"                    { char c, c1; adjust(); block_comment_hack; continue; }
 " "                     { adjust(); continue; }
 "\t"                    { adjust(); continue; }
@@ -366,10 +367,11 @@ global                  { adjust(); return GLOBAL; }
 "%=>"                   { adjust(); return PERCENT_CHUCK; }
 "@"                     { adjust(); return AT_SYM; }
 "@@"                    { adjust(); return ATAT_SYM; }
-"@op"                   { adjust(); return AT_OP; }
+"@operator"             { adjust(); return AT_OP; }
 "->"                    { adjust(); return ARROW_RIGHT; }
 "<-"                    { adjust(); return ARROW_LEFT; }
 "-->"                   { adjust(); return GRUCK_RIGHT; }
+"<--"                   { adjust(); return GRUCK_LEFT; }
 
 [A-Za-z_][A-Za-z0-9_]*  { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 

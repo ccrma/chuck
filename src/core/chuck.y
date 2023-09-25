@@ -470,6 +470,8 @@ chuck_operator
 arrow_operator
         : ARROW_LEFT                        { $$ = ae_op_arrow_left; }
         | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
+        | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
+        | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
         ;
 
 conditional_expression
@@ -641,7 +643,7 @@ overloadable_operator
         | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
         | ARROW_LEFT                        { $$ = ae_op_arrow_left; }
         | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
-        // | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
+        | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
         ;
 
 dur_expression

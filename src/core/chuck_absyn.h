@@ -291,11 +291,11 @@ void delete_vec( a_Vec v );
 //------------------------------------------------------------------------------
 // abstract syntax tree | structs
 //------------------------------------------------------------------------------
-struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; a_Array_Sub array;
-                      a_Stmt code; uint32_t line; uint32_t where; a_Exp self; };
-struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; uint32_t line; uint32_t where; a_Exp self; };
+                      a_Stmt code; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Dur_ { a_Exp base; a_Exp unit; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Array_ { a_Exp base; a_Array_Sub indices; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Func_Call_ { a_Exp func; a_Exp args; t_CKTYPE ret_type;
@@ -484,7 +484,7 @@ struct a_Func_Def_ {
     unsigned int stack_depth;
     void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
-    uint32_t overload_post; // 1.5.1.4 (ge) overload as post? e.g., @op (args) ++ (unary only)
+    uint32_t overload_post; // 1.5.1.4 (ge) overload as post? e.g., @operator(args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references
     uint32_t line; uint32_t where; uint32_t operWhere;
 };

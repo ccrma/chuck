@@ -482,13 +482,13 @@ public:
 
 public:
     // add binary operator overload: lhs OP rhs
-    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs,
+    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
     // add prefix unary operator overload: OP rhs
-    t_CKBOOL add_overload( ae_Operator op, Chuck_Type * rhs,
+    t_CKBOOL add_overload( ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
     // add postfix unary operator overload: lhs OP
-    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op,
+    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Func * func,
                            te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
 
     // look up binary operator overload: lhs OP rhs
@@ -590,15 +590,15 @@ struct Chuck_Op_Overload
     std::string m_originName;
     // origin parse position (if applicable)
     t_CKINT m_originWhere;
-    // function to call (depending on origin)
-    // TODO
 
 protected:
     // the operator
     ae_Operator m_op;
     // which kind of overload?
     te_Op_OverloadKind m_kind;
-   // left hand side
+    // the function to call
+    Chuck_Func * m_func;
+    // left hand side
     Chuck_Type * m_lhs;
     // right hand side
     Chuck_Type * m_rhs;
@@ -614,11 +614,11 @@ protected:
 
 public:
     // constructor: binary
-    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS );
+    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS, Chuck_Func * func );
     // constructor: postfix
-    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op );
+    Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Func * func );
     // constructor: prefix
-    Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS );
+    Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS, Chuck_Func * func );
     // copy constructor
     Chuck_Op_Overload( const Chuck_Op_Overload & other );
     // destructor
@@ -636,6 +636,8 @@ public:
     ae_Operator op() const { return m_op; }
     // get the kind of overload
     te_Op_OverloadKind kind() const { return m_kind; }
+    // get func
+    Chuck_Func * func() const { return m_func; }
     // get left hand side type
     Chuck_Type * lhs() const { return m_lhs; }
     // get right hand side type
@@ -1066,6 +1068,8 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string name;
     // base name (without the designation, e.g., "dump"); 1.4.1.0
     std::string base_name;
+    // get return type
+    Chuck_Type * type() const;
     // human readable function signature: e.g., void Object.func( int foo, float bar[] );
     std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
@@ -1250,9 +1254,11 @@ t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * 
 // initialize operator overload subsystem | 1.5.1.4 (ge) added
 t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 // verify an operator overload | 1.5.1.4 (ge) added
-t_CKBOOL type_engine_scan_op_overload( Chuck_Env * env, a_Func_Def func_def );
-// type-check an operator overload | 1.5.1.4 (ge) added
-t_CKBOOL type_engine_check_op_overload( Chuck_Env * env, a_Func_Def func_def );
+t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
+// type-check an operator overload func def | 1.5.1.4 (ge) added
+t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
+
+
 
 
 //-----------------------------------------------------------------------------

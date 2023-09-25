@@ -73,6 +73,9 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
 t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary );
+t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op, Chuck_Type * lhs, Chuck_Type * rhs, a_Exp_Binary binary ); // 1.5.1.4
+t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op, Chuck_Type * rhs, a_Exp_Unary unary ); // 1.5.1.4
+t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs, ae_Operator op, a_Exp_Postfix post ); // 1.5.1.4
 t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_complex_lit( Chuck_Env * env, a_Exp_Primary exp );
@@ -1830,7 +1833,7 @@ t_CKBOOL type_engine_ensure_no_multi_decl( a_Exp exp, const char * op_str )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_op()
-// desc: ...
+// desc: check binary operator
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs,
                                a_Exp_Binary binary )
@@ -2359,11 +2362,111 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     default: break;
     }
 
+    // check overload | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
+    // if we have a hit
+    if( ret ) return ret;
+
     // no match
     EM_error2( binary->where,
         "cannot resolve operator '%s' on types '%s' and '%s'",
         op2str( op ), left->c_name(), right->c_name() );
     return NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_op_overload_binary()
+// desc: type check binary operator overload
+//-----------------------------------------------------------------------------
+t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op,
+                                               Chuck_Type * lhs, Chuck_Type * rhs,
+                                               a_Exp_Binary binary )
+{
+    // look up
+    Chuck_Op_Overload * overload = env->op_registry.lookup_overload( lhs, op, rhs );
+    // check if we have overload
+    if( !overload ) return NULL;
+
+    // remember the function
+    binary->ck_overload_func = overload->func();
+    // check it
+    if( !binary->ck_overload_func )
+    {
+        // no match
+        EM_error2( binary->where,
+            "(internal error) missing operator '%s' implementation on types '%s' and '%s'...",
+            op2str( op ), lhs->c_name(), rhs->c_name() );
+        // done
+        return NULL;
+    }
+
+    // the return type
+    return binary->ck_overload_func->type();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_op_overload_unary()
+// desc: type check unary (prefix) operator overload
+//-----------------------------------------------------------------------------
+t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op,
+                                              Chuck_Type *  rhs, a_Exp_Unary unary )
+{
+    // look up
+    Chuck_Op_Overload * overload = env->op_registry.lookup_overload( op, rhs );
+    // check if we have overload
+    if( !overload ) return NULL;
+    // the function
+    unary->ck_overload_func = overload->func();
+    // check it
+    if( !unary->ck_overload_func )
+    {
+        // no match
+        EM_error2( unary->where,
+            "(internal error) missing unary (prefix) operator '%s' implementation on type '%s'",
+            op2str( op ), rhs->c_name() );
+        // done
+        return NULL;
+    }
+
+    // the return type
+    return unary->ck_overload_func->type();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_op_overload_postfix()
+// desc: type check postfix operator overload
+//-----------------------------------------------------------------------------
+t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs,
+                                                ae_Operator op, a_Exp_Postfix postfix )
+{
+    // look up
+    Chuck_Op_Overload * overload = env->op_registry.lookup_overload( lhs, op );
+    // check if we have overload
+    if( !overload ) return NULL;
+    // the function
+    postfix->ck_overload_func = overload->func();
+    // check it
+    if( !postfix->ck_overload_func )
+    {
+        // no match
+        EM_error2( postfix->where,
+            "(internal error) missing postfix operator '%s' implementation on type '%s'",
+            op2str( op ), lhs->c_name() );
+        // done
+        return NULL;
+    }
+
+    // the return type
+    return postfix->ck_overload_func->type();
 }
 
 
@@ -2627,7 +2730,10 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         // aggregate types
         else
         {
-            // TODO: check overloading of =>
+            // check overloading of => | 1.5.1.4 (ge) added
+            Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
+            // if we have a hit
+            if( ret ) return ret;
 
             // no match
             EM_error2( binary->where,
@@ -2639,7 +2745,10 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         }
     }
 
-    // TODO: check overloading of =>
+    // check overloading of => | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
+    // if we have a hit
+    if( ret ) return ret;
 
     // no match
     EM_error2( binary->where,
@@ -2663,7 +2772,10 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // ugen =< ugen
     if( isa( left, env->ckt_ugen ) && isa( right, env->ckt_ugen ) ) return right;
 
-    // TODO: check overloading of =<
+    // check overloading of =< | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_unchuck, left, right, binary );
+    // if we have a hit
+    if( ret ) return ret;
 
     // no match
     EM_error2( binary->where,
@@ -2687,7 +2799,10 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // uana =^ uana
     if( isa( left, env->ckt_uana ) && isa( right, env->ckt_uana ) ) return right;
 
-    // TODO: check overloading of =^
+    // check overloading of =^ | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_upchuck, left, right, binary );
+    // if we have a hit
+    if( ret ) return ret;
 
     // no match
     EM_error2( binary->where,
@@ -2774,6 +2889,11 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a
         return NULL;
     }
 
+    // check overloading of @=> (disallowed for now) | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_at_chuck, left, right, binary );
+    // if we have a hit
+    if( ret ) return ret;
+
     // assign
     rhs->emit_var = TRUE;
 
@@ -2785,7 +2905,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_exp_unary()
-// desc: ...
+// desc: type check (prefix) unary expression
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 {
@@ -2943,6 +3063,11 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 
         default: break;
     }
+
+    // check overloading of unary operator | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_unary( env, unary->op, t, unary );
+    // if we have a hit
+    if( ret ) return ret;
 
     // no match
     EM_error2( unary->where,
@@ -3678,6 +3803,11 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
                 "internal compiler error: unrecognized postfix '%i'", postfix->op );
         return NULL;
     }
+
+    // check overloading of postfix operator | 1.5.1.4 (ge) added
+    Chuck_Type * ret = type_engine_check_op_overload_postfix( env, t, postfix->op, postfix );
+    // if we have a hit
+    if( ret ) return ret;
 
     // no match
     EM_error2( postfix->where,
@@ -6578,26 +6708,107 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_scan_op_overload() | 1.5.1.4 (ge) added
+// name: type_engine_scan_func_op_overload() | 1.5.1.4 (ge) added
 // desc: verify an operator overload
 //       NOTE this is typically called from scan2_func_def()
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_scan_op_overload( Chuck_Env * env, a_Func_Def func_def )
+t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def f )
 {
     // get the operator being overloaded
-    ae_Operator op = func_def->op2overload;
+    ae_Operator op = f->op2overload;
     // if the func wasn't an op overload, then no problem
     if( op == ae_op_none ) return TRUE;
 
     // get operator semantics
-    // Chuck_Op_Semantics * semantics = env->
-    // check that operator is overloadable
+    Chuck_Op_Semantics * semantics = env->op_registry.lookup( op );
+    // make sure there is entry
+    if( !semantics )
+    {
+        // error
+        EM_error2( f->operWhere, "operator '%s' is not overloadable...", op2str(op) );
+        return FALSE;
+    }
 
     // count the number of arguments
-    // t_CKUINT numArgs = 0; a_Arg_List args = func_def->arg_list;
-    // while( args ) { numArgs++; args = args->next; }
+    t_CKUINT numArgs = 0; a_Arg_List args = f->arg_list;
+    while( args ) { numArgs++; args = args->next; }
 
-    // get kind of overload
+    // check if valid # of args
+    if( numArgs > 2 )
+    {
+        // error
+        EM_error2( f->operWhere, "too many arguments for overloading operator '%s' ...", op2str(op) );
+        return FALSE;
+    }
+    // 2-arg (binary)
+    else if( numArgs == 2 )
+    {
+        // check for unary post
+        // unary postfix
+        if( f->overload_post )
+        {
+            // error
+            EM_error2( f->operWhere, "invalid number of arguments for overloading operator '%s' as postfix...", op2str(op) );
+            EM_error2( 0, "...(hint: binary operators cannot be postfix; all postfix operators are unary)" );
+            return FALSE;
+        }
+
+        // check if allowed by semantics
+        if( !semantics->isBinaryOL() )
+        {
+            EM_error2( f->operWhere, "operator '%s' cannot be overloaded as binary operator...", op2str(op) );
+            return FALSE;
+        }
+    }
+    // 1-arg (unary)
+    else if( numArgs == 1)
+    {
+        // check for post, e.g., x++
+        if( f->overload_post )
+        {
+            // check if allowed by semantics
+            if( !semantics->isUnaryPostOL() )
+            {
+                EM_error2( f->operWhere, "operator '%s' cannot be overloaded as unary (postfix) operator...", op2str(op) );
+                return FALSE;
+            }
+        }
+        else // pre, e.g., ++x
+        {
+            // check if allowed by semantics
+            if( !semantics->isUnaryPreOL() )
+            {
+                EM_error2( f->operWhere, "operator '%s' cannot be overloaded as unary (prefix) operator...", op2str(op) );
+                return FALSE;
+            }
+        }
+    }
+
+    // get the LHS and RHS
+    Chuck_Type * LHS = NULL;
+    Chuck_Type * RHS = NULL;
+    args = f->arg_list;
+    while( args )
+    {
+        // first two args
+        if( !LHS ) LHS = args->type;
+        else if( !RHS ) RHS = args->type;
+        // next
+        args = args->next;
+    }
+
+    // get origin hint
+    te_Origin originHint = te_originUnknown;
+    Chuck_Compiler * compiler = env->compiler();
+    if( compiler != NULL ) originHint = compiler->m_originHint;
+
+    // add overload
+    if( !env->op_registry.add_overload( LHS, op, RHS, f->ck_func,
+         originHint, S_name(f->name), (t_CKINT)f->operWhere ) )
+    {
+        EM_error2( f->where, "(internal error) overloading operator '%s'...", op2str(op) );
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -6606,11 +6817,11 @@ t_CKBOOL type_engine_scan_op_overload( Chuck_Env * env, a_Func_Def func_def )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_check_op_overload()
+// name: type_engine_check_func_op_overload()
 // desc: type-check an operator overload | 1.5.1.4 (ge) added
 //       NOTE this is typically called from check_func_def()
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_check_op_overload( Chuck_Env * env, ae_Operator op, a_Func_Def func_def )
+t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, ae_Operator op, a_Func_Def func_def )
 {
     return TRUE;
 }
@@ -7817,6 +8028,21 @@ Chuck_Func::~Chuck_Func()
 
 
 //-----------------------------------------------------------------------------
+// name: type()
+// desc: get the function's return type
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Func::type() const
+{
+    // check we have the necessary info
+    if( !def() || !def()->ret_type ) return NULL;
+    // return it
+    return def()->ret_type;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: signature()
 // desc: human readable function signature: e.g., Object.func( int foo, float bar[] );
 // args: incFunDef -- controls whether to include the "fun" in "fun RET FUNC(..."
@@ -7839,6 +8065,8 @@ string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
 
     // loop over arguments
     a_Arg_List list = def()->arg_list;
+    // add space if there are any arguments
+    if( list ) signature += " ";
     // loop
     while( list )
     {
@@ -7855,6 +8083,8 @@ string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
         list = list->next;
     }
 
+    // add space if there are any arguments
+    if( def()->arg_list ) signature += " ";
     // close
     signature += ")";
 
@@ -9052,7 +9282,7 @@ Chuck_Op_Semantics * Chuck_Op_Registry::lookup( ae_Operator op )
 // desc: add binary operator overload: lhs OP rhs
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Op_Registry::add_overload(
-    Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs,
+    Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
     te_Origin origin, const std::string & originName, t_CKINT originWhere )
 {
     // get semantics
@@ -9083,7 +9313,7 @@ t_CKBOOL Chuck_Op_Registry::add_overload(
     }
 
     // create new overload
-    overload = new Chuck_Op_Overload( lhs, op, rhs );
+    overload = new Chuck_Op_Overload( lhs, op, rhs, func );
     // set origin
     overload->updateOrigin( origin, originName, originWhere );
     // set stack level ID
@@ -9102,10 +9332,10 @@ t_CKBOOL Chuck_Op_Registry::add_overload(
 // name: add_overload()
 // desc: add prefix unary operator overload: OP rhs
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs,
+t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
                        te_Origin origin, const std::string & originName, t_CKINT originWhere )
 {
-    return this->add_overload( NULL, op, rhs, origin, originName, originWhere );
+    return this->add_overload( NULL, op, rhs, func, origin, originName, originWhere );
 }
 
 
@@ -9115,10 +9345,10 @@ t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs,
 // name: add_overload()
 // desc: add postfix unary operator overload: lhs OP
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Op_Registry::add_overload( Chuck_Type * lhs, ae_Operator op,
+t_CKBOOL Chuck_Op_Registry::add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Func * func,
                        te_Origin origin, const std::string & originName, t_CKINT originWhere )
 {
-    return this->add_overload( lhs, op, NULL, origin, originName, originWhere );
+    return this->add_overload( lhs, op, NULL, func, origin, originName, originWhere );
 }
 
 
@@ -9329,7 +9559,7 @@ Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Typ
 // name: Chuck_Op_Overload()
 // desc: constructor for binary op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS )
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Type * RHS, Chuck_Func * func )
 {
     // zero out
     zero();
@@ -9338,6 +9568,8 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Ty
     m_op = op;
     // set kind
     m_kind = te_op_overload_binary;
+    // set func
+    CK_SAFE_REF_ASSIGN( m_func, func );
     // set lhs
     setLHS( LHS );
     // set rhs
@@ -9351,7 +9583,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Ty
 // name: Chuck_Op_Overload()
 // desc: constructor for unary postfix op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op )
+Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Func * func )
 {
     // zero out
     zero();
@@ -9360,6 +9592,8 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op )
     m_op = op;
     // set as postfix
     m_kind = te_op_overload_unary_post;
+    // set func
+    CK_SAFE_REF_ASSIGN( m_func, func );
     // set lhs
     setLHS( LHS );
 }
@@ -9371,7 +9605,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op )
 // name: Chuck_Op_Overload()
 // desc: constructor for unary prefix op overload
 //-----------------------------------------------------------------------------
-Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS )
+Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS, Chuck_Func * func )
 {
     // zero out
     zero();
@@ -9380,6 +9614,8 @@ Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS )
     m_op = op;
     // set as prefix
     m_kind = te_op_overload_unary_pre;
+    // set func
+    CK_SAFE_REF_ASSIGN( m_func, func );
     // set rhs
     setRHS( RHS );
 }
@@ -9398,6 +9634,8 @@ Chuck_Op_Overload::Chuck_Op_Overload( const Chuck_Op_Overload & other )
 
     m_op = other.m_op;
     m_kind = other.m_kind;
+    // set func
+    CK_SAFE_REF_ASSIGN( m_func, other.m_func );
     // set LHS
     setLHS( other.m_lhs );
     // set RHS
@@ -9416,6 +9654,7 @@ Chuck_Op_Overload::~Chuck_Op_Overload()
     // release
     CK_SAFE_RELEASE( m_lhs );
     CK_SAFE_RELEASE( m_rhs );
+    CK_SAFE_RELEASE( m_func );
 }
 
 
@@ -9468,6 +9707,7 @@ void Chuck_Op_Overload::zero()
 {
     m_op = ae_op_none;
     m_kind = te_op_overload_none;
+    m_func = NULL;
     m_origin = te_originUnknown;
     m_originWhere = 0;
     m_lhs = NULL;

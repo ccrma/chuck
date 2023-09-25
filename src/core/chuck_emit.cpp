@@ -69,6 +69,9 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
 t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
 t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
 t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
+t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary binary ); // 1.5.1.4
+t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary unary ); // 1.5.1.4
+t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix ); // 1.5.1.4
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary );
 t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp );
 t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast );
@@ -1955,6 +1958,14 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
     // op
     Chuck_Instr * instr = NULL;
 
+    // check operator overload; unlike in type_engine by this point we know
+    // whether an operator should be using an explicit overloading
+    if( binary->ck_overload_func )
+    {
+        // emit operator overload | 1.5.1.4 (ge) added
+        return emit_engine_emit_op_overload_binary( emit, binary );
+    }
+
     // emit op
     switch( op )
     {
@@ -2856,18 +2867,18 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
 
         //---------------------------- (error) --------------------------------
-    default:
-        EM_error2( lhs->where,
+    default: break;
+        EM_error2( binary->where,
             "(emit): internal error: unhandled op '%s' %s '%s'",
-            t_left->c_name(), op2str( op ), t_right->c_name() );
+            t_left->c_name(), op2str(op), t_right->c_name() );
         return FALSE;
     }
 
     // make sure emit
     if( !instr )
     {
-        EM_error2( lhs->where,
-            "(emit): internal error: unhandled op '%s' %s '%s'",
+        EM_error2( binary->where,
+            "(emit): internal error: unhandled op implementation '%s' %s '%s'",
             t_left->c_name(), op2str( op ), t_right->c_name() );
         return FALSE;
     }
@@ -2879,8 +2890,56 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
 
 //-----------------------------------------------------------------------------
+// name: emit_engine_emit_op_overload_binary() | 1.5.1.4 (ge) added
+// desc: emit binary operator overload
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary binary )
+{
+    // TODO: transforms local stack into args; add refs, variable mem to reg, etc.
+    // push function pointer
+    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)binary->ck_overload_func ) );
+    // emit the function call
+    return emit_engine_emit_exp_func_call( emit, binary->ck_overload_func, binary->self->type, binary->line, binary->where );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_emit_op_overload_unary() | 1.5.1.4 (ge) added
+// desc: emit unary (prefix) operator overload
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
+{
+    // TODO: transforms local stack into args; add refs, variable mem to reg, etc.
+    // push function pointer
+    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)unary->ck_overload_func ) );
+    // emit the function call
+    return emit_engine_emit_exp_func_call( emit, unary->ck_overload_func, unary->self->type, unary->line, unary->where );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_emit_op_overload_postfix() | 1.5.1.4 (ge) added
+// desc: emit unary (postfix) operator overload
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix )
+{
+    // TODO: transforms local stack into args; add refs, variable mem to reg, etc.
+    // push function pointer
+    emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)postfix->ck_overload_func ) );
+    // emit the function call
+    return emit_engine_emit_exp_func_call( emit, postfix->ck_overload_func, postfix->self->type, postfix->line, postfix->where );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: emit_engine_emit_op_chuck()
-// desc: ...
+// desc: emit =>
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
@@ -2987,7 +3046,6 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         }
     }
 
-    // TODO: check overloading of =>
     // TODO: deal with const
 
     // no match
@@ -3135,7 +3193,6 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
         }
     }
 
-    // TODO: check overloading of =>
     // TODO: deal with const
 
     // no match
@@ -3151,7 +3208,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp_unary()
-// desc: ...
+// desc: emit unary (prefix) expression
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 {
@@ -3161,6 +3218,13 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     // get type
     Chuck_Type * t = unary->self->type;
     assert( t != NULL );
+
+    // check overloading | 1.5.1.4 (ge) added
+    if( unary->ck_overload_func )
+    {
+        // emit overloading
+        return emit_engine_emit_op_overload_unary( emit, unary );
+    }
 
     // emit the operator
     switch( unary->op )
@@ -3176,9 +3240,12 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
         // increment
         if( equals( unary->exp->type, emit->env->ckt_int ) )
+        {
             emit->append( new Chuck_Instr_PreInc_int );
+        }
         else
         {
+            // internal error
             EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for pre '++'' operator",
                 unary->exp->type->c_name() );
@@ -3197,9 +3264,12 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 
         // decrement
         if( equals( unary->exp->type, emit->env->ckt_int ) )
+        {
             emit->append( new Chuck_Instr_PreDec_int );
+        }
         else
         {
+            // internal error
             EM_error2( unary->where,
                 "(emit): internal error: unhandled type '%s' for pre '--' operator",
                 unary->exp->type->c_name() );
@@ -3210,7 +3280,9 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     case ae_op_tilda:
         // complement
         if( equals( unary->exp->type, emit->env->ckt_int ) )
+        {
             emit->append( new Chuck_Instr_Complement_int );
+        }
         else
         {
             EM_error2( unary->where,
@@ -3223,7 +3295,9 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     case ae_op_exclamation:
         // !
         if( equals( unary->exp->type, emit->env->ckt_int ) )
+        {
             emit->append( new Chuck_Instr_Not_int );
+        }
         else
         {
             EM_error2( unary->where,
@@ -3686,6 +3760,13 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     // emit the exp
     if( !emit_engine_emit_exp( emit, postfix->exp ) )
         return FALSE;
+
+    // check overloading | 1.5.1.4 (ge) added
+    if( postfix->ck_overload_func )
+    {
+        // emit overloading
+        return emit_engine_emit_op_overload_postfix( emit, postfix );
+    }
 
     // emit
     switch( postfix->op )
@@ -5046,9 +5127,12 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->stack.push_back( emit->code );
     // make a new one
     emit->code = new Chuck_Code;
-    // name the code
-    emit->code->name = emit->env->class_def ? emit->env->class_def->base_name + "." : "";
-    emit->code->name += func->name + "(...)";
+    // name the code | 1.5.1.4 use signature()
+    emit->code->name += func->signature();
+    // name the code (older code)
+    // emit->code->name = emit->env->class_def ? emit->env->class_def->base_name + "." : "";
+    // emit->code->name += func->name + "(...)";
+
     // set whether need this
     emit->code->need_this = func->is_member;
     // if static inside class | 1.4.1.0 (ge) added

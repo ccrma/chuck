@@ -801,7 +801,7 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
     return a;
 }
 
-// @op operator overload | 1.5.1.4
+// @operator overload | 1.5.1.4
 a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
                             a_Type_Decl type_decl, ae_Operator oper,
                             a_Arg_List arg_list, a_Stmt code,
@@ -814,7 +814,7 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
     a->static_decl = static_decl;
     a->type_decl = type_decl;
     // construct op overload function name
-    std::string s( "@op" ); s += op2str(oper);
+    std::string s( "@operator" ); s += op2str(oper);
     a->name = insert_symbol( s.c_str() );
     a->op2overload = oper;
     a->arg_list = arg_list;
