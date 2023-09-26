@@ -1640,11 +1640,49 @@ array4_get_key(ck_array4_get_key)
 
 
 
-// windows
+//-----------------------------------------------------------------------------
+// name: ck_invoke_mfun_native()
+// desc: directly call a chuck member function's native implementation
+//-----------------------------------------------------------------------------
+Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, void * ARGS )
+{
+    Chuck_DL_Return RETURN;
+    // check objt
+    if( !obj ) return RETURN;
+    // verify bounds
+    if( func_vt_offset >= obj->vtable->funcs.size() )
+    {
+        EM_error3( "(internal error) ck_invoke_mfun() encountered invalid virtual function index: %lu", func_vt_offset );
+        return RETURN;
+    }
+
+    // get the member function
+    f_mfun f = (f_mfun)obj->vtable->funcs[func_vt_offset]->code->native_func;
+    // verify bounds
+    if( !f )
+    {
+        EM_error3( "(internal error) ck_invoke_mfun() cannot find native func to call..." );
+        return RETURN;
+    }
+
+    // call the function | added 1.3.0.0: the DL API instance
+    f( obj, ARGS, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
+
+    // return it
+    return RETURN;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// windows translation
+//-----------------------------------------------------------------------------
 #if defined(__PLATFORM_WINDOWS__)
 #include <system_error> // std::system_category() | 1.5.1.4
 extern "C"
 {
+
 #ifndef __CHUNREAL_ENGINE__
   #include <windows.h>
 #else
@@ -1688,5 +1726,6 @@ const char * dlerror( void )
     // return error buffer
     return dlerror_buffer;
 }
-}
+
+} // extern "C"
 #endif

@@ -239,6 +239,9 @@ t_CKUINT Chuck_VM_Object::refcount() const
 
 
 
+// static instantiation | 1.5.1.4
+t_CKUINT Chuck_Object::our_vt_toString = 0;
+
 //-----------------------------------------------------------------------------
 // name: Chuck_Object()
 // desc: constructor
@@ -3409,13 +3412,14 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     // make sure the shred info matches the vm
     assert( shred->vm_ref == vm );
 
-    Chuck_DL_Return RETURN;
-    // get the member function
-    f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
+    // invoke virtual function our_can_wait | 1.5.1.4
     // TODO: check this is right shred
+    // TODO: make this work in general case (right only for native_func)
+    Chuck_DL_Return RETURN = ck_invoke_mfun_native( this, our_can_wait, vm, shred, NULL );
+    // get the member function
+    // f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
     // added 1.3.0.0: the DL API instance
-    canwaitplease( this, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
-    // RETURN.v_int = 1;
+    // canwaitplease( this, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
 
     // see if we can wait
     if( RETURN.v_int )

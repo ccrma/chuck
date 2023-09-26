@@ -325,6 +325,19 @@ typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char *
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// invoking chuck functions from c++
+//-----------------------------------------------------------------------------
+// directly invoke a chuck member function's native implementation from c++
+// using object + vtable offset
+Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offset,
+                                       Chuck_VM * vm, Chuck_VM_Shred * shred, void * ARGS );
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: struct Chuck_DL_Query
 // desc: passed to module

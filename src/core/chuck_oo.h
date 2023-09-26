@@ -149,6 +149,10 @@ public:
     t_CKBYTE * data;
     // the size of the data region
     t_CKUINT data_size;
+
+public: // static
+    // vtable offset for toString()
+    static t_CKUINT our_vt_toString;
 };
 
 
