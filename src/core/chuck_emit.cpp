@@ -1917,17 +1917,31 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
     }
 
     // whether to track object references on stack (added 1.3.0.2)
-    t_CKBOOL doRef = FALSE;
+    t_CKBOOL doRefLeft = FALSE;
+    t_CKBOOL doRefRight = FALSE;
     // check to see if this is a function call (added 1.3.0.2)
     if( isa( binary->rhs->type, emit->env->ckt_function ) )
     {
         // take care of objects in terms of reference counting
-        doRef = TRUE;
+        doRefLeft = TRUE;
+    }
+    // check operator overload | 1.5.1.4 (ge)
+    t_CKBOOL op_overload = (binary->ck_overload_func != NULL);
+    if( op_overload && isobj( emit->env, binary->lhs->type ) )
+    {
+        // treat as arguments
+        doRefLeft = TRUE;
+    }
+    // check operator overload
+    if( op_overload && isobj( emit->env, binary->rhs->type ) )
+    {
+        // treat as arguments
+        doRefRight = TRUE;
     }
 
     // emit (doRef added 1.3.0.2)
-    left = emit_engine_emit_exp( emit, binary->lhs, doRef );
-    right = emit_engine_emit_exp( emit, binary->rhs );
+    left = emit_engine_emit_exp( emit, binary->lhs, doRefLeft );
+    right = emit_engine_emit_exp( emit, binary->rhs, doRefRight );
 
     // check
     if( !left || !right )
@@ -3212,7 +3226,17 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 {
-    if( unary->op != ae_op_spork && !emit_engine_emit_exp( emit, unary->exp ) )
+    // check operator overload | 1.5.1.4 (ge)
+    t_CKBOOL op_overload = (unary->ck_overload_func != NULL);
+    t_CKBOOL doRef = FALSE;
+    if( op_overload && isobj( emit->env, unary->self->type ) )
+    {
+        // treat as argument
+        doRef = TRUE;
+    }
+
+    // exp
+    if( unary->op != ae_op_spork && !emit_engine_emit_exp( emit, unary->exp, doRef ) )
         return FALSE;
 
     // get type
@@ -3222,7 +3246,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     // check overloading | 1.5.1.4 (ge) added
     if( unary->ck_overload_func )
     {
-        // emit overloading
+        // emit overloading | FYI spork can't be overloaded for now
         return emit_engine_emit_op_overload_unary( emit, unary );
     }
 
@@ -3757,8 +3781,17 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix )
 {
+    // check operator overload | 1.5.1.4 (ge)
+    t_CKBOOL op_overload = (postfix->ck_overload_func != NULL);
+    t_CKBOOL doRef = FALSE;
+    if( op_overload && isobj( emit->env, postfix->self->type ) )
+    {
+        // treat as argument
+        doRef = TRUE;
+    }
+
     // emit the exp
-    if( !emit_engine_emit_exp( emit, postfix->exp ) )
+    if( !emit_engine_emit_exp( emit, postfix->exp, doRef ) )
         return FALSE;
 
     // check overloading | 1.5.1.4 (ge) added

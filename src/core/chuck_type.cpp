@@ -2070,15 +2070,22 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_times_chuck:
     case ae_op_divide_chuck:
     case ae_op_percent_chuck:
-        if( isa( left, env->ckt_object ) ) {
-            EM_error2( binary->where, "cannot perform '%s' on object references",
-                op2str(op) );
-            return NULL;
-        }
-        if( isa( right, env->ckt_object ) ) {
-            EM_error2( binary->where, "cannot perform '%s' on object references",
-                op2str(op) );
-            return NULL;
+        {
+            // check overload | 1.5.1.4 (ge) added
+            Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
+            // if we have a hit
+            if( ret ) return ret;
+
+            if( isa( left, env->ckt_object ) ) {
+                EM_error2( binary->where, "cannot perform '%s' on object references",
+                    op2str(op) );
+                return NULL;
+            }
+            if( isa( right, env->ckt_object ) ) {
+                EM_error2( binary->where, "cannot perform '%s' on object references",
+                    op2str(op) );
+                return NULL;
+            }
         }
     break;
 
@@ -3789,12 +3796,15 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
                 return NULL;
             }
 
-            postfix->exp->emit_var = TRUE;
             // TODO: mark somewhere we need to post increment
 
             // check type
             if( isa( t, env->ckt_int ) || isa( t, env->ckt_float ) )
+            {
+                // emit as variable instead of value
+                postfix->exp->emit_var = TRUE;
                 return t;
+            }
         break;
 
         default:
