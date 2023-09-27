@@ -677,7 +677,6 @@ t_CKBOOL ChucK::initCompiler()
         EM_poplog();
     }
 
-
     return true;
 }
 
@@ -759,9 +758,8 @@ t_CKBOOL ChucK::initChugins()
             // parse, type-check, and emit
             if( compiler()->go( filename, full_path ) )
             {
-                // TODO: how to compilation handle?
-                //return 1;
-
+                // preserve op overloads | 1.5.1.4
+                compiler()->env()->op_registry.preserve();
                 // get the code
                 code = compiler()->output();
                 // name it - TODO?
@@ -769,6 +767,11 @@ t_CKBOOL ChucK::initChugins()
 
                 // spork it
                 shred = vm()->spork( code, NULL, TRUE );
+            }
+            else // did not compile
+            {
+                // undo any op overloads | 1.5.1.4
+                compiler()->env()->op_registry.reset();
             }
 
             // pop indent

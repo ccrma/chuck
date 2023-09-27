@@ -901,7 +901,14 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         // first, remove all shreds
         this->removeAll();
         // next, clear user type system
-        if( env() ) env()->clear_user_namespace();
+        if( env() )
+        {
+            // clear user namespace
+            env()->clear_user_namespace();
+            // reset operload overloading to default | 1.5.1.4
+            // not needed; this is implicit in clear_user_namespace() which calls reset()
+            // env()->op_registry.reset();
+        }
         // 1.4.1.0 (jack): also clear any global variables
         m_globals_manager->cleanup_global_variables();
     }

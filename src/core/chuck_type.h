@@ -556,6 +556,8 @@ public:
     void add( Chuck_Op_Overload * overload );
     // remove overloads with mark > pushID
     void removeAbove( t_CKUINT pushID );
+    // squash all overloads marks to pushID
+    void squashTo( t_CKUINT pushID );
     // retrieve all overloads for an operator
     void getOverloads( std::vector<const Chuck_Op_Overload *> & results );
     // get entry by types

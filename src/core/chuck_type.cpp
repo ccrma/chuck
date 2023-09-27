@@ -9265,8 +9265,17 @@ t_CKUINT Chuck_Op_Registry::pop()
 //-----------------------------------------------------------------------------
 void Chuck_Op_Registry::preserve()
 {
-    // remember current stack ID as preserve ID
-    m_stackPreserveID = m_stackID;
+    // set stack IDs to 1; remember as preserve ID
+    m_stackPreserveID = m_stackID = 1;
+
+    // squash all op overload IDs to
+    std::map<ae_Operator, Chuck_Op_Semantics *>::iterator it;
+    // iterate over all operator semantics
+    for( it = m_operatorMap.begin(); it != m_operatorMap.end(); it++ )
+    {
+        it->second->squashTo( m_stackPreserveID );
+    }
+
     // push stack so all subsequent additions are beyond the preserve
     push();
 }
@@ -9571,6 +9580,27 @@ void Chuck_Op_Semantics::removeAbove( t_CKUINT pushID )
         {
             it++;
         }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: squashTo()
+// desc: squash each overload's mark to pushID
+//-----------------------------------------------------------------------------
+void Chuck_Op_Semantics::squashTo( t_CKUINT pushID )
+{
+    // iterator
+    map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it = overloads.begin();
+    // iterate
+    while( it != overloads.end() )
+    {
+        // update
+        it->second->mark( pushID );
+        // next
+        it++;
     }
 }
 
