@@ -3986,6 +3986,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 {
     // is a member?
     t_CKBOOL is_member = func->is_member;
+    // is a static? (within class)
+    t_CKBOOL is_static = func->is_static;
 
     // only check dependency violations if we are at a context-top-level
     // or class-top-level scope, i.e., not in a function definition
@@ -4034,8 +4036,10 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
             // is member (1.3.1.0: changed to use kind instead of size)
             if( is_member )
                 emit->append( instr = new Chuck_Instr_Func_Call_Member( kind, func ) );
-            else
+            else if( is_static )
                 emit->append( instr = new Chuck_Instr_Func_Call_Static( kind, func ) );
+            else // 1.5.1.4 (ge & andrew) new planes of existence --> this is in global-scope (not global variable)
+                emit->append( instr = new Chuck_Instr_Func_Call_Global( kind, func ) );
         }
         else
         {

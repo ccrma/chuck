@@ -6632,6 +6632,7 @@ t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex )
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: type_engine_register_deprecate()
 // desc: ...
@@ -6641,6 +6642,45 @@ t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
                                          const string & latter )
 {
     env->deprecated[former] = latter;
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_import_op_overload()
+// desc: import operator overload function; add to global scope
+//       NOTE this is typically called from chugin / builtin import
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * sfun )
+{
+    a_Func_Def func_def = NULL;
+
+    // make sure we are in class
+    if( env->class_def )
+    {
+        // error
+        EM_error2( 0,
+            "import error: import_sfun '%s' invoked between begin/end",
+            sfun->name.c_str() );
+        return FALSE;
+    }
+
+    // make into func_def
+    func_def = make_dll_as_fun( sfun, TRUE, FALSE );
+
+    // add the function to class
+    if( !type_engine_scan1_func_def( env, func_def ) )
+        return FALSE;
+    if( !type_engine_scan2_func_def( env, func_def ) )
+        return FALSE;
+    if( !type_engine_check_func_def( env, func_def ) )
+        return FALSE;
+
+    if( sfun->doc.size() > 0 )
+        func_def->ck_func->doc = sfun->doc;
+
     return TRUE;
 }
 
@@ -6705,6 +6745,8 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
     registry->add( ae_op_arrow_left )->configure( TRUE, false, false );
     registry->add( ae_op_gruck_right )->configure( TRUE, false, false );
     registry->add( ae_op_gruck_left )->configure( TRUE, false, false );
+    registry->add( ae_op_ungruck_right )->configure( TRUE, false, false );
+    registry->add( ae_op_ungruck_left )->configure( TRUE, false, false );
 
     // mark built-in overload
 
@@ -6813,14 +6855,8 @@ t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def f )
     if( compiler != NULL ) originHint = compiler->m_originHint;
 
     // add overload
-    if( !env->op_registry.add_overload( LHS, op, RHS, f->ck_func,
-         originHint, S_name(f->name), (t_CKINT)f->operWhere ) )
-    {
-        EM_error2( f->where, "(internal error) overloading operator '%s'...", op2str(op) );
-        return FALSE;
-    }
-
-    return TRUE;
+    return env->op_registry.add_overload( LHS, op, RHS, f->ck_func,
+                                          originHint, S_name(f->name), (t_CKINT)f->operWhere );
 }
 
 
@@ -7386,6 +7422,10 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // copy the function pointer - the type doesn't matter here
     // ...since we copying into a void * - so mfun is used
     func_def->dl_func_ptr = (void *)dl_fun->mfun;
+    // copy the operator overload info | 1.5.1.4
+    func_def->op2overload = dl_fun->op2overload;
+    // set if unary postfix overload | 1.5.1.4
+    func_def->overload_post = (dl_fun->opOverloadKind == te_op_overload_unary_post);
 
     return func_def;
 
@@ -9115,6 +9155,23 @@ bool Chuck_TypePair::operator <( const Chuck_TypePair & other ) const
 
 
 //-----------------------------------------------------------------------------
+// operator == for type pairs
+//-----------------------------------------------------------------------------
+bool Chuck_TypePair::operator ==( const Chuck_TypePair & other ) const
+{
+    // detect any mismatch
+    if( lhs && other.lhs && lhs->name() != other.lhs->name() ) return false;
+    if( rhs && other.rhs && rhs->name() != other.rhs->name() ) return false;
+    if( !lhs && other.lhs ) return false;
+    if( !rhs && other.rhs ) return false;
+    // all other cases
+    return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_Op_Registry()
 // desc: constructor
 //-----------------------------------------------------------------------------
@@ -9311,11 +9368,11 @@ t_CKBOOL Chuck_Op_Registry::add_overload(
     {
         // check which kind
         if( overload->kind() == te_op_overload_binary )
-            EM_error2( originWhere, "binary operator '%s' already overloaded on types '%s' and '%s'...", op2str(op), lhs->c_name(), rhs->c_name() );
+            EM_error2( originWhere, "binary operator '%s' already overloaded on types '%s' and '%s' (or their parents)...", op2str(op), lhs->c_name(), rhs->c_name() );
         else if( overload->kind() == te_op_overload_unary_pre )
-            EM_error2( originWhere, "unary (prefix) operator '%s' already overloaded on type '%s'...", op2str(op), rhs->c_name() );
+            EM_error2( originWhere, "unary (prefix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), rhs->c_name() );
         else if( overload->kind() == te_op_overload_unary_post )
-            EM_error2( originWhere, "unary (postfix) operator '%s' already overloaded on type '%s'...", op2str(op), lhs->c_name() );
+            EM_error2( originWhere, "unary (postfix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), lhs->c_name() );
         else
             EM_error2( originWhere, "(internal error) operator '%s' already overloaded...", op2str(op) );
 
@@ -9438,6 +9495,7 @@ Chuck_Op_Semantics::Chuck_Op_Semantics( ae_Operator op )
 //-----------------------------------------------------------------------------
 Chuck_Op_Semantics::~Chuck_Op_Semantics()
 {
+    EM_log( CK_LOG_DEBUG, "Semantics destructor" );
     // iterator
     map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
     // iterate
@@ -9487,7 +9545,7 @@ void Chuck_Op_Semantics::add( Chuck_Op_Overload * overload )
     if( it != overloads.end() ) CK_SAFE_DELETE( it->second );
     // insert into map
     overloads[tp] = overload;
- }
+}
 
 
 
@@ -9556,10 +9614,41 @@ Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Typ
 {
     // key
     Chuck_TypePair key( lhs, rhs );
+
     // look up, return NULL if not found
-    if( overloads.find( key ) == overloads.end() ) return NULL;
-    // get the overload
-    return overloads[key];
+    if( overloads.find( key ) != overloads.end() ) return overloads[key];
+
+    // iterate over overloads
+    std::map<Chuck_TypePair, Chuck_Op_Overload *>::iterator it;
+    // go
+    for( it = overloads.begin(); it != overloads.end(); it++ )
+    {
+        if( this->is_overloadable_binary )
+        {
+            // check both lhs and rhs are respective children classes
+            if( isa(lhs,it->second->lhs()) && isa(rhs,it->second->rhs()) )
+                return it->second;
+        }
+        else if( this->is_overloadable_unary_pre )
+        {
+            // verify
+            assert( it->second->lhs() != NULL );
+            // check both lhs and rhs are respective children classes
+            if( isa(lhs,it->second->lhs()) )
+                return it->second;
+        }
+        else
+        {
+            // verify
+            assert( it->second->rhs() != NULL );
+            // check both lhs and rhs are respective children classes
+            if( isa(rhs,it->second->rhs()) )
+                return it->second;
+        }
+    }
+
+    // not found
+    return NULL;
 }
 
 

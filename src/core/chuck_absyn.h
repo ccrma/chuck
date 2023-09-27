@@ -64,10 +64,16 @@ typedef enum {
     ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck,
     ae_op_assign, ae_op_dollar, ae_op_at_at, ae_op_coloncolon,
     ae_op_spork, ae_op_typeof, ae_op_sizeof, ae_op_new,
-    ae_op_arrow_left, ae_op_arrow_right, ae_op_gruck_left, ae_op_gruck_right
+    ae_op_arrow_left, ae_op_arrow_right, ae_op_gruck_left, ae_op_gruck_right,
+    ae_op_ungruck_left, ae_op_ungruck_right,
+    // keep this last
+    ae_op_count
 } ae_Operator;
 
+// convert op by enum to str
 const char * op2str( ae_Operator op );
+// convert op by str to enum
+ae_Operator str2op( const char * str );
 
 // enum key words
 typedef enum {

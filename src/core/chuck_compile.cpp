@@ -765,6 +765,9 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // commit what is in the type checker at this point
     env->global()->commit();
 
+    // preserve all operator overloads currently in registry | 1.5.1.4
+    env->op_registry.preserve();
+
     // pop indent level
     EM_poplog();
 
@@ -1166,6 +1169,9 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
 
     // commit what is in the type checker at this point
     env->global()->commit();
+
+    // preserve all operator overloads currently in registry | 1.5.1.4
+    env->op_registry.preserve();
 
     return TRUE;
 }

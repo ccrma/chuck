@@ -372,6 +372,8 @@ global                  { adjust(); return GLOBAL; }
 "<-"                    { adjust(); return ARROW_LEFT; }
 "-->"                   { adjust(); return GRUCK_RIGHT; }
 "<--"                   { adjust(); return GRUCK_LEFT; }
+"--<"                   { adjust(); return UNGRUCK_RIGHT; }
+">--"                   { adjust(); return UNGRUCK_LEFT; }
 
 [A-Za-z_][A-Za-z0-9_]*  { adjust(); yylval.sval=alloc_str(yytext); return ID; }
 

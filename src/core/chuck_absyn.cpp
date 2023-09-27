@@ -1055,6 +1055,8 @@ static const char * op_str[] = {
   "->",
   "<--",
   "-->",
+  ">--",
+  "--<"
 };
 
 
@@ -1062,15 +1064,32 @@ static const char * op_str[] = {
 
 //-----------------------------------------------------------------------------
 // name: op2str()
-// desc: chuck operator to string
+// desc: operator enumeration to string
 //-----------------------------------------------------------------------------
 const char * op2str( ae_Operator op )
 {
     t_CKINT index = (t_CKINT)op;
-    if( index < 0 || index >= (t_CKINT)(sizeof( op_str )/sizeof( char * )) )
+    if( index < 0 || index >= ae_op_count )
         return "[non-existent operator]";
 
     return op_str[index];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: str2op()
+// desc: string to operator enumeration
+//-----------------------------------------------------------------------------
+ae_Operator str2op( const char * str )
+{
+    std::string s(str);
+
+    for( t_CKUINT i = 1; i < ae_op_count; i++ )
+        if( s == op_str[i] ) return (ae_Operator)i;
+
+    return ae_op_none;
 }
 
 

@@ -429,21 +429,6 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_Op_OverloadKind | 1.5.1.4 (ge) added
-// desc: enumeration for kinds of operator overload
-//-----------------------------------------------------------------------------
-enum te_Op_OverloadKind
-{
-    te_op_overload_none,
-    te_op_overload_binary,    // LHS op RHS
-    te_op_overload_unary_pre, //     op RHS
-    te_op_overload_unary_post // LHS op
-};
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: struct Chuck_Op_Registry | 1.5.1.4 (ge) added
 // desc: operator overloading registry
 //-----------------------------------------------------------------------------
@@ -527,6 +512,8 @@ struct Chuck_TypePair
     Chuck_TypePair( const Chuck_TypePair & other ) : lhs(other.lhs), rhs(other.rhs) { }
     // operator
     bool operator <( const Chuck_TypePair & other ) const;
+    // operator
+    bool operator ==( const Chuck_TypePair & other ) const;
 };
 
 
@@ -1074,7 +1061,7 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
     Chuck_VM_Code * code;
-    // member
+    // member (inside class)
     t_CKBOOL is_member;
     // static (inside class)
     t_CKBOOL is_static;
@@ -1119,7 +1106,7 @@ public:
         m_def = NULL;
         code = NULL;
         is_member = FALSE;
-        is_static = FALSE,
+        is_static = FALSE;
         vt_index = CK_NO_VALUE;
         value_ref = NULL;
         /*dl_code = NULL;*/
@@ -1224,6 +1211,8 @@ t_CKBOOL type_engine_import_ugen_ctrl( Chuck_Env * env, const char * type, const
                                        f_ctrl ctrl, t_CKBOOL write, t_CKBOOL read );
 t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex );
 t_CKBOOL type_engine_import_class_end( Chuck_Env * env );
+// add global operator overload | 1.5.1.4 (ge & andrew) chaos
+t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * func );
 t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
                                          const std::string & former, const std::string & latter );
 

@@ -134,7 +134,7 @@ a_Program g_program = NULL;
   UNCHUCK UPCHUCK CLASS INTERFACE EXTENDS IMPLEMENTS
   PUBLIC PROTECTED PRIVATE STATIC ABSTRACT CONST 
   SPORK ARROW_RIGHT ARROW_LEFT L_HACK R_HACK
-  GRUCK_RIGHT GRUCK_LEFT AT_OP
+  GRUCK_RIGHT GRUCK_LEFT UNGRUCK_RIGHT UNGRUCK_LEFT AT_OP
 
 
 %type <program> program
@@ -472,6 +472,8 @@ arrow_operator
         | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
         | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
         | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
+        | UNGRUCK_LEFT                      { $$ = ae_op_ungruck_left; }
+        | UNGRUCK_RIGHT                     { $$ = ae_op_ungruck_right; }
         ;
 
 conditional_expression
@@ -644,6 +646,8 @@ overloadable_operator
         | ARROW_LEFT                        { $$ = ae_op_arrow_left; }
         | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
         | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
+        | UNGRUCK_RIGHT                     { $$ = ae_op_ungruck_right; }
+        | UNGRUCK_LEFT                      { $$ = ae_op_ungruck_left; }
         ;
 
 dur_expression
