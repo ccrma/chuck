@@ -465,6 +465,10 @@ void CBufferSimple::put( void * data, UINT__ num_elem )
     UINT__ i, j;
     BYTE__ * d = (BYTE__ *)data;
 
+#ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+#endif
+
     // copy
     for( i = 0; i < num_elem; i++ )
     {
@@ -478,6 +482,10 @@ void CBufferSimple::put( void * data, UINT__ num_elem )
         // change to fully "atomic" increment+wrap
         m_write_offset = (m_write_offset + 1) % m_max_elem;
     }
+
+#ifndef __DISABLE_THREADS__
+    m_mutex.release();
+#endif
 }
 
 
@@ -495,6 +503,10 @@ UINT__ CBufferSimple::get( void * data, UINT__ num_elem )
     // read catch up with write
     if( m_read_offset == m_write_offset )
         return 0;
+
+#ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+#endif
 
     // copy
     for( i = 0; i < num_elem; i++ )
@@ -516,6 +528,10 @@ UINT__ CBufferSimple::get( void * data, UINT__ num_elem )
             break;
         }
     }
+
+#ifndef __DISABLE_THREADS__
+    m_mutex.release();
+#endif
 
     // return number of elems
     return 1; // shouldn't it return i?

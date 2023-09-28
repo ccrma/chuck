@@ -135,6 +135,11 @@ protected:
     UINT__   m_read_offset;
     UINT__   m_write_offset;
     UINT__   m_max_elem;
+
+#ifndef __DISABLE_THREADS__
+    // added | 1.5.1.4 (ge & andrew) twilight zone
+    XMutex m_mutex;
+#endif
 };
 
 
