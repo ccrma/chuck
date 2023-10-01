@@ -532,8 +532,6 @@ struct Chuck_TypePair
     // operator
     bool operator <( const Chuck_TypePair & other ) const;
 };
-// operator
-// bool operator ==( const Chuck_TypePair & lhs, const Chuck_TypePair & rhs );
 
 
 

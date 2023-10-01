@@ -9440,31 +9440,15 @@ void Chuck_Type::dump_obj( Chuck_Object * obj, std::string & output )
 //-----------------------------------------------------------------------------
 bool Chuck_TypePair::operator <( const Chuck_TypePair & other ) const
 {
-    // cases considered this is less than other
-    if( lhs && other.lhs && lhs->name() < other.lhs->name() ) return true;
-    if( rhs && other.rhs && rhs->name() < other.rhs->name() ) return true;
-    if( !lhs && other.lhs ) return true;
-    if( !rhs && other.rhs ) return true;
-    // all other cases
-    return false;
+    string aL = this->lhs ? this->lhs->name() : "";
+    string aR = this->rhs ? this->rhs->name() : "";
+    string bL = other.lhs ? other.lhs->name() : "";
+    string bR = other.rhs ? other.rhs->name() : "";
+
+    // strict weak ordering
+    // (aL, aR) < (bL, bR) iff (aL < bL) OR ( aL == bL && aR < bR )
+    return (aL < bL) || (aL == bL && aR < bR);
 }
-
-
-
-
-//-----------------------------------------------------------------------------
-// operator == for type pairs
-//-----------------------------------------------------------------------------
-//bool operator ==( const Chuck_TypePair & lhs, const Chuck_TypePair & rhs )
-//{
-//    // detect any mismatch
-//    if( lhs.lhs && rhs.lhs && lhs.lhs->name() != rhs.lhs->name() ) return false;
-//    if( lhs.rhs && rhs.rhs && lhs.rhs->name() != rhs.rhs->name() ) return false;
-//    if( !lhs.lhs && rhs.lhs ) return false;
-//    if( !lhs.rhs && rhs.rhs ) return false;
-//    // all other cases
-//    return true;
-//}
 
 
 
@@ -10032,6 +10016,7 @@ void Chuck_Op_Semantics::removeAbove( t_CKUINT pushID )
         {
             // erase while iterating | c++11 or higher
             it = overloads.erase( it );
+            // overloads.erase( it++ ); // before c++11
         }
         else
         {
@@ -10362,14 +10347,12 @@ void Chuck_Op_Overload::setRHS( Chuck_Type * type )
 //-----------------------------------------------------------------------------
 bool Chuck_Op_Overload::operator <( const Chuck_Op_Overload & other ) const
 {
-    Chuck_Type * lhs1 = this->m_lhs; Chuck_Type * lhs2 = other.m_lhs;
-    Chuck_Type * rhs1 = this->m_rhs; Chuck_Type * rhs2 = other.m_rhs;
+    string aL = this->m_lhs ? this->m_lhs->name() : "";
+    string aR = this->m_rhs ? this->m_rhs->name() : "";
+    string bL = other.m_lhs ? other.m_lhs->name() : "";
+    string bR = other.m_rhs ? other.m_rhs->name() : "";
 
-    // cases considered this is less than other
-    if( lhs1 && lhs2 && lhs1->name() < lhs2->name() ) return true;
-    if( rhs1 && rhs2 && rhs1->name() < rhs2->name() ) return true;
-    if( !lhs1 && lhs2 ) return true;
-    if( !rhs1 && rhs2 ) return true;
-    // all other cases
-    return false;
+    // strict weak ordering
+    // (aL, aR) < (bL, bR) iff (aL < bL) OR ( aL == bL && aR < bR )
+    return (aL < bL) || (aL == bL && aR < bR);
 }
