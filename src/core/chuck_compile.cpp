@@ -778,7 +778,7 @@ error:
     env->global()->rollback();
 
     // undo op registry entries | 1.5.1.4
-    env->op_registry.reset();
+    env->op_registry.reset2local();
 
     // clear context
     type_engine_unload_context( env );
@@ -1046,7 +1046,7 @@ error:
     // clean up
     CK_SAFE_DELETE( dll );
     // rollback operator overloads | 1.5.1.4
-    compiler->env()->op_registry.reset();
+    compiler->env()->op_registry.reset2local();
 
     return FALSE;
 }

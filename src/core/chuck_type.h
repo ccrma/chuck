@@ -445,36 +445,48 @@ public:
     Chuck_Op_Semantics * add( ae_Operator op );
     // get semantics for particular operator
     Chuck_Op_Semantics * lookup( ae_Operator op );
+    // can overload as binary?
+    t_CKBOOL binaryOverloadable( ae_Operator op );
+    // can overload as unary prefix?
+    t_CKBOOL unaryPreOverloadable( ae_Operator op );
+    // can overload as unary postfix?
+    t_CKBOOL unaryPostOverloadable( ae_Operator op );
 
 public:
     // push registry stack; mark all unmarked overloads with current ID
     // returns pushID associated with this push
     t_CKUINT push();
-    // remove all overload greater than pushID
-    // return how many levels were popped
-    t_CKUINT pop( t_CKUINT pushID );
     // remove all overload greater than previous pushID
     // return how many levels were popped (1 or 0)
     t_CKUINT pop();
+    // reset pop local overload state (everything above publicID)
+    void reset2local();
+    // reset pop beyond public state (everything above preserveID)
+    void reset2public();
+    // (system) preserve current state (cannot be popped normally)
+    void preserve();
+    // (system) remove preserve status (allowing pops for all stack levels)
+    void unpreserve();
     // get the current stack ID
     t_CKUINT stackLevel() const { return m_stackID; }
-    // preserve current state (cannot be popped normally)
-    void preserve();
-    // reset pop to preserved state
-    void reset();
-    // remove preserve status (allowing pops for all stack levels)
-    void unpreserve();
 
 public:
+    // reserve builtin overloads
+    void reserve( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, t_CKBOOL commute = FALSE );
+    // reserve prefix
+    void reserve( ae_Operator op, Chuck_Type * type );
+    // reserve postfix
+    void reserve( Chuck_Type * type, ae_Operator op );
+
     // add binary operator overload: lhs OP rhs
-    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+    t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func, 
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
     // add prefix unary operator overload: OP rhs
     t_CKBOOL add_overload( ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
     // add postfix unary operator overload: lhs OP
     t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Func * func,
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0 );
+                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
 
     // look up binary operator overload: lhs OP rhs
     Chuck_Op_Overload * lookup_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs );
@@ -484,12 +496,19 @@ public:
     Chuck_Op_Overload * lookup_overload( Chuck_Type * lhs, ae_Operator op );
 
 protected:
+    // remove all overload greater than pushID
+    // return how many levels were popped
+    t_CKUINT pop( t_CKUINT pushID );
     // map of operator to its semantic mappings
     std::map<ae_Operator, Chuck_Op_Semantics *> m_operatorMap;
     // operator overload stack level
     t_CKUINT m_stackID;
-    // level (and below) to preserve
+    // system-level operator preservation ID (cannot be reset; use unpreserve to undo)
     t_CKUINT m_stackPreserveID;
+
+public:
+    // user-level public operator overload (can be reset)
+    static const t_CKUINT STACK_PUBLIC_ID;
 };
 
 
@@ -512,9 +531,9 @@ struct Chuck_TypePair
     Chuck_TypePair( const Chuck_TypePair & other ) : lhs(other.lhs), rhs(other.rhs) { }
     // operator
     bool operator <( const Chuck_TypePair & other ) const;
-    // operator
-    bool operator ==( const Chuck_TypePair & other ) const;
 };
+// operator
+// bool operator ==( const Chuck_TypePair & lhs, const Chuck_TypePair & rhs );
 
 
 
@@ -593,6 +612,8 @@ protected:
     Chuck_Type * m_rhs;
     // ID associated with when this overload was created
     t_CKUINT m_pushID;
+    // is reserved
+    t_CKBOOL m_isReserved;
 
     // set left hand side type
     void setLHS( Chuck_Type * type );
@@ -619,6 +640,10 @@ public:
     void updateOrigin( te_Origin origin, const std::string & name = "", t_CKINT where = 0 );
     // update overload stack push ID
     void mark( t_CKUINT pushID );
+    // set as reserved
+    void updateReserved( t_CKBOOL isReserved ) { m_isReserved = isReserved; }
+    // get is reserved
+    t_CKBOOL reserved() const { return m_isReserved; }
 
 public:
     // get op

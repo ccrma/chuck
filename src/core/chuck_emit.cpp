@@ -3229,7 +3229,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     // check operator overload | 1.5.1.4 (ge)
     t_CKBOOL op_overload = (unary->ck_overload_func != NULL);
     t_CKBOOL doRef = FALSE;
-    if( op_overload && isobj( emit->env, unary->self->type ) )
+    if( op_overload && isobj( emit->env, unary->exp->type ) )
     {
         // treat as argument
         doRef = TRUE;
@@ -3784,7 +3784,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     // check operator overload | 1.5.1.4 (ge)
     t_CKBOOL op_overload = (postfix->ck_overload_func != NULL);
     t_CKBOOL doRef = FALSE;
-    if( op_overload && isobj( emit->env, postfix->self->type ) )
+    if( op_overload && isobj( emit->env, postfix->exp->type ) )
     {
         // treat as argument
         doRef = TRUE;

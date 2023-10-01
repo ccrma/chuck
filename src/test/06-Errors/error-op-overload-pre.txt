@@ -1,0 +1,3 @@
+error-op-overload-pre.ck:2:20: error: unary (prefix) operator '++' already overloaded on type 'int' (or its parent)...
+[2] fun void @operator ++( int n )
+                       ^

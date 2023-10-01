@@ -609,7 +609,7 @@ CK_DLL_SFUN( machine_opOverloadPop_impl)
 
 CK_DLL_SFUN( machine_opOverloadReset_impl)
 {
-    VM->env()->op_registry.reset();
+    VM->env()->op_registry.reset2local();
 }
 
 CK_DLL_SFUN( machine_opOverloadStackLevel_impl)

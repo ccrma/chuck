@@ -771,7 +771,7 @@ t_CKBOOL ChucK::initChugins()
             else // did not compile
             {
                 // undo any op overloads | 1.5.1.4
-                compiler()->env()->op_registry.reset();
+                compiler()->env()->op_registry.reset2local();
             }
 
             // pop indent
