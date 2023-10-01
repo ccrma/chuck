@@ -274,9 +274,9 @@ function_definition
             { $$ = new_op_overload( $1, $2, $3, $5, $7, $9, TRUE, FALSE, @1.first_line, @1.first_column, @5.first_column ); }
         | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN overloadable_operator code_segment
             { $$ = new_op_overload( $1, $2, $3, $8, $6, $9, TRUE, TRUE, @1.first_line, @1.first_column, @8.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP LT overloadable_operator GT LPAREN arg_list RPAREN code_segment
+        | function_decl static_decl type_decl2 AT_OP LPAREN overloadable_operator RPAREN LPAREN arg_list RPAREN code_segment
             { $$ = new_op_overload( $1, $2, $3, $6, $9, $11, TRUE, FALSE, @1.first_line, @1.first_column, @5.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN LT overloadable_operator GT code_segment
+        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN LPAREN overloadable_operator RPAREN code_segment
             { $$ = new_op_overload( $1, $2, $3, $9, $6, $11, TRUE, TRUE, @1.first_line, @1.first_column, @8.first_column ); }
         ;
 
