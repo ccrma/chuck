@@ -3135,6 +3135,26 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Func_Call_Global
+// desc: imported global function call with return
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Func_Call_Global : public Chuck_Instr_Unary_Op
+{
+public:
+    Chuck_Instr_Func_Call_Global( t_CKUINT ret_size, Chuck_Func * func_ref )
+    { this->set( ret_size ); m_func_ref = func_ref; }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    Chuck_Func * m_func_ref;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Func_Return
 // desc: ...
 //-----------------------------------------------------------------------------

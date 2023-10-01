@@ -61,6 +61,7 @@ static t_CKUINT Object_offset_string = 0;
 t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
+    Chuck_Value * value = NULL;
 
     // log
     EM_log( CK_LOG_SEVERE, "class 'Object'" );
@@ -97,6 +98,13 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
 
     // end the class import
     type_engine_import_class_end( env );
+
+    // find the offset for can_wait
+    value = type_engine_find_value( type, "toString" );
+    assert( value != NULL );
+    assert( value->func_ref != NULL );
+    // remember it
+    Chuck_Event::our_vt_toString = value->func_ref->vt_index;
 
     return TRUE;
 

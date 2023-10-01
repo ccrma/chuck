@@ -1,3 +1,3 @@
-error-return-if-no-else.ck:4:5: error: not all control paths in 'fun float foo(int v)' return a value
+error-return-if-no-else.ck:4:5: error: not all control paths in 'fun float foo( int v )' return a value
 [4] fun float foo( int v )
         ^

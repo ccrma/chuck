@@ -5131,6 +5131,132 @@ error_overflow:
 
 
 //-----------------------------------------------------------------------------
+// name: execute() | 1.5.1.4
+// desc: imported global function call with return
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    Chuck_DL_Return retval;
+
+    // pop code and local depth
+    pop_( reg_sp, 2 );
+    // get the function to be called as code
+    Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
+    // get the function to be called
+    f_gfun f = (f_gfun)func->native_func;
+    // get the local stack depth - caller local variables
+    t_CKUINT local_depth = *(reg_sp+1);
+    // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
+    local_depth = ( local_depth / sz_INT ) + ( local_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    // get the stack depth of the callee function args
+    t_CKUINT stack_depth = ( func->stack_depth / sz_INT ) + ( func->stack_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    // UNUSED: get the previous stack depth - caller function args
+    // UNUSED: t_CKUINT prev_stack = ( *(mem_sp-1) >> 2 ) + ( *(mem_sp-1) & 0x3 ? 1 : 0 );
+    // the amount to push in 4-byte words
+    t_CKUINT push = local_depth;
+    // push the mem stack past the current function variables and arguments
+    mem_sp += push;
+
+    // detect overflow
+    if( overflow_( shred->mem ) ) goto error_overflow;
+
+    // pass args
+    if( stack_depth )
+    {
+        // pop the arguments for pass to callee function
+        reg_sp -= stack_depth;
+
+        // make copies (without modifying actual stack pointers)
+        t_CKUINT * reg_sp2 = reg_sp;
+        t_CKUINT * mem_sp2 = mem_sp;
+
+        // detect would-be overflow | 1.5.1.4 (ge) added
+        if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
+
+        // copy to args
+        for( t_CKUINT i = 0; i < stack_depth; i++ )
+            *mem_sp2++ = *reg_sp2++;
+    }
+
+    // call the function
+    f( mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+
+    // push the return
+    // 1.3.1.0: check type to use kind instead of size
+    if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    {
+        // push the return args
+        push_( reg_sp, retval.v_uint );
+
+        // 1.5.0.0 (ge) | added -- ensure ref count
+        if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
+        {
+            // get return value as object reference
+            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            if( obj )
+            {
+                // always add reference to returned objects (should release outside)
+                obj->add_ref();
+            }
+        }
+    }
+    else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    {
+        // push the return args
+        t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
+        push_( sp_double, retval.v_float );
+    }
+    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    {
+        // push the return args
+        t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
+        // TODO: polar same?
+        push_( sp_complex, retval.v_complex );
+    }
+    else if( m_val == kindof_VEC3 ) // 1.3.5.3
+    {
+        // push the return args
+        t_CKVEC3 *& sp_vec3 = (t_CKVEC3 *&)reg_sp;
+        push_( sp_vec3, retval.v_vec3 );
+    }
+    else if( m_val == kindof_VEC4 ) // 1.3.5.3
+    {
+        // push the return args
+        t_CKVEC4 *& sp_vec4 = (t_CKVEC4 *&)reg_sp;
+        push_( sp_vec4, retval.v_vec4 );
+    }
+    else if( m_val == kindof_VOID ) { }
+    else assert( FALSE );
+
+    // if we have a func def | 1.5.0.0 (ge) added
+    if( m_func_ref != NULL )
+    {
+        // cleanup / release objects on the arg list
+        // context: this should be done here for builtin/import functions
+        //          user-defined functions do their own arg list cleanup
+        // note: this is done after pushing the return value, in case the
+        //       return value is one of these args being released;
+        //          e.g., functions that pass through args;
+        //          e.g., string Sndbuf.read(string)
+        func_release_args( vm, m_func_ref->def()->arg_list, (t_CKBYTE *)(mem_sp) );
+    }
+
+    // pop the stack pointer
+    mem_sp -= push;
+
+    return;
+
+error_overflow:
+
+    ck_handle_overflow( shred, vm, "too many nested/recursive function calls" );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------

@@ -134,6 +134,7 @@ a_Program g_program = NULL;
   UNCHUCK UPCHUCK CLASS INTERFACE EXTENDS IMPLEMENTS
   PUBLIC PROTECTED PRIVATE STATIC ABSTRACT CONST 
   SPORK ARROW_RIGHT ARROW_LEFT L_HACK R_HACK
+  GRUCK_RIGHT GRUCK_LEFT UNGRUCK_RIGHT UNGRUCK_LEFT AT_OP
 
 
 %type <program> program
@@ -175,6 +176,7 @@ a_Program g_program = NULL;
 %type <exp> postfix_expression
 %type <exp> primary_expression
 %type <exp> decl_expression
+%type <ival> overloadable_operator
 %type <ival> unary_operator
 %type <ival> chuck_operator
 %type <ival> arrow_operator
@@ -268,6 +270,10 @@ function_definition
             { $$ = new_func_def( $1, $2, $3, $4, $6, NULL, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN SEMICOLON
             { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, TRUE, @1.first_line, @1.first_column ); }
+        | function_decl static_decl type_decl2 AT_OP overloadable_operator LPAREN arg_list RPAREN code_segment
+            { $$ = new_op_overload( $1, $2, $3, $5, $7, $9, TRUE, FALSE, @1.first_line, @1.first_column, @5.first_column ); }
+        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN overloadable_operator code_segment
+            { $$ = new_op_overload( $1, $2, $3, $8, $6, $9, TRUE, TRUE, @1.first_line, @1.first_column, @8.first_column ); }
         ;
 
 class_decl
@@ -464,6 +470,10 @@ chuck_operator
 arrow_operator
         : ARROW_LEFT                        { $$ = ae_op_arrow_left; }
         | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
+        | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
+        | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
+        | UNGRUCK_LEFT                      { $$ = ae_op_ungruck_left; }
+        | UNGRUCK_RIGHT                     { $$ = ae_op_ungruck_right; }
         ;
 
 conditional_expression
@@ -588,6 +598,56 @@ unary_operator
         | TIMES                             { $$ = ae_op_times; }
         | SPORK TILDA                       { $$ = ae_op_spork; }
         // | S_AND                             { $$ = ae_op_s_and; }
+        ;
+
+// 1.5.1.4
+overloadable_operator
+        : CHUCK                             { $$ = ae_op_chuck; }
+        | PLUS                              { $$ = ae_op_plus; }
+        | MINUS                             { $$ = ae_op_minus; }
+        | TIMES                             { $$ = ae_op_times; }
+        | DIVIDE                            { $$ = ae_op_divide; }
+        | PERCENT                           { $$ = ae_op_percent; }
+        | EQ                                { $$ = ae_op_eq; }
+        | NEQ                               { $$ = ae_op_neq; }
+        | LT                                { $$ = ae_op_lt; }
+        | LE                                { $$ = ae_op_le; }
+        | GT                                { $$ = ae_op_gt; }
+        | GE                                { $$ = ae_op_ge; }
+        | AND                               { $$ = ae_op_and; }
+        | OR                                { $$ = ae_op_or; }
+        | ASSIGN                            { $$ = ae_op_assign; }
+        | EXCLAMATION                       { $$ = ae_op_exclamation; }
+        | S_OR                              { $$ = ae_op_s_or; }
+        | S_AND                             { $$ = ae_op_s_and; }
+        | S_XOR                             { $$ = ae_op_s_xor; }
+        | PLUSPLUS                          { $$ = ae_op_plusplus; }
+        | MINUSMINUS                        { $$ = ae_op_minusminus; }
+        | DOLLAR                            { $$ = ae_op_dollar; }
+        | ATAT_SYM                          { $$ = ae_op_at_at; }
+        | PLUS_CHUCK                        { $$ = ae_op_plus_chuck; }
+        | MINUS_CHUCK                       { $$ = ae_op_minus_chuck; }
+        | TIMES_CHUCK                       { $$ = ae_op_times_chuck; }
+        | DIVIDE_CHUCK                      { $$ = ae_op_divide_chuck; }
+        | S_AND_CHUCK                       { $$ = ae_op_s_and_chuck; }
+        | S_OR_CHUCK                        { $$ = ae_op_s_or_chuck; }
+        | S_XOR_CHUCK                       { $$ = ae_op_s_xor_chuck; }
+        | SHIFT_RIGHT_CHUCK                 { $$ = ae_op_shift_right_chuck; }
+        | SHIFT_LEFT_CHUCK                  { $$ = ae_op_shift_left_chuck; }
+        | PERCENT_CHUCK                     { $$ = ae_op_percent_chuck; }
+        | SHIFT_RIGHT                       { $$ = ae_op_shift_right; }
+        | SHIFT_LEFT                        { $$ = ae_op_shift_left; }
+        | TILDA                             { $$ = ae_op_tilda; }
+        | COLONCOLON                        { $$ = ae_op_coloncolon; }
+        | AT_CHUCK                          { $$ = ae_op_at_chuck; }
+        | UNCHUCK                           { $$ = ae_op_unchuck; }
+        | UPCHUCK                           { $$ = ae_op_upchuck; }
+        | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
+        | ARROW_LEFT                        { $$ = ae_op_arrow_left; }
+        | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }
+        | GRUCK_LEFT                        { $$ = ae_op_gruck_left; }
+        | UNGRUCK_RIGHT                     { $$ = ae_op_ungruck_right; }
+        | UNGRUCK_LEFT                      { $$ = ae_op_ungruck_left; }
         ;
 
 dur_expression

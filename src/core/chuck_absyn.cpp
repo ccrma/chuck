@@ -34,6 +34,7 @@
 #include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string> // 1.5.1.4 for string concat
 
 
 // 1.5.0.5 (ge) option to include in case we need something from flex/bison
@@ -800,6 +801,32 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
     return a;
 }
 
+// @operator overload | 1.5.1.4
+a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
+                            a_Type_Decl type_decl, ae_Operator oper,
+                            a_Arg_List arg_list, a_Stmt code,
+                            uint32_t is_from_ast, uint32_t overload_post,
+                            uint32_t lineNum, uint32_t posNum, uint32_t operPos )
+{
+    a_Func_Def a = (a_Func_Def)checked_malloc(
+        sizeof( struct a_Func_Def_ ) );
+    a->func_decl = func_decl;
+    a->static_decl = static_decl;
+    a->type_decl = type_decl;
+    // construct op overload function name
+    std::string s( "@operator" ); s += op2str(oper);
+    a->name = insert_symbol( s.c_str() );
+    a->op2overload = oper;
+    a->arg_list = arg_list;
+    a->s_type = ae_func_user;
+    a->code = code;
+    a->ast_owned = is_from_ast != 0; // 1.5.0.5 (ge) added
+    a->overload_post = overload_post; // 1.5.1.4 (ge) added
+    a->line = lineNum; a->where = posNum; a->operWhere = operPos;
+
+    return a;
+}
+
 a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List name,
                            a_Class_Ext ext, a_Class_Body body, uint32_t lineNum, uint32_t posNum )
 {
@@ -979,6 +1006,7 @@ a_Vec new_vec( a_Exp e, uint32_t lineNum, uint32_t posNum ) // ge: added 1.3.5.3
 
 
 static const char * op_str[] = {
+  "[no_op]",
   "+",
   "-",
   "*",
@@ -1015,25 +1043,53 @@ static const char * op_str[] = {
   "@=>",
   "=<",
   "^=>",
+  "=",
+  "$",
+  "@@",
+  "::",
   "spork ~",
   "typeof",
   "sizeof",
   "new",
   "<-",
-  "->"
+  "->",
+  "<--",
+  "-->",
+  ">--",
+  "--<"
 };
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: op2str()
-// desc: chuck operator to string
+// desc: operator enumeration to string
 //-----------------------------------------------------------------------------
 const char * op2str( ae_Operator op )
 {
     t_CKINT index = (t_CKINT)op;
-    if( index < 0 || index >= (t_CKINT)(sizeof( op_str )/sizeof( char * )) )
+    if( index < 0 || index >= ae_op_count )
         return "[non-existent operator]";
 
     return op_str[index];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: str2op()
+// desc: string to operator enumeration
+//-----------------------------------------------------------------------------
+ae_Operator str2op( const char * str )
+{
+    std::string s(str);
+
+    for( t_CKUINT i = 1; i < ae_op_count; i++ )
+        if( s == op_str[i] ) return (ae_Operator)i;
+
+    return ae_op_none;
 }
 
 

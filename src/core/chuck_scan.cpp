@@ -1392,11 +1392,6 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
-    // t_CKBOOL has_code = FALSE;
-    // Chuck_Value * v = NULL;
-
-    // if not imported, then check to make sure no reserved word conflict
-    // if( f->s_type != ae_func_builtin )  // TODO: fix this
 
     // check if reserved
     if( type_engine_check_reserved( env, f->name, f->where ) )
@@ -2677,6 +2672,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     t_CKUINT count = 0;
     Chuck_Func * overfunc = NULL;
     // t_CKBOOL has_code = FALSE;  // use this for both user and imported
+    t_CKBOOL op_overload = ( f->op2overload != ae_op_none );
 
     // see if we are already in a function definition
     if( env->func != NULL )
@@ -2968,6 +2964,22 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                 // check
                 if( same_arg_lists(lhs, rhs) )
                 {
+                    ae_Operator op = f->op2overload;
+                    // check if this is an overloading of both post and pre (e.g., -- and ++)
+                    if( op_overload && env->op_registry.unaryPreOverloadable(op) &&
+                                       env->op_registry.unaryPostOverloadable(op) )
+                    {
+                        // check what kind of unary overload
+                        if( (f->overload_post && env->op_registry.lookup_overload(lhs->type,op) == NULL )
+                           || (!f->overload_post && env->op_registry.lookup_overload(op,lhs->type) ) )
+                        {
+                            // next overfunc
+                            overfunc = overfunc->next;
+                            // keep going, this is ok
+                            continue;
+                        }
+                    }
+
                     EM_error2( f->where, "cannot overload functions with identical arguments..." );
                     if( env->class_def )
                     {
@@ -2986,6 +2998,14 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // next overloaded function
             overfunc = overfunc->next;
         }
+    }
+
+    // operator overload | 1.5.1.4 (ge) added
+    if( op_overload )
+    {
+        // scan operator overload
+        if( !type_engine_scan_func_op_overload( env, f ) )
+            return FALSE;
     }
 
     // add as value

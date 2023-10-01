@@ -61,12 +61,18 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 
 
 //-----------------------------------------------------------------------------
+// function prototypes
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
+
+
+
+
+//-----------------------------------------------------------------------------
 // internal implementation of query functions
 //-----------------------------------------------------------------------------
-
-
-
 t_CKUINT ck_builtin_declversion() { return CK_DLL_VERSION; }
+
 
 
 
@@ -273,6 +279,126 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
     // add
     query->curr_class->sfuns.push_back( f );
     query->curr_func = f;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_add_op_overload_binary()
+// desc: add binary operator overload; args included
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_op_overload_binary( Chuck_DL_Query * query, f_gfun addr,
+                                            const char * type, const char * opName,
+                                            const char * lhsType, const char * lhsName,
+                                            const char * rhsType, const char * rhsName )
+{
+    // look up operator
+    ae_Operator op = str2op(opName);
+    if( op == ae_op_none )
+    {
+        // error
+        EM_error2( 0, "class import: add_op_overload_binary invoked with unsupported operator '%s'...", opName );
+        return;
+    }
+
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func;
+    f->name = string("@operator") + opName;
+    f->type = type;
+    f->gfun = addr;
+    f->opOverloadKind = te_op_overload_binary;
+    f->op2overload = op;
+
+    // add
+    query->op_overloads.push_back( f );
+    query->curr_func = NULL;
+
+    // add arg LHS
+    Chuck_DL_Value * v = new Chuck_DL_Value;
+    v->type = lhsType; v->name = lhsName;
+    f->args.push_back( v );
+
+    // add arg RHS
+    v = new Chuck_DL_Value;
+    v->type = rhsType; v->name = rhsName;
+    f->args.push_back( v );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_add_op_overload_prefix()
+// desc: add unary (prefix) operator overload; args included
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_op_overload_prefix( Chuck_DL_Query * query, f_gfun addr,
+                                            const char * type, const char * opName,
+                                            const char * argType, const char * argName )
+{
+    // look up operator
+    ae_Operator op = str2op(opName);
+    if( op == ae_op_none )
+    {
+        // error
+        EM_error2( 0, "class import: add_op_overload_prefix invoked with unsupported operator '%s'...", opName );
+        return;
+    }
+
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func;
+    f->name = string("@operator") + opName;
+    f->type = type;
+    f->gfun = addr;
+    f->opOverloadKind = te_op_overload_unary_pre;
+    f->op2overload = op;
+
+    // add
+    query->op_overloads.push_back( f );
+    query->curr_func = NULL;
+
+    // add arg
+    Chuck_DL_Value * v = new Chuck_DL_Value;
+    v->type = argType; v->name = argName;
+    f->args.push_back( v );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_add_op_overload_postfix()
+// desc: add unary (postfix) operator overload; args included
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_add_op_overload_postfix( Chuck_DL_Query * query, f_gfun addr,
+                                             const char * type, const char * opName,
+                                             const char * argType, const char * argName )
+{
+    // look up operator
+    ae_Operator op = str2op(opName);
+    if( op == ae_op_none )
+    {
+        // error
+        EM_error2( 0, "class import: add_op_overload_postfix invoked with unsupported operator '%s'...", opName );
+        return;
+    }
+
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func;
+    f->name = string("@operator") + opName;
+    f->type = type;
+    f->gfun = addr;
+    f->opOverloadKind = te_op_overload_unary_post;
+    f->op2overload = op;
+
+    // add
+    query->op_overloads.push_back( f );
+    query->curr_func = NULL;
+
+    // add arg
+    Chuck_DL_Value * v = new Chuck_DL_Value;
+    v->type = argType; v->name = argName;
+    f->args.push_back( v );
 }
 
 
@@ -859,7 +985,38 @@ const Chuck_DL_Query * Chuck_DLL::query()
         m_name2ugen[info->name] = info;
     }*/
 
+    // set flag
     m_done_query = TRUE;
+
+    // process any operator overloads | 1.5.1.4 (ge & andrew) chaos^2
+    if( m_query.op_overloads.size() )
+    {
+        // log
+        EM_log( CK_LOG_INFO, "processing operator overload in chugin '%s'", m_filename.c_str() );
+        // push log
+        EM_pushlog();
+        // iterate over overloads
+        for( t_CKUINT i = 0; i < m_query.op_overloads.size(); i++ )
+        {
+            // get the dl func def
+            Chuck_DL_Func * f = m_query.op_overloads[i];
+            // log
+            EM_log( CK_LOG_INFO, "processing '%s'", f->name.c_str() );
+            // try to import
+            if( !type_engine_import_op_overload( m_query.env(), f ) )
+            {
+                m_last_error = string("unsuccessful operator overload '") + f->name +
+                               string("' in dll '") + m_filename + string("'");
+                return NULL;
+            }
+            // delete entry
+            CK_SAFE_DELETE( f );
+        }
+        // clear
+        m_query.op_overloads.clear();
+        // pop log
+        EM_poplog();
+    }
 
     // call attach
     // if( m_attach_func ) m_attach_func( 0, NULL );
@@ -1055,6 +1212,9 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     add_mvar = ck_add_mvar;
     add_svar = ck_add_svar;
     add_arg = ck_add_arg;
+    add_op_overload_binary = ck_add_op_overload_binary;
+    add_op_overload_prefix = ck_add_op_overload_prefix;
+    add_op_overload_postfix = ck_add_op_overload_postfix;
     add_ugen_func = ck_add_ugen_func;
     add_ugen_funcf = ck_add_ugen_funcf;
     add_ugen_funcf_auto_num_channels = ck_add_ugen_funcf_auto_num_channels;
@@ -1145,8 +1305,14 @@ Chuck_DL_Class::~Chuck_DL_Class()
 //-----------------------------------------------------------------------------
 Chuck_DL_Func::~Chuck_DL_Func()
 {
+    // clean up
     for( t_CKUINT i = 0; i < args.size(); i++ )
-        delete args[i];
+        CK_SAFE_DELETE( args[i] );
+    // clear
+    args.clear();
+    // zero
+    opOverloadKind = te_op_overload_none;
+    op2overload = ae_op_none;
 }
 
 
@@ -1640,11 +1806,49 @@ array4_get_key(ck_array4_get_key)
 
 
 
-// windows
+//-----------------------------------------------------------------------------
+// name: ck_invoke_mfun_native()
+// desc: directly call a chuck member function's native implementation
+//-----------------------------------------------------------------------------
+Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, void * ARGS )
+{
+    Chuck_DL_Return RETURN;
+    // check objt
+    if( !obj ) return RETURN;
+    // verify bounds
+    if( func_vt_offset >= obj->vtable->funcs.size() )
+    {
+        EM_error3( "(internal error) ck_invoke_mfun() encountered invalid virtual function index: %lu", func_vt_offset );
+        return RETURN;
+    }
+
+    // get the member function
+    f_mfun f = (f_mfun)obj->vtable->funcs[func_vt_offset]->code->native_func;
+    // verify bounds
+    if( !f )
+    {
+        EM_error3( "(internal error) ck_invoke_mfun() cannot find native func to call..." );
+        return RETURN;
+    }
+
+    // call the function | added 1.3.0.0: the DL API instance
+    f( obj, ARGS, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
+
+    // return it
+    return RETURN;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// windows translation
+//-----------------------------------------------------------------------------
 #if defined(__PLATFORM_WINDOWS__)
 #include <system_error> // std::system_category() | 1.5.1.4
 extern "C"
 {
+
 #ifndef __CHUNREAL_ENGINE__
   #include <windows.h>
 #else
@@ -1688,5 +1892,6 @@ const char * dlerror( void )
     // return error buffer
     return dlerror_buffer;
 }
-}
+
+} // extern "C"
 #endif

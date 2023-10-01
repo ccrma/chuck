@@ -147,7 +147,12 @@
      ARROW_RIGHT = 363,
      ARROW_LEFT = 364,
      L_HACK = 365,
-     R_HACK = 366
+     R_HACK = 366,
+     GRUCK_RIGHT = 367,
+     GRUCK_LEFT = 368,
+     UNGRUCK_RIGHT = 369,
+     UNGRUCK_LEFT = 370,
+     AT_OP = 371
    };
 #endif
 /* Tokens.  */
@@ -260,6 +265,11 @@
 #define ARROW_LEFT 364
 #define L_HACK 365
 #define R_HACK 366
+#define GRUCK_RIGHT 367
+#define GRUCK_LEFT 368
+#define UNGRUCK_RIGHT 369
+#define UNGRUCK_LEFT 370
+#define AT_OP 371
 
 
 
@@ -293,7 +303,7 @@ typedef union YYSTYPE
     a_Vec vec_exp; // ge: added 1.3.5.3
 }
 /* Line 1529 of yacc.c.  */
-#line 297 "chuck.tab.h"
+#line 307 "chuck.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

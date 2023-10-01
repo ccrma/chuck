@@ -51,7 +51,8 @@ typedef int a_Pos;
 
 // enum oper
 typedef enum {
-    ae_op_plus = 0, ae_op_minus, ae_op_times, ae_op_divide,
+    ae_op_none = 0,
+    ae_op_plus, ae_op_minus, ae_op_times, ae_op_divide,
     ae_op_eq, ae_op_neq, ae_op_lt, ae_op_le, ae_op_gt,
     ae_op_ge, ae_op_and, ae_op_or, ae_op_s_or, ae_op_s_and,
     ae_op_shift_left, ae_op_shift_right, ae_op_percent,
@@ -60,11 +61,19 @@ typedef enum {
     ae_op_s_or_chuck, ae_op_s_xor_chuck, ae_op_shift_right_chuck,
     ae_op_shift_left_chuck, ae_op_percent_chuck,
     ae_op_plusplus, ae_op_minusminus, ae_op_tilda, ae_op_exclamation,
-    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck, ae_op_spork,
-    ae_op_typeof, ae_op_sizeof, ae_op_new, ae_op_arrow_left, ae_op_arrow_right
+    ae_op_at_chuck, ae_op_unchuck, ae_op_upchuck,
+    ae_op_assign, ae_op_dollar, ae_op_at_at, ae_op_coloncolon,
+    ae_op_spork, ae_op_typeof, ae_op_sizeof, ae_op_new,
+    ae_op_arrow_left, ae_op_arrow_right, ae_op_gruck_left, ae_op_gruck_right,
+    ae_op_ungruck_left, ae_op_ungruck_right,
+    // keep this last
+    ae_op_count
 } ae_Operator;
 
+// convert op by enum to str
 const char * op2str( ae_Operator op );
+// convert op by str to enum
+ae_Operator str2op( const char * str );
 
 // enum key words
 typedef enum {
@@ -211,6 +220,11 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
                          a_Type_Decl type_decl, c_str name,
                          a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
                          uint32_t line, uint32_t where );
+a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
+                            a_Type_Decl type_decl, ae_Operator oper,
+                            a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
+                            uint32_t overload_post, uint32_t line, uint32_t where,
+                            uint32_t operPos );
 
 
 //------------------------------------------------------------------------------
@@ -283,11 +297,11 @@ void delete_vec( a_Vec v );
 //------------------------------------------------------------------------------
 // abstract syntax tree | structs
 //------------------------------------------------------------------------------
-struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; a_Array_Sub array;
-                      a_Stmt code; uint32_t line; uint32_t where; a_Exp self; };
-struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; uint32_t line; uint32_t where; a_Exp self; };
+                      a_Stmt code; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
+struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Dur_ { a_Exp base; a_Exp unit; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Array_ { a_Exp base; a_Array_Sub indices; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Func_Call_ { a_Exp func; a_Exp args; t_CKTYPE ret_type;
@@ -467,6 +481,7 @@ struct a_Func_Def_ {
     a_Type_Decl type_decl;
     t_CKTYPE ret_type;
     S_Symbol name;
+    ae_Operator op2overload; // 1.5.1.4 (ge) added
     a_Arg_List arg_list;
     a_Stmt code;
     t_CKFUNC ck_func;
@@ -475,8 +490,9 @@ struct a_Func_Def_ {
     unsigned int stack_depth;
     void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
+    uint32_t overload_post; // 1.5.1.4 (ge) overload as post? e.g., @operator(args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references
-    uint32_t line; uint32_t where;
+    uint32_t line; uint32_t where; uint32_t operWhere;
 };
 
 // enum values for section types

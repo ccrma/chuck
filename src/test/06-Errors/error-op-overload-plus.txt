@@ -1,0 +1,3 @@
+error-op-overload-plus.ck:5:19: error: binary operator '+' already overloaded on types 'int' and 'int' (or their parents)...
+[5] fun int @operator +( int lhs, int rhs )
+                      ^
