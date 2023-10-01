@@ -706,7 +706,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
 
 //-----------------------------------------------------------------------------
 // name: ck_create_main_thread_hook()
-// desc: ...
+// desc: create a main thread hook data structure
 //-----------------------------------------------------------------------------
 Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query * query,
                                                                   f_mainthreadhook hook,
@@ -714,6 +714,27 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
                                                                   void * bindle )
 {
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_register_shreds_watcher()
+// desc: register a callback function to receive notifications
+//       from the VM about shreds (add, remove, etc.)
+//       `options` is a bit-wised OR of ckvmShredsWatcherFlag
+//-----------------------------------------------------------------------------
+void ck_register_shreds_watcher( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle )
+{
+    // subscribe
+    query->vm()->subscribe_watcher( cb, options, bindle );
+}
+
+//-----------------------------------------------------------------------------
+// unregister a shreds notification callback
+//-----------------------------------------------------------------------------
+void ck_unregister_shreds_watcher( Chuck_DL_Query * query, f_shreds_watcher cb )
+{
+    query->vm()->remove_watcher( cb );
 }
 
 
@@ -733,6 +754,7 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
     return TRUE;
 }
 
+
 //-----------------------------------------------------------------------------
 // name: ck_add_example()
 // desc: set current class documentation
@@ -749,6 +771,7 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
     return TRUE;
 }
 
+
 // set current function documentation
 t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 {
@@ -761,6 +784,7 @@ t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 
     return TRUE;
 }
+
 
 // set last mvar documentation
 t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
@@ -1225,6 +1249,8 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     doc_var = ck_doc_var;
     add_ex = ck_add_example; // 1.5.0.0 (ge) added
     create_main_thread_hook = ck_create_main_thread_hook;
+    register_shreds_watcher = ck_register_shreds_watcher;
+    unregister_shreds_watcher = ck_unregister_shreds_watcher;
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 

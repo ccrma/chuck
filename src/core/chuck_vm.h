@@ -294,6 +294,30 @@ private:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Shreds_Watcher
+// desc: ChucK virtual machine
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Shreds_Watcher
+{
+    // function pointer to call
+    f_shreds_watcher cb;
+    // user data
+    void * userdata;
+
+    // constructor
+    Chuck_VM_Shreds_Watcher( f_shreds_watcher f = NULL, void * data = NULL ) : cb(f), userdata(data) { }
+    // copy constructor
+    Chuck_VM_Shreds_Watcher( const Chuck_VM_Shreds_Watcher & other )
+    : cb(other.cb), userdata(other.userdata) { }
+    // ==
+    bool operator ==( const Chuck_VM_Shreds_Watcher & other )
+    { return this->cb == other.cb; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Shred_Status
 // desc: status pertaining to a single shred
 //-----------------------------------------------------------------------------
@@ -582,6 +606,15 @@ public:
     // 1.4.1.0 (jack): get associated globals manager
     Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
+public:
+    // subscribe shreds watcher callback | 1.5.1.4
+    void subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data = NULL );
+    // notify watchers | 1.5.1.4
+    void notify_watchers( ckvmShredsWatcherFlag which, Chuck_VM_Shred * shred,
+                          std::list<Chuck_VM_Shreds_Watcher> & v );
+    // remove shreds watcher callback | 1.5.1.4
+    void remove_watcher( f_shreds_watcher cb );
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -651,6 +684,13 @@ protected:
 protected:
     // 1.4.1.0 (jack): manager for global variables
     Chuck_Globals_Manager * m_globals_manager;
+
+protected:
+    // 1.5.1.4 (ge & andrew) shreds watchers
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_spork;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_remove;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_suspend;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_activate;
 };
 
 

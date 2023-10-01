@@ -224,7 +224,9 @@ typedef const Chuck_DL_Api::Api *CK_DL_API;
 // macro for defining ChucK DLL export uana tock functions
 // example: CK_DLL_TOCK(foo)
 #define CK_DLL_TOCK(name) CK_DLL_EXPORT(t_CKBOOL) name( Chuck_Object * SELF, Chuck_UAna * UANA, Chuck_UAnaBlobProxy * BLOB, CK_DL_API API )
-
+// macro for defining Chuck DLL export shreds watcher functions
+// example: CK_DLL_SHREDS_WATCHER(foo)
+#define CK_DLL_SHREDS_WATCHER(name) CK_DLL_EXPORT(void) name( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE )
 
 // macros for DLL exports
 // example: DLL_QUERY  query( Chuck_DL_Query * QUERY )
@@ -269,6 +271,8 @@ typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA,
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadhook)( void * bindle );
 // "main thread" quit (stop running hook)
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
+// shreds watcher callback
+typedef t_CKBOOL (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 }
 
 
@@ -326,6 +330,10 @@ typedef void (CK_DLL_CALL * f_add_ugen_funcf_auto_num_channels)( Chuck_DL_Query 
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+// register a callback function to receive notification from the VM about shreds (add, remove, etc.)
+typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
+// unegister a shreds notification callback
+typedef void (CK_DLL_CALL * f_unregister_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb );
 
 // documentation
 // set current class documentation
@@ -336,8 +344,19 @@ typedef t_CKBOOL (CK_DLL_CALL * f_add_example)( Chuck_DL_Query * query, const ch
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_func)( Chuck_DL_Query * query, const char * doc );
 // set last mvar documentation
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char * doc );
-}
 
+// shreds watcher flags; meant to bitwise-OR together in options
+// these will also be passed back to the callback...
+typedef enum {
+    CKVM_SHREDS_WATCH_NONE = 0,
+    CKVM_SHREDS_WATCH_SPORK = 1,
+    CKVM_SHREDS_WATCH_REMOVE = 2,
+    CKVM_SHREDS_WATCH_SUSPEND = 4,
+    CKVM_SHREDS_WATCH_ACTIVATE = 8,
+    CKVM_SHREDS_WATCH_ALL = 0x7fffffff
+} ckvmShredsWatcherFlag;
+
+} // end extern "C"
 
 
 
@@ -413,15 +432,26 @@ public:
     // re-added 1.4.0.1
     f_create_main_thread_hook create_main_thread_hook;
 
-    // DL API reference | 1.5.1.4
-    CK_DL_API m_api;
+    // add binary operator overload; args included | 1.5.1.4 (ge & andrew)
+    f_add_op_overload_binary add_op_overload_binary;
+    // add unary (prefix) operator overload; arg included
+    f_add_op_overload_prefix add_op_overload_prefix;
+    // add unary (postfix) operator overload; arg included
+    f_add_op_overload_postfix add_op_overload_postfix;
 
+    // register shred notifcations | 1.5.1.4 (ge & andrew)
+    f_register_shreds_watcher register_shreds_watcher;
+    // un-register shred notifcations | 1.5.1.4 (ge & andrew)
+    f_unregister_shreds_watcher unregister_shreds_watcher;
+
+public:
+    //-------------------------------------------------------------------------
     // NOTE: everything below std::anything cannot be reliably accessed
     // by offset between dynamic modules, since std::anything could be variable
     // size -- put everything need to be accessed across modules above here!
     // discovered by the vigilant and forever traumatized Jack Atherton,
     // fixed during REFACTOR-2017; warning by the guilt-ridden Ge Wang
-
+    //-------------------------------------------------------------------------
     // dll
     Chuck_DLL * dll_ref;
     // reserved
@@ -447,12 +477,8 @@ public:
     // flag any error encountered during the query | 1.5.0.5 (ge) added
     t_CKBOOL errorEncountered;
 
-    // add binary operator overload; args included | 1.5.1.4 (ge)
-    f_add_op_overload_binary add_op_overload_binary;
-    // add unary (prefix) operator overload; arg included
-    f_add_op_overload_prefix add_op_overload_prefix;
-    // add unary (postfix) operator overload; arg included
-    f_add_op_overload_postfix add_op_overload_postfix;
+    // DL API reference | 1.5.1.4
+    CK_DL_API m_api;
 
     // collection of operator overloads
     std::vector<Chuck_DL_Func *> op_overloads;

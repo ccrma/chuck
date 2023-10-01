@@ -1225,6 +1225,9 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     // count
     m_num_shreds++;
 
+    // notify watcher | 1.5.1.4
+    notify_watchers( CKVM_SHREDS_WATCH_SPORK, shred, m_shreds_watchers_spork );
+
     return shred;
 }
 
@@ -1373,6 +1376,31 @@ t_CKBOOL Chuck_VM::abort_current_shred()
 
 
 //-----------------------------------------------------------------------------
+// name: notify_watchers()
+// desc: notify watchers for a particular subscription | 1.5.1.4
+//-----------------------------------------------------------------------------
+void Chuck_VM::notify_watchers( ckvmShredsWatcherFlag which,
+                                Chuck_VM_Shred * shred,
+                                list<Chuck_VM_Shreds_Watcher> & v )
+{
+    // the function to call eventually
+    f_shreds_watcher f = NULL;
+    // iterator
+    list<Chuck_VM_Shreds_Watcher>::iterator it;
+    // iterate
+    for( it = v.begin(); it != v.end(); it++ )
+    {
+        // the function
+        f = (*it).cb;
+        // call it with user data
+        f( shred, which, 0, this, (*it).userdata );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: dump_shred()
 // desc: place a shred into the "dump" to be later released
 //-----------------------------------------------------------------------------
@@ -1387,6 +1415,10 @@ void Chuck_VM::dump_shred( Chuck_VM_Shred * shred )
     shred->is_running = FALSE;
     shred->is_done = TRUE;
     shred->is_dumped = TRUE;
+
+    // before we reset the shred ID, notify watchers
+    notify_watchers( CKVM_SHREDS_WATCH_REMOVE, shred, m_shreds_watchers_remove );
+
     // TODO: cool?
     shred->xid = 0;
     // inc
@@ -1413,6 +1445,63 @@ void Chuck_VM::release_dump( )
     m_shred_dump.clear();
     // reset
     m_num_dumped_shreds = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// helper function
+//-----------------------------------------------------------------------------
+static void ckvm_process_watcher( t_CKBOOL add, list<Chuck_VM_Shreds_Watcher> & v,
+                                  Chuck_VM_Shreds_Watcher & watcher )
+{
+    // ensure no duplicates
+    list<Chuck_VM_Shreds_Watcher>::iterator it = std::find( v.begin(), v.end(), watcher );
+
+    // add or remove
+    if( add )
+    {
+        // if not found, add
+        if( it == v.end() ) v.push_back( watcher );
+    }
+    else if( it != v.end() )
+    {
+        // erase it
+        v.erase( it );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: subscribe_watcher() | 1.5.1.4
+// desc: subscribe shreds watcher callback
+//-----------------------------------------------------------------------------
+void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data )
+{
+    // check
+    if( !cb ) return;
+    // watcher bundle
+    Chuck_VM_Shreds_Watcher w( cb, data );
+    // check options and subscribe the watcher
+    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_SPORK, m_shreds_watchers_spork, w );
+    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_REMOVE, m_shreds_watchers_remove, w );
+    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_SUSPEND, m_shreds_watchers_suspend, w );
+    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_ACTIVATE, m_shreds_watchers_activate, w );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: remove_watcher() | 1.5.1.4
+// desc: remove shreds watcher callback
+//-----------------------------------------------------------------------------
+void Chuck_VM::remove_watcher( f_shreds_watcher cb )
+{
+    subscribe_watcher( cb, CKVM_SHREDS_WATCH_NONE );
 }
 
 
