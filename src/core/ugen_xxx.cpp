@@ -1583,8 +1583,8 @@ CK_DLL_CTOR( foogen_ctor )
         instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index) );
         // func to code
         instrs.push_back(new Chuck_Instr_Func_To_Code);
-        // push stack depth
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(12));
+        // push stack depth for args (this, float input)
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(sz_VOIDPTR+sz_FLOAT)); // 1.5.1.4: changed to sz_+sz_; was: 12
         // func call
         instrs.push_back(new Chuck_Instr_Func_Call());
         // push immediate
@@ -1592,7 +1592,7 @@ CK_DLL_CTOR( foogen_ctor )
         // assign primitive
         instrs.push_back(new Chuck_Instr_Assign_Primitive2);
         // pop
-        instrs.push_back(new Chuck_Instr_Reg_Pop_Word2);
+        instrs.push_back(new Chuck_Instr_Reg_Pop_Float);
         // EOC
         instrs.push_back(new Chuck_Instr_EOC);
 

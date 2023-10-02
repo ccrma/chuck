@@ -1686,6 +1686,10 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     childSetMemSize( 0 );
     childSetRegSize( 0 );
 
+    // immediate mode | 1.5.1.4
+    is_immediate_mode = FALSE;
+    is_immediate_mode_violation = FALSE;
+
 #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
 #endif
@@ -2099,10 +2103,14 @@ t_CKBOOL Chuck_VM_Shred::yield()
     // need a VM to yield on
     if( !this->vm_ref ) return FALSE;
 
+    // check for immediate mode exception | 1.5.1.4 (ge)
+    if( this->checkImmediatModeException() ) return FALSE;
+
     // suspend this shred
     this->is_running = FALSE;
     // reshredule this at the current time
     vm_ref->shreduler()->shredule( this, this->now );
+
     // done
     return TRUE;
 }
@@ -2195,6 +2203,52 @@ bool Chuck_VM_Shred::popLoopCounter()
     return true;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: checkImmediatModeException() | 1.5.1.4 (ge) added
+// desc: check for immediate mode exception, if detected print and set state
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::checkImmediatModeException( t_CKUINT linepos )
+{
+    // check for immediate mode
+    if( this->immediateMode() )
+    {
+        // we have a problem
+        EM_exception( "ImmediateModeTemporalViolation:" );
+        // check linepos
+        if( linepos ) EM_exception( " |- on line %lu within %s", linepos, this->name.c_str() );
+        else          EM_exception( " |- within %s", this->name.c_str() );
+        // more info
+        EM_error3(
+                  "\nThis exception is thrown if shred has been placed in IMMEDIATE MODE\n"
+                  "and performs any time/event-related, context-switching operations, including:\n"
+                  "    1) advancing time (including by 0 duration),\n"
+                  "    2) or waiting on an Event,\n"
+                  "    3) or callling `me.yield()` or `Machine.eval()`;\n"
+                  "       (the latter implicits yields to runs code on a new shred)." );
+        // more info
+        EM_error3(
+                  "\nIMMEDIATE MODE is set by the ChucK virtual machine in specific cases\n"
+                  "where the programmer is to provide a time-critical callback function\n"
+                  "that is expected to return \"immediately\", i.e., without any shreduling.\n"
+                  "Examples include `tick()` in Chugens and `update()` in GGens." );
+        // potential fix
+        EM_error3(
+                  "\nPotential fix: ensure the function in question has no time/event operations as\n"
+                  "described above, either directly in the function or its function calls.\n"
+                  "(NB `spork ~` and `Machine.add()` can be used in this mode, as these are\n"
+                  "non-context-switching.)");
+        // set violation
+        is_immediate_mode_violation = TRUE;
+        // report back
+        return TRUE;
+    }
+
+    // situation normal
+    return FALSE;
+}
 
 
 
@@ -2353,6 +2407,14 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
         return FALSE;
     }
 
+    // check for immediate mode and report exception | 1.5.1.4 (ge)
+    if( shred->checkImmediatModeException() )
+    {
+        // let's not shredule!
+        return FALSE;
+    }
+
+    // set wake time
     shred->wake_time = wake_time;
 
     // list empty
@@ -3074,6 +3136,396 @@ void Chuck_VM_Status::clear()
     }
 
     list.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_VM_MFunInvoker()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_VM_MFunInvoker::Chuck_VM_MFunInvoker()
+{
+    // zero
+    shred = NULL;
+    instr_pushThis = NULL;
+    instr_pushReturnVar = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_VM_MFunInvoker()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_VM_MFunInvoker::~Chuck_VM_MFunInvoker()
+{
+    cleanup();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setup()
+// desc: setup the invoker for use
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * caller )
+{
+    // clean up first
+    if( shred ) cleanup();
+
+    // a vector of VM instructions
+    vector<Chuck_Instr *> instructions;
+
+    // get argument list
+    a_Arg_List args = func->def()->arg_list;
+    // argument size in bytes
+    t_CKUINT args_size_bytes = 0;
+    // type kind
+    te_KindOf kind = kindof_VOID;
+    // iterate over arguments
+    while( args )
+    {
+        // get size
+        args_size_bytes += args->type->size;
+        // get kind
+        kind = getkindof( vm->env(), args->type );
+
+        // check kind; allocate instruction (with placeholder values; to be filled when invoked)
+        switch( kind )
+        {
+            case kindof_INT:
+                // push value INT
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm(0) );
+                break;
+
+            case kindof_FLOAT:
+                // push value FLOAT
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                break;
+
+            case kindof_COMPLEX:
+                // push value FLOAT FLOAT
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                break;
+
+            case kindof_VEC3:
+                // push value FLOA FLOAT FLOAT
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                break;
+
+            case kindof_VEC4:
+                // push value FLOA FLOAT FLOAT FLOAT
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
+                break;
+
+            // shouldn't get here
+            case kindof_VOID:
+            default:
+                // error
+                EM_error3( "(internal error) unhandled argument kind in MFunInvoker.init()" );
+                // clean up
+                for( t_CKUINT i = 0; i < instr_args.size(); i++ ) CK_SAFE_DELETE( instr_args[i] );
+                // clear the array
+                instr_args.clear();
+                // error out
+                return FALSE;
+        }
+
+        // next arg
+        args = args->next;
+    }
+    // account for 'this', since this is a member function
+    args_size_bytes += sz_VOIDPTR;
+
+    // push arguments
+    for( t_CKUINT i = 0; i < instr_args.size(); i++ )
+    {
+        // copy references over
+        instructions.push_back( instr_args[i] );
+    }
+    // push this (as func arg) -- will set later
+    instr_pushThis = new Chuck_Instr_Reg_Push_Imm( 0 );
+    instructions.push_back( instr_pushThis );
+    // reg dup last (push this again) (for member func resolution)
+    instructions.push_back( new Chuck_Instr_Reg_Dup_Last);
+    // dot member func
+    instructions.push_back( new Chuck_Instr_Dot_Member_Func(func_vt_offset) );
+    // func to code
+    instructions.push_back( new Chuck_Instr_Func_To_Code );
+    // push stack depth (in bytes)
+    instructions.push_back( new Chuck_Instr_Reg_Push_Imm(args_size_bytes) );
+    // func call
+    instructions.push_back( new Chuck_Instr_Func_Call());
+
+    // figure out what to assign based on return type kind
+    kind = getkindof( vm->env(), func->type() );
+
+    // if not void
+    if( kind != kindof_VOID )
+    {
+        // push immediate to copy RETURN
+        instr_pushReturnVar = new Chuck_Instr_Reg_Push_Imm(0);
+        instructions.push_back( instr_pushReturnVar ); // 1.3.1.0: changed to t_CKUINT
+    }
+
+    // check kind; allocate instruction (with placeholder values; to be filled when invoked)
+    switch( kind )
+    {
+        case kindof_INT: // assign int or object ref
+            if( isobj(vm->env(), func->type()) ) {
+                // return type is an Object reference
+                instructions.push_back( new Chuck_Instr_Assign_Object );
+                instructions.push_back( new Chuck_Instr_Release_Object3_Pop_Int );
+            } else {
+                // return type is a primitive int
+                instructions.push_back( new Chuck_Instr_Assign_Primitive );
+                instructions.push_back( new Chuck_Instr_Reg_Pop_Int );
+            }
+            break;
+        case kindof_FLOAT: // assign float
+            instructions.push_back( new Chuck_Instr_Assign_Primitive2 );
+            instructions.push_back( new Chuck_Instr_Reg_Pop_Float );
+           break;
+        case kindof_COMPLEX: // assign complex / polar
+            instructions.push_back( new Chuck_Instr_Assign_Primitive4 );
+            instructions.push_back( new Chuck_Instr_Reg_Pop_Complex );
+            break;
+        case kindof_VEC3: // assign vec3
+            instructions.push_back( new Chuck_Instr_Assign_PrimitiveVec3 );
+            instructions.push_back( new Chuck_Instr_Reg_Pop_Vec3 );
+            break;
+        case kindof_VEC4: // assign vec4
+            instructions.push_back( new Chuck_Instr_Assign_PrimitiveVec4 );
+            instructions.push_back( new Chuck_Instr_Reg_Pop_Vec4 );
+            break;
+
+        // shouldn't get here
+        case kindof_VOID:
+            // do nothing for void return type
+            break;
+
+        default:
+            // error
+            EM_error3( "(internal error) unhandled argument kind in MFunInvoker.init()" );
+            // clean up instructions
+            for( t_CKUINT i = 0; i < instructions.size(); i++ ) CK_SAFE_DELETE( instructions[i] );
+            // clear instructions
+            instructions.clear();
+            // error out
+            return FALSE;
+    }
+
+    // end of code
+    instructions.push_back( new Chuck_Instr_EOC);
+
+    // create VM code
+    Chuck_VM_Code * code = new Chuck_VM_Code;
+    // allocate instruction array
+    code->instr = new Chuck_Instr*[instructions.size()];
+    // number of instructions
+    code->num_instr = instructions.size();
+    // copy instructions
+    for( t_CKUINT i = 0; i < instructions.size(); i++ ) code->instr[i] = instructions[i];
+    // TODO: should this be > 0
+    code->stack_depth = 0;
+    // TODO: should this be this true?
+    code->need_this = FALSE;
+
+    // create dedicated shred
+    shred = new Chuck_VM_Shred;
+    // set the VM ref (needed by initialize)
+    shred->vm_ref = vm;
+    // initialize with code + allocate stacks
+    shred->initialize( code );
+    // set name
+    shred->name = func->signature(FALSE,TRUE);
+    // enter immediate mode (will throw runtime exception on any time/event ops)
+    shred->setImmediateMode( TRUE );
+
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// helper function
+//-----------------------------------------------------------------------------
+static Chuck_Instr_Reg_Push_Imm * ckvm_next_instr_as_int( vector<Chuck_Instr *> & v, t_CKUINT & index )
+{
+    // check bounds
+    if( index >= v.size() )
+    {
+        // error
+        EM_error3( "(internal error) misaligned arguments (get int) in MFunInvoker.invoke()" );
+        return NULL;
+    }
+
+    return (Chuck_Instr_Reg_Push_Imm *)v[index++];
+}
+//-----------------------------------------------------------------------------
+// helper function
+//-----------------------------------------------------------------------------
+static Chuck_Instr_Reg_Push_Imm2 * ckvm_next_instr_as_float( vector<Chuck_Instr *> & v, t_CKUINT & index )
+{
+    // check bounds
+    if( index >= v.size() )
+    {
+        // error
+        EM_error3( "(internal error) misaligned arguments (get float) in MFunInvoker.invoke()" );
+        return NULL;
+    }
+
+    return (Chuck_Instr_Reg_Push_Imm2 *)v[index++];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: invoke()
+// desc: invoke the mfun
+//-----------------------------------------------------------------------------
+Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<Chuck_DL_Arg> & args )
+{
+    // the return value
+    Chuck_DL_Return RETURN;
+    // instruction pointers
+    Chuck_Instr_Reg_Push_Imm * instr_pushInt = NULL;
+    Chuck_Instr_Reg_Push_Imm2 * instr_pushFloat = NULL;
+    // index
+    t_CKUINT index = 0;
+    // no shred?
+    if( !shred ) return RETURN;
+    // verify
+    assert( instr_pushThis != NULL );
+
+    // set the actual argument values into the instructions
+    for( t_CKUINT i = 0; i < args.size(); i++ )
+    {
+        // the current arg
+        Chuck_DL_Arg arg = args[i];
+        // check the argument kind
+        switch( arg.kind )
+        {
+            case kindof_INT:
+                instr_pushInt = ckvm_next_instr_as_int(instr_args, index); if( !instr_pushInt ) goto error;
+                instr_pushInt->set( arg.value.v_int );
+                break;
+            case kindof_FLOAT:
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_float );
+                break;
+            case kindof_COMPLEX:
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_complex.re );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_complex.im );
+                break;
+            case kindof_VEC3:
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec3.x );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec3.y );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec3.z );
+                break;
+            case kindof_VEC4:
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec4.x );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec4.y );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec4.z );
+                instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
+                instr_pushFloat->set( arg.value.v_vec4.w );
+                break;
+            case kindof_VOID:
+            default:
+                // error
+                EM_error3( "(internal error) unhandle argument kind in MFunInvoker.invoke()" );
+                goto error;
+        }
+    }
+
+    // arguments not matched, more expected
+    if( index < instr_args.size() )
+    {
+        // error
+        EM_error3( "(internal error) misaligned arguments (left over) in MFunInvoker.invoke()" );
+        goto error;
+    }
+
+    // set this pointer
+    instr_pushThis->set( (t_CKUINT)obj );
+    // set the return var, if the function was set up to return a value
+    if( instr_pushReturnVar ) instr_pushReturnVar->set( (t_CKUINT)&RETURN );
+
+    // reset shred: program counter
+    shred->pc = 0;
+    // next pc
+    shred->next_pc = 1;
+
+    // TODO: this
+    // set parent base_ref; in case mfun is part of a non-public class
+    // that can access file-global variables outside the class definition
+//    shred->parent = obj->shredOrigin;
+//    if( shred->parent ) shred->base_ref = shred->parent->base_ref;
+//    else shred->base_ref = shred->mem;
+
+    // shred in dump (all done)
+    shred->is_dumped = FALSE;
+    // shred done
+    shred->is_done = FALSE;
+    // shred running
+    shred->is_running = FALSE;
+    // shred abort
+    shred->is_abort = FALSE;
+    // set the instr
+    shred->instr = shred->code->instr;
+    // zero out the id
+    shred->xid = 0;
+    // run shred on VM
+    shred->run( shred->vm_ref );
+
+    // done; by the point, return should have been filled with return value, if func has one
+    return RETURN;
+
+error:
+    // do the same thing for now
+    return RETURN;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup()
+// desc: clean up
+//-----------------------------------------------------------------------------
+void Chuck_VM_MFunInvoker::cleanup()
+{
+    // release shred reference
+    // NB this should also cleanup the code and VM instruction we created in setup
+    CK_SAFE_RELEASE( shred );
+
+    // clear the arg instructions
+    instr_args.clear();
+
+    // zero out
+    instr_pushThis = NULL;
+    instr_pushReturnVar = NULL;
 }
 
 

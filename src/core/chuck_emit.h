@@ -57,7 +57,7 @@ struct Chuck_Code
 public:
     // name
     std::string name;
-    // stack depth
+    // stack depth (in bytes)
     t_CKUINT stack_depth;
     // need this
     t_CKBOOL need_this;

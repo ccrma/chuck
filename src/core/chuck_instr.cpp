@@ -2554,7 +2554,7 @@ void Chuck_Instr_Reg_Pop_Mem::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Pop_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Pop_Int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
@@ -2569,7 +2569,7 @@ void Chuck_Instr_Reg_Pop_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Pop_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Pop_Float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
 
@@ -2584,7 +2584,7 @@ void Chuck_Instr_Reg_Pop_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Pop_Word3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Pop_Complex::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKCOMPLEX *& reg_sp = (t_CKCOMPLEX *&)shred->reg->sp;
 
@@ -2597,9 +2597,39 @@ void Chuck_Instr_Reg_Pop_Word3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: pop a vec3 value from reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Pop_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC3 *& reg_sp = (t_CKVEC3 *&)shred->reg->sp;
+
+    // pop word from reg stack
+    pop_( reg_sp, 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: pop a vec4 value from reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Pop_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC4 *& reg_sp = (t_CKVEC4 *&)shred->reg->sp;
+
+    // pop word from reg stack
+    pop_( reg_sp, 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Pop_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Pop_WordsMulti::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKBYTE *& reg_sp = (t_CKBYTE *&)shred->reg->sp;
 
@@ -4637,7 +4667,7 @@ void Chuck_Instr_Release_Object2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 //       FYI the return value is conveyed on the reg stack; this undoes
 //       the addref before the return; see Chuck_Instr_Reg_AddRef_Object3
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Release_Object3_Pop_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Release_Object3_Pop_Int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_VM_Object * obj = NULL;
@@ -4778,7 +4808,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
     local_depth = ( local_depth / sz_INT ) + ( local_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
     // get the stack depth of the callee function args
-    t_CKUINT stack_depth = ( func->stack_depth / sz_INT ) + ( func->stack_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    t_CKUINT stack_depth_ints = ( func->stack_depth / sz_INT ) + ( func->stack_depth & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
     // get the previous stack depth - caller function args
     t_CKUINT prev_stack = ( *(mem_sp-1) / sz_INT ) + ( *(mem_sp-1) & 0x3 ? 1 : 0 ); // ISSUE: 64-bit (fixed 1.3.1.0)
 
@@ -4791,7 +4821,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // push the pc
     push_( mem_sp, (t_CKUINT)(shred->pc + 1) );
     // push the stack depth
-    push_( mem_sp, stack_depth );
+    push_( mem_sp, stack_depth_ints );
     // set the pc to 0
     shred->next_pc = 0;
     // set the code
@@ -4803,37 +4833,37 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( overflow_( shred->mem ) ) goto error_overflow;
 
     // if there are arguments to be passed
-    if( stack_depth )
+    if( stack_depth_ints )
     {
         // pop the arguments, by number of words
-        pop_( reg_sp, stack_depth );
+        pop_( reg_sp, stack_depth_ints );
 
         // make copies (but without modifying actual stack pointers)
         t_CKUINT * mem_sp2 = (t_CKUINT *)mem_sp;
         t_CKUINT * reg_sp2 = (t_CKUINT *)reg_sp;
 
         // detect would-be overflow | 1.5.1.4 (ge) added
-        if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
+        if( would_overflow_( mem_sp2+stack_depth_ints, shred->mem ) ) goto error_overflow;
 
         // need this
         if( func->need_this )
         {
             // copy this from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
             // one less word to copy
-            stack_depth--;
+            stack_depth_ints--;
         }
         // static inside class | 1.4.1.0 (ge) added
         else if( func->is_static )
         {
             // copy type from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
             // one less word to copy
-            stack_depth--;
+            stack_depth_ints--;
         }
 
         // push the arguments
-        for( t_CKUINT i = 0; i < stack_depth; i++ )
+        for( t_CKUINT i = 0; i < stack_depth_ints; i++ )
             *mem_sp2++ = *reg_sp2++;
     }
 
@@ -5391,6 +5421,16 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // pop word from reg stack
     pop_( sp, 1 );
 
+    // check for immediate mode exception | 1.5.1.4 (ge)
+    if( shred->checkImmediatModeException(m_linepos) )
+    {
+        // do something!
+        shred->is_running = FALSE;
+        shred->is_done = TRUE;
+        // bail out
+        return;
+    }
+
     // check
     if( *sp < shred->now )
     {
@@ -5434,8 +5474,12 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
     // check for null
     if( !event ) goto null_pointer;
+    // check for immediate mode exception | 1.5.1.4 (ge) added
+    if( shred->checkImmediatModeException(m_linepos) ) goto done;
+
     // wait
     event->wait( shred, vm );
+
     // done
     return;
 

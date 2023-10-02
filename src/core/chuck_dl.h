@@ -360,15 +360,6 @@ typedef enum {
 
 
 
-//-----------------------------------------------------------------------------
-// invoking chuck functions from c++
-//-----------------------------------------------------------------------------
-// directly invoke a chuck member function's native implementation from c++
-// using object + vtable offset
-Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offset,
-                                       Chuck_VM * vm, Chuck_VM_Shred * shred, void * ARGS );
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -656,7 +647,6 @@ Chuck_DL_Value * make_new_svar( const char * t, const char * n, t_CKBOOL c, void
 
 
 
-
 //------------------------------------------------------------------------------
 // name: union Chuck_DL_Return
 // desc: dynamic link return function return struct
@@ -676,6 +666,40 @@ union Chuck_DL_Return
     Chuck_String * v_string;
 
     Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
+};
+
+
+
+
+//------------------------------------------------------------------------------
+// name: struct Chuck_DL_Arg
+// desc: import / dynamic link function argument | 1.5.1.4
+//------------------------------------------------------------------------------
+struct Chuck_DL_Arg
+{
+    // which kind of data (e.g., int and object * are both kinds of ints)
+    te_KindOf kind;
+    // the data in a union; re-using DL_Return for this
+    Chuck_DL_Return value;
+
+    // constructor
+    Chuck_DL_Arg() { kind = kindof_VOID; }
+    // size in bytes
+    t_CKUINT sizeInBytes()
+    {
+        // check data kind
+        switch( kind )
+        {
+            case kindof_INT: return sz_INT;
+            case kindof_FLOAT: return sz_FLOAT;
+            case kindof_COMPLEX: return sz_COMPLEX;
+            case kindof_VEC3: return sz_COMPLEX;
+            case kindof_VEC4: return sz_VEC4;
+            case kindof_VOID: return sz_VOID;
+        }
+        // unhandled
+        return 0;
+    }
 };
 
 
@@ -763,7 +787,23 @@ public:
 };
 
 
-/* API to ChucK's innards */
+
+
+//-----------------------------------------------------------------------------
+// invoking chuck functions from c++
+//-----------------------------------------------------------------------------
+// directly invoke a chuck member function's native implementation from c++
+// using object + vtable offset | 1.5.1.4 (ge & andrew)
+Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset,
+                                Chuck_VM * vm, Chuck_VM_Shred * shred,
+                                Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+
+
+
+
+//-----------------------------------------------------------------------------
+// dynamic linking callable API to ChucK's innards
+//-----------------------------------------------------------------------------
 namespace Chuck_DL_Api
 {
 typedef void * Object;

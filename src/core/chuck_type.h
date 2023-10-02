@@ -289,6 +289,7 @@ struct Chuck_Func;
 struct Chuck_Multi;
 struct Chuck_VM;
 struct Chuck_VM_Code;
+struct Chuck_VM_MFunInvoker;
 struct Chuck_DLL;
 // operator loading structs | 1.5.1.4
 struct Chuck_Op_Registry;
@@ -1105,6 +1106,18 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
+public:
+    // pack c-style array of DL_Args into args cache
+    t_CKBOOL pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs );
+    // args cache (used by c++ to chuck function calls) | 1.5.1.4
+    t_CKBYTE * args_cache;
+    // size of args cache
+    t_CKUINT args_cache_size;
+    // setup invoker for this fun (for calling chuck function from c++)
+    t_CKBOOL setup_invoker( t_CKUINT vtable_offet, Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // associate mfun invoker (if applicable)
+    Chuck_VM_MFunInvoker * invoker_mfun;
+
 protected:
     // AST func def from parser | 1.5.0.5 (ge) moved to protected
     // access through funcdef_*() functions
@@ -1137,6 +1150,9 @@ public:
         /*dl_code = NULL;*/
         next = NULL;
         up = NULL;
+        args_cache = NULL;
+        args_cache_size = 0;
+        invoker_mfun = NULL;
     }
 
     // destructor
@@ -1189,7 +1205,7 @@ t_CKBOOL isobj( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
-t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
+te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
 
 //-----------------------------------------------------------------------------

@@ -1833,10 +1833,11 @@ array4_get_key(ck_array4_get_key)
 
 
 //-----------------------------------------------------------------------------
-// name: ck_invoke_mfun_native()
-// desc: directly call a chuck member function's native implementation
+// name: ck_invoke_mfun()
+// desc: directly call a chuck member function
+//       (supports both native (c++) and user (chuck)
 //-----------------------------------------------------------------------------
-Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, void * ARGS )
+Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * caller_shred, Chuck_DL_Arg * args_list, t_CKUINT numArgs )
 {
     Chuck_DL_Return RETURN;
     // check objt
@@ -1849,20 +1850,41 @@ Chuck_DL_Return ck_invoke_mfun_native( Chuck_Object * obj, t_CKUINT func_vt_offs
     }
 
     // get the member function
-    f_mfun f = (f_mfun)obj->vtable->funcs[func_vt_offset]->code->native_func;
-    // verify bounds
-    if( !f )
+    Chuck_Func * func = obj->vtable->funcs[func_vt_offset];
+    // get the code for the function
+    Chuck_VM_Code * code = func->code;
+    // check whether native or user
+    if( code->native_func )
     {
-        EM_error3( "(internal error) ck_invoke_mfun() cannot find native func to call..." );
-        return RETURN;
+        // native func (defined in c++)
+        f_mfun f = (f_mfun)code->native_func;
+        // pack the args_list into memory
+        func->pack_cache( args_list, numArgs );
+        // call the function | added 1.3.0.0: the DL API instance
+        f( obj, func->args_cache, &RETURN, vm, caller_shred, Chuck_DL_Api::Api::instance() );
     }
-
-    // call the function | added 1.3.0.0: the DL API instance
-    f( obj, ARGS, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
+    else
+    {
+        // user func (defined in chuck)
+        // attach invoker, if needed
+        if( !func->setup_invoker(func_vt_offset, vm, caller_shred ) )
+        {
+            // error
+            EM_error3( "ck_invoke_mfun() cannot set up invoker for: %s", func->signature(FALSE,TRUE).c_str() );
+            return RETURN;
+        }
+        // pack the args_list into vector
+        vector<Chuck_DL_Arg> args_vector;
+        // iterate over c-style array
+        for( t_CKUINT i = 0; i < numArgs; i++ ) args_vector.push_back(args_list[i]);
+        // invoke the invoker
+        func->invoker_mfun->invoke( obj, args_vector );
+    }
 
     // return it
     return RETURN;
 }
+
 
 
 

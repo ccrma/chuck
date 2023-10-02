@@ -3415,7 +3415,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     // invoke virtual function our_can_wait | 1.5.1.4
     // TODO: check this is right shred
     // TODO: make this work in general case (right only for native_func)
-    Chuck_DL_Return RETURN = ck_invoke_mfun_native( this, our_can_wait, vm, shred, NULL );
+    Chuck_DL_Return RETURN = ck_invoke_mfun( this, our_can_wait, vm, shred, NULL, 0 );
     // get the member function
     // f_mfun canwaitplease = (f_mfun)this->vtable->funcs[our_can_wait]->code->native_func;
     // added 1.3.0.0: the DL API instance
@@ -3448,10 +3448,17 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );
 
-        // get the virtual function for waiting_on()
-        f_mfun waiting_on = (f_mfun)this->vtable->funcs[our_waiting_on]->code->native_func;
-        // call to nofify event that a shred has starting waiting on it
-        waiting_on( this, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
+        // invoke virtual function our_waiting_on | 1.5.1.4 (ge & andrew)
+        // this is called at the point when a shred has completed the actions
+        // needed to wait on an Event, and can be notified/broadcasted from
+        // a different thread
+        ck_invoke_mfun( this, our_waiting_on, vm, shred, NULL, 0 );
+        // TODO: check this is right shred
+        // TODO: make this work in general case (right only for native_func)
+        // // get the virtual function for waiting_on()
+        // f_mfun waiting_on = (f_mfun)this->vtable->funcs[our_waiting_on]->code->native_func;
+        // // call to nofify event that a shred has starting waiting on it
+        // waiting_on( this, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
     }
     else // can't wait
     {

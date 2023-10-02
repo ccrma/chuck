@@ -109,12 +109,15 @@ typedef struct { t_CKUINT N ; t_CKFLOAT * values ; } t_CKVECTOR;
 
 // kinds (added 1.3.1.0 to faciliate 64-bit support)
 // to differentiate in case int and float have same size
-#define kindof_VOID                 0
-#define kindof_INT                  1
-#define kindof_FLOAT                2
-#define kindof_COMPLEX              3
-#define kindof_VEC3                 4
-#define kindof_VEC4                 5
+enum te_KindOf
+{
+    kindof_VOID = 0,
+    kindof_INT = 1,
+    kindof_FLOAT = 2,
+    kindof_COMPLEX = 3,
+    kindof_VEC3 = 4,
+    kindof_VEC4 = 5
+};
 
 typedef char *                      c_str;
 typedef const char *                c_constr;

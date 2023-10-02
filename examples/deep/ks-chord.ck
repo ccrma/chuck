@@ -116,7 +116,7 @@ class KSChord extends Chugraph
     }
     
     // tune 4 objects
-    fun float tune( float pitch1, float pitch2, float pitch3, float pitch4 )
+    fun void tune( float pitch1, float pitch2, float pitch3, float pitch4 )
     {
         pitch1 => chordArray[0].tune;
         pitch2 => chordArray[1].tune;

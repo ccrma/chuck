@@ -5620,10 +5620,10 @@ t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {   return isa( type, env->ckt_int ) || isobj( env, type ); }
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type ) // added 1.5.0.0
 {   return isa( type, env->ckt_void ); }
-t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
+te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {
     // the kind (1.3.1.0)
-    t_CKUINT kind = kindof_VOID;
+    te_KindOf kind = kindof_VOID;
 
     // check size
     if( type->size == sz_INT && iskindofint(env, type) )
@@ -8369,6 +8369,13 @@ Chuck_Func::~Chuck_Func()
     CK_SAFE_RELEASE( this->code );
     CK_SAFE_RELEASE( this->value_ref );
 
+    // release args cache | 1.5.1.4
+    CK_SAFE_DELETE_ARRAY( this->args_cache );
+    this->args_cache_size = 0;
+
+    // release invoker(s) | 1.5.1.4
+    CK_SAFE_DELETE( this->invoker_mfun );
+
     // TODO: check if more references to release, e.g., up and next?
 }
 
@@ -8533,6 +8540,79 @@ void Chuck_Func::funcdef_cleanup()
 
     // zero out
     this->m_def = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pack_cache() | 1.5.1.4
+// desc: pack c-style array of DL_Args into args cache
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Func::pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs )
+{
+    // data size in bytes
+    t_CKUINT size = 0;
+    // count the number of bytes needed
+    for( t_CKUINT i = 0; i < numArgs; i++ )
+        size += dlargs[i].sizeInBytes();
+    // (re)allocate if needed
+    if( size > args_cache_size )
+    {
+        CK_SAFE_DELETE_ARRAY( args_cache );
+        args_cache = new t_CKBYTE[size];
+        if( !args_cache ) {
+            EM_error3( "error allocating argument cache of size '%lu'", size );
+            return FALSE;
+        }
+        memset( args_cache, 0, size );
+        args_cache_size = size;
+    }
+
+    // pointer for copying
+    t_CKBYTE * here = args_cache;
+    // iterate and copy
+    for( t_CKUINT j = 0; j < numArgs; j++ )
+    {
+        switch( dlargs[j].kind )
+        {
+            case kindof_INT: memcpy( here, &dlargs[j].value.v_int, sizeof(dlargs[j].value.v_int) ); break;
+            case kindof_FLOAT: memcpy( here, &dlargs[j].value.v_float, sizeof(dlargs[j].value.v_float) ); break;
+            case kindof_COMPLEX:memcpy( here, &dlargs[j].value.v_complex, sizeof(dlargs[j].value.v_complex) ); break;
+            case kindof_VEC3: memcpy( here, &dlargs[j].value.v_vec3, sizeof(dlargs[j].value.v_vec3) ); break;
+            case kindof_VEC4: memcpy( here, &dlargs[j].value.v_vec4, sizeof(dlargs[j].value.v_vec4) ); break;
+
+            // shouldn't get here
+            case kindof_VOID:
+                EM_error3( "(internal error) Chuck_Func.pack_cache() void argument encountered..." ); return FALSE;
+        }
+    }
+
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setup_invoker() | 1.5.1.4
+// desc: setup invoker for this fun (for calling chuck function from c++)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Func::setup_invoker( t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // if already setup
+    if( invoker_mfun != NULL ) return TRUE;
+    // check if member function
+    if( !this->is_member ) return FALSE;
+    // check if needed
+    if( this->code->native_func ) return FALSE;
+    // instantiate
+    invoker_mfun = new Chuck_VM_MFunInvoker;
+    // set up invoker
+    invoker_mfun->setup( this, func_vt_offset, vm, shred );
+    // done
+    return TRUE;
 }
 
 
