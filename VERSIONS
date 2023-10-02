@@ -59,14 +59,9 @@ ChucK VERSIONS log
     of ChuGL (ChucK Graphics Library), which will be part of the ChucK
     language
 - (added) Machine function to on-the-fly control operator overloading stack
-    static void operatorsPop();
-        Pop the operator overloading stack; use with care.
-    static void operatorsPush();
-        Push the operator overloading stack; use with care.
-    static void operatorsReset();
-        Reset operator overloading state to default startup state; use with care.
-    static void operatorsStackLevel();
-        Get the current operator overloading stack level.
+    static void resetOperators();
+        Reset operator overloading state to default startup state; 
+        removes all public @operator overloads; use with care.
 - (added) new Machine function for getting number of shreds currently in VM
 	static int numShreds();
 	    Get the number of shreds currently in the VM.

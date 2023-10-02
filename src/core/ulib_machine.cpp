@@ -142,21 +142,22 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_clearVM_impl, "void", "clearVM" );
     QUERY->doc_func( QUERY, "Reset the type system, removing all user-defined types and all global variables; removes all shreds in the VM (including the shred calling this function); use with care.");
 
-    // add operatorsPush
-    QUERY->add_sfun( QUERY, machine_opOverloadPush_impl, "void", "operatorsPush" );
-    QUERY->doc_func( QUERY, "Push the operator overloading stack; use with care.");
+    // add resetOperators
+    QUERY->add_sfun( QUERY, machine_opOverloadReset_impl, "void", "resetOperators" );
+    QUERY->doc_func( QUERY, "Reset operator overloading state to default startup state; removes all public @operator overloads; use with care.");
 
-    // add operatorsPop
-    QUERY->add_sfun( QUERY, machine_opOverloadPop_impl, "void", "operatorsPop" );
-    QUERY->doc_func( QUERY, "Pop the operator overloading stack; use with care.");
-
-    // add operatorsReset
-    QUERY->add_sfun( QUERY, machine_opOverloadReset_impl, "void", "operatorsReset" );
-    QUERY->doc_func( QUERY, "Reset operator overloading state to default startup state; use with care.");
-
-    // add operatorsStackLevel
-    QUERY->add_sfun( QUERY, machine_opOverloadStackLevel_impl, "void", "operatorsStackLevel" );
-    QUERY->doc_func( QUERY, "Get the current operator overloading stack level.");
+    // comment out for now -- since local overloads don't persist, push/pop should probably affect public @operator overloads
+    // // add operatorsPush
+    // QUERY->add_sfun( QUERY, machine_opOverloadPush_impl, "void", "operatorsPush" );
+    // QUERY->doc_func( QUERY, "Push the operator overloading stack; use with care.");
+    //
+    // // add operatorsPop
+    // QUERY->add_sfun( QUERY, machine_opOverloadPop_impl, "void", "operatorsPop" );
+    // QUERY->doc_func( QUERY, "Pop the operator overloading stack; use with care.");
+    //
+    // // add operatorsStackLevel
+    // QUERY->add_sfun( QUERY, machine_opOverloadStackLevel_impl, "void", "operatorsStackLevel" );
+    // QUERY->doc_func( QUERY, "Get the current operator overloading stack level.");
 
     // add status (legacy version of printStatus; has return value)
     QUERY->add_sfun( QUERY, machine_printStatus_impl, "int", "status" );
@@ -609,7 +610,7 @@ CK_DLL_SFUN( machine_opOverloadPop_impl)
 
 CK_DLL_SFUN( machine_opOverloadReset_impl)
 {
-    VM->env()->op_registry.reset2local();
+    VM->env()->op_registry.reset2public();
 }
 
 CK_DLL_SFUN( machine_opOverloadStackLevel_impl)
