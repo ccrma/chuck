@@ -1249,8 +1249,9 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     doc_var = ck_doc_var;
     add_ex = ck_add_example; // 1.5.0.0 (ge) added
     create_main_thread_hook = ck_create_main_thread_hook;
-    register_shreds_watcher = ck_register_shreds_watcher;
-    unregister_shreds_watcher = ck_unregister_shreds_watcher;
+    register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.4 (ge & andrew)
+    unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.4 (ge & andrew)
+    invoke_mfun_immediate_mode = ck_invoke_mfun_immediate_mode; // 1.5.1.4 (ge & andrew)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 
@@ -1833,11 +1834,11 @@ array4_get_key(ck_array4_get_key)
 
 
 //-----------------------------------------------------------------------------
-// name: ck_invoke_mfun()
+// name: ck_invoke_mfun_immediate_mode()
 // desc: directly call a chuck member function
 //       (supports both native (c++) and user (chuck)
 //-----------------------------------------------------------------------------
-Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * caller_shred, Chuck_DL_Arg * args_list, t_CKUINT numArgs )
+Chuck_DL_Return ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * caller_shred, Chuck_DL_Arg * args_list, t_CKUINT numArgs )
 {
     Chuck_DL_Return RETURN;
     // check objt
@@ -1845,7 +1846,7 @@ Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset, Chu
     // verify bounds
     if( func_vt_offset >= obj->vtable->funcs.size() )
     {
-        EM_error3( "(internal error) ck_invoke_mfun() encountered invalid virtual function index: %lu", func_vt_offset );
+        EM_error3( "(internal error) ck_invoke_mfun_immediate_mode() encountered invalid virtual function index: %lu", func_vt_offset );
         return RETURN;
     }
 
@@ -1870,7 +1871,7 @@ Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset, Chu
         if( !func->setup_invoker(func_vt_offset, vm, caller_shred ) )
         {
             // error
-            EM_error3( "ck_invoke_mfun() cannot set up invoker for: %s", func->signature(FALSE,TRUE).c_str() );
+            EM_error3( "ck_invoke_mfun_immediate_mode() cannot set up invoker for: %s", func->signature(FALSE,TRUE).c_str() );
             return RETURN;
         }
         // pack the args_list into vector

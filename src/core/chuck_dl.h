@@ -172,6 +172,67 @@ struct Chuck_UAnaBlobProxy;
 
 typedef const Chuck_DL_Api::Api *CK_DL_API;
 
+
+
+
+//------------------------------------------------------------------------------
+// name: union Chuck_DL_Return
+// desc: dynamic link return function return struct
+//------------------------------------------------------------------------------
+union Chuck_DL_Return
+{
+    t_CKINT v_int;
+    t_CKUINT v_uint;
+    t_CKFLOAT v_float;
+    t_CKDUR v_dur;
+    t_CKTIME v_time;
+    t_CKCOMPLEX v_complex;
+    t_CKPOLAR v_polar;
+    t_CKVEC3 v_vec3; // ge: added 1.3.5.3
+    t_CKVEC4 v_vec4; // ge: added 1.3.5.3
+    Chuck_Object * v_object;
+    Chuck_String * v_string;
+
+    Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
+};
+
+
+
+
+//------------------------------------------------------------------------------
+// name: struct Chuck_DL_Arg
+// desc: import / dynamic link function argument | 1.5.1.4
+//------------------------------------------------------------------------------
+struct Chuck_DL_Arg
+{
+    // which kind of data (e.g., int and object * are both kinds of ints)
+    te_KindOf kind;
+    // the data in a union; re-using DL_Return for this
+    Chuck_DL_Return value;
+
+    // constructor
+    Chuck_DL_Arg() { kind = kindof_VOID; }
+    // size in bytes
+    t_CKUINT sizeInBytes()
+    {
+        // check data kind
+        switch( kind )
+        {
+            case kindof_INT: return sz_INT;
+            case kindof_FLOAT: return sz_FLOAT;
+            case kindof_COMPLEX: return sz_COMPLEX;
+            case kindof_VEC3: return sz_COMPLEX;
+            case kindof_VEC4: return sz_VEC4;
+            case kindof_VOID: return sz_VOID;
+        }
+        // unhandled
+        return 0;
+    }
+};
+
+
+
+
 // macro for defining ChucK DLL export functions
 // example: CK_DLL_EXPORT(int) foo() { return 1; }
 #define CK_DLL_EXPORT(type) CK_DLL_LINKAGE type CK_DLL_CALL
@@ -332,8 +393,10 @@ typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
 // register a callback function to receive notification from the VM about shreds (add, remove, etc.)
 typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
-// unegister a shreds notification callback
+// unregister a shreds notification callback
 typedef void (CK_DLL_CALL * f_unregister_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb );
+// call a Chuck_Object member function (defined in chuck or in c++) in IMMEDIATE MODE
+typedef Chuck_DL_Return (CK_DLL_CALL * f_invoke_mfun)( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
 
 // documentation
 // set current class documentation
@@ -434,6 +497,12 @@ public:
     f_register_shreds_watcher register_shreds_watcher;
     // un-register shred notifcations | 1.5.1.4 (ge & andrew)
     f_unregister_shreds_watcher unregister_shreds_watcher;
+
+    // invoke a member function (defined either in chuck or c++)
+    // NOTE this will call the member function in IMMEDIATE MODE,
+    // marking it as a time-critical function when called in this manner;
+    // any time/event operations therein will throw an exception
+    f_invoke_mfun invoke_mfun_immediate_mode;
 
 public:
     //-------------------------------------------------------------------------
@@ -647,63 +716,6 @@ Chuck_DL_Value * make_new_svar( const char * t, const char * n, t_CKBOOL c, void
 
 
 
-//------------------------------------------------------------------------------
-// name: union Chuck_DL_Return
-// desc: dynamic link return function return struct
-//------------------------------------------------------------------------------
-union Chuck_DL_Return
-{
-    t_CKINT v_int;
-    t_CKUINT v_uint;
-    t_CKFLOAT v_float;
-    t_CKDUR v_dur;
-    t_CKTIME v_time;
-    t_CKCOMPLEX v_complex;
-    t_CKPOLAR v_polar;
-    t_CKVEC3 v_vec3; // ge: added 1.3.5.3
-    t_CKVEC4 v_vec4; // ge: added 1.3.5.3
-    Chuck_Object * v_object;
-    Chuck_String * v_string;
-
-    Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
-};
-
-
-
-
-//------------------------------------------------------------------------------
-// name: struct Chuck_DL_Arg
-// desc: import / dynamic link function argument | 1.5.1.4
-//------------------------------------------------------------------------------
-struct Chuck_DL_Arg
-{
-    // which kind of data (e.g., int and object * are both kinds of ints)
-    te_KindOf kind;
-    // the data in a union; re-using DL_Return for this
-    Chuck_DL_Return value;
-
-    // constructor
-    Chuck_DL_Arg() { kind = kindof_VOID; }
-    // size in bytes
-    t_CKUINT sizeInBytes()
-    {
-        // check data kind
-        switch( kind )
-        {
-            case kindof_INT: return sz_INT;
-            case kindof_FLOAT: return sz_FLOAT;
-            case kindof_COMPLEX: return sz_COMPLEX;
-            case kindof_VEC3: return sz_COMPLEX;
-            case kindof_VEC4: return sz_VEC4;
-            case kindof_VOID: return sz_VOID;
-        }
-        // unhandled
-        return 0;
-    }
-};
-
-
-
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_DLL
@@ -794,9 +806,12 @@ public:
 //-----------------------------------------------------------------------------
 // directly invoke a chuck member function's native implementation from c++
 // using object + vtable offset | 1.5.1.4 (ge & andrew)
-Chuck_DL_Return ck_invoke_mfun( Chuck_Object * obj, t_CKUINT func_vt_offset,
-                                Chuck_VM * vm, Chuck_VM_Shred * shred,
-                                Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+// NOTE this will call the member function in IMMEDIATE MODE,
+// marking it as a time-critical function when called in this manner;
+// any time/event operations therein will throw an exception
+Chuck_DL_Return ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t_CKUINT func_vt_offset,
+                                               Chuck_VM * vm, Chuck_VM_Shred * shred,
+                                               Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
 
 
 
