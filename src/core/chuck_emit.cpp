@@ -3532,7 +3532,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
     case ae_primary_str:
         // TODO: fix this
         str = new Chuck_String();
-        if( !str || !initialize_object( str, emit->env->ckt_string ) )
+        if( !str || !initialize_object( str, emit->env->ckt_string, NULL, emit->env->vm() ) )
         {
             // error (TODO: why is this a CK_SAFE_RELEASE and not CK_SAFE_DELETE?)
             CK_SAFE_RELEASE( str );

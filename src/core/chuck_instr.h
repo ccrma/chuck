@@ -4233,7 +4233,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * vm );
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm );
 // initialize object using Type
-t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type );
+t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm );
 
 // "throw exception" (halt current shred, print message)
 void ck_throw_exception(Chuck_VM_Shred * shred, const char * name);

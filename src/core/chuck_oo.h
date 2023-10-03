@@ -133,12 +133,10 @@ public:
     virtual ~Chuck_Object();
 
 public:
-    // output current state (can be overridden)
-    virtual void dump();
-
-public:
     // output type info (can be overriden; but probably shouldn't be)
     virtual void help();
+    // output current state (can be overridden)
+    virtual void dump();
 
 public:
     // virtual table
@@ -149,6 +147,22 @@ public:
     t_CKBYTE * data;
     // the size of the data region
     t_CKUINT data_size;
+
+public:
+    // set VM on which this object was instantiated | 1.5.1.4
+    void setOriginVM( Chuck_VM * vm );
+    // set shred on which this object was instantiated | 1.5.1.4
+    void setOriginShred( Chuck_VM_Shred * shred );
+    // get VM on which this object was instantiated | 1.5.1.4
+    Chuck_VM * originVM() const { return origin_vm; }
+    // get shred on which this object was instantiated | 1.5.1.4
+    Chuck_VM_Shred * originShred() const { return origin_shred; }
+
+protected:
+    // the shred on which this object was instantiated | 1.5.1.4
+    Chuck_VM_Shred * origin_shred;
+    // the VM on which this object was instantiated | 1.5.1.4
+    Chuck_VM * origin_vm;
 
 public: // static
     // vtable offset for toString()

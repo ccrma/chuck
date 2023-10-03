@@ -325,7 +325,7 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
 
     // initialize static data
     Windowing_array = new Chuck_Array8();
-    initialize_object( Windowing_array, QUERY->env()->ckt_array );
+    initialize_object( Windowing_array, QUERY->env()->ckt_array, NULL, QUERY->env()->vm() );
     // TODO: yes? reference count
     Windowing_array->add_ref();
     // set size

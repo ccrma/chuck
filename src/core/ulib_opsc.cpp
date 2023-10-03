@@ -1558,7 +1558,7 @@ CK_DLL_CTOR( oscmsg_ctor )
     OBJ_MEMBER_STRING( SELF, oscmsg_offset_typetag ) = typetag;
 
     Chuck_Array4 * args = new Chuck_Array4( TRUE );
-    initialize_object( args, SHRED->vm_ref->env()->ckt_array );
+    initialize_object( args, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     args->clear();
     CK_SAFE_ADD_REF( args );
     OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args ) = args;
@@ -2141,7 +2141,7 @@ CK_DLL_MFUN( osc_address_next_string ) {
     OSC_Address_Space * addr = (OSC_Address_Space *)OBJ_MEMBER_INT( SELF, osc_address_offset_data );
     char * cs = addr->next_string();
     Chuck_String * ckstr = (cs) ? new Chuck_String( cs ) : new Chuck_String( "" );
-    initialize_object( ckstr, SHRED->vm_ref->env()->ckt_string );
+    initialize_object( ckstr, SHRED->vm_ref->env()->ckt_string, SHRED, VM );
     RETURN->v_string = ckstr;
 }
 
@@ -2258,7 +2258,7 @@ CK_DLL_MFUN( osc_recv_new_address )
 
     // more correct...?
     Chuck_Event * new_event_obj = new Chuck_Event();
-    initialize_object( new_event_obj, osc_addr_type_ptr );
+    initialize_object( new_event_obj, osc_addr_type_ptr, SHRED, VM );
     new_addr_obj->SELF = new_event_obj;
     OBJ_MEMBER_INT( new_event_obj, osc_address_offset_data ) = (t_CKINT)new_addr_obj;
 
@@ -2288,7 +2288,7 @@ CK_DLL_MFUN( osc_recv_new_address_type )
 
     // more correct...?
     Chuck_Event * new_event_obj = new Chuck_Event();
-    initialize_object( new_event_obj, osc_addr_type_ptr );
+    initialize_object( new_event_obj, osc_addr_type_ptr, SHRED, VM );
     new_addr_obj->SELF = new_event_obj;
     OBJ_MEMBER_INT( new_event_obj, osc_address_offset_data ) = (t_CKINT)new_addr_obj;
 

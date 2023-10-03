@@ -27936,7 +27936,7 @@ CK_DLL_DTOR( WvOut_dtor )
     w->closeFile();
 
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
+    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->originVM(), "WvOut dtor" );
     // check
     if( carrier != NULL )
     {

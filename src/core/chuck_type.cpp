@@ -431,7 +431,7 @@ t_CKBOOL Chuck_Env::is_global()
 t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 {
     // call initialize_object() to initialize objT itself as an instance of Object
-    initialize_object( objT, env->ckt_class );
+    initialize_object( objT, env->ckt_class, NULL, env->vm() );
 
     // ensure namespace allocation
     if( objT->info == NULL )
@@ -454,7 +454,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
         {
             // initialize each function type as an object instance
             // (special cases: these should not be initialized yet)
-            initialize_object( f->value_ref->type, env->ckt_class );
+            initialize_object( f->value_ref->type, env->ckt_class, NULL, env->vm() );
             // next f
             f = f->next;
         }
@@ -6394,7 +6394,7 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
         env->class_def->base_name != env->ckt_array->base_name )
     {
         // initialize the type as object | 1.5.0.0 (ge) added
-        initialize_object( env->class_def, env->ckt_class );
+        initialize_object( env->class_def, env->ckt_class, NULL, env->vm() );
     }
 
     // pop the class
@@ -7194,7 +7194,7 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     if( env->ckt_class->info != NULL )
     {
         // initialize it as Type object | 1.5.0.0 (ge) added
-        initialize_object( theType, env->ckt_class );
+        initialize_object( theType, env->ckt_class, NULL, env->vm() );
     }
 
     return theType;

@@ -975,7 +975,7 @@ static Chuck_Array4 * ck_range( t_CKINT start, t_CKINT stop, t_CKINT step, Chuck
     // allocate array object
     Chuck_Array4 * range = new Chuck_Array4(FALSE, size);
     // initialize with trappings of Object
-    initialize_object(range, SHRED->vm_ref->env()->ckt_array);
+    initialize_object(range, SHRED->vm_ref->env()->ckt_array, SHRED, SHRED->vm_ref);
 
     // the value
     t_CKINT value = start;

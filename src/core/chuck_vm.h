@@ -402,7 +402,7 @@ public:
 // name: struct Chuck_VM_Shreduler
 // desc: a ChucK shreduler shredules shreds
 //-----------------------------------------------------------------------------
-struct Chuck_VM_Shreduler : Chuck_Object
+struct Chuck_VM_Shreduler : public Chuck_Object
 {
 //-----------------------------------------------------------------------------
 // functions
@@ -529,7 +529,7 @@ public:
 // name: struct Chuck_VM
 // desc: ChucK virtual machine
 //-----------------------------------------------------------------------------
-struct Chuck_VM : Chuck_Object
+struct Chuck_VM : public Chuck_Object
 {
 //-----------------------------------------------------------------------------
 // functions

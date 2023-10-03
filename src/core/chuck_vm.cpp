@@ -347,7 +347,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
-    initialize_object( m_bunghole, env()->ckt_ugen );
+    initialize_object( m_bunghole, env()->ckt_ugen, NULL, this );
     m_bunghole->tick = NULL;
     m_bunghole->alloc_v( m_shreduler->m_max_block_size );
     m_shreduler->m_dac = m_dac;
@@ -1725,6 +1725,9 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     // FYI explicitly call shutdown() before re-initializing shred
     if( mem ) return FALSE;
 
+    // verify
+    assert( vm_ref != NULL );
+
     // allocate new stacks
     mem = new Chuck_VM_Stack;
     reg = new Chuck_VM_Stack;
@@ -1758,7 +1761,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     xid = 0;
 
     // initialize
-    if( !initialize_object( this, vm_ref->env()->ckt_shred ) ) goto error;
+    if( !initialize_object( this, vm_ref->env()->ckt_shred, this, vm_ref ) ) goto error;
 
     // inherit size hints for shreds sporked from this shred | 1.5.1.4
     childSetMemSize( mem_stack_size );
@@ -3477,12 +3480,11 @@ Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<C
     // next pc
     shred->next_pc = 1;
 
-    // TODO: this
     // set parent base_ref; in case mfun is part of a non-public class
     // that can access file-global variables outside the class definition
-//    shred->parent = obj->shredOrigin;
-//    if( shred->parent ) shred->base_ref = shred->parent->base_ref;
-//    else shred->base_ref = shred->mem;
+    shred->parent = obj->originShred();
+    if( shred->parent ) shred->base_ref = shred->parent->base_ref;
+    else shred->base_ref = shred->mem;
 
     // shred in dump (all done)
     shred->is_dumped = FALSE;

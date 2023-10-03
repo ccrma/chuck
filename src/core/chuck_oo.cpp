@@ -256,6 +256,10 @@ Chuck_Object::Chuck_Object()
     data = NULL;
     // zero size
     data_size = 0;
+    // zero origin shred
+    origin_shred = NULL;
+    // zero origin vm
+    origin_vm = NULL;
 }
 
 
@@ -284,6 +288,10 @@ Chuck_Object::~Chuck_Object()
         // go up the inheritance
         type = type->parent;
     }
+
+    // release
+    CK_SAFE_RELEASE( origin_shred );
+    CK_SAFE_RELEASE( origin_vm );
 
     // free
     CK_SAFE_DELETE( vtable );
@@ -321,6 +329,32 @@ void Chuck_Object::help() // 1.4.1.0 (ge)
 
     // unpack type and output its info
     type->apropos();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setOriginShred()
+// desc: set origin shred
+//-----------------------------------------------------------------------------
+void Chuck_Object::setOriginShred( Chuck_VM_Shred * shred )
+{
+    // assign
+    CK_SAFE_REF_ASSIGN( this->origin_shred, shred );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setOriginVM()
+// desc: set origin shred
+//-----------------------------------------------------------------------------
+void Chuck_Object::setOriginVM( Chuck_VM * vm )
+{
+    // assign
+    CK_SAFE_REF_ASSIGN( this->origin_vm, vm );
 }
 
 

@@ -1957,13 +1957,13 @@ CK_DLL_CTOR( uanablob_ctor )
 
     // fvals
     Chuck_Array8 * arr8 = new Chuck_Array8( 8 );
-    initialize_object( arr8, SHRED->vm_ref->env()->ckt_array );
+    initialize_object( arr8, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     arr8->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
 
     // cvals
     Chuck_Array16 * arr16 = new Chuck_Array16( 8 );
-    initialize_object( arr16, SHRED->vm_ref->env()->ckt_array );
+    initialize_object( arr16, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     arr16->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
 }
@@ -3273,7 +3273,7 @@ CK_DLL_MFUN( type_children )
 
     // instantiate
     Chuck_Array4 * ret = new Chuck_Array4( TRUE );
-    initialize_object( ret, VM->env()->ckt_array );
+    initialize_object( ret, VM->env()->ckt_array, SHRED, VM );
 
     // results
     vector<Chuck_Type *> types;
@@ -3433,7 +3433,7 @@ CK_DLL_SFUN( type_getTypes )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->ckt_array );
+    initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get args
     t_CKINT attributes = GET_NEXT_INT(ARGS);
@@ -3458,7 +3458,7 @@ CK_DLL_SFUN( type_getTypes2 )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->ckt_array );
+    initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get args
     t_CKBOOL objs = GET_NEXT_INT(ARGS);
@@ -3479,7 +3479,7 @@ CK_DLL_SFUN( type_getTypesAll )
 {
     // instantiate
     Chuck_Array4 * array = new Chuck_Array4( TRUE );
-    initialize_object( array, VM->env()->ckt_array );
+    initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get all types
     typeGetTypes( VM, array, true, true, true, true, true, true, true );

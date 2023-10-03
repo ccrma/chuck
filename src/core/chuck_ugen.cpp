@@ -212,7 +212,6 @@ void Chuck_UGen::init()
     m_sum_v = NULL;
     m_current_v = NULL;
 
-    shred = NULL;
     owner = NULL;
 
     // what a hack
@@ -239,8 +238,8 @@ void Chuck_UGen::init()
 //-----------------------------------------------------------------------------
 void Chuck_UGen::done()
 {
-    if( this->shred )
-        shred->remove( this );
+    if( this->origin_shred )
+        origin_shred->remove( this );
 
     assert( this->m_ref_count == 0 );
 
@@ -1322,7 +1321,7 @@ void Chuck_UGen::init_subgraph()
     Chuck_Object * obj = NULL;
 
     // instantiate object for inlet
-    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->ckt_ugen, this->shred );
+    obj = instantiate_and_initialize_object( this->origin_shred->vm_ref->env()->ckt_ugen, this->origin_shred );
     // set as inlet
     m_inlet = (Chuck_UGen *)obj;
     // additional reference count
@@ -1333,7 +1332,7 @@ void Chuck_UGen::init_subgraph()
     this->add_ref();
 
     // instantiate object for outlet
-    obj = instantiate_and_initialize_object( this->shred->vm_ref->env()->ckt_ugen, this->shred );
+    obj = instantiate_and_initialize_object( this->origin_shred->vm_ref->env()->ckt_ugen, this->origin_shred );
     // set as outlet
     m_outlet = (Chuck_UGen *)obj;
     // additional reference count

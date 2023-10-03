@@ -513,7 +513,7 @@ CK_DLL_SFUN( machine_silent_impl )
 CK_DLL_SFUN( machine_shreds_impl )
 {
     Chuck_Array4 *array = new Chuck_Array4(FALSE);
-    initialize_object(array, SHRED->vm_ref->env()->ckt_array);
+    initialize_object(array, SHRED->vm_ref->env()->ckt_array, SHRED, VM);
     array->clear();
 
     Chuck_VM_Status status;
@@ -571,7 +571,7 @@ CK_DLL_SFUN( machine_version_impl )
     // make chuck string
     Chuck_String * s = new Chuck_String( vs );
     // initialize
-    initialize_object(s, VM->carrier()->env->ckt_string );
+    initialize_object(s, VM->carrier()->env->ckt_string, SHRED, VM );
     // return
     RETURN->v_string = s;
 }

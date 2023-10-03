@@ -360,7 +360,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     }
 
     // initialize the Type info object | 1.5.0.0 (ge) added
-    initialize_object( the_class, env->ckt_class );
+    initialize_object( the_class, env->ckt_class, NULL, env->vm() );
 
 done:
 

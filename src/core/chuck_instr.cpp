@@ -3991,7 +3991,7 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 // name: instantiate_object()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
+t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
     // check if already initialized | 1.5.1.4
     if( object->vtable != NULL ) return TRUE;
@@ -3999,6 +3999,11 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
     // sanity
     assert( type != NULL );
     assert( type->info != NULL );
+
+    // set origin shred | 1.5.1.4 (ge) was: ugen->shred = shred;
+    if( shred ) object->setOriginShred( shred );
+    // REFACTOR-2017: added | 1.5.1.4 (ge & andrew) moved here from instantiate_...
+    object->setOriginVM( vm );
 
     // allocate virtual table
     object->vtable = new Chuck_VTable;
@@ -4027,6 +4032,9 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
     {
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
+        // add ugen to shred | 1.5.1.4 (ge & andrew) moved from instantiate_and_initialize_object()
+        if( shred ) shred->add( ugen );
+        // set tick
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
         // added 1.3.0.0 -- tickf for multi-channel tick
         if( type->ugen_info->tickf ) ugen->tickf = type->ugen_info->tickf;
@@ -4041,7 +4049,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type )
         {
             // allocate ugen for each | REFACTOR-2017: added ugen->vm
             Chuck_Object * obj = instantiate_and_initialize_object(
-                ugen->vm->env()->ckt_ugen, ugen->shred, ugen->vm );
+                ugen->originVM()->env()->ckt_ugen, ugen->originShred(), ugen->originVM() );
             // cast to ugen
             ugen->m_multi_chan[i] = (Chuck_UGen *)obj;
             // additional reference count
@@ -4109,6 +4117,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * 
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
     Chuck_Object * object = NULL;
+    Chuck_UGen * ugen = NULL;
     Chuck_UAna * uana = NULL;
 
     // sanity
@@ -4147,8 +4156,6 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     }
     else
     {
-        // make ugen
-        Chuck_UGen * ugen = NULL;
         // ugen vs. uana
         if( type->ugen_info->tock != NULL )
         {
@@ -4161,22 +4168,13 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             object = ugen = new Chuck_UGen;
             ugen->alloc_v( vm->shreduler()->m_max_block_size );
         }
-
-        if( shred )
-        {
-            ugen->shred = shred;
-            shred->add( ugen );
-        }
-
-        // REFACTOR-2017: added
-        ugen->vm = vm;
     }
 
     // check to see enough memory
     if( !object ) goto out_of_memory;
 
     // initialize
-    if( !initialize_object( object, type ) ) goto error;
+    if( !initialize_object( object, type, shred, vm ) ) goto error;
 
     return object;
 
@@ -5579,7 +5577,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         if( !array ) goto out_of_memory;
         // initialize object
         // TODO: should it be this??? initialize_object( array, m_type_ref );
-        initialize_object( array, vm->env()->ckt_array );
+        initialize_object( array, vm->env()->ckt_array, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -5599,7 +5597,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array );
+        initialize_object( array, vm->env()->ckt_array, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -5619,7 +5617,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array );
+        initialize_object( array, vm->env()->ckt_array, shred, vm );
         // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
         if( isa(m_type_ref, vm->env()->ckt_polar) ) array->m_isPolarType = TRUE;
         // set size
@@ -5641,7 +5639,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKVEC3 * sp = (t_CKVEC3 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array );
+        initialize_object( array, vm->env()->ckt_array, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -5661,7 +5659,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKVEC4 * sp = (t_CKVEC4 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array );
+        initialize_object( array, vm->env()->ckt_array, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -5762,6 +5760,7 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 // desc: 1.3.1.0 -- changed size to kind
 //-----------------------------------------------------------------------------
 Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
+                               Chuck_VM_Shred * shred, // 1.5.1.4 added
                                t_CKINT * capacity, const t_CKINT * top,
                                t_CKUINT kind, t_CKBOOL is_obj,
                                t_CKUINT * objs, t_CKINT & index,
@@ -5799,7 +5798,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type );
+            initialize_object( baseX, type, shred, vm );
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
@@ -5810,7 +5809,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type );
+            initialize_object( baseX, type, shred, vm );
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
@@ -5826,7 +5825,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type );
+            initialize_object( baseX, type, shred, vm );
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
@@ -5837,7 +5836,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type );
+            initialize_object( baseX, type, shred, vm );
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
@@ -5848,7 +5847,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
             // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type );
+            initialize_object( baseX, type, shred, vm );
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
@@ -5879,7 +5878,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     for( i = 0; i < *capacity; i++ )
     {
         // the next | REFACTOR-2017: added vm
-        next = do_alloc_array( vm, capacity+1, top, kind, is_obj, objs, index, typeNext );
+        next = do_alloc_array( vm, shred, capacity+1, top, kind, is_obj, objs, index, typeNext );
         // error if NULL
         if( !next ) goto error;
         // set that, with ref count
@@ -5891,7 +5890,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
 
     // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
     // for the object->type_ref to contain more specific information
-    initialize_object( theBase, type );
+    initialize_object( theBase, type, shred, vm );
     // initialize_object( theBase, vm->env()->ckt_array );
     return theBase;
 
@@ -5989,7 +5988,7 @@ void Chuck_Instr_Array_Alloc::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     }
 
     // recursively allocate | REFACTOR-2017: added env
-    ref = (t_CKUINT)do_alloc_array( vm,
+    ref = (t_CKUINT)do_alloc_array( vm, shred,
         (t_CKINT *)(reg_sp - m_depth),
         (t_CKINT *)(reg_sp - 1),
         getkindof(vm->env(), m_type_ref_content), // 1.3.1.0: changed; was 'm_type_ref->size'

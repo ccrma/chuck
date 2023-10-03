@@ -2450,7 +2450,8 @@ CK_DLL_TICK( delayp_tick )
     if ( !d->buffer ) return FALSE;
 
     // area
-    d->now = ((Chuck_UGen*)SELF)->shred->vm_ref->shreduler()->now_system;
+    d->now = ((Chuck_UGen*)SELF)->originVM()->shreduler()->now_system; // 1.5.1.4
+    // d->now = ((Chuck_UGen*)SELF)->originShred()->vm_ref->shreduler()->now_system;
 
     //calculate new write-offset position ( we interpolate if we've been assigned a new write-offset )
     if ( d->now >= d->move_end_time || d->move_duration == 0 ) d->offset = d->offset_target;
@@ -2563,7 +2564,7 @@ CK_DLL_CTRL( delayp_ctrl_delay )
         d->offset_target = target;
         d->offset_start  = d->last_offset;
 
-        t_CKTIME snow = ((Chuck_UGen*)SELF)->shred->now;
+        t_CKTIME snow = ((Chuck_UGen*)SELF)->originShred()->now;
         d->move_end_time = snow + d->move_duration;
     }
     RETURN->v_dur = d->last_offset; // TODO:
