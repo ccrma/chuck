@@ -272,7 +272,7 @@ typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadhook)( void * bindle );
 // "main thread" quit (stop running hook)
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
 // shreds watcher callback
-typedef t_CKBOOL (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
+typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 }
 
 
