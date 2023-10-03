@@ -498,12 +498,6 @@ public:
     // un-register shred notifcations | 1.5.1.4 (ge & andrew)
     f_unregister_shreds_watcher unregister_shreds_watcher;
 
-    // invoke a member function (defined either in chuck or c++)
-    // NOTE this will call the member function in IMMEDIATE MODE,
-    // marking it as a time-critical function when called in this manner;
-    // any time/event operations therein will throw an exception
-    f_invoke_mfun invoke_mfun_immediate_mode;
-
 public:
     //-------------------------------------------------------------------------
     // NOTE: everything below std::anything cannot be reliably accessed
@@ -841,6 +835,13 @@ public:
         CBufferSimple * (* const create_event_buffer)( Chuck_VM * vm );
         // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.4
         t_CKBOOL (* const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+        // invoke Chuck_Object member function (defined either in chuck or c++) | 1.5.1.4 (ge & andrew)
+        // NOTE this will call the member function in IMMEDIATE MODE,
+        // marking it as a time-critical function when called in this manner;
+        // any time/event operations therein will throw an exception
+        // Chuck_DL_Return (CK_DLL_CALL * invoke_mfun_immediate_mode)
+        // ( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+        f_invoke_mfun invoke_mfun_immediate_mode;
     } * const vm;
 
     struct ObjectApi

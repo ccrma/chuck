@@ -1251,7 +1251,6 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     create_main_thread_hook = ck_create_main_thread_hook;
     register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.4 (ge & andrew)
     unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.4 (ge & andrew)
-    invoke_mfun_immediate_mode = ck_invoke_mfun_immediate_mode; // 1.5.1.4 (ge & andrew)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 
@@ -1824,7 +1823,8 @@ static t_CKBOOL ck_array_int_get_key( CK_DL_API api, Chuck_DL_Api::ArrayInt a, c
 Chuck_DL_Api::Api::VMApi::VMApi() :
 srate(ck_srate),
 create_event_buffer(ck_create_event_buffer),
-queue_event(ck_queue_event)
+queue_event(ck_queue_event),
+invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode)
 { }
 
 
