@@ -1442,6 +1442,29 @@ static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM * vm, const char 
 
 
 //-----------------------------------------------------------------------------
+// name: ck_get_vtable_offset()
+// desc: function pointer get_type()
+//-----------------------------------------------------------------------------
+t_CKINT ck_get_vtable_offset( CK_DL_API, Chuck_VM * vm, const char * typeName, const char * valueName )
+{
+    // get the type
+    Chuck_Env * env = vm->env();
+    a_Id_List list = new_id_list( typeName, 0, 0 /*, NULL*/ ); // TODO: nested types
+    Chuck_Type * t = type_engine_find_type( env, list );
+    delete_id_list( list );
+    // type not found
+    if( !t ) return -1;
+
+    // find the offset for value by name
+    Chuck_Value * value = type_engine_find_value( t, valueName );
+    // value not found
+    if( !value || !value->func_ref ) return -1;
+    // return it
+    return value->func_ref->vt_index;
+}
+
+
+//-----------------------------------------------------------------------------
 // name: ck_create_with_shred()
 // desc: host-side hook implementation for instantiating and initializing
 //       a ChucK object by type, with reference to a parent shred;
@@ -1835,6 +1858,7 @@ invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode)
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
+get_vtable_offset(ck_get_vtable_offset),
 create_with_shred(ck_create_with_shred),
 create_no_shred(ck_create_no_shred),
 create_string(ck_create_string),

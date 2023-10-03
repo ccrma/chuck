@@ -854,6 +854,8 @@ public:
     public:
         // function pointer get_type()
         Type (* const get_type)( CK_DL_API, Chuck_VM *, const char * name );
+        // function pointer for get_vtable_offset(); returns < 0 if not found
+        t_CKINT (* const get_vtable_offset)( CK_DL_API, Chuck_VM *, const char * typee, const char * value );
         // function pointer create_with_shred()
         Object (* const create_with_shred)( CK_DL_API, Chuck_VM_Shred *, Type type );
         // function pointer create_no_shred()
