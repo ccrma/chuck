@@ -512,7 +512,7 @@ CK_DLL_SFUN( machine_silent_impl )
 
 CK_DLL_SFUN( machine_shreds_impl )
 {
-    Chuck_Array4 *array = new Chuck_Array4(FALSE);
+    Chuck_ArrayInt *array = new Chuck_ArrayInt(FALSE);
     initialize_object(array, SHRED->vm_ref->env()->ckt_array, SHRED, VM);
     array->clear();
 

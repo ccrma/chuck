@@ -190,7 +190,7 @@ public:
 
     // directories
     virtual t_CKINT isDir();
-    virtual Chuck_Array4 * dirList();
+    virtual Chuck_ArrayInt * dirList();
 
     // reading
     // virtual Chuck_String * read( t_CKINT length );
@@ -616,7 +616,7 @@ public:
     virtual void write( const std::string & val );
     virtual void write( t_CKINT val );
     virtual void write( t_CKINT val, t_CKINT flags );
-    virtual void writeBytes( Chuck_Array4 * arr );
+    virtual void writeBytes( Chuck_ArrayInt * arr );
     virtual void write( t_CKFLOAT val );
     virtual void write( t_CKFLOAT val, t_CKINT flags );
     virtual void write( const t_CKCOMPLEX & val );

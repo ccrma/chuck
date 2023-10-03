@@ -2214,7 +2214,7 @@ t_CKINT Chuck_Globals_Manager::get_global_int_array_value( const std::string & n
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalInt )
     {
-        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
         // TODO why is it unsigned int storage?
         intArray->get( index, &result );
     }
@@ -2236,7 +2236,7 @@ t_CKINT Chuck_Globals_Manager::get_global_associative_int_array_value(
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalInt )
     {
-        Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+        Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
         // TODO why is it unsigned int storage?
         intArray->get( key, &result );
     }
@@ -2258,7 +2258,7 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_float_array_value( const std::string
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalFloat )
     {
-        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
         floatArray->get( index, &result );
     }
     return result;
@@ -2279,7 +2279,7 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value(
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalFloat )
     {
-        Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+        Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
         floatArray->get( key, &result );
     }
     return result;
@@ -2906,7 +2906,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt )
                         {
                             // it exists! get existing array, new size
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             t_CKUINT newSize = request->arrayValues.size();
 
                             // resize and copy in
@@ -2951,7 +2951,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt &&
                            request->cb != NULL )
                         {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             // TODO: why is m_vector a vector of unsigned ints...??
                             switch( request->cb_type )
                             {
@@ -3012,7 +3012,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt )
                         {
                             // it exists! get existing array
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             // set! (if index within range)
                             if( intArray->size() > request->index )
                             {
@@ -3055,7 +3055,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt &&
                            request->cb != NULL )
                         {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             // TODO why is it unsigned int storage?
                             t_CKUINT result = 0;
                             intArray->get( request->index, &result );
@@ -3107,7 +3107,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt )
                         {
                             // it exists! get existing array
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             // set!
                             intArray->set( request->key, request->value );
                         }
@@ -3147,7 +3147,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalInt &&
                            request->cb != NULL )
                         {
-                            Chuck_Array4 * intArray = (Chuck_Array4 *) array;
+                            Chuck_ArrayInt * intArray = (Chuck_ArrayInt *) array;
                             // TODO why is it unsigned int storage?
                             t_CKUINT result = 0;
                             intArray->get( request->key, &result );
@@ -3199,7 +3199,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat )
                         {
                             // it exists! get existing array, new size
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             t_CKUINT newSize = request->arrayValues.size();
 
                             // resize and copy in
@@ -3244,7 +3244,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat &&
                            request->cb != NULL )
                         {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             switch( request->cb_type )
                             {
                                 case ck_get_plain:
@@ -3304,7 +3304,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat )
                         {
                             // it exists! get existing array
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             // set! (if index within range)
                             if( floatArray->size() > request->index )
                             {
@@ -3347,7 +3347,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat &&
                            request->cb != NULL )
                         {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             t_CKFLOAT result = 0;
                             floatArray->get( request->index, &result );
                             switch( request->cb_type )
@@ -3398,7 +3398,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat )
                         {
                             // it exists! get existing array
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             // set!
                             floatArray->set( request->key, request->value );
                         }
@@ -3438,7 +3438,7 @@ void Chuck_Globals_Manager::handle_global_queue_messages()
                            m_global_arrays[request->name]->array_type == te_globalFloat &&
                            request->cb != NULL )
                         {
-                            Chuck_Array8 * floatArray = (Chuck_Array8 *) array;
+                            Chuck_ArrayFloat * floatArray = (Chuck_ArrayFloat *) array;
                             t_CKFLOAT result = 0;
                             floatArray->get( request->key, &result );
                             switch( request->cb_type )

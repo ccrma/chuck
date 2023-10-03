@@ -49,7 +49,7 @@
 // major version must be the same between chuck:chugin
 #define CK_DLL_VERSION_MAJOR (0x0008)
 // minor version of chugin must be less than or equal to chuck's
-#define CK_DLL_VERSION_MINOR (0x0001)
+#define CK_DLL_VERSION_MINOR (0x0002)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
@@ -824,7 +824,7 @@ namespace Chuck_DL_Api
 typedef void * Object;
 typedef void * Type;
 typedef void * String;
-typedef void * Array4; // 1.5.0.1 (ge) added
+typedef void * ArrayInt; // 1.5.0.1 (ge) added
 
 struct Api
 {
@@ -835,8 +835,6 @@ public:
     struct VMApi
     {
         VMApi();
-        // get sample rate (legacy as of 1.5.1.4)
-        t_CKUINT (* const get_srate)( CK_DL_API, Chuck_VM_Shred * );
         // get sample rate | 1.5.1.4
         t_CKUINT (* const srate)( Chuck_VM * vm );
         // create a new lock-free one-producer, one-consumer buffer | 1.5.1.4
@@ -854,11 +852,13 @@ public:
     // intent: this allows for chugins to access member variables and create chuck strings
     public:
         // function pointer get_type()
-        Type (* const get_type)( CK_DL_API, Chuck_VM_Shred *, const char * name );
-        // function pointer create()
-        Object (* const create)( CK_DL_API, Chuck_VM_Shred *, Type type );
+        Type (* const get_type)( CK_DL_API, Chuck_VM *, const char * name );
+        // function pointer create_with_shred()
+        Object (* const create_with_shred)( CK_DL_API, Chuck_VM_Shred *, Type type );
+        // function pointer create_no_shred()
+        Object (* const create_no_shred)( CK_DL_API, Chuck_VM *, Type type );
         // function pointer create_string()
-        String (* const create_string)( CK_DL_API, Chuck_VM_Shred *, const char * value );
+        String (* const create_string)( CK_DL_API, Chuck_VM *, const char * value );
         // function pointers for get_mvar_*()
         t_CKBOOL (* const get_mvar_int)( CK_DL_API, Object object, const char * name, t_CKINT & value );
         t_CKBOOL (* const get_mvar_float)( CK_DL_API, Object object, const char * name, t_CKFLOAT & value );
@@ -868,11 +868,11 @@ public:
         t_CKBOOL (* const get_mvar_object)( CK_DL_API, Object object, const char * name, Object & value );
         // function pointer for set_string()
         t_CKBOOL (* const set_string)( CK_DL_API, String string, const char * value );
-        // array4 operations
-        t_CKBOOL (* const array4_size)( CK_DL_API, Array4 array, t_CKINT & value );
-        t_CKBOOL (* const array4_push_back)( CK_DL_API, Array4 array, t_CKUINT value );
-        t_CKBOOL (* const array4_get_idx)( CK_DL_API, Array4 array, t_CKINT idx, t_CKUINT & value );
-        t_CKBOOL (* const array4_get_key)( CK_DL_API, Array4 array, const std::string & key, t_CKUINT & value );
+        // array_int operations
+        t_CKBOOL (* const array_int_size)( CK_DL_API, ArrayInt array, t_CKINT & value );
+        t_CKBOOL (* const array_int_push_back)( CK_DL_API, ArrayInt array, t_CKUINT value );
+        t_CKBOOL (* const array_int_get_idx)( CK_DL_API, ArrayInt array, t_CKINT idx, t_CKUINT & value );
+        t_CKBOOL (* const array_int_get_key)( CK_DL_API, ArrayInt array, const std::string & key, t_CKUINT & value );
     } * const object;
 
     Api() :

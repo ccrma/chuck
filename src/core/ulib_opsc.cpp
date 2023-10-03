@@ -1481,7 +1481,7 @@ CK_DLL_MFUN( oscin_recv )
     OscMsg msg;
 
     // some local for later
-    Chuck_Array4 * args_obj = NULL;
+    Chuck_ArrayInt * args_obj = NULL;
     Chuck_Type * oscarg_type = NULL;
     int i;
 
@@ -1499,7 +1499,7 @@ CK_DLL_MFUN( oscin_recv )
     OBJ_MEMBER_STRING( msg_obj, oscmsg_offset_address )->set( msg.path );
     OBJ_MEMBER_STRING( msg_obj, oscmsg_offset_typetag )->set( msg.type );
     // get the array at OscMsg.args
-    args_obj = (Chuck_Array4 *)OBJ_MEMBER_OBJECT( msg_obj, oscmsg_offset_args );
+    args_obj = (Chuck_ArrayInt *)OBJ_MEMBER_OBJECT( msg_obj, oscmsg_offset_args );
     // clear it (which will also memory-manage existing contents)
     args_obj->clear();
     // find the type corresponding to chuck-side OscArg
@@ -1557,7 +1557,7 @@ CK_DLL_CTOR( oscmsg_ctor )
     CK_SAFE_ADD_REF( typetag );
     OBJ_MEMBER_STRING( SELF, oscmsg_offset_typetag ) = typetag;
 
-    Chuck_Array4 * args = new Chuck_Array4( TRUE );
+    Chuck_ArrayInt * args = new Chuck_ArrayInt( TRUE );
     initialize_object( args, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     args->clear();
     CK_SAFE_ADD_REF( args );
@@ -1578,14 +1578,14 @@ CK_DLL_DTOR( oscmsg_dtor )
 
 CK_DLL_MFUN( oscmsg_numArgs )
 {
-    Chuck_Array4 * args_obj = (Chuck_Array4 *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
+    Chuck_ArrayInt * args_obj = (Chuck_ArrayInt *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
     RETURN->v_int = args_obj->size();
 }
 
 CK_DLL_MFUN( oscmsg_getInt )
 {
     int i = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * args_obj = (Chuck_Array4 *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
+    Chuck_ArrayInt * args_obj = (Chuck_ArrayInt *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
     Chuck_Object * arg_obj;
 
     // check bounds
@@ -1603,7 +1603,7 @@ CK_DLL_MFUN( oscmsg_getInt )
 CK_DLL_MFUN( oscmsg_getFloat )
 {
     int i = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * args_obj = (Chuck_Array4 *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
+    Chuck_ArrayInt * args_obj = (Chuck_ArrayInt *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
     Chuck_Object * arg_obj;
     if( i >= 0 && i < args_obj->size() )
     {
@@ -1617,7 +1617,7 @@ CK_DLL_MFUN( oscmsg_getFloat )
 CK_DLL_MFUN( oscmsg_getString )
 {
     int i = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * args_obj = (Chuck_Array4 *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
+    Chuck_ArrayInt * args_obj = (Chuck_ArrayInt *)OBJ_MEMBER_OBJECT( SELF, oscmsg_offset_args );
     Chuck_Object * arg_obj;
 
     if( i >= 0 && i < args_obj->size() )

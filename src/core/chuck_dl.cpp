@@ -1407,16 +1407,6 @@ static t_CKUINT ck_srate( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
-// name: ck_get_srate() | legacy as of 1.5.1.4
-// desc: host-side hook implementation for getting system srate
-//-----------------------------------------------------------------------------
-static t_CKUINT ck_get_srate( CK_DL_API api, Chuck_VM_Shred * shred )
-{
-    return shred->vm_ref->srate();
-}
-
-
-//-----------------------------------------------------------------------------
 // name: create_event_buffer() | 1.5.1.4 (ge, andrew) added
 // desc: host-side hoook implemenation for
 //       creatinga new lock-free one-producer, one-consumer buffer
@@ -1425,6 +1415,7 @@ static CBufferSimple * ck_create_event_buffer( Chuck_VM * vm )
 {
     return vm->create_event_buffer();
 }
+
 
 //-----------------------------------------------------------------------------
 // name: queue_event() | 1.5.1.4 (ge, andrew) added
@@ -1441,9 +1432,9 @@ static t_CKBOOL ck_queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_
 // name: ck_get_type()
 // desc: host-side hook implementation for retrieving a type by name
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, const char * name )
+static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM * vm, const char * name )
 {
-    Chuck_Env * env = shred->vm_ref->env();
+    Chuck_Env * env = vm->env();
     a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
     Chuck_Type * t = type_engine_find_type( env, list );
     delete_id_list( list );
@@ -1452,17 +1443,21 @@ static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM_Shred * shred, co
 
 
 //-----------------------------------------------------------------------------
-// name: ck_create()
+// name: ck_create_with_shred()
 // desc: host-side hook implementation for instantiating and initializing
-//       a ChucK object by type
+//       a ChucK object by type, with reference to a parent shred;
+//       the shred reference is useful in certain scenarios:
+//       if 1) create a chuck-side class 2) with a member function that
+//       is then invoked from c++ (e.g., using ck_invoke_mfun_immediate_mode)
+//       and 3) that member function references global scope variables
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
+static Chuck_DL_Api::Object ck_create_with_shred( CK_DL_API api, Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
 {
     // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
     if( t == NULL )
     {
         // print error message
-        EM_error2( 0, "DL_Api:object:ck_create: NULL object reference." );
+        EM_error2( 0, "DL_Api:object:ck_create_with_shred: NULL object reference." );
         // done
         return NULL;
     }
@@ -1470,7 +1465,33 @@ static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Ch
     // type
     Chuck_Type * type = (Chuck_Type *)t;
     // instantiate and initialize
-    Chuck_Object * o = instantiate_and_initialize_object( type, shred->vm_ref );
+    Chuck_Object * o = instantiate_and_initialize_object( type, shred, shred->vm_ref );
+    // done
+    return (Chuck_DL_Api::Object)o;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_create_no_shred()
+// desc: host-side hook implementation for instantiating and initializing
+//       a ChucK object by type, without a parent shred; see ck_create_with_shred()
+//       for more details
+//-----------------------------------------------------------------------------
+static Chuck_DL_Api::Object ck_create_no_shred( CK_DL_API api, Chuck_VM * vm, Chuck_DL_Api::Type t )
+{
+    // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
+    if( t == NULL )
+    {
+        // print error message
+        EM_error2( 0, "DL_Api:object:ck_create_no_shred: NULL object reference." );
+        // done
+        return NULL;
+    }
+
+    // type
+    Chuck_Type * type = (Chuck_Type *)t;
+    // instantiate and initialize
+    Chuck_Object * o = instantiate_and_initialize_object( type, vm );
     // done
     return (Chuck_DL_Api::Object)o;
 }
@@ -1480,10 +1501,10 @@ static Chuck_DL_Api::Object ck_create( CK_DL_API api, Chuck_VM_Shred * shred, Ch
 // name: ck_create_string()
 // desc: host-side hook implementation for creating a chuck string
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM_Shred * shred, const char * cstr )
+static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM * vm, const char * cstr )
 {
     // instantiate and initalize object
-    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( shred->vm_ref->env()->ckt_string, shred->vm_ref );
+    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, vm );
     // set the value
     string->set( cstr ? cstr : "" );
     // return reference
@@ -1730,18 +1751,18 @@ static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array4_size()
+// name: ck_array_int_size()
 // desc: get size of an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array4_size( CK_DL_API api, Chuck_DL_Api::Array4 a, t_CKINT & value )
+static t_CKBOOL ck_array_int_size( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKINT & value )
 {
     // default value
     value = 0;
     // check
     if( a == NULL ) return FALSE;
 
-    // cast to array4
-    Chuck_Array4 * array = (Chuck_Array4 *)a;
+    // cast to array_int
+    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
 
     value = array->size();
     return TRUE;
@@ -1749,15 +1770,15 @@ static t_CKBOOL ck_array4_size( CK_DL_API api, Chuck_DL_Api::Array4 a, t_CKINT &
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array4_push_back()
+// name: ck_array_int_push_back()
 // desc: push back an element into an array | 1.5.0.1 (ge) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array4_push_back( CK_DL_API api, Chuck_DL_Api::Array4 a, t_CKUINT value )
+static t_CKBOOL ck_array_int_push_back( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKUINT value )
 {
     // check
     if( a == NULL ) return FALSE;
-    // cast to array4
-    Chuck_Array4 * array = (Chuck_Array4 *)a;
+    // cast to array_int
+    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
     // action
     array->push_back( value );
     // done
@@ -1766,30 +1787,30 @@ static t_CKBOOL ck_array4_push_back( CK_DL_API api, Chuck_DL_Api::Array4 a, t_CK
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array4_get_idx()
+// name: ck_array_int_get_idx()
 // desc: get an indexed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array4_get_idx( CK_DL_API api, Chuck_DL_Api::Array4 a, t_CKINT idx, t_CKUINT & value )
+static t_CKBOOL ck_array_int_get_idx( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKINT idx, t_CKUINT & value )
 {
     // check
     if( a == NULL ) return FALSE;
-    // cast to array4
-    Chuck_Array4 * array = (Chuck_Array4 *)a;
+    // cast to array_int
+    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
     // action
     return array->get( idx, &value );
 }
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array4_get()
+// name: ck_array_int_get()
 // desc: get a keyed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array4_get_key( CK_DL_API api, Chuck_DL_Api::Array4 a, const std::string& key, t_CKUINT & value )
+static t_CKBOOL ck_array_int_get_key( CK_DL_API api, Chuck_DL_Api::ArrayInt a, const std::string& key, t_CKUINT & value )
 {
     // check
     if( a == NULL ) return FALSE;
-    // cast to array4
-    Chuck_Array4 * array = (Chuck_Array4 *)a;
+    // cast to array_int
+    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
     // action
     return array->get( key, &value );
 }
@@ -1801,7 +1822,6 @@ static t_CKBOOL ck_array4_get_key( CK_DL_API api, Chuck_DL_Api::Array4 a, const 
 // constructor for the VMApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::VMApi::VMApi() :
-get_srate(ck_get_srate),
 srate(ck_srate),
 create_event_buffer(ck_create_event_buffer),
 queue_event(ck_queue_event)
@@ -1815,7 +1835,8 @@ queue_event(ck_queue_event)
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
-create(ck_create),
+create_with_shred(ck_create_with_shred),
+create_no_shred(ck_create_no_shred),
 create_string(ck_create_string),
 get_mvar_int(ck_get_mvar_int),
 get_mvar_float(ck_get_mvar_float),
@@ -1824,10 +1845,10 @@ get_mvar_time(ck_get_mvar_time),
 get_mvar_string(ck_get_mvar_string),
 get_mvar_object(ck_get_mvar_object),
 set_string(ck_set_string),
-array4_size(ck_array4_size),
-array4_push_back(ck_array4_push_back),
-array4_get_idx(ck_array4_get_idx),
-array4_get_key(ck_array4_get_key)
+array_int_size(ck_array_int_size),
+array_int_push_back(ck_array_int_push_back),
+array_int_get_idx(ck_array_int_get_idx),
+array_int_get_key(ck_array_int_get_key)
 { }
 
 

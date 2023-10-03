@@ -1377,7 +1377,7 @@ CK_DLL_DTOR( CKDoc_dtor )
 CK_DLL_MFUN( CKDoc_addGroup_type )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * typeArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * typeArray = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
     Chuck_String * groupName = GET_NEXT_STRING(ARGS);
     Chuck_String * shortName = GET_NEXT_STRING(ARGS);
     Chuck_String * description = GET_NEXT_STRING(ARGS);
@@ -1430,7 +1430,7 @@ error:
 CK_DLL_MFUN( CKDoc_addGroup_str )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * strArray = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
     Chuck_String * groupName = GET_NEXT_STRING(ARGS);
     Chuck_String * shortName = GET_NEXT_STRING(ARGS);
     Chuck_String * desc = GET_NEXT_STRING(ARGS);
@@ -1560,7 +1560,7 @@ CK_DLL_MFUN( CKDoc_genGroups )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
     // the return array
-    Chuck_Array4 * strArray = (Chuck_Array4 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * strArray = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
     // the c++ return vector
     vector<string> results;
     // gen the groups

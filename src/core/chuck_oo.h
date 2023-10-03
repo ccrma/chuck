@@ -186,7 +186,7 @@ public: // static
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
 // desc: native ChucK array (virtual base class)
-//       NOTE due to certain specialized operations, e.g., Array4 is also
+//       NOTE due to certain specialized operations, e.g., ArrayInt is also
 //       used to hold and manage Object references, this class is currently
 //       not templated (and probably cannot be fully templated). For this
 //       reason, some functionalities that requires type-specific arguments
@@ -256,14 +256,14 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array4
+// name: struct Chuck_ArrayInt
 // desc: native ChucK arrays (for 4-byte/8-byte int, and Object references)
 //-----------------------------------------------------------------------------
-struct Chuck_Array4 : public Chuck_Array
+struct Chuck_ArrayInt : public Chuck_Array
 {
 public:
-    Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity = 8 );
-    virtual ~Chuck_Array4();
+    Chuck_ArrayInt( t_CKBOOL is_obj, t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayInt();
 
 public: // specific to this class
     // get address
@@ -351,14 +351,14 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array8
+// name: struct Chuck_ArrayFloat
 // desc: native ChucK arrays (for 8-byte float)
 //-----------------------------------------------------------------------------
-struct Chuck_Array8 : public Chuck_Array
+struct Chuck_ArrayFloat : public Chuck_Array
 {
 public:
-    Chuck_Array8( t_CKINT capacity = 8 );
-    virtual ~Chuck_Array8();
+    Chuck_ArrayFloat( t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayFloat();
 
 public: // specific to this class
     // get address

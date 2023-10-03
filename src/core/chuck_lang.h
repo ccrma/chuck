@@ -137,7 +137,7 @@ public:
 
 public:
     t_CKTIME & when();
-    Chuck_Array8 & fvals();
+    Chuck_ArrayFloat & fvals();
     Chuck_Array16 & cvals();
 
 public:

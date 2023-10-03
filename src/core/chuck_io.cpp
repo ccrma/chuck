@@ -1633,7 +1633,7 @@ CK_DLL_MFUN( fileio_isdir )
 CK_DLL_MFUN( fileio_dirlist )
 {
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-    Chuck_Array4 * a = f->dirList();
+    Chuck_ArrayInt * a = f->dirList();
     RETURN->v_object = a;
 }
 
@@ -2602,7 +2602,7 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
     static HidIn * hi;
     static t_CKBOOL hi_good = TRUE;
 
-    Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( FALSE, 3 );
     initialize_object( array, VM->env()->ckt_array, SHRED, VM ); // 1.5.0.0 (ge) added
     array->set( 0, 0 );
     array->set( 1, 0 );
@@ -3376,13 +3376,13 @@ t_CKINT Chuck_IO_File::isDir()
 // name: dirList()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Array4 * Chuck_IO_File::dirList()
+Chuck_ArrayInt * Chuck_IO_File::dirList()
 {
     // sanity
     if( !m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot get list: no directory open" );
-        Chuck_Array4 * ret = new Chuck_Array4( TRUE, 0 );
+        Chuck_ArrayInt * ret = new Chuck_ArrayInt( TRUE, 0 );
         initialize_object( ret, m_vmRef->env()->ckt_array, NULL, m_vmRef );
         return ret;
     }
@@ -3409,7 +3409,7 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     }
 
     // make array
-    Chuck_Array4 * array = new Chuck_Array4( true, entrylist.size() );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( true, entrylist.size() );
     initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef );
     for( int i = 0; i < entrylist.size(); i++ )
         array->set( i, (t_CKUINT)entrylist[i] );
@@ -5519,7 +5519,7 @@ void Chuck_IO_Serial::write( const t_CKVEC4 & val, t_CKINT flags )
     this->write( val.w, flags );
 }
 
-void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
+void Chuck_IO_Serial::writeBytes( Chuck_ArrayInt * arr )
 {
     if( !good() )
     {
@@ -5924,7 +5924,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
 {
     t_CKFLOAT val = 0;
     int numRead = 0;
-    Chuck_Array8 * array = new Chuck_Array8(0);
+    Chuck_ArrayFloat * array = new Chuck_ArrayFloat(0);
 
     for(int i = 0; i < r.m_num && !m_do_exit; i++)
     {
@@ -5976,7 +5976,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
 {
     t_CKINT val = 0;
     int numRead = 0;
-    Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, 0);
     initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
@@ -6049,7 +6049,7 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
         val = m_tmp_buf[0];
     else
     {
-        Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+        Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, r.m_num);
         initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
         for(int i = 0; i < r.m_num; i++)
         {
@@ -6092,7 +6092,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     t_CKUINT val = 0;
     t_CKSINGLE * m_floats = (t_CKSINGLE *) m_tmp_buf;
 
-    Chuck_Array8 * array = new Chuck_Array8(r.m_num);
+    Chuck_ArrayFloat * array = new Chuck_ArrayFloat(r.m_num);
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_floats[i]);
@@ -6126,7 +6126,7 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     t_CKUINT val = 0;
     uint32_t * m_ints = (uint32_t *) m_tmp_buf;
 
-    Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, r.m_num);
     initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
@@ -6611,7 +6611,7 @@ CK_DLL_SFUN( serialio_list )
     vector<string> devices = SerialIOManager::availableSerialDevices();
 
     // ISSUE: 64-bit
-    Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(TRUE, 0);
     initialize_object( array, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
 
     for(vector<string>::iterator i = devices.begin(); i != devices.end(); i++)
@@ -6788,7 +6788,7 @@ CK_DLL_MFUN( serialio_writeByte )
 CK_DLL_MFUN( serialio_writeBytes )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    Chuck_Array4 * arr = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * arr = (Chuck_ArrayInt *) GET_NEXT_OBJECT(ARGS);
     cereal->writeBytes(arr);
 }
 

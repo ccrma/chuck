@@ -5568,11 +5568,11 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // 1.4.2.0 (ge) | added: check for float explicitly
     if( m_type_ref->size == sz_INT && !m_is_float ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
-        // TODO: look at size and treat Chuck_Array4 as ChuckArrayInt
+        // TODO: look at size and treat Chuck_ArrayInt as ChuckArrayInt
         // pop the values
         pop_( reg_sp, m_length );
         // instantiate array
-        Chuck_Array4 * array = new Chuck_Array4( m_is_obj, m_length );
+        Chuck_ArrayInt * array = new Chuck_ArrayInt( m_is_obj, m_length );
         // problem
         if( !array ) goto out_of_memory;
         // initialize object
@@ -5591,7 +5591,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // pop the values
         pop_( reg_sp, m_length * (sz_FLOAT / sz_INT) ); // 1.3.1.0 added size division
         // instantiate array
-        Chuck_Array8 * array = new Chuck_Array8( m_length );
+        Chuck_ArrayFloat * array = new Chuck_ArrayFloat( m_length );
         // problem
         if( !array ) goto out_of_memory;
         // fill array
@@ -5767,7 +5767,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
                                Chuck_Type * type )
 {
     // not top level
-    Chuck_Array4 * theBase = NULL;
+    Chuck_ArrayInt * theBase = NULL;
     Chuck_Object * next = NULL;
     Chuck_Type * typeNext = NULL;
     t_CKINT i = 0;
@@ -5782,7 +5782,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         // 1.3.1.0: look at type to use kind instead of size
         if( kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
-            Chuck_Array4 * baseX = new Chuck_Array4( is_obj, *capacity );
+            Chuck_ArrayInt * baseX = new Chuck_ArrayInt( is_obj, *capacity );
             if( !baseX ) goto out_of_memory;
 
             // if object
@@ -5804,7 +5804,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
         }
         else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
-            Chuck_Array8 * baseX = new Chuck_Array8( *capacity );
+            Chuck_ArrayFloat * baseX = new Chuck_ArrayFloat( *capacity );
             if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
@@ -5857,7 +5857,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
     }
 
     // not top level
-    theBase = new Chuck_Array4( TRUE, *capacity );
+    theBase = new Chuck_ArrayInt( TRUE, *capacity );
     if( !theBase) goto out_of_memory;
 
     // construct type for next array level | 1.5.0.0 (ge) added
@@ -6092,7 +6092,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
+        Chuck_ArrayInt * arr = (Chuck_ArrayInt *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
         // normalize index to allow for negative indexing | 1.5.0.0 (nshaheed) added
@@ -6116,7 +6116,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (1.3.1.0)
     {
         // get array
-        Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
+        Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
         // normalize index to allow for negative indexing
@@ -6266,7 +6266,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
+        Chuck_ArrayInt * arr = (Chuck_ArrayInt *)(*sp);
         // get index
         key = (Chuck_String *)(*(sp+1));
         // check if writing
@@ -6288,7 +6288,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
+        Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)(*sp);
         // get index
         key = (Chuck_String *)(*(sp+1));
         // check if writing
@@ -6422,7 +6422,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     pop_( sp, m_depth + 1 );
 
     // get array
-    Chuck_Array4 * base = (Chuck_Array4 *)(*sp);
+    Chuck_ArrayInt * base = (Chuck_ArrayInt *)(*sp);
     ptr = (t_CKINT *)(sp+1);
 
     // check for null
@@ -6452,7 +6452,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         }
 
         // set the array
-        base = (Chuck_Array4 *)val;
+        base = (Chuck_ArrayInt *)val;
         // check for null
         if( !base )
         {
@@ -6467,7 +6467,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     if( m_kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get arry
-        Chuck_Array4 * arr = base;
+        Chuck_ArrayInt * arr = base;
         // get index
         i = (t_CKINT)(*ptr);
         // check if writing
@@ -6489,7 +6489,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     else if( m_kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array8 * arr = (Chuck_Array8 *)(base);
+        Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)(base);
         // get index
         i = (t_CKINT)(*ptr);
         // check if writing
@@ -6652,7 +6652,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     if( m_val == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array4 * arr = (Chuck_Array4 *)(*sp);
+        Chuck_ArrayInt * arr = (Chuck_ArrayInt *)(*sp);
         // get value
         val = (t_CKINT)(*(sp+1));
         // append
@@ -6661,7 +6661,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_val == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array8 * arr = (Chuck_Array8 *)(*sp);
+        Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)(*sp);
         // get value
         fval = (*(t_CKFLOAT *)(sp+1));
         // append
@@ -7785,7 +7785,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_INT:
             {
                 // cast to specific array type
-                Chuck_Array4 * arr = (Chuck_Array4 *)array;
+                Chuck_ArrayInt * arr = (Chuck_ArrayInt *)array;
                 // is object RELEASE
                 if( arr->contains_objects() && *pVar)
                 {
@@ -7806,7 +7806,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_FLOAT:
             {
                 // cast to specific array type
-                Chuck_Array8 * arr = (Chuck_Array8 *) array;
+                Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *) array;
                 // get element
                 arr->get( *counter, (t_CKFLOAT *)pVar );
                 break;

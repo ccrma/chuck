@@ -964,7 +964,7 @@ CK_DLL_SFUN( scalef_impl )
 }
 
 // common internal function for range() | 1.5.1.1 (nshaheed)
-static Chuck_Array4 * ck_range( t_CKINT start, t_CKINT stop, t_CKINT step, Chuck_VM_Shred * SHRED )
+static Chuck_ArrayInt * ck_range( t_CKINT start, t_CKINT stop, t_CKINT step, Chuck_VM_Shred * SHRED )
 {
     // size
     t_CKINT size = 0;
@@ -973,7 +973,7 @@ static Chuck_Array4 * ck_range( t_CKINT start, t_CKINT stop, t_CKINT step, Chuck
     else if( start > stop && step < 0 ) size = (start-stop)/(-step) + ((start-stop)%(-step) ? 1 : 0);
 
     // allocate array object
-    Chuck_Array4 * range = new Chuck_Array4(FALSE, size);
+    Chuck_ArrayInt * range = new Chuck_ArrayInt(FALSE, size);
     // initialize with trappings of Object
     initialize_object(range, SHRED->vm_ref->env()->ckt_array, SHRED, SHRED->vm_ref);
 

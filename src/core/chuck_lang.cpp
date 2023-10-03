@@ -1855,7 +1855,7 @@ CK_DLL_MFUN( uana_fval )
     t_CKINT i = GET_NEXT_INT(ARGS);
     // get the fvals array
     Chuck_UAnaBlobProxy * blob = (Chuck_UAnaBlobProxy *)OBJ_MEMBER_INT(SELF, uana_offset_blob);
-    Chuck_Array8 & fvals = blob->fvals();
+    Chuck_ArrayFloat & fvals = blob->fvals();
     // check caps
     if( i < 0 || fvals.size() <= i ) RETURN->v_float = 0;
     else
@@ -1927,10 +1927,10 @@ t_CKTIME & Chuck_UAnaBlobProxy::when()
     return OBJ_MEMBER_TIME(m_blob, uanablob_offset_when);
 }
 
-Chuck_Array8 & Chuck_UAnaBlobProxy::fvals()
+Chuck_ArrayFloat & Chuck_UAnaBlobProxy::fvals()
 {
     // TODO: DANGER: is this actually returning correct reference?!
-    Chuck_Array8 * arr8 = (Chuck_Array8 *)OBJ_MEMBER_INT(m_blob, uanablob_offset_fvals);
+    Chuck_ArrayFloat * arr8 = (Chuck_ArrayFloat *)OBJ_MEMBER_INT(m_blob, uanablob_offset_fvals);
     assert( arr8 != NULL );
     return *arr8;
 }
@@ -1956,7 +1956,7 @@ CK_DLL_CTOR( uanablob_ctor )
     OBJ_MEMBER_TIME(SELF, uanablob_offset_when) = 0;
 
     // fvals
-    Chuck_Array8 * arr8 = new Chuck_Array8( 8 );
+    Chuck_ArrayFloat * arr8 = new Chuck_ArrayFloat( 8 );
     initialize_object( arr8, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     arr8->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
@@ -1972,7 +1972,7 @@ CK_DLL_CTOR( uanablob_ctor )
 CK_DLL_DTOR( uanablob_dtor )
 {
     // get array
-    Chuck_Array8 * arr8 = (Chuck_Array8 *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
+    Chuck_ArrayFloat * arr8 = (Chuck_ArrayFloat *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
     // release it
     arr8->release();
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = 0;
@@ -1995,7 +1995,7 @@ CK_DLL_MFUN( uanablob_when )
 CK_DLL_MFUN( uanablob_fvals )
 {
     // set return
-    RETURN->v_object = (Chuck_Array8 *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
+    RETURN->v_object = (Chuck_ArrayFloat *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
 }
 
 CK_DLL_MFUN( uanablob_fval )
@@ -2003,7 +2003,7 @@ CK_DLL_MFUN( uanablob_fval )
     // get index
     t_CKINT i = GET_NEXT_INT(ARGS);
     // get the fvals array
-    Chuck_Array8 * fvals = (Chuck_Array8 *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
+    Chuck_ArrayFloat * fvals = (Chuck_ArrayFloat *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
     // check caps
     if( i < 0 || fvals->size() <= i ) RETURN->v_float = 0;
     else
@@ -3003,9 +3003,9 @@ CK_DLL_MFUN( array_push_back )
     Chuck_Array * array = (Chuck_Array *)SELF;
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
     if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
-        RETURN->v_int = ((Chuck_Array4 *)array)->push_back( GET_NEXT_UINT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayInt *)array)->push_back( GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
-        RETURN->v_int = ((Chuck_Array8 *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_COMPLEX( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
@@ -3025,9 +3025,9 @@ CK_DLL_MFUN( array_insert )
 
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
     if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
-        RETURN->v_int = ((Chuck_Array4 *)array)->insert( position, GET_NEXT_UINT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayInt *)array)->insert( position, GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
-        RETURN->v_int = ((Chuck_Array8 *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayFloat *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_COMPLEX( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
@@ -3052,9 +3052,9 @@ CK_DLL_MFUN( array_push_front )
     Chuck_Array * array = (Chuck_Array *)SELF;
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
     if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
-        RETURN->v_int = ((Chuck_Array4 *)array)->push_front( GET_NEXT_UINT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayInt *)array)->push_front( GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
-        RETURN->v_int = ((Chuck_Array8 *)array)->push_front( GET_NEXT_FLOAT( ARGS ) );
+        RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_front( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_front( GET_NEXT_COMPLEX( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
@@ -3093,7 +3093,7 @@ CK_DLL_MFUN( array_erase2 )
 CK_DLL_MFUN( array_get_keys )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
-    Chuck_Array4 * returned_keys = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * returned_keys = (Chuck_ArrayInt *) GET_NEXT_OBJECT(ARGS);
 
     // clear return array
     returned_keys->set_size(0);
@@ -3125,7 +3125,7 @@ CK_DLL_MFUN( array_reverse )
 //-----------------------------------------------------------------------------
 static void typeGetTypes(
     Chuck_VM * vm,
-    Chuck_Array4 * ret,
+    Chuck_ArrayInt * ret,
     t_CKBOOL isObj,
     t_CKBOOL isPrim,
     t_CKBOOL isSpecial,
@@ -3272,7 +3272,7 @@ CK_DLL_MFUN( type_children )
     string name = me->base_name;
 
     // instantiate
-    Chuck_Array4 * ret = new Chuck_Array4( TRUE );
+    Chuck_ArrayInt * ret = new Chuck_ArrayInt( TRUE );
     initialize_object( ret, VM->env()->ckt_array, SHRED, VM );
 
     // results
@@ -3432,7 +3432,7 @@ CK_DLL_SFUN( type_typeOf_vec4 )
 CK_DLL_SFUN( type_getTypes )
 {
     // instantiate
-    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( TRUE );
     initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get args
@@ -3457,7 +3457,7 @@ CK_DLL_SFUN( type_getTypes )
 CK_DLL_SFUN( type_getTypes2 )
 {
     // instantiate
-    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( TRUE );
     initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get args
@@ -3478,7 +3478,7 @@ CK_DLL_SFUN( type_getTypes2 )
 CK_DLL_SFUN( type_getTypesAll )
 {
     // instantiate
-    Chuck_Array4 * array = new Chuck_Array4( TRUE );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( TRUE );
     initialize_object( array, VM->env()->ckt_array, SHRED, VM );
 
     // get all types
