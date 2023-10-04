@@ -395,12 +395,6 @@ typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chu
 typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
 // unregister a shreds notification callback
 typedef void (CK_DLL_CALL * f_unregister_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb );
-// call a Chuck_Object member function (defined in chuck or in c++) in IMMEDIATE MODE
-typedef Chuck_DL_Return (CK_DLL_CALL * f_invoke_mfun)( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
-// throw an exception
-typedef void (CK_DLL_CALL * f_throw_exception)( const char * exception, const char * desc, Chuck_VM_Shred * shred );
-// log a message
-typedef void (CK_DLL_CALL * f_em_log)( t_CKINT level, const char * text );
 
 // documentation
 // set current class documentation
@@ -845,11 +839,12 @@ public:
         // any time/event operations therein will throw an exception
         // Chuck_DL_Return (CK_DLL_CALL * invoke_mfun_immediate_mode)
         // ( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
-        f_invoke_mfun invoke_mfun_immediate_mode;
+        Chuck_DL_Return (CK_DLL_CALL * const invoke_mfun_immediate_mode)( Chuck_Object * obj, t_CKUINT func_vt_offset,
+                                                                          Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
         // throw an exception; if shred is passed in, it will be halted
-        f_throw_exception throw_exception;
+        void (CK_DLL_CALL * const throw_exception)( const char * exception, const char * desc, Chuck_VM_Shred * shred );
         // log a message in the chuck logging system
-        f_em_log em_log;
+        void (CK_DLL_CALL * const em_log)( t_CKINT level, const char * text );
     } * const vm;
 
     struct ObjectApi
@@ -868,6 +863,12 @@ public:
         Object (* const create_with_shred)( Chuck_VM_Shred *, Type type );
         // function pointer create_no_shred()
         Object (* const create_without_shred)( Chuck_VM *, Type type );
+        // add reference count
+        void (* const add_ref)( Object object );
+        // release reference count
+        void (* const release)( Object object );
+        // get reference count
+        t_CKUINT (* const refcount)( Object object );
         // function pointer create_string()
         String (* const create_string)( Chuck_VM *, const char * value );
         // function pointers for get_mvar_*()

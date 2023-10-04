@@ -1520,6 +1520,37 @@ static Chuck_DL_Api::Object ck_create_without_shred( Chuck_VM * vm, Chuck_DL_Api
 
 
 //-----------------------------------------------------------------------------
+// add reference count
+//-----------------------------------------------------------------------------
+void ck_add_ref( Chuck_DL_Api::Object object )
+{
+    Chuck_Object * obj = (Chuck_Object *)object;
+    CK_SAFE_ADD_REF(obj);
+}
+
+
+//-----------------------------------------------------------------------------
+// release reference count
+//-----------------------------------------------------------------------------
+void ck_release( Chuck_DL_Api::Object object )
+{
+    Chuck_Object * obj = (Chuck_Object *)object;
+    CK_SAFE_RELEASE(obj);
+}
+
+
+//-----------------------------------------------------------------------------
+// get reference count
+//-----------------------------------------------------------------------------
+t_CKUINT ck_refcount( Chuck_DL_Api::Object object )
+{
+    Chuck_Object * obj = (Chuck_Object *)object;
+    if( !obj ) return 0;
+    return obj->refcount();
+}
+
+
+//-----------------------------------------------------------------------------
 // name: ck_create_string()
 // desc: host-side hook implementation for creating a chuck string
 //-----------------------------------------------------------------------------
@@ -1865,6 +1896,9 @@ get_type(ck_get_type),
 get_vtable_offset(ck_get_vtable_offset),
 create_with_shred(ck_create_with_shred),
 create_without_shred(ck_create_without_shred),
+add_ref(ck_add_ref),
+release(ck_release),
+refcount(ck_refcount),
 create_string(ck_create_string),
 get_mvar_int(ck_get_mvar_int),
 get_mvar_float(ck_get_mvar_float),
