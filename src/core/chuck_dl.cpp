@@ -64,8 +64,8 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 // function prototypes
 //-----------------------------------------------------------------------------
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
-
-
+void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
+void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text );
 
 
 //-----------------------------------------------------------------------------
@@ -1431,7 +1431,7 @@ static t_CKBOOL ck_queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_
 // name: ck_get_type()
 // desc: host-side hook implementation for retrieving a type by name
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM * vm, const char * name )
+static Chuck_DL_Api::Type ck_get_type( Chuck_VM * vm, const char * name )
 {
     Chuck_Env * env = vm->env();
     a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
@@ -1445,7 +1445,7 @@ static Chuck_DL_Api::Type ck_get_type( CK_DL_API api, Chuck_VM * vm, const char 
 // name: ck_get_vtable_offset()
 // desc: function pointer get_type()
 //-----------------------------------------------------------------------------
-t_CKINT ck_get_vtable_offset( CK_DL_API, Chuck_VM * vm, const char * typeName, const char * valueName )
+t_CKINT ck_get_vtable_offset( Chuck_VM * vm, const char * typeName, const char * valueName )
 {
     // get the type
     Chuck_Env * env = vm->env();
@@ -1473,7 +1473,7 @@ t_CKINT ck_get_vtable_offset( CK_DL_API, Chuck_VM * vm, const char * typeName, c
 //       is then invoked from c++ (e.g., using ck_invoke_mfun_immediate_mode)
 //       and 3) that member function references global scope variables
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Object ck_create_with_shred( CK_DL_API api, Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
+static Chuck_DL_Api::Object ck_create_with_shred( Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
 {
     // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
     if( t == NULL )
@@ -1494,12 +1494,12 @@ static Chuck_DL_Api::Object ck_create_with_shred( CK_DL_API api, Chuck_VM_Shred 
 
 
 //-----------------------------------------------------------------------------
-// name: ck_create_no_shred()
+// name: ck_create_without_shred()
 // desc: host-side hook implementation for instantiating and initializing
 //       a ChucK object by type, without a parent shred; see ck_create_with_shred()
 //       for more details
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Object ck_create_no_shred( CK_DL_API api, Chuck_VM * vm, Chuck_DL_Api::Type t )
+static Chuck_DL_Api::Object ck_create_without_shred( Chuck_VM * vm, Chuck_DL_Api::Type t )
 {
     // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
     if( t == NULL )
@@ -1523,7 +1523,7 @@ static Chuck_DL_Api::Object ck_create_no_shred( CK_DL_API api, Chuck_VM * vm, Ch
 // name: ck_create_string()
 // desc: host-side hook implementation for creating a chuck string
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::String ck_create_string( CK_DL_API api, Chuck_VM * vm, const char * cstr )
+static Chuck_DL_Api::String ck_create_string( Chuck_VM * vm, const char * cstr )
 {
     // instantiate and initalize object
     Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, vm );
@@ -1599,7 +1599,7 @@ static t_CKBOOL ck_get_mvar(Chuck_DL_Api::Object o, const char * name, te_Type b
 // name: ck_get_mvar_int()
 // desc: retrieve a class's member variable of type int
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKINT & value)
+static t_CKBOOL ck_get_mvar_int( Chuck_DL_Api::Object obj, const char * name, t_CKINT & value )
 {
     // default value
     value = 0;
@@ -1625,7 +1625,7 @@ static t_CKBOOL ck_get_mvar_int(CK_DL_API api, Chuck_DL_Api::Object obj, const c
 // name: ck_get_mvar_float()
 // desc: retrieve a class's member variable of type float
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, const char* name, t_CKFLOAT & value )
+static t_CKBOOL ck_get_mvar_float( Chuck_DL_Api::Object obj, const char* name, t_CKFLOAT & value )
 {
     // default value
     value = 0.0;
@@ -1648,11 +1648,13 @@ static t_CKBOOL ck_get_mvar_float( CK_DL_API api, Chuck_DL_Api::Object obj, cons
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: ck_get_mvar_dur()
 // desc: retrieve a class's member variable of type dur
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
+static t_CKBOOL ck_get_mvar_dur( Chuck_DL_Api::Object obj, const char * name, t_CKDUR & value )
 {
     // default value
     value = 0.0;
@@ -1679,7 +1681,7 @@ static t_CKBOOL ck_get_mvar_dur( CK_DL_API api, Chuck_DL_Api::Object obj, const 
 // name: ck_get_mvar_time()
 // desc: retrieve a class's member variable of type time
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
+static t_CKBOOL ck_get_mvar_time( Chuck_DL_Api::Object obj, const char * name, t_CKTIME & value )
 {
     // default value
     value = 0.0;
@@ -1706,7 +1708,7 @@ static t_CKBOOL ck_get_mvar_time( CK_DL_API api, Chuck_DL_Api::Object obj, const
 // name: ck_get_mvar_string()
 // desc: retrieve a class's member variable of type string
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
+static t_CKBOOL ck_get_mvar_string( Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::String & str )
 {
     // default value
     str = NULL;
@@ -1732,7 +1734,7 @@ static t_CKBOOL ck_get_mvar_string( CK_DL_API api, Chuck_DL_Api::Object obj, con
 // name: ck_get_mvar_object()
 // desc: retrieve a class's member variable of type object
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
+static t_CKBOOL ck_get_mvar_object( Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
 {
     // default
     object = NULL;
@@ -1759,7 +1761,7 @@ static t_CKBOOL ck_get_mvar_object( CK_DL_API api, Chuck_DL_Api::Object obj, con
 // name: ck_set_string()
 // desc: set a chuck string
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char * str )
+static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, const char * str )
 {
     // check | 1.5.0.1 (ge) changed from assert s != NULL
     if( s == NULL ) return FALSE;
@@ -1776,7 +1778,7 @@ static t_CKBOOL ck_set_string( CK_DL_API api, Chuck_DL_Api::String s, const char
 // name: ck_array_int_size()
 // desc: get size of an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array_int_size( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKINT & value )
+static t_CKBOOL ck_array_int_size( Chuck_DL_Api::ArrayInt a, t_CKINT & value )
 {
     // default value
     value = 0;
@@ -1795,7 +1797,7 @@ static t_CKBOOL ck_array_int_size( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CK
 // name: ck_array_int_push_back()
 // desc: push back an element into an array | 1.5.0.1 (ge) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array_int_push_back( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKUINT value )
+static t_CKBOOL ck_array_int_push_back( Chuck_DL_Api::ArrayInt a, t_CKUINT value )
 {
     // check
     if( a == NULL ) return FALSE;
@@ -1812,7 +1814,7 @@ static t_CKBOOL ck_array_int_push_back( CK_DL_API api, Chuck_DL_Api::ArrayInt a,
 // name: ck_array_int_get_idx()
 // desc: get an indexed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array_int_get_idx( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t_CKINT idx, t_CKUINT & value )
+static t_CKBOOL ck_array_int_get_idx( Chuck_DL_Api::ArrayInt a, t_CKINT idx, t_CKUINT & value )
 {
     // check
     if( a == NULL ) return FALSE;
@@ -1827,7 +1829,7 @@ static t_CKBOOL ck_array_int_get_idx( CK_DL_API api, Chuck_DL_Api::ArrayInt a, t
 // name: ck_array_int_get()
 // desc: get a keyed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL ck_array_int_get_key( CK_DL_API api, Chuck_DL_Api::ArrayInt a, const std::string& key, t_CKUINT & value )
+static t_CKBOOL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, const std::string& key, t_CKUINT & value )
 {
     // check
     if( a == NULL ) return FALSE;
@@ -1847,7 +1849,9 @@ Chuck_DL_Api::Api::VMApi::VMApi() :
 srate(ck_srate),
 create_event_buffer(ck_create_event_buffer),
 queue_event(ck_queue_event),
-invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode)
+invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode),
+throw_exception(ck_throw_exception),
+em_log(ck_em_log)
 { }
 
 
@@ -1860,7 +1864,7 @@ Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
 get_vtable_offset(ck_get_vtable_offset),
 create_with_shred(ck_create_with_shred),
-create_no_shred(ck_create_no_shred),
+create_without_shred(ck_create_without_shred),
 create_string(ck_create_string),
 get_mvar_int(ck_get_mvar_int),
 get_mvar_float(ck_get_mvar_float),
@@ -1931,6 +1935,46 @@ Chuck_DL_Return ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t_CKUINT func
     return RETURN;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_throw_exception()
+// desc: throw an exception, if shred is passed it, it will be halted
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc,
+                                     Chuck_VM_Shred * shred )
+{
+    // constructor string
+    string e = exception ? string(exception) : "[unnamed]";
+    if( desc ) e += ": " + string(desc);
+
+    // display
+    EM_exception( e.c_str() );
+    // if shred passed in
+    if( shred )
+    {
+        // halt shred
+        shred->is_running = FALSE;
+        // mark as done
+        shred->is_done = TRUE;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_throw_exception()
+// desc: throw an exception
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
+{
+    // check
+    if( !text ) return;
+    // display
+    EM_log( level, text );
+}
 
 
 
