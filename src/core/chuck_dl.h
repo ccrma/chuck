@@ -859,18 +859,23 @@ public:
         Type (* const get_type)( Chuck_VM *, const char * name );
         // function pointer for get_vtable_offset(); returns < 0 if not found
         t_CKINT (* const get_vtable_offset)( Chuck_VM *, const char * typee, const char * value );
-        // function pointer create_with_shred()
-        Object (* const create_with_shred)( Chuck_VM_Shred *, Type type );
-        // function pointer create_no_shred()
-        Object (* const create_without_shred)( Chuck_VM *, Type type );
         // add reference count
         void (* const add_ref)( Object object );
         // release reference count
         void (* const release)( Object object );
         // get reference count
         t_CKUINT (* const refcount)( Object object );
-        // function pointer create_string()
-        String (* const create_string)( Chuck_VM *, const char * value );
+        // instantiating and initializing a ChucK object by type, with reference to a parent shred
+        // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+        // NOTE set addRef to TRUE if you intend to keep a reference of the newly created object around (e.g., in the chugin)
+        // NOTE set addref to FALSE if the created object is to be returned without keeping a reference around
+        Object (* const create_with_shred)( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
+        // instantiating and initializing a ChucK object by type, with no reference to a parent shred
+        // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+        Object (* const create_without_shred)( Chuck_VM *, Type type, t_CKBOOL addRef );
+        // instantiate and initialize a ChucK string by type
+        // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+        String (* const create_string)( Chuck_VM *, const char * value, t_CKBOOL addRef );
         // function pointers for get_mvar_*()
         t_CKBOOL (* const get_mvar_int)( Object object, const char * name, t_CKINT & value );
         t_CKBOOL (* const get_mvar_float)( Object object, const char * name, t_CKFLOAT & value );

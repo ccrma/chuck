@@ -1465,61 +1465,6 @@ t_CKINT ck_get_vtable_offset( Chuck_VM * vm, const char * typeName, const char *
 
 
 //-----------------------------------------------------------------------------
-// name: ck_create_with_shred()
-// desc: host-side hook implementation for instantiating and initializing
-//       a ChucK object by type, with reference to a parent shred;
-//       the shred reference is useful in certain scenarios:
-//       if 1) create a chuck-side class 2) with a member function that
-//       is then invoked from c++ (e.g., using ck_invoke_mfun_immediate_mode)
-//       and 3) that member function references global scope variables
-//-----------------------------------------------------------------------------
-static Chuck_DL_Api::Object ck_create_with_shred( Chuck_VM_Shred * shred, Chuck_DL_Api::Type t )
-{
-    // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
-    if( t == NULL )
-    {
-        // print error message
-        EM_error2( 0, "DL_Api:object:ck_create_with_shred: NULL object reference." );
-        // done
-        return NULL;
-    }
-
-    // type
-    Chuck_Type * type = (Chuck_Type *)t;
-    // instantiate and initialize
-    Chuck_Object * o = instantiate_and_initialize_object( type, shred, shred->vm_ref );
-    // done
-    return (Chuck_DL_Api::Object)o;
-}
-
-
-//-----------------------------------------------------------------------------
-// name: ck_create_without_shred()
-// desc: host-side hook implementation for instantiating and initializing
-//       a ChucK object by type, without a parent shred; see ck_create_with_shred()
-//       for more details
-//-----------------------------------------------------------------------------
-static Chuck_DL_Api::Object ck_create_without_shred( Chuck_VM * vm, Chuck_DL_Api::Type t )
-{
-    // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
-    if( t == NULL )
-    {
-        // print error message
-        EM_error2( 0, "DL_Api:object:ck_create_no_shred: NULL object reference." );
-        // done
-        return NULL;
-    }
-
-    // type
-    Chuck_Type * type = (Chuck_Type *)t;
-    // instantiate and initialize
-    Chuck_Object * o = instantiate_and_initialize_object( type, vm );
-    // done
-    return (Chuck_DL_Api::Object)o;
-}
-
-
-//-----------------------------------------------------------------------------
 // add reference count
 //-----------------------------------------------------------------------------
 void ck_add_ref( Chuck_DL_Api::Object object )
@@ -1551,17 +1496,83 @@ t_CKUINT ck_refcount( Chuck_DL_Api::Object object )
 
 
 //-----------------------------------------------------------------------------
+// name: ck_create_with_shred()
+// desc: host-side hook implementation for instantiating and initializing
+//       a ChucK object by type, with reference to a parent shred;
+//       the shred reference is useful in certain scenarios:
+//       if 1) create a chuck-side class 2) with a member function that
+//       is then invoked from c++ (e.g., using ck_invoke_mfun_immediate_mode)
+//       and 3) that member function references global scope variables
+//-----------------------------------------------------------------------------
+static Chuck_DL_Api::Object ck_create_with_shred( Chuck_VM_Shred * shred, Chuck_DL_Api::Type t, t_CKBOOL addRef )
+{
+    // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
+    if( t == NULL )
+    {
+        // print error message
+        EM_error2( 0, "DL_Api:object:ck_create_with_shred: NULL object reference." );
+        // done
+        return NULL;
+    }
+
+    // type
+    Chuck_Type * type = (Chuck_Type *)t;
+    // instantiate and initialize
+    Chuck_Object * o = instantiate_and_initialize_object( type, shred, shred->vm_ref );
+    // if requested to add ref
+    if( o && addRef ) CK_SAFE_ADD_REF(o);
+    // done
+    return (Chuck_DL_Api::Object)o;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_create_without_shred()
+// desc: host-side hook implementation for instantiating and initializing
+//       a ChucK object by type, without a parent shred; see ck_create_with_shred()
+//       for more details
+//-----------------------------------------------------------------------------
+static Chuck_DL_Api::Object ck_create_without_shred( Chuck_VM * vm, Chuck_DL_Api::Type t, t_CKBOOL addRef )
+{
+    // check | 1.5.0.1 (ge) changed; used to be assert t != NULL
+    if( t == NULL )
+    {
+        // print error message
+        EM_error2( 0, "DL_Api:object:ck_create_no_shred: NULL object reference." );
+        // done
+        return NULL;
+    }
+
+    // type
+    Chuck_Type * type = (Chuck_Type *)t;
+    // instantiate and initialize
+    Chuck_Object * o = instantiate_and_initialize_object( type, vm );
+    // if requested to add ref
+    if( o && addRef ) CK_SAFE_ADD_REF(o);
+    // done
+    return (Chuck_DL_Api::Object)o;
+}
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_create_string()
 // desc: host-side hook implementation for creating a chuck string
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::String ck_create_string( Chuck_VM * vm, const char * cstr )
+static Chuck_DL_Api::String ck_create_string( Chuck_VM * vm, const char * cstr, t_CKBOOL addRef )
 {
     // instantiate and initalize object
-    Chuck_String * string = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, vm );
-    // set the value
-    string->set( cstr ? cstr : "" );
+    Chuck_String * ckstr = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, vm );
+    // if successfully instantiated
+    if( ckstr )
+    {
+        // set the value
+        ckstr->set( cstr ? cstr : "" );
+        // if requested to add ref
+        if( addRef ) CK_SAFE_ADD_REF(ckstr);
+    }
     // return reference
-    return (Chuck_DL_Api::String)string;
+    return (Chuck_DL_Api::String)ckstr;
 }
 
 
