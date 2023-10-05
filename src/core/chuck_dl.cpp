@@ -66,6 +66,7 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
 void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
 void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text );
+Chuck_DL_Api::Type CK_DLL_CALL ck_type_lookup( Chuck_VM * vm, const char * name );
 t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
 
@@ -1445,13 +1446,9 @@ static t_CKBOOL ck_queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_
 // name: ck_get_type()
 // desc: host-side hook implementation for retrieving a type by name
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::Type ck_get_type( Chuck_VM * vm, const char * name )
+static Chuck_DL_Api::Type ck_get_type( Chuck_Object * object )
 {
-    Chuck_Env * env = vm->env();
-    a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
-    Chuck_Type * t = type_engine_find_type( env, list );
-    delete_id_list( list );
-    return (Chuck_DL_Api::Type)t;
+    return object->type_ref;
 }
 
 
@@ -1733,6 +1730,7 @@ static t_CKBOOL ck_get_mvar_dur( Chuck_DL_Api::Object obj, const char * name, t_
 }
 
 
+
 //-----------------------------------------------------------------------------
 // name: ck_get_mvar_time()
 // desc: retrieve a class's member variable of type time
@@ -1758,6 +1756,8 @@ static t_CKBOOL ck_get_mvar_time( Chuck_DL_Api::Object obj, const char * name, t
     // done
     return success;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1813,6 +1813,7 @@ static t_CKBOOL ck_get_mvar_object( Chuck_DL_Api::Object obj, const char * name,
 }
 
 
+
 //-----------------------------------------------------------------------------
 // name: ck_set_string()
 // desc: set a chuck string
@@ -1828,6 +1829,7 @@ static t_CKBOOL ck_set_string( Chuck_DL_Api::String s, const char * str )
     // done
     return TRUE;
 }
+
 
 
 //-----------------------------------------------------------------------------
@@ -1849,6 +1851,8 @@ static t_CKBOOL ck_array_int_size( Chuck_DL_Api::ArrayInt a, t_CKINT & value )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: ck_array_int_push_back()
 // desc: push back an element into an array | 1.5.0.1 (ge) added
@@ -1866,6 +1870,8 @@ static t_CKBOOL ck_array_int_push_back( Chuck_DL_Api::ArrayInt a, t_CKUINT value
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: ck_array_int_get_idx()
 // desc: get an indexed element from an array | 1.5.1.3 (nshaheed) added
@@ -1879,6 +1885,8 @@ static t_CKBOOL ck_array_int_get_idx( Chuck_DL_Api::ArrayInt a, t_CKINT idx, t_C
     // action
     return array->get( idx, &value );
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1946,6 +1954,7 @@ array_int_get_key(ck_array_int_get_key)
 // constructor for the TypeApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::TypeApi::TypeApi() :
+lookup(ck_type_lookup),
 is_equal(ck_type_isequal),
 isa(ck_type_isa)
 { }
@@ -2045,6 +2054,22 @@ void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
     if( !text ) return;
     // display
     EM_log( level, text );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_type_lookup()
+// desc: host-side hook implementation for retrieving a type by name
+//-----------------------------------------------------------------------------
+Chuck_DL_Api::Type ck_type_lookup( Chuck_VM * vm, const char * name )
+{
+    Chuck_Env * env = vm->env();
+    a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
+    Chuck_Type * t = type_engine_find_type( env, list );
+    delete_id_list( list );
+    return (Chuck_DL_Api::Type)t;
 }
 
 

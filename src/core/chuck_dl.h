@@ -860,7 +860,7 @@ public:
     // intent: this allows for chugins to access member variables and create chuck strings
     public:
         // function pointer get_type()
-        Type (* const get_type)( Chuck_VM *, const char * name );
+        Type (* const get_type)( Object object );
         // function pointer for get_vtable_offset(); returns < 0 if not found
         t_CKINT (* const get_vtable_offset)( Chuck_VM *, const char * typee, const char * value );
         // add reference count
@@ -900,6 +900,8 @@ public:
     struct TypeApi
     {
         TypeApi();
+        // function pointer get_type()
+        Type (* const lookup)( Chuck_VM *, const char * name );
         // test if two chuck types are equal
         t_CKBOOL (* const is_equal)(Type lhs, Type rhs);
         // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
