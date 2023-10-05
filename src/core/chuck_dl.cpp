@@ -66,6 +66,10 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
 void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
 void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text );
+t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
+t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1406,6 +1410,16 @@ static t_CKUINT ck_srate( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
+// name: ck_now() | add 1.5.1.4
+// desc: host-side hook implementation for getting chuck system now
+//-----------------------------------------------------------------------------
+static t_CKTIME ck_now( Chuck_VM * vm )
+{
+    return vm->now();
+}
+
+
+//-----------------------------------------------------------------------------
 // name: create_event_buffer() | 1.5.1.4 (ge, andrew) added
 // desc: host-side hoook implemenation for
 //       creatinga new lock-free one-producer, one-consumer buffer
@@ -1889,6 +1903,7 @@ static t_CKBOOL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, const std::strin
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::VMApi::VMApi() :
 srate(ck_srate),
+now(ck_now),
 create_event_buffer(ck_create_event_buffer),
 queue_event(ck_queue_event),
 invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode),
@@ -1922,6 +1937,17 @@ array_int_size(ck_array_int_size),
 array_int_push_back(ck_array_int_push_back),
 array_int_get_idx(ck_array_int_get_idx),
 array_int_get_key(ck_array_int_get_key)
+{ }
+
+
+
+
+//-----------------------------------------------------------------------------
+// constructor for the TypeApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
+Chuck_DL_Api::Api::TypeApi::TypeApi() :
+is_equal(ck_type_isequal),
+isa(ck_type_isa)
 { }
 
 
@@ -2019,6 +2045,32 @@ void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
     if( !text ) return;
     // display
     EM_log( level, text );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_type_isequal()
+// desc: test if two types are equivalent
+//-----------------------------------------------------------------------------
+t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs )
+{
+    if( !lhs || !rhs ) return FALSE;
+    return *lhs == *rhs;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_type_isa()
+// desc: test if lhs is a type of rhs
+//-----------------------------------------------------------------------------
+t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs )
+{
+    if( !lhs || !rhs ) return FALSE;
+    return ::isa( lhs, rhs );
 }
 
 

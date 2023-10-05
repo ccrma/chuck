@@ -3496,8 +3496,10 @@ Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<C
     shred->is_abort = FALSE;
     // set the instr
     shred->instr = shred->code->instr;
-    // zero out the id
+    // zero out the id (shred is in immediate mode and cannot be shreduled)
     shred->xid = 0;
+    // inherit now from vm
+    shred->now = shred->vm_ref->now();
     // run shred on VM
     shred->run( shred->vm_ref );
 

@@ -813,10 +813,10 @@ Chuck_DL_Return ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t_CKUINT func
 //-----------------------------------------------------------------------------
 namespace Chuck_DL_Api
 {
-typedef void * Object;
-typedef void * Type;
-typedef void * String;
-typedef void * ArrayInt; // 1.5.0.1 (ge) added
+typedef Chuck_Object * Object;
+typedef Chuck_Type * Type;
+typedef Chuck_String * String;
+typedef Chuck_ArrayInt * ArrayInt; // 1.5.0.1 (ge) added
 
 struct Api
 {
@@ -824,11 +824,14 @@ public:
     static Api g_api;
     static inline const Api * instance() { return &g_api; }
 
+    // api to access host-side ChucK virtual machine
     struct VMApi
     {
         VMApi();
         // get sample rate | 1.5.1.4
         t_CKUINT (* const srate)( Chuck_VM * vm );
+        // get chuck now | 1.5.1.4
+        t_CKTIME (* const now)( Chuck_VM * vm );
         // create a new lock-free one-producer, one-consumer buffer | 1.5.1.4
         CBufferSimple * (* const create_event_buffer)( Chuck_VM * vm );
         // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.4
@@ -847,6 +850,7 @@ public:
         void (CK_DLL_CALL * const em_log)( t_CKINT level, const char * text );
     } * const vm;
 
+    // api to access host-side ChucK objects
     struct ObjectApi
     {
         ObjectApi();
@@ -892,17 +896,31 @@ public:
         t_CKBOOL (* const array_int_get_key)( ArrayInt array, const std::string & key, t_CKUINT & value );
     } * const object;
 
+    // access to host-side chuck types
+    struct TypeApi
+    {
+        TypeApi();
+        // test if two chuck types are equal
+        t_CKBOOL (* const is_equal)(Type lhs, Type rhs);
+        // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
+        t_CKBOOL (* const isa)(Type lhs, Type rhs);
+    } * const type;
+
+    // constructor
     Api() :
         vm(new VMApi),
-        object(new ObjectApi)
+        object(new ObjectApi),
+        type(new TypeApi)
     { }
 
 private:
+    // make this object un-copy-able
     Api( Api & a ) :
         vm(a.vm),
-        object(a.object)
+        object(a.object),
+        type(a.type)
     { assert(0); };
-
+    // make this object un-copy-able, part 2
     Api & operator=( Api & a ) { assert(0); return a; }
 };
 }
