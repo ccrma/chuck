@@ -2,24 +2,25 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.4 (October 2023)
+1.5.1.5 (October 2023) "operator overloading"
 =======
-- (added) operator overloading;
-    most operator can be overloaded, within their respective existing
+- (added) operator overloading in language;
+    most operator can now be overloaded, within their respective existing
     forms in the language (e.g., binary operators such as '+' and '=>'
     can be overloaded as binary operators, but not as unary operators);
-    also please note, like public class definitions, operator overloads
-    are local in scope unless declared with 'public' instead of 'fun',
-    global operator overloading will persists until 1) the VM stops or
-    2) the VM is cleared/reset
+    also please note, similar to class definitions, operator overloads
+    are local in scope unless declared with 'public', the latter operator 
+    overloading will persists until 1) the VM stops or 2) the VM is 
+    cleared/reset
     //-----------------------------------------------------------
     // the general format for overload an operator is as follows:
     //-----------------------------------------------------------
     // let's say we define a custom class...
     public class Foo { int num; }
 
-    // persistent operator overloading (trascends contexts)
-    // NOTE the use of 'public' instead of 'fun' -- it's fun for all!
+    // PUBLIC operator overloading (trascends contexts and files;
+    // will persist until stop VM or clear VM. NOTE the use of 'public' 
+    // instead of 'fun' (fun for all!)
     public Foo @operator =^( Foo lhs, Foo rhs )
     { /* do stuff for Foo =^ Foo */ return rhs; }
 
@@ -55,6 +56,11 @@ ChucK VERSIONS log
     // should print 7
     <<< c.num >>>;
     //-----------------------------------------------------------
+- (added) new examples showing basic operator overloading usage
+    examples/oper/overload_overview.ck
+    examples/oper/overload_pre_post.ck
+    examples/oper/overload_public.ck
+    examples/oper/overload_gru.ck
 - (added) the "gruck operator" --> (graphical chuck operator) as part
     of ChuGL (ChucK Graphics Library), which will be part of the ChucK
     language
@@ -116,7 +122,29 @@ ChucK VERSIONS log
     up file descriptors and leading to instability
 - (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
     space (" ") after prompt text
-- (added; chugins development) new dyanmic linking API for VM operations
+- (added; chugins development) ability to overload operators from chugin
+    query functions in C++:
+    // add binary operator overload; args included
+    f_add_op_overload_binary add_op_overload_binary;
+    // add unary (prefix) operator overload; arg included
+    f_add_op_overload_prefix add_op_overload_prefix;
+    // add unary (postfix) operator overload; arg included
+    f_add_op_overload_postfix add_op_overload_postfix;
+- (added; chugins development) capability to invoke chuck language-side
+    member functions (in chuck) from chugins (in C++)
+    // invoke Object member function (defined either in chuck or c++)
+    // NOTE this will call the member function in IMMEDIATE MODE,
+    // marking it as a time-critical function when called in this 
+    // manner; any time/event operations therein will throw an exception
+    Chuck_DL_Return API->vm->invoke_mfun_immediate_mode( 
+        Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, 
+        Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+- (added; chugins development) overhauled dyanmic linking API to access
+    chuck host-side operations; this greatly expands chugins capabilities
+    but will unfortunately require API changes that will break chugin
+    builds that uses the existing API.
+    (check out chuck_dl.h: `namespace Chuck_DL_Api`)
+- (updated) chugins headers version incremented to 9.0
 
 
 1.5.1.3 (September 2023) "ChucK to School"
