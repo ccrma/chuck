@@ -481,14 +481,14 @@ HidIn::~HidIn( )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL HidIn::open( Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num )
+t_CKBOOL HidIn::open( Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num, t_CKBOOL suppressErrMsg )
 {
     // close if already opened
     if( m_valid )
         this->close();
 
     // open
-    return m_valid = HidInManager::open( this, vm, device_type, device_num );
+    return m_valid = HidInManager::open( this, vm, device_type, device_num, suppressErrMsg );
 }
 
 
@@ -498,14 +498,14 @@ t_CKBOOL HidIn::open( Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num )
 // name: open()
 // desc: open
 //-----------------------------------------------------------------------------
-t_CKBOOL HidIn::open( Chuck_VM * vm, std::string & name, t_CKUINT device_type )
+t_CKBOOL HidIn::open( Chuck_VM * vm, t_CKINT device_type, std::string & name, t_CKBOOL suppressErrMsg )
 {
     // close if already opened
     if( m_valid )
         this->close();
 
     // open
-    return m_valid = HidInManager::open( this, vm, device_type, name );
+    return m_valid = HidInManager::open( this, vm, device_type, name, suppressErrMsg );
 }
 
 
@@ -684,7 +684,7 @@ void HidInManager::cleanup( t_CKUINT msWait )
 }
 
 
-t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num )
+t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_CKINT device_num, t_CKBOOL suppressErrMsg )
 {
     // init?
     if( has_init == FALSE )
@@ -730,7 +730,7 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_
         {
             // log
             // should this use EM_log instead, with a higher log level?
-            EM_error2( 0, "HidIn: couldn't open %s %d...",
+            if( !suppressErrMsg ) EM_error2( 0, "HidIn: couldn't open %s %d...",
                        default_drivers[device_type].driver_name, device_num );
             CK_SAFE_DELETE( phin );
             return FALSE;
@@ -768,7 +768,7 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, t_
 
 
 
-t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, std::string & device_name )
+t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, std::string & device_name, t_CKBOOL suppressErrMsg )
 {
     // init?
     if( has_init == FALSE )
@@ -789,9 +789,12 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, st
         // check type
         if( device_type < 1 || device_type >= CK_HID_DEV_COUNT )
         {
+            // should this use EM_log instead, with a higher log level?
+            if( !suppressErrMsg )
+                EM_error2( 0, "HidInManager: open() failed -> invalid type '%d'...", device_type );
             // log
-            EM_log( CK_LOG_WARNING, "HidInManager: open() failed -> invalid type '%d'...",
-                    device_type );
+            // EM_log( CK_LOG_WARNING, "HidInManager: open() failed -> invalid type '%d'...",
+            //         device_type );
             return FALSE;
         }
 
@@ -830,8 +833,11 @@ t_CKBOOL HidInManager::open( HidIn * hin, Chuck_VM * vm, t_CKINT device_type, st
         }
     }
 
-    EM_log( CK_LOG_WARNING, "HidInManager: open() failed -> no device named '%s'...",
-            device_name.c_str() );
+    // should this use EM_log instead, with a higher log level?
+    if( !suppressErrMsg ) EM_error2( 0, "HidInManager: open() failed -> no device named '%s'...",
+                                    device_name.c_str());
+    // EM_log( CK_LOG_WARNING, "HidInManager: open() failed -> no device named '%s'...",
+    //         device_name.c_str() );
 
     return FALSE;
 }

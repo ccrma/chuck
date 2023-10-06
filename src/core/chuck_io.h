@@ -547,6 +547,7 @@ CK_DLL_MFUN( HidIn_open_named_i ); // added 1.3.0.0
 CK_DLL_MFUN( HidIn_open_joystick );
 CK_DLL_MFUN( HidIn_open_mouse );
 CK_DLL_MFUN( HidIn_open_keyboard );
+CK_DLL_MFUN( HidIn_open_keyboard_2 );
 CK_DLL_MFUN( HidIn_open_tiltsensor );
 CK_DLL_MFUN( HidIn_good );
 CK_DLL_MFUN( HidIn_num );

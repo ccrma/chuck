@@ -1161,6 +1161,13 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     func->doc = "Open a keyboard by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add openKeyboard() | 1.5.1.5 (ge & andrew)
+    func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard_2 );
+    func->add_arg( "int", "num" );
+    func->add_arg( "int", "suppressErrorMessages" );
+    func->doc = "Open a keyboard by device number, with option to suppress error messages.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add openTiltSensor()
     func = make_new_mfun( "int", "openTiltSensor", HidIn_open_tiltsensor );
     func->doc = "Open a tilt-sensor by device number.";
@@ -2419,7 +2426,8 @@ CK_DLL_MFUN( HidIn_open_named )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     Chuck_String * name = GET_NEXT_STRING(ARGS);
     std::string s = name->str();
-    RETURN->v_int = min->open( SHRED->vm_ref, s );
+    // set CK_HID_DEV_COUNT as a special flag
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_COUNT, s );
 }
 
 CK_DLL_MFUN( HidIn_open_joystick )
@@ -2441,6 +2449,13 @@ CK_DLL_MFUN( HidIn_open_keyboard )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT num = GET_NEXT_INT(ARGS);
     RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num );
+}
+
+CK_DLL_MFUN( HidIn_open_keyboard_2 )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num, TRUE );
 }
 
 CK_DLL_MFUN( HidIn_open_tiltsensor )
