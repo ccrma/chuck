@@ -780,8 +780,8 @@ struct Chuck_DL_MainThreadHook
 public:
     Chuck_DL_MainThreadHook(f_mainthreadhook hook, f_mainthreadquit quit,
                             void * bindle, Chuck_Carrier * carrier);
-    t_CKBOOL (* const activate)(Chuck_DL_MainThreadHook *);
-    t_CKBOOL (* const deactivate)(Chuck_DL_MainThreadHook *);
+    t_CKBOOL (CK_DLL_CALL * const activate)(Chuck_DL_MainThreadHook *);
+    t_CKBOOL (CK_DLL_CALL * const deactivate)(Chuck_DL_MainThreadHook *);
 
     Chuck_Carrier * const m_carrier;
     f_mainthreadhook const m_hook;
@@ -829,19 +829,17 @@ public:
     {
         VMApi();
         // get sample rate | 1.5.1.4
-        t_CKUINT (* const srate)( Chuck_VM * vm );
+        t_CKUINT (CK_DLL_CALL * const srate)( Chuck_VM * vm );
         // get chuck now | 1.5.1.4
-        t_CKTIME (* const now)( Chuck_VM * vm );
+        t_CKTIME (CK_DLL_CALL * const now)( Chuck_VM * vm );
         // create a new lock-free one-producer, one-consumer buffer | 1.5.1.4
-        CBufferSimple * (* const create_event_buffer)( Chuck_VM * vm );
+        CBufferSimple * (CK_DLL_CALL * const create_event_buffer)( Chuck_VM * vm );
         // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.4
-        t_CKBOOL (* const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+        t_CKBOOL (CK_DLL_CALL * const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
         // invoke Chuck_Object member function (defined either in chuck or c++) | 1.5.1.4 (ge & andrew)
         // NOTE this will call the member function in IMMEDIATE MODE,
         // marking it as a time-critical function when called in this manner;
         // any time/event operations therein will throw an exception
-        // Chuck_DL_Return (CK_DLL_CALL * invoke_mfun_immediate_mode)
-        // ( Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
         Chuck_DL_Return (CK_DLL_CALL * const invoke_mfun_immediate_mode)( Chuck_Object * obj, t_CKUINT func_vt_offset,
                                                                           Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
         // throw an exception; if shred is passed in, it will be halted
@@ -860,40 +858,38 @@ public:
     // intent: this allows for chugins to access member variables and create chuck strings
     public:
         // function pointer get_type()
-        Type (* const get_type)( Object object );
-        // function pointer for get_vtable_offset(); returns < 0 if not found
-        t_CKINT (* const get_vtable_offset)( Chuck_VM *, const char * typee, const char * value );
+        Type (CK_DLL_CALL * const get_type)( Object object );
         // add reference count
-        void (* const add_ref)( Object object );
+        void (CK_DLL_CALL * const add_ref)( Object object );
         // release reference count
-        void (* const release)( Object object );
+        void (CK_DLL_CALL * const release)( Object object );
         // get reference count
-        t_CKUINT (* const refcount)( Object object );
+        t_CKUINT (CK_DLL_CALL * const refcount)( Object object );
         // instantiating and initializing a ChucK object by type, with reference to a parent shred
         // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
         // NOTE set addRef to TRUE if you intend to keep a reference of the newly created object around (e.g., in the chugin)
-        // NOTE set addref to FALSE if the created object is to be returned without keeping a reference around
-        Object (* const create_with_shred)( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
+        // NOTE set addRef to FALSE if the created object is to be returned without keeping a reference around
+        Object (CK_DLL_CALL * const create)( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
         // instantiating and initializing a ChucK object by type, with no reference to a parent shred
         // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
-        Object (* const create_without_shred)( Chuck_VM *, Type type, t_CKBOOL addRef );
+        Object (CK_DLL_CALL * const create_without_shred)( Chuck_VM *, Type type, t_CKBOOL addRef );
         // instantiate and initialize a ChucK string by type
         // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
-        String (* const create_string)( Chuck_VM *, const char * value, t_CKBOOL addRef );
+        String (CK_DLL_CALL * const create_string)( Chuck_VM *, const char * value, t_CKBOOL addRef );
         // function pointers for get_mvar_*()
-        t_CKBOOL (* const get_mvar_int)( Object object, const char * name, t_CKINT & value );
-        t_CKBOOL (* const get_mvar_float)( Object object, const char * name, t_CKFLOAT & value );
-        t_CKBOOL (* const get_mvar_dur)( Object object, const char * name, t_CKDUR & value );
-        t_CKBOOL (* const get_mvar_time)( Object object, const char * name, t_CKTIME & value );
-        t_CKBOOL (* const get_mvar_string)( Object object, const char * name, String & value );
-        t_CKBOOL (* const get_mvar_object)( Object object, const char * name, Object & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_int)( Object object, const char * name, t_CKINT & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_float)( Object object, const char * name, t_CKFLOAT & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_dur)( Object object, const char * name, t_CKDUR & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_time)( Object object, const char * name, t_CKTIME & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_string)( Object object, const char * name, String & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_object)( Object object, const char * name, Object & value );
         // function pointer for set_string()
-        t_CKBOOL (* const set_string)( String string, const char * value );
+        t_CKBOOL (CK_DLL_CALL * const set_string)( String string, const char * value );
         // array_int operations
-        t_CKBOOL (* const array_int_size)( ArrayInt array, t_CKINT & value );
-        t_CKBOOL (* const array_int_push_back)( ArrayInt array, t_CKUINT value );
-        t_CKBOOL (* const array_int_get_idx)( ArrayInt array, t_CKINT idx, t_CKUINT & value );
-        t_CKBOOL (* const array_int_get_key)( ArrayInt array, const std::string & key, t_CKUINT & value );
+        t_CKBOOL (CK_DLL_CALL * const array_int_size)( ArrayInt array, t_CKINT & value );
+        t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKUINT value );
+        t_CKBOOL (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx, t_CKUINT & value );
+        t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const std::string & key, t_CKUINT & value );
     } * const object;
 
     // access to host-side chuck types
@@ -901,11 +897,13 @@ public:
     {
         TypeApi();
         // function pointer get_type()
-        Type (* const lookup)( Chuck_VM *, const char * name );
+        Type (CK_DLL_CALL * const lookup)( Chuck_VM *, const char * name );
+        // function pointer for get_vtable_offset(); returns < 0 if not found
+        t_CKINT (CK_DLL_CALL * const get_vtable_offset)( Chuck_VM *, Type type, const char * value );
         // test if two chuck types are equal
-        t_CKBOOL (* const is_equal)(Type lhs, Type rhs);
+        t_CKBOOL (CK_DLL_CALL * const is_equal)(Type lhs, Type rhs);
         // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
-        t_CKBOOL (* const isa)(Type lhs, Type rhs);
+        t_CKBOOL (CK_DLL_CALL * const isa)(Type lhs, Type rhs);
     } * const type;
 
     // constructor

@@ -1456,16 +1456,8 @@ static Chuck_DL_Api::Type ck_get_type( Chuck_Object * object )
 // name: ck_get_vtable_offset()
 // desc: function pointer get_type()
 //-----------------------------------------------------------------------------
-t_CKINT ck_get_vtable_offset( Chuck_VM * vm, const char * typeName, const char * valueName )
+t_CKINT ck_get_vtable_offset( Chuck_VM * vm, Chuck_Type * t, const char * valueName )
 {
-    // get the type
-    Chuck_Env * env = vm->env();
-    a_Id_List list = new_id_list( typeName, 0, 0 /*, NULL*/ ); // TODO: nested types
-    Chuck_Type * t = type_engine_find_type( env, list );
-    delete_id_list( list );
-    // type not found
-    if( !t ) return -1;
-
     // find the offset for value by name
     Chuck_Value * value = type_engine_find_value( t, valueName );
     // value not found
@@ -1927,8 +1919,7 @@ em_log(ck_em_log)
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
-get_vtable_offset(ck_get_vtable_offset),
-create_with_shred(ck_create_with_shred),
+create(ck_create_with_shred),
 create_without_shred(ck_create_without_shred),
 add_ref(ck_add_ref),
 release(ck_release),
@@ -1955,6 +1946,7 @@ array_int_get_key(ck_array_int_get_key)
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Api::TypeApi::TypeApi() :
 lookup(ck_type_lookup),
+get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
 isa(ck_type_isa)
 { }
@@ -2065,10 +2057,12 @@ void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::Type ck_type_lookup( Chuck_VM * vm, const char * name )
 {
+    // get the type
     Chuck_Env * env = vm->env();
     a_Id_List list = new_id_list( name, 0, 0 /*, NULL*/ ); // TODO: nested types
     Chuck_Type * t = type_engine_find_type( env, list );
     delete_id_list( list );
+    // return
     return (Chuck_DL_Api::Type)t;
 }
 
