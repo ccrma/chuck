@@ -1017,7 +1017,7 @@ const Chuck_DL_Query * Chuck_DLL::query()
     // set flag
     m_done_query = TRUE;
 
-    // process any operator overloads | 1.5.1.4 (ge & andrew) chaos^2
+    // process any operator overloads | 1.5.1.5 (ge & andrew) chaos^2
     if( m_query.op_overloads.size() )
     {
         // log
@@ -1254,8 +1254,8 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     doc_var = ck_doc_var;
     add_ex = ck_add_example; // 1.5.0.0 (ge) added
     create_main_thread_hook = ck_create_main_thread_hook;
-    register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.4 (ge & andrew)
-    unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.4 (ge & andrew)
+    register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.5 (ge & andrew)
+    unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.5 (ge & andrew)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 
@@ -1278,7 +1278,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
         srate = 0;
     }
 
-    // get DL API reference | 1.5.1.4
+    // get DL API reference | 1.5.1.5
     m_api = Chuck_DL_Api::Api::instance();
 
     linepos = 0;
@@ -1401,7 +1401,7 @@ namespace Chuck_DL_Api
 
 
 //-----------------------------------------------------------------------------
-// name: ck_srate() | add 1.5.1.4
+// name: ck_srate() | add 1.5.1.5
 // desc: host-side hook implementation for getting system srate
 //-----------------------------------------------------------------------------
 static t_CKUINT ck_srate( Chuck_VM * vm )
@@ -1411,7 +1411,7 @@ static t_CKUINT ck_srate( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
-// name: ck_now() | add 1.5.1.4
+// name: ck_now() | add 1.5.1.5
 // desc: host-side hook implementation for getting chuck system now
 //-----------------------------------------------------------------------------
 static t_CKTIME ck_now( Chuck_VM * vm )
@@ -1421,7 +1421,7 @@ static t_CKTIME ck_now( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
-// name: create_event_buffer() | 1.5.1.4 (ge, andrew) added
+// name: create_event_buffer() | 1.5.1.5 (ge, andrew) added
 // desc: host-side hoook implemenation for
 //       creatinga new lock-free one-producer, one-consumer buffer
 //-----------------------------------------------------------------------------
@@ -1432,7 +1432,7 @@ static CBufferSimple * ck_create_event_buffer( Chuck_VM * vm )
 
 
 //-----------------------------------------------------------------------------
-// name: queue_event() | 1.5.1.4 (ge, andrew) added
+// name: queue_event() | 1.5.1.5 (ge, andrew) added
 // desc: host-side hoook implemenation for queuing an event
 //       NOTE num_msg must be 1; buffer created using create_event_buffer()
 //-----------------------------------------------------------------------------
@@ -2099,7 +2099,7 @@ t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs )
 // windows translation
 //-----------------------------------------------------------------------------
 #if defined(__PLATFORM_WINDOWS__)
-#include <system_error> // std::system_category() | 1.5.1.4
+#include <system_error> // std::system_category() | 1.5.1.5
 extern "C"
 {
 
@@ -2139,7 +2139,7 @@ const char * dlerror( void )
     int error = GetLastError();
     // no error
     if( error == 0 ) return NULL;
-    // 1.5.1.4 (azaday) convert error code to system message
+    // 1.5.1.5 (azaday) convert error code to system message
     std::string error_msg = std::system_category().message( error );
     // 1.4.2.0 (ge) changed to snprintf
     snprintf( dlerror_buffer, DLERROR_BUFFER_LENGTH, "(%i) %s", error, error_msg.c_str() );

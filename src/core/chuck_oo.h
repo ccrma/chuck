@@ -149,19 +149,19 @@ public:
     t_CKUINT data_size;
 
 public:
-    // set VM on which this object was instantiated | 1.5.1.4
+    // set VM on which this object was instantiated | 1.5.1.5
     void setOriginVM( Chuck_VM * vm );
-    // set shred on which this object was instantiated | 1.5.1.4
+    // set shred on which this object was instantiated | 1.5.1.5
     void setOriginShred( Chuck_VM_Shred * shred );
-    // get VM on which this object was instantiated | 1.5.1.4
+    // get VM on which this object was instantiated | 1.5.1.5
     Chuck_VM * originVM() const { return origin_vm; }
-    // get shred on which this object was instantiated | 1.5.1.4
+    // get shred on which this object was instantiated | 1.5.1.5
     Chuck_VM_Shred * originShred() const { return origin_shred; }
 
 protected:
-    // the shred on which this object was instantiated | 1.5.1.4
+    // the shred on which this object was instantiated | 1.5.1.5
     Chuck_VM_Shred * origin_shred;
-    // the VM on which this object was instantiated | 1.5.1.4
+    // the VM on which this object was instantiated | 1.5.1.5
     Chuck_VM * origin_vm;
 
 public: // static
@@ -259,7 +259,7 @@ public:
 // name: struct Chuck_ArrayInt
 // desc: native ChucK arrays
 //       (for 4-byte/8-byte int, depending on 32-bit vs 64-bit & Object refs)
-//       1.5.1.4 (ge) renamed from Chuck_Array4 to Chuck_ArrayInt
+//       1.5.1.5 (ge) renamed from Chuck_Array4 to Chuck_ArrayInt
 //-----------------------------------------------------------------------------
 struct Chuck_ArrayInt : public Chuck_Array
 {
@@ -355,7 +355,7 @@ public:
 //-----------------------------------------------------------------------------
 // name: struct Chuck_ArrayFloat
 // desc: native ChucK arrays (for 8-byte float)
-//       1.5.1.4 (ge) renamed from Chuck_Array8 to Chuck_ArrayFloat
+//       1.5.1.5 (ge) renamed from Chuck_Array8 to Chuck_ArrayFloat
 //-----------------------------------------------------------------------------
 struct Chuck_ArrayFloat : public Chuck_Array
 {
@@ -773,7 +773,7 @@ public: // internal
 public:
     // virtual table offset for can_wait()
     static t_CKUINT our_can_wait;
-    // virtual table offset for waiting_on() | 1.5.1.4 (ge/andrew) added
+    // virtual table offset for waiting_on() | 1.5.1.5 (ge/andrew) added
     static t_CKUINT our_waiting_on;
 
 protected:

@@ -239,7 +239,7 @@ t_CKUINT Chuck_VM_Object::refcount() const
 
 
 
-// static instantiation | 1.5.1.4
+// static instantiation | 1.5.1.5
 t_CKUINT Chuck_Object::our_vt_toString = 0;
 
 //-----------------------------------------------------------------------------
@@ -3446,7 +3446,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
     // make sure the shred info matches the vm
     assert( shred->vm_ref == vm );
 
-    // invoke virtual function our_can_wait | 1.5.1.4
+    // invoke virtual function our_can_wait | 1.5.1.5
     Chuck_DL_Return RETURN = ck_invoke_mfun_immediate_mode( this, our_can_wait, vm, shred, NULL, 0 );
     // see if we can wait
     if( RETURN.v_int )
@@ -3475,7 +3475,7 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // add shred to shreduler
         vm->shreduler()->add_blocked( shred );
 
-        // invoke virtual function our_waiting_on | 1.5.1.4 (ge & andrew)
+        // invoke virtual function our_waiting_on | 1.5.1.5 (ge & andrew)
         // this is called at the point when a shred has completed the actions
         // needed to wait on an Event, and can be notified/broadcasted from
         // a different thread

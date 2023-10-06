@@ -54,7 +54,7 @@
 #include "midiio_rtmidi.h"  // 1.4.1.0
 #endif
 
-#include <limits.h> // 1.5.1.4 | for ULONG_MAX
+#include <limits.h> // 1.5.1.5 | for ULONG_MAX
 #include <iomanip>
 #include <string>
 #include <algorithm>
@@ -197,7 +197,7 @@ Chuck_VM::Chuck_VM()
     m_reply_buffer = NULL;
     m_event_buffer = NULL;
     m_shred_id = 0;
-    m_shred_check4dupes = FALSE; // 1.5.1.4 (ge)
+    m_shred_check4dupes = FALSE; // 1.5.1.5 (ge)
 
     // audio hookups
     m_dac = NULL;
@@ -801,7 +801,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         if( msg->args ) shred->args = *(msg->args);
 
         // check for different scenarios of replace
-        // replace-target absent | 1.5.1.4 (nshaheed) added
+        // replace-target absent | 1.5.1.5 (nshaheed) added
         if( !out )
         {
             // spork it
@@ -818,7 +818,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
             goto done;
         }
         // replace-target present
-        // modified shredule(shred) -> spork(shred) | 1.5.1.4 (ge)
+        // modified shredule(shred) -> spork(shred) | 1.5.1.5 (ge)
         else if( m_shreduler->remove( out ) && this->spork( shred ) )
         {
             EM_print2blue( "(VM) replacing shred %lu (%s) with %lu (%s)...",
@@ -905,7 +905,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         {
             // clear user namespace
             env()->clear_user_namespace();
-            // reset operload overloading to default | 1.5.1.4
+            // reset operload overloading to default | 1.5.1.5
             // not needed; this is implicit in clear_user_namespace() which calls reset()
             // env()->op_registry.reset();
         }
@@ -1045,7 +1045,7 @@ t_CKUINT Chuck_VM::next_id( const Chuck_VM_Shred * shred )
         // NOTE if check4dupes is enabled, m_shred_id may no longer be the
         // highest ID but instead is a counter for possible next shred IDs,
         // which will repeatedly increment+check for duplicates until an
-        // available ID is found | 1.5.1.4 (ge and nshaheed) added
+        // available ID is found | 1.5.1.5 (ge and nshaheed) added
         if( !m_shred_check4dupes && shred->xid > m_shred_id )
         {
             // update as highest ID so far
@@ -1067,10 +1067,10 @@ t_CKUINT Chuck_VM::next_id( const Chuck_VM_Shred * shred )
         m_shred_check4dupes = TRUE;
     }
 
-    // check for dupes (after shred id wraps from MAX_ID) | 1.5.1.4
+    // check for dupes (after shred id wraps from MAX_ID) | 1.5.1.5
     if( !m_shred_check4dupes ) return ++m_shred_id;
 
-    // find next unused shred ID | 1.5.1.4
+    // find next unused shred ID | 1.5.1.5
     while( m_shreduler->lookup( ++m_shred_id ) );
 
     // return it
@@ -1154,7 +1154,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Code * code, Chuck_VM_Shred * parent,
     Chuck_VM_Shred * shred = new Chuck_VM_Shred;
     // set the vm
     shred->vm_ref = this;
-    // get stack size hints | 1.5.1.4
+    // get stack size hints | 1.5.1.5
     t_CKINT mems = parent ? parent->childGetMemSize() : 0;
     t_CKINT regs = parent ? parent->childGetRegSize() : 0;
     // initialize the shred (default stack size)
@@ -1213,7 +1213,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     // set the now
     shred->now = shred->wake_time = m_shreduler->now_system;
     // set the id, if one hasn't been assigned yet | 1.5.0.8 (ge) add check
-    // pass in the shred into next_id() instead of checking here | 1.5.1.4
+    // pass in the shred into next_id() instead of checking here | 1.5.1.5
     shred->xid = next_id( shred );
     // add ref
     CK_SAFE_ADD_REF( shred );
@@ -1225,7 +1225,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     // count
     m_num_shreds++;
 
-    // notify watcher | 1.5.1.4
+    // notify watcher | 1.5.1.5
     notify_watchers( CKVM_SHREDS_WATCH_SPORK, shred, m_shreds_watchers_spork );
 
     return shred;
@@ -1268,7 +1268,7 @@ void Chuck_VM::removeAll()
     m_shred_id = 0;
     m_num_shreds = 0;
 
-    // can safely reset this as well | 1.5.1.4
+    // can safely reset this as well | 1.5.1.5
     m_shred_check4dupes = FALSE;
 }
 
@@ -1377,7 +1377,7 @@ t_CKBOOL Chuck_VM::abort_current_shred()
 
 //-----------------------------------------------------------------------------
 // name: notify_watchers()
-// desc: notify watchers for a particular subscription | 1.5.1.4
+// desc: notify watchers for a particular subscription | 1.5.1.5
 //-----------------------------------------------------------------------------
 void Chuck_VM::notify_watchers( ckvmShredsWatcherFlag which,
                                 Chuck_VM_Shred * shred,
@@ -1476,7 +1476,7 @@ static void ckvm_process_watcher( t_CKBOOL add, list<Chuck_VM_Shreds_Watcher> & 
 
 
 //-----------------------------------------------------------------------------
-// name: subscribe_watcher() | 1.5.1.4
+// name: subscribe_watcher() | 1.5.1.5
 // desc: subscribe shreds watcher callback
 //-----------------------------------------------------------------------------
 void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data )
@@ -1496,7 +1496,7 @@ void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * 
 
 
 //-----------------------------------------------------------------------------
-// name: remove_watcher() | 1.5.1.4
+// name: remove_watcher() | 1.5.1.5
 // desc: remove shreds watcher callback
 //-----------------------------------------------------------------------------
 void Chuck_VM::remove_watcher( f_shreds_watcher cb )
@@ -1575,7 +1575,7 @@ Chuck_VM_Code::~Chuck_VM_Code()
 
 
 
-// minimum stack size | 1.5.1.4 (ge) added
+// minimum stack size | 1.5.1.5 (ge) added
 #define VM_STACK_MINIMUM_SIZE 2048
 // offset in bytes at the beginning of a stack for initializing data
 #define VM_STACK_OFFSET 16
@@ -1590,7 +1590,7 @@ t_CKBOOL Chuck_VM_Stack::initialize( t_CKUINT size )
     // check if already initialized
     if( m_is_init ) return FALSE;
 
-    // ensure stack size >= minimum size | 1.5.1.4
+    // ensure stack size >= minimum size | 1.5.1.5
     if( size < VM_STACK_MINIMUM_SIZE ) size = VM_STACK_MINIMUM_SIZE;
     // actual size in bytes to allocate; stack header + size + overflow pad
     t_CKUINT alloc_size = VM_STACK_OFFSET + size + VM_STACK_OVERFLOW_PADDING;
@@ -1646,7 +1646,7 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 
     // set the flag to false
     m_is_init = FALSE;
-    // set size to 0 | 1.5.1.4
+    // set size to 0 | 1.5.1.5
     m_size = 0;
 
     return TRUE;
@@ -1682,11 +1682,11 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     start = 0;
     wake_time = 0;
 
-    // set children stack size hints to default | 1.5.1.4
+    // set children stack size hints to default | 1.5.1.5
     childSetMemSize( 0 );
     childSetRegSize( 0 );
 
-    // immediate mode | 1.5.1.4
+    // immediate mode | 1.5.1.5
     is_immediate_mode = FALSE;
     is_immediate_mode_violation = FALSE;
 
@@ -1721,7 +1721,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
                                      t_CKUINT mem_stack_size,
                                      t_CKUINT reg_stack_size )
 {
-    // ensure we don't multi-initialize the shred | 1.5.1.4
+    // ensure we don't multi-initialize the shred | 1.5.1.5
     // FYI explicitly call shutdown() before re-initializing shred
     if( mem ) return FALSE;
 
@@ -1732,7 +1732,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     mem = new Chuck_VM_Stack;
     reg = new Chuck_VM_Stack;
 
-    // check for default | 1.5.1.4
+    // check for default | 1.5.1.5
     if( mem_stack_size == 0 ) mem_stack_size = CKVM_MEM_STACK_SIZE;
     if( reg_stack_size == 0 ) reg_stack_size = CKVM_REG_STACK_SIZE;
 
@@ -1763,7 +1763,7 @@ t_CKBOOL Chuck_VM_Shred::initialize( Chuck_VM_Code * c,
     // initialize
     if( !initialize_object( this, vm_ref->env()->ckt_shred, this, vm_ref ) ) goto error;
 
-    // inherit size hints for shreds sporked from this shred | 1.5.1.4
+    // inherit size hints for shreds sporked from this shred | 1.5.1.5
     childSetMemSize( mem_stack_size );
     childSetRegSize( reg_stack_size );
 
@@ -1850,7 +1850,7 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
     // clear it
     code_orig = code = NULL;
 
-    // set children stack size hints to default | 1.5.1.4
+    // set children stack size hints to default | 1.5.1.5
     childSetMemSize( 0 );
     childSetRegSize( 0 );
 
@@ -1993,7 +1993,7 @@ t_CKINT Chuck_VM_Shred::childGetRegSize()
 // mechanism to observe the growth of maximum stacks depth (reg and mem) across
 // all shreds;  when enabled, this is called every instruction in the VM;
 // used to gauge stack utilization and to assess default shred stacks sizes
-// 1.5.1.4 (ge) added
+// 1.5.1.5 (ge) added
 //-----------------------------------------------------------------------------
 static t_CKUINT g_mem_stack_depth_reached = 0;
 static t_CKUINT g_reg_stack_depth_reached = 0;
@@ -2060,10 +2060,10 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG mem sp in: 0x%08lx out: 0x%08
 CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08lx\n",
                    (unsigned long)t_reg_sp, (unsigned long)this->reg->sp ) );
 //-----------------------------------------------------------------------------
-        // detect operand stack overflow | 1.5.1.4
+        // detect operand stack overflow | 1.5.1.5
         if( overflow_( this->reg ) )
         { ck_handle_overflow( this, vm_ref, "shred operand stack exceeded" ); break; }
-        // detect mem stack overflow ("catch all") | 1.5.1.4
+        // detect mem stack overflow ("catch all") | 1.5.1.5
         // NOTE func-call & alloc instrucions already detect
         if( overflow_( this->mem ) && is_running ) // <- is_running==FALSE if already detected
         { ck_handle_overflow( this, vm_ref, "shred memory stack exceeded" ); break; }
@@ -2075,7 +2075,7 @@ CK_VM_STACK_DEBUG( CK_FPRINTF_STDERR( "CK_VM_DEBUG reg sp in: 0x%08lx out: 0x%08
 
         // track number of cycles
         CK_TRACK( this->stat->cycles++ );
-        // if enabled, update shred stacks depth observation | 1.5.1.4
+        // if enabled, update shred stacks depth observation | 1.5.1.5
         CK_VM_STACK_OBSERVE( ckvm_observe_stackdepth_across_all_shreds( this ) );
     }
 
@@ -2106,7 +2106,7 @@ t_CKBOOL Chuck_VM_Shred::yield()
     // need a VM to yield on
     if( !this->vm_ref ) return FALSE;
 
-    // check for immediate mode exception | 1.5.1.4 (ge)
+    // check for immediate mode exception | 1.5.1.5 (ge)
     if( this->checkImmediatModeException() ) return FALSE;
 
     // suspend this shred
@@ -2210,7 +2210,7 @@ bool Chuck_VM_Shred::popLoopCounter()
 
 
 //-----------------------------------------------------------------------------
-// name: checkImmediatModeException() | 1.5.1.4 (ge) added
+// name: checkImmediatModeException() | 1.5.1.5 (ge) added
 // desc: check for immediate mode exception, if detected print and set state
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM_Shred::checkImmediatModeException( t_CKUINT linepos )
@@ -2410,7 +2410,7 @@ t_CKBOOL Chuck_VM_Shreduler::shredule( Chuck_VM_Shred * shred,
         return FALSE;
     }
 
-    // check for immediate mode and report exception | 1.5.1.4 (ge)
+    // check for immediate mode and report exception | 1.5.1.5 (ge)
     if( shred->checkImmediatModeException() )
     {
         // let's not shredule!

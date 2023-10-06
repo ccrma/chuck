@@ -66,7 +66,7 @@ struct OTF_Net_Msg
     void clear() { header = CK_NET_HEADER; type = param = param2 = param3 = length = 0;
                    memset( buffer, 0, sizeof(buffer) ); }
 
-    // copy constructor | 1.5.1.4
+    // copy constructor | 1.5.1.5
     OTF_Net_Msg( const OTF_Net_Msg & rhs )
     {
         header = rhs.header;

@@ -201,7 +201,7 @@ union Chuck_DL_Return
 
 //------------------------------------------------------------------------------
 // name: struct Chuck_DL_Arg
-// desc: import / dynamic link function argument | 1.5.1.4
+// desc: import / dynamic link function argument | 1.5.1.5
 //------------------------------------------------------------------------------
 struct Chuck_DL_Arg
 {
@@ -265,7 +265,7 @@ struct Chuck_DL_Arg
 // macro for defining ChucK DLL export static functions
 // example: CK_DLL_SFUN(foo) | 1.4.1.0 (ge) added TYPE to static prototype
 #define CK_DLL_SFUN(name) CK_DLL_EXPORT(void) name( Chuck_Type * TYPE, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API )
-// example: CK_DLL_GFUN(foo) | 1.5.1.4 (ge & andrew) added for global-scope function, e.g., for op overloads
+// example: CK_DLL_GFUN(foo) | 1.5.1.5 (ge & andrew) added for global-scope function, e.g., for op overloads
 #define CK_DLL_GFUN(name) CK_DLL_EXPORT(void) name( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API )
 // macro for defining ChucK DLL export ugen tick functions
 // example: CK_DLL_TICK(foo)
@@ -318,7 +318,7 @@ typedef t_CKVOID (CK_DLL_CALL * f_dtor)( Chuck_Object * SELF, Chuck_VM * VM, Chu
 typedef t_CKVOID (CK_DLL_CALL * f_mfun)( Chuck_Object * SELF, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // 1.4.1.0 (ge) added TYPE to static prototype
 typedef t_CKVOID (CK_DLL_CALL * f_sfun)( Chuck_Type * TYPE, void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
-// 1.5.1.4 (ge & andrew) added for global-scope function, e.g., for op overloads
+// 1.5.1.5 (ge & andrew) added for global-scope function, e.g., for op overloads
 typedef t_CKVOID (CK_DLL_CALL * f_gfun)( void * ARGS, Chuck_DL_Return * RETURN, Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
 // ugen specific
 typedef t_CKBOOL (CK_DLL_CALL * f_tick)( Chuck_Object * SELF, SAMPLE in, SAMPLE * out, CK_DL_API API );
@@ -439,7 +439,7 @@ public:
     Chuck_VM * vm() const { return m_carrier->vm; }
     Chuck_Env * env() const { return m_carrier->env; }
     Chuck_Carrier * carrier() const { return m_carrier; }
-    CK_DL_API api() const { return m_api; } // 1.5.1.4
+    CK_DL_API api() const { return m_api; } // 1.5.1.5
 
 public:
     // function pointers - to be called from client module
@@ -484,16 +484,16 @@ public:
     // re-added 1.4.0.1
     f_create_main_thread_hook create_main_thread_hook;
 
-    // add binary operator overload; args included | 1.5.1.4 (ge & andrew)
+    // add binary operator overload; args included | 1.5.1.5 (ge & andrew)
     f_add_op_overload_binary add_op_overload_binary;
     // add unary (prefix) operator overload; arg included
     f_add_op_overload_prefix add_op_overload_prefix;
     // add unary (postfix) operator overload; arg included
     f_add_op_overload_postfix add_op_overload_postfix;
 
-    // register shred notifcations | 1.5.1.4 (ge & andrew)
+    // register shred notifcations | 1.5.1.5 (ge & andrew)
     f_register_shreds_watcher register_shreds_watcher;
-    // un-register shred notifcations | 1.5.1.4 (ge & andrew)
+    // un-register shred notifcations | 1.5.1.5 (ge & andrew)
     f_unregister_shreds_watcher unregister_shreds_watcher;
 
 public:
@@ -529,7 +529,7 @@ public:
     // flag any error encountered during the query | 1.5.0.5 (ge) added
     t_CKBOOL errorEncountered;
 
-    // DL API reference | 1.5.1.4
+    // DL API reference | 1.5.1.5
     CK_DL_API m_api;
 
     // collection of operator overloads
@@ -627,7 +627,7 @@ struct Chuck_DL_Value
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_Op_OverloadKind | 1.5.1.4 (ge) added
+// name: enum te_Op_OverloadKind | 1.5.1.5 (ge) added
 // desc: enumeration for kinds of operator overload
 //-----------------------------------------------------------------------------
 enum te_Op_OverloadKind
@@ -657,9 +657,9 @@ struct Chuck_DL_Func
     std::vector<Chuck_DL_Value *> args;
     // description
     std::string doc;
-    // is this an operator overload? if so, which kind? | 1.5.1.4
+    // is this an operator overload? if so, which kind? | 1.5.1.5
     te_Op_OverloadKind opOverloadKind;
-    // operator to overload | 1.5.1.4
+    // operator to overload | 1.5.1.5
     ae_Operator op2overload;
 
     // constructor
@@ -797,7 +797,7 @@ public:
 // invoking chuck functions from c++
 //-----------------------------------------------------------------------------
 // directly invoke a chuck member function's native implementation from c++
-// using object + vtable offset | 1.5.1.4 (ge & andrew)
+// using object + vtable offset | 1.5.1.5 (ge & andrew)
 // NOTE this will call the member function in IMMEDIATE MODE,
 // marking it as a time-critical function when called in this manner;
 // any time/event operations therein will throw an exception
@@ -828,15 +828,15 @@ public:
     struct VMApi
     {
         VMApi();
-        // get sample rate | 1.5.1.4
+        // get sample rate | 1.5.1.5
         t_CKUINT (CK_DLL_CALL * const srate)( Chuck_VM * vm );
-        // get chuck now | 1.5.1.4
+        // get chuck now | 1.5.1.5
         t_CKTIME (CK_DLL_CALL * const now)( Chuck_VM * vm );
-        // create a new lock-free one-producer, one-consumer buffer | 1.5.1.4
+        // create a new lock-free one-producer, one-consumer buffer | 1.5.1.5
         CBufferSimple * (CK_DLL_CALL * const create_event_buffer)( Chuck_VM * vm );
-        // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.4
+        // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.5
         t_CKBOOL (CK_DLL_CALL * const queue_event)( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
-        // invoke Chuck_Object member function (defined either in chuck or c++) | 1.5.1.4 (ge & andrew)
+        // invoke Chuck_Object member function (defined either in chuck or c++) | 1.5.1.5 (ge & andrew)
         // NOTE this will call the member function in IMMEDIATE MODE,
         // marking it as a time-critical function when called in this manner;
         // any time/event operations therein will throw an exception
@@ -958,7 +958,7 @@ private:
           const char * dlerror( void );
           int dlclose( void * handle );
           // 1.4.2.0 (ge) added DLERROR_BUFFER_LENGTH
-          // 1.5.1.4 (ge) increased DLERROR_BUFFER_LENGTH from 128 to 512
+          // 1.5.1.5 (ge) increased DLERROR_BUFFER_LENGTH from 128 to 512
           #define DLERROR_BUFFER_LENGTH 512
           static char dlerror_buffer[DLERROR_BUFFER_LENGTH];
 

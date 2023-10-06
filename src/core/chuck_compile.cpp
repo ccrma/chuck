@@ -765,7 +765,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     // commit what is in the type checker at this point
     env->global()->commit();
 
-    // preserve all operator overloads currently in registry | 1.5.1.4
+    // preserve all operator overloads currently in registry | 1.5.1.5
     env->op_registry.preserve();
 
     // pop indent level
@@ -777,7 +777,7 @@ error:
     // probably dangerous: rollback
     env->global()->rollback();
 
-    // undo op registry entries | 1.5.1.4
+    // undo op registry entries | 1.5.1.5
     env->op_registry.reset2local();
 
     // clear context
@@ -1037,7 +1037,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     EM_log( CK_LOG_SEVERE, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
     // add to compiler
     compiler->m_dlls.push_back(dll);
-    // commit operator overloads | 1.5.1.4
+    // commit operator overloads | 1.5.1.5
     compiler->env()->op_registry.preserve();
     // return home successful
     return TRUE;
@@ -1045,7 +1045,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
 error:
     // clean up
     CK_SAFE_DELETE( dll );
-    // rollback operator overloads | 1.5.1.4
+    // rollback operator overloads | 1.5.1.5
     compiler->env()->op_registry.reset2local();
 
     return FALSE;
@@ -1174,7 +1174,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
     type_engine_unload_context( env );
     // commit what is in the type checker at this point
     env->global()->commit();
-    // preserve all operator overloads currently in registry | 1.5.1.4
+    // preserve all operator overloads currently in registry | 1.5.1.5
     env->op_registry.preserve();
 
     return TRUE;

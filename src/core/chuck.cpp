@@ -760,7 +760,7 @@ t_CKBOOL ChucK::initChugins()
             // parse, type-check, and emit
             if( compiler()->go( filename, full_path ) )
             {
-                // preserve op overloads | 1.5.1.4
+                // preserve op overloads | 1.5.1.5
                 compiler()->env()->op_registry.preserve();
                 // get the code
                 code = compiler()->output();
@@ -772,7 +772,7 @@ t_CKBOOL ChucK::initChugins()
             }
             else // did not compile
             {
-                // undo any op overloads | 1.5.1.4
+                // undo any op overloads | 1.5.1.5
                 compiler()->env()->op_registry.reset2local();
             }
 

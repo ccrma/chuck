@@ -30,7 +30,7 @@
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #include "chuck_instr.h"
-#include "chuck_absyn.h" // for op2str | 1.5.1.4
+#include "chuck_absyn.h" // for op2str | 1.5.1.5
 #include "chuck_type.h"
 #include "chuck_lang.h"
 #include "chuck_vm.h"
@@ -3553,7 +3553,7 @@ void Chuck_Instr_Alloc_Word::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // overflow detection | 1.5.1.4 (ge) added
+    // overflow detection | 1.5.1.5 (ge) added
     if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
@@ -3581,7 +3581,7 @@ void Chuck_Instr_Alloc_Word2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // overflow detection | 1.5.1.4 (ge) added
+    // overflow detection | 1.5.1.5 (ge) added
     if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
@@ -3609,7 +3609,7 @@ void Chuck_Instr_Alloc_Word4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // overflow detection | 1.5.1.4 (ge) added
+    // overflow detection | 1.5.1.5 (ge) added
     if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
@@ -3638,7 +3638,7 @@ void Chuck_Instr_Alloc_Vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // overflow detection | 1.5.1.4 (ge) added
+    // overflow detection | 1.5.1.5 (ge) added
     if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
@@ -3668,7 +3668,7 @@ void Chuck_Instr_Alloc_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKBYTE *& mem_sp = (t_CKBYTE *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // overflow detection | 1.5.1.4 (ge) added
+    // overflow detection | 1.5.1.5 (ge) added
     if( would_overflow_( mem_sp+m_val, shred->mem ) ) goto overflow;
 
     // zero out the memory stack
@@ -3993,16 +3993,16 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 //-----------------------------------------------------------------------------
 t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
-    // check if already initialized | 1.5.1.4
+    // check if already initialized | 1.5.1.5
     if( object->vtable != NULL ) return TRUE;
 
     // sanity
     assert( type != NULL );
     assert( type->info != NULL );
 
-    // set origin shred | 1.5.1.4 (ge) was: ugen->shred = shred;
+    // set origin shred | 1.5.1.5 (ge) was: ugen->shred = shred;
     if( shred ) object->setOriginShred( shred );
-    // REFACTOR-2017: added | 1.5.1.4 (ge & andrew) moved here from instantiate_...
+    // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
 
     // allocate virtual table
@@ -4032,7 +4032,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     {
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
-        // add ugen to shred | 1.5.1.4 (ge & andrew) moved from instantiate_and_initialize_object()
+        // add ugen to shred | 1.5.1.5 (ge & andrew) moved from instantiate_and_initialize_object()
         if( shred ) shred->add( ugen );
         // set tick
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
@@ -4143,10 +4143,10 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             // copy to object reference (in case of error, object will be deleted)
             object = newShred;
 
-            // get stack size hints | 1.5.1.4
+            // get stack size hints | 1.5.1.5
             t_CKINT mems = shred ? shred->childGetMemSize() : 0;
             t_CKINT regs = shred ? shred->childGetRegSize() : 0;
-            // initialize shred | 1.5.1.4 (ge) added, along with child mem and reg stack size hints
+            // initialize shred | 1.5.1.5 (ge) added, along with child mem and reg stack size hints
             if( !newShred->initialize( NULL, mems, regs ) ) goto error;
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
@@ -4840,7 +4840,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         t_CKUINT * mem_sp2 = (t_CKUINT *)mem_sp;
         t_CKUINT * reg_sp2 = (t_CKUINT *)reg_sp;
 
-        // detect would-be overflow | 1.5.1.4 (ge) added
+        // detect would-be overflow | 1.5.1.5 (ge) added
         if( would_overflow_( mem_sp2+stack_depth_ints, shred->mem ) ) goto error_overflow;
 
         // need this
@@ -4917,7 +4917,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
 
-        // detect would-be overflow | 1.5.1.4 (ge) added
+        // detect would-be overflow | 1.5.1.5 (ge) added
         if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // need this
@@ -5064,7 +5064,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
 
-        // detect would-be overflow | 1.5.1.4 (ge) added
+        // detect would-be overflow | 1.5.1.5 (ge) added
         if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // need type
@@ -5159,7 +5159,7 @@ error_overflow:
 
 
 //-----------------------------------------------------------------------------
-// name: execute() | 1.5.1.4
+// name: execute() | 1.5.1.5
 // desc: imported global function call with return
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -5200,7 +5200,7 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKUINT * reg_sp2 = reg_sp;
         t_CKUINT * mem_sp2 = mem_sp;
 
-        // detect would-be overflow | 1.5.1.4 (ge) added
+        // detect would-be overflow | 1.5.1.5 (ge) added
         if( would_overflow_( mem_sp2+stack_depth, shred->mem ) ) goto error_overflow;
 
         // copy to args
@@ -5419,7 +5419,7 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // pop word from reg stack
     pop_( sp, 1 );
 
-    // check for immediate mode exception | 1.5.1.4 (ge)
+    // check for immediate mode exception | 1.5.1.5 (ge)
     if( shred->checkImmediatModeException(m_linepos) )
     {
         // do something!
@@ -5472,7 +5472,7 @@ void Chuck_Instr_Event_Wait::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
     // check for null
     if( !event ) goto null_pointer;
-    // check for immediate mode exception | 1.5.1.4 (ge) added
+    // check for immediate mode exception | 1.5.1.5 (ge) added
     if( shred->checkImmediatModeException(m_linepos) ) goto done;
 
     // wait
@@ -5760,7 +5760,7 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 // desc: 1.3.1.0 -- changed size to kind
 //-----------------------------------------------------------------------------
 Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
-                               Chuck_VM_Shred * shred, // 1.5.1.4 added
+                               Chuck_VM_Shred * shred, // 1.5.1.5 added
                                t_CKINT * capacity, const t_CKINT * top,
                                t_CKUINT kind, t_CKBOOL is_obj,
                                t_CKUINT * objs, t_CKINT & index,

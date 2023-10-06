@@ -1584,7 +1584,7 @@ CK_DLL_CTOR( foogen_ctor )
         // func to code
         instrs.push_back(new Chuck_Instr_Func_To_Code);
         // push stack depth for args (this, float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(sz_VOIDPTR+sz_FLOAT)); // 1.5.1.4: changed to sz_+sz_; was: 12
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(sz_VOIDPTR+sz_FLOAT)); // 1.5.1.5: changed to sz_+sz_; was: 12
         // func call
         instrs.push_back(new Chuck_Instr_Func_Call());
         // push immediate
@@ -1606,7 +1606,7 @@ CK_DLL_CTOR( foogen_ctor )
 
         data->shred = new Chuck_VM_Shred;
         data->shred->vm_ref = SHRED->vm_ref;
-        // initialize with stack size hints | 1.5.1.4
+        // initialize with stack size hints | 1.5.1.5
         data->shred->initialize( code, SHRED->childGetMemSize(), SHRED->childGetRegSize() );
     }
     else
@@ -2450,7 +2450,7 @@ CK_DLL_TICK( delayp_tick )
     if ( !d->buffer ) return FALSE;
 
     // area
-    d->now = ((Chuck_UGen*)SELF)->originVM()->shreduler()->now_system; // 1.5.1.4
+    d->now = ((Chuck_UGen*)SELF)->originVM()->shreduler()->now_system; // 1.5.1.5
     // d->now = ((Chuck_UGen*)SELF)->originShred()->vm_ref->shreduler()->now_system;
 
     //calculate new write-offset position ( we interpolate if we've been assigned a new write-offset )

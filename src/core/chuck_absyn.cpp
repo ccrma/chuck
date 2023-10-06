@@ -34,7 +34,7 @@
 #include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string> // 1.5.1.4 for string concat
+#include <string> // 1.5.1.5 for string concat
 
 
 // 1.5.0.5 (ge) option to include in case we need something from flex/bison
@@ -801,7 +801,7 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
     return a;
 }
 
-// @operator overload | 1.5.1.4
+// @operator overload | 1.5.1.5
 a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
                             a_Type_Decl type_decl, ae_Operator oper,
                             a_Arg_List arg_list, a_Stmt code,
@@ -821,7 +821,7 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
     a->s_type = ae_func_user;
     a->code = code;
     a->ast_owned = is_from_ast != 0; // 1.5.0.5 (ge) added
-    a->overload_post = overload_post; // 1.5.1.4 (ge) added
+    a->overload_post = overload_post; // 1.5.1.5 (ge) added
     a->line = lineNum; a->where = posNum; a->operWhere = operPos;
 
     return a;

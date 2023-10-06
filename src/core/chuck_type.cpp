@@ -73,9 +73,9 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
 t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary );
-t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op, Chuck_Type * lhs, Chuck_Type * rhs, a_Exp_Binary binary ); // 1.5.1.4
-t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op, Chuck_Type * rhs, a_Exp_Unary unary ); // 1.5.1.4
-t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs, ae_Operator op, a_Exp_Postfix post ); // 1.5.1.4
+t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op, Chuck_Type * lhs, Chuck_Type * rhs, a_Exp_Binary binary ); // 1.5.1.5
+t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op, Chuck_Type * rhs, a_Exp_Unary unary ); // 1.5.1.5
+t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs, ae_Operator op, a_Exp_Postfix post ); // 1.5.1.5
 t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_complex_lit( Chuck_Env * env, a_Exp_Primary exp );
@@ -2077,7 +2077,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_divide_chuck:
     case ae_op_percent_chuck:
         {
-            // check overload | 1.5.1.4 (ge) added
+            // check overload | 1.5.1.5 (ge) added
             Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
             // if we have a hit
             if( ret ) return ret;
@@ -2374,7 +2374,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     default: break;
     }
 
-    // check overload | 1.5.1.4 (ge) added
+    // check overload | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2753,7 +2753,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         // aggregate types
         else
         {
-            // check overloading of => | 1.5.1.4 (ge) added
+            // check overloading of => | 1.5.1.5 (ge) added
             Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
             // if we have a hit
             if( ret ) return ret;
@@ -2768,7 +2768,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         }
     }
 
-    // check overloading of => | 1.5.1.4 (ge) added
+    // check overloading of => | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2795,7 +2795,7 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // ugen =< ugen
     if( isa( left, env->ckt_ugen ) && isa( right, env->ckt_ugen ) ) return right;
 
-    // check overloading of =< | 1.5.1.4 (ge) added
+    // check overloading of =< | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_unchuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2822,7 +2822,7 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // uana =^ uana
     if( isa( left, env->ckt_uana ) && isa( right, env->ckt_uana ) ) return right;
 
-    // check overloading of =^ | 1.5.1.4 (ge) added
+    // check overloading of =^ | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_upchuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2912,7 +2912,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a
         return NULL;
     }
 
-    // check overloading of @=> (disallowed for now) | 1.5.1.4 (ge) added
+    // check overloading of @=> (disallowed for now) | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_at_chuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -3092,7 +3092,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         default: break;
     }
 
-    // check overloading of unary operator | 1.5.1.4 (ge) added
+    // check overloading of unary operator | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_unary( env, unary->op, t, unary );
     // if we have a hit
     if( ret ) return ret;
@@ -3835,7 +3835,7 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
         return NULL;
     }
 
-    // check overloading of postfix operator | 1.5.1.4 (ge) added
+    // check overloading of postfix operator | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_postfix( env, t, postfix->op, postfix );
     // if we have a hit
     if( ret ) return ret;
@@ -6666,7 +6666,7 @@ t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * sfun )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_init_op_overload_builtin() | 1.5.1.4 (ge) added
+// name: type_engine_init_op_overload_builtin() | 1.5.1.5 (ge) added
 // desc: reserve builtin default operator overloads; this disallows certain
 //       overloadings, e.g., int + int
 //-----------------------------------------------------------------------------
@@ -6937,7 +6937,7 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_init_op_overload() | 1.5.1.4 (ge) added
+// name: type_engine_init_op_overload() | 1.5.1.5 (ge) added
 // desc: initialize operator overload
 //       NOTE this is typically called from init_type_system()
 //-----------------------------------------------------------------------------
@@ -7011,7 +7011,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_scan_func_op_overload() | 1.5.1.4 (ge) added
+// name: type_engine_scan_func_op_overload() | 1.5.1.5 (ge) added
 // desc: verify an operator overload
 //       NOTE this is typically called from scan2_func_def()
 //-----------------------------------------------------------------------------
@@ -7119,7 +7119,7 @@ t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def f )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_func_op_overload()
-// desc: type-check an operator overload | 1.5.1.4 (ge) added
+// desc: type-check an operator overload | 1.5.1.5 (ge) added
 //       NOTE this is typically called from check_func_def()
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, ae_Operator op, a_Func_Def func_def )
@@ -7677,9 +7677,9 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // copy the function pointer - the type doesn't matter here
     // ...since we copying into a void * - so mfun is used
     func_def->dl_func_ptr = (void *)dl_fun->mfun;
-    // copy the operator overload info | 1.5.1.4
+    // copy the operator overload info | 1.5.1.5
     func_def->op2overload = dl_fun->op2overload;
-    // set if unary postfix overload | 1.5.1.4
+    // set if unary postfix overload | 1.5.1.5
     func_def->overload_post = (dl_fun->opOverloadKind == te_op_overload_unary_post);
 
     return func_def;
@@ -8326,11 +8326,11 @@ Chuck_Func::~Chuck_Func()
     CK_SAFE_RELEASE( this->code );
     CK_SAFE_RELEASE( this->value_ref );
 
-    // release args cache | 1.5.1.4
+    // release args cache | 1.5.1.5
     CK_SAFE_DELETE_ARRAY( this->args_cache );
     this->args_cache_size = 0;
 
-    // release invoker(s) | 1.5.1.4
+    // release invoker(s) | 1.5.1.5
     CK_SAFE_DELETE( this->invoker_mfun );
 
     // TODO: check if more references to release, e.g., up and next?
@@ -8503,7 +8503,7 @@ void Chuck_Func::funcdef_cleanup()
 
 
 //-----------------------------------------------------------------------------
-// name: pack_cache() | 1.5.1.4
+// name: pack_cache() | 1.5.1.5
 // desc: pack c-style array of DL_Args into args cache
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Func::pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs )
@@ -8553,7 +8553,7 @@ t_CKBOOL Chuck_Func::pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs )
 
 
 //-----------------------------------------------------------------------------
-// name: setup_invoker() | 1.5.1.4
+// name: setup_invoker() | 1.5.1.5
 // desc: setup invoker for this fun (for calling chuck function from c++)
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Func::setup_invoker( t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred )

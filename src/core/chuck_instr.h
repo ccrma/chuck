@@ -1940,7 +1940,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Pop_Vec3
-// desc: pop a vec3 value from reg stack | 1.5.1.4
+// desc: pop a vec3 value from reg stack | 1.5.1.5
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Reg_Pop_Vec3 : public Chuck_Instr
 {
@@ -1953,7 +1953,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Pop_Vec4
-// desc: pop a vec4 value from reg stack | 1.5.1.4
+// desc: pop a vec4 value from reg stack | 1.5.1.5
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Reg_Pop_Vec4 : public Chuck_Instr
 {

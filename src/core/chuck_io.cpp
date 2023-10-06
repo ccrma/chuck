@@ -79,7 +79,7 @@ typedef DWORD uint32_t;
 #endif
 #endif
 
-// for legacy use of disable fileio | 1.5.1.4
+// for legacy use of disable fileio | 1.5.1.5
 #ifdef __DISABLE_FILEIO__
   // auto define new, more granular macro
   #ifndef __DISABLE_ASYNCH_IO__

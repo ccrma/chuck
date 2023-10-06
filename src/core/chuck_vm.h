@@ -64,7 +64,7 @@ struct Chuck_VM_Func;
 struct Chuck_VM_FTable;
 struct Chuck_Msg;
 struct Chuck_Globals_Manager; // added 1.4.1.0 (jack)
-struct Chuck_Instr_Reg_Push_Imm; // 1.5.1.4 (ge)
+struct Chuck_Instr_Reg_Push_Imm; // 1.5.1.5 (ge)
 class CBufferSimple;
 #ifndef __DISABLE_SERIAL__
 // hack: spencer?
@@ -109,7 +109,7 @@ public: // linked list
 
 public: // state
     t_CKBOOL m_is_init;
-    t_CKUINT m_size; // 1.5.1.4
+    t_CKUINT m_size; // 1.5.1.5
 };
 
 
@@ -231,7 +231,7 @@ public: // machine components
     // children shreds
     std::map<t_CKUINT, Chuck_VM_Shred *> children;
 
-    // child stack size hints | 1.5.1.4
+    // child stack size hints | 1.5.1.5
     t_CKINT memStackSize;
     t_CKINT regStackSize;
 
@@ -284,7 +284,7 @@ public: // ge: 1.3.5.3
     // loop counter pointer stack
     std::vector<t_CKUINT *> m_loopCounters;
 
-public: // immediate mode temporal restriction | 1.5.1.4 (ge)
+public: // immediate mode temporal restriction | 1.5.1.5 (ge)
     // while in this mode, exception will be thrown on any time ops:
     // 1) if shred advances time (even by 0 duration)
     // 2) if shred waits on event
@@ -632,12 +632,12 @@ public:
     Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
 public:
-    // subscribe shreds watcher callback | 1.5.1.4
+    // subscribe shreds watcher callback | 1.5.1.5
     void subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data = NULL );
-    // notify watchers | 1.5.1.4
+    // notify watchers | 1.5.1.5
     void notify_watchers( ckvmShredsWatcherFlag which, Chuck_VM_Shred * shred,
                           std::list<Chuck_VM_Shreds_Watcher> & v );
-    // remove shreds watcher callback | 1.5.1.4
+    // remove shreds watcher callback | 1.5.1.5
     void remove_watcher( f_shreds_watcher cb );
 
 //-----------------------------------------------------------------------------
@@ -692,7 +692,7 @@ protected:
     Chuck_VM_Shred * m_shreds;
     t_CKUINT m_num_shreds;
     t_CKUINT m_shred_id;
-    t_CKBOOL m_shred_check4dupes; // 1.5.1.4
+    t_CKBOOL m_shred_check4dupes; // 1.5.1.5
     Chuck_VM_Shreduler * m_shreduler;
     // place to put dumped shreds
     std::vector<Chuck_VM_Shred *> m_shred_dump;
@@ -711,7 +711,7 @@ protected:
     Chuck_Globals_Manager * m_globals_manager;
 
 protected:
-    // 1.5.1.4 (ge & andrew) shreds watchers
+    // 1.5.1.5 (ge & andrew) shreds watchers
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_spork;
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_remove;
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_suspend;
@@ -769,7 +769,7 @@ struct Chuck_Msg
     t_CKTIME when;
     // pointer to status struct, as applicable
     Chuck_VM_Status * status;
-    // whether to always add | 1.5.1.4
+    // whether to always add | 1.5.1.5
     t_CKBOOL alwaysAdd;
 
     // reply callback
@@ -820,7 +820,7 @@ struct Chuck_Msg
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_VM_MFunInvoker | 1.5.1.4 (ge)
+// name: struct Chuck_VM_MFunInvoker | 1.5.1.5 (ge)
 // desc: construct for calling chuck-defined member functions from c++,
 //       either from VM execution or outside the VM execution context
 //-----------------------------------------------------------------------------

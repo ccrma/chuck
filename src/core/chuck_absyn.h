@@ -481,7 +481,7 @@ struct a_Func_Def_ {
     a_Type_Decl type_decl;
     t_CKTYPE ret_type;
     S_Symbol name;
-    ae_Operator op2overload; // 1.5.1.4 (ge) added
+    ae_Operator op2overload; // 1.5.1.5 (ge) added
     a_Arg_List arg_list;
     a_Stmt code;
     t_CKFUNC ck_func;
@@ -490,7 +490,7 @@ struct a_Func_Def_ {
     unsigned int stack_depth;
     void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
-    uint32_t overload_post; // 1.5.1.4 (ge) overload as post? e.g., @operator(args) ++ (unary only)
+    uint32_t overload_post; // 1.5.1.5 (ge) overload as post? e.g., @operator(args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references
     uint32_t line; uint32_t where; uint32_t operWhere;
 };
