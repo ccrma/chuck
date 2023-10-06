@@ -135,7 +135,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     type->ugen_info->tick = __ugen_tick;
     type->ugen_info->num_ins = 1;
     type->ugen_info->num_outs = 1;
-
+    // documentation text
     const char * doc = "base class for all unit generator (UGen) types.";
 
     // init as base class
@@ -3002,9 +3002,9 @@ CK_DLL_MFUN( array_push_back )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
-    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
+    if( array->data_type_kind() == CHUCK_ARRAYINT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->push_back( GET_NEXT_UINT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+    else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_COMPLEX( ARGS ) );
@@ -3024,9 +3024,9 @@ CK_DLL_MFUN( array_insert )
     t_CKINT position = GET_NEXT_INT( ARGS );
 
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
-    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
+    if( array->data_type_kind() == CHUCK_ARRAYINT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->insert( position, GET_NEXT_UINT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+    else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_COMPLEX( ARGS ) );
@@ -3051,9 +3051,9 @@ CK_DLL_MFUN( array_push_front )
 {
     Chuck_Array * array = (Chuck_Array *)SELF;
     // ISSUE: 64-bit (fixed 1.3.1.0 using data kind)
-    if( array->data_type_kind() == CHUCK_ARRAY4_DATAKIND )
+    if( array->data_type_kind() == CHUCK_ARRAYINT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->push_front( GET_NEXT_UINT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY8_DATAKIND )
+    else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_front( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
         RETURN->v_int = ((Chuck_Array16 *)array)->push_front( GET_NEXT_COMPLEX( ARGS ) );
