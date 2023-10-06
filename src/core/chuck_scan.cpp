@@ -122,8 +122,6 @@ t_CKBOOL type_engine_scan2_cast_valid( Chuck_Env * env, t_CKTYPE to, t_CKTYPE fr
 t_CKBOOL type_engine_scan2_code_segment( Chuck_Env * env, a_Stmt_Code stmt, t_CKBOOL push = TRUE );
 t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def );
-t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def func_def );
-t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 
 
@@ -2641,6 +2639,56 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
     // pop the namesapce
     env->curr = env->nspc_stack.back();
     env->nspc_stack.pop_back();
+
+    // the parent class | 1.5.1.4 (ge) moved from chuck_type module for earlier info
+    t_CKTYPE t_parent = NULL;
+
+    // make sure inheritance
+    // TODO: sort!
+    if( class_def->ext )
+    {
+        // if extend
+        if( class_def->ext->extend_id )
+        {
+            // find the type
+            t_parent = type_engine_find_type( env, class_def->ext->extend_id );
+            if( !t_parent )
+            {
+                EM_error2( class_def->ext->extend_id->where,
+                    "undefined super class '%s' in definition of class '%s'",
+                    type_path(class_def->ext->extend_id), S_name(class_def->name->xid) );
+                return FALSE;
+            }
+
+            // must not be primitive
+            if( isprim( env, t_parent ) )
+            {
+                EM_error2( class_def->ext->extend_id->where,
+                    "cannot extend primitive type '%s'",
+                    t_parent->c_name() );
+                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
+                return FALSE;
+            }
+        }
+
+        // TODO: interface
+    }
+
+    // by default object
+    if( !t_parent ) t_parent = env->ckt_object;
+
+    // check for fun
+    assert( env->context != NULL );
+    assert( class_def->type != NULL );
+    assert( class_def->type->info != NULL );
+
+    // retrieve the new type (created in scan_class_def)
+    the_class = class_def->type;
+
+    // set fields not set in scan
+    the_class->parent = t_parent; CK_SAFE_ADD_REF(t_parent);
+    // inherit ugen_info data from parent PLD
+    the_class->ugen_info = t_parent->ugen_info; CK_SAFE_ADD_REF(t_parent->ugen_info);
 
     return ret;
 }

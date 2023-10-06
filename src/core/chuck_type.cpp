@@ -4705,75 +4705,32 @@ t_CKTYPE type_engine_check_exp_array( Chuck_Env * env, a_Exp_Array array )
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
 {
     // make new type for class def
-    t_CKTYPE the_class = NULL;
-    // the parent class
-    t_CKTYPE t_parent = NULL;
+    t_CKTYPE the_class = class_def->type;
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
     a_Class_Body body = class_def->body;
 
-    // make sure inheritance
-    // TODO: sort!
-    if( class_def->ext )
+    // check if parent class definition is complete or not
+    // NOTE this could potentially be remove if class defs can be processed
+    // out of order they appear in file; potentially a relationship tree?
+    if( the_class->parent->is_complete == FALSE )
     {
-        // if extend
-        if( class_def->ext->extend_id )
-        {
-            // find the type
-            t_parent = type_engine_find_type( env, class_def->ext->extend_id );
-            if( !t_parent )
-            {
-                EM_error2( class_def->ext->extend_id->where,
-                    "undefined super class '%s' in definition of class '%s'",
-                    type_path(class_def->ext->extend_id), S_name(class_def->name->xid) );
-                return FALSE;
-            }
-
-            // must not be primitive
-            if( isprim( env, t_parent ) )
-            {
-                EM_error2( class_def->ext->extend_id->where,
-                    "cannot extend primitive type '%s'",
-                    t_parent->c_name() );
-                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', etc.)" );
-                return FALSE;
-            }
-
-            // if not complete
-            if( t_parent->is_complete == FALSE )
-            {
-                EM_error2( class_def->ext->where,
-                    "cannot extend incomplete type '%s'",
-                    t_parent->c_name() );
-                EM_error2( class_def->ext->where,
-                    "...(note: the parent's declaration must precede child's)" );
-                return FALSE;
-            }
-        }
-
-        // TODO: interface
+        EM_error2( class_def->ext->where,
+            "cannot extend incomplete type '%s'",
+            the_class->parent->c_name() );
+        EM_error2( class_def->ext->where,
+            "...(note: the parent's declaration must precede child's)" );
+        // done
+        return FALSE;
     }
 
-    // by default object
-    if( !t_parent ) t_parent = env->ckt_object;
-
-    // check for fun
-    assert( env->context != NULL );
-    assert( class_def->type != NULL );
-    assert( class_def->type->info != NULL );
-
-    // retrieve the new type (created in scan_class_def)
-    the_class = class_def->type;
-
-    // set fields not set in scan
-    the_class->parent = t_parent;
-    // inherit ugen_info data from parent PLD
-    the_class->ugen_info = t_parent->ugen_info;
+    // NB the following should be done AFTER the parent is completely defined
+    // --
     // set the beginning of data segment to after the parent
-    the_class->info->offset = t_parent->obj_size;
+    the_class->info->offset = the_class->parent->obj_size;
     // duplicate the parent's virtual table
-    the_class->info->obj_v_table = t_parent->info->obj_v_table;
+    the_class->info->obj_v_table = the_class->parent->info->obj_v_table;
 
     // set the new type as current
     env->nspc_stack.push_back( env->curr );
