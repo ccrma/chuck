@@ -1,0 +1,6 @@
+error-class-def-order.ck:7:9: error: cannot extend incomplete type 'X'
+[7] class Y extends X
+            ^
+error-class-def-order.ck:7:9: error: ...(note: the parent's declaration must precede child's)
+[7] class Y extends X
+            ^
