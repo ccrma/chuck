@@ -66,6 +66,7 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
 void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
 void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text );
+void CK_DLL_CALL ck_system_remove_all_shreds( Chuck_VM * vm );
 Chuck_DL_Api::Type CK_DLL_CALL ck_type_lookup( Chuck_VM * vm, const char * name );
 t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
@@ -1908,7 +1909,8 @@ create_event_buffer(ck_create_event_buffer),
 queue_event(ck_queue_event),
 invoke_mfun_immediate_mode(ck_invoke_mfun_immediate_mode),
 throw_exception(ck_throw_exception),
-em_log(ck_em_log)
+em_log(ck_em_log),
+system_remove_all_shreds(ck_system_remove_all_shreds)
 { }
 
 
@@ -2037,8 +2039,8 @@ void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc,
 
 
 //-----------------------------------------------------------------------------
-// name: ck_throw_exception()
-// desc: throw an exception
+// name: ck_em_log()
+// desc: host impl: print to chuck logger
 //-----------------------------------------------------------------------------
 void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
 {
@@ -2046,6 +2048,23 @@ void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text )
     if( !text ) return;
     // display
     EM_log( level, text );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_system_remove_all_shreds()
+// desc: host impl for system function: remove all shreds in VM; use with care
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_system_remove_all_shreds( Chuck_VM * vm )
+{
+    // construct chuck msg (must allocate on heap, as VM will clean up)
+    Chuck_Msg * msg = new Chuck_Msg();
+    // set type
+    msg->type = CK_MSG_REMOVEALL;
+    // remove all shreds
+    vm->queue_msg( msg );
 }
 
 
