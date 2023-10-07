@@ -1053,7 +1053,7 @@ struct Chuck_Value : public Chuck_VM_Object
 
     // dependency tracking | 1.5.0.8 (ge) added
     // code position of where this value is considered initialized
-    // NOTE sed to determine dependencies within a file context
+    // NOTE used to determine dependencies within a file context
     t_CKUINT depend_init_where; // 1.5.0.8
 
     // documentation
