@@ -2564,7 +2564,7 @@ CK_DLL_CTRL( delayp_ctrl_delay )
         d->offset_target = target;
         d->offset_start  = d->last_offset;
 
-        t_CKTIME snow = ((Chuck_UGen*)SELF)->originShred()->now;
+        t_CKTIME snow = SHRED->now; // 1.5.1.5 was: ((Chuck_UGen*)SELF)->originShred()->now;
         d->move_end_time = snow + d->move_duration;
     }
     RETURN->v_dur = d->last_offset; // TODO:

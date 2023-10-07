@@ -186,6 +186,8 @@ public:
     t_CKBOOL add( Chuck_UGen * ugen );
     // unassociate ugen with shred
     t_CKBOOL remove( Chuck_UGen * ugen );
+    // detach all associate ugens | 1.5.1.5 (ge) added
+    void detach_ugens();
 
     // add parent object reference (added 1.3.1.2)
     t_CKVOID add_parent_ref( Chuck_Object * obj );

@@ -1439,7 +1439,14 @@ void Chuck_VM::release_dump( )
 
     // iterate through dump
     for( t_CKUINT i = 0; i < m_shred_dump.size(); i++ )
+    {
+        // detach ugens | 1.5.1.5 (moved here from inside shred destructor)
+        // (ensure we always do this, even if release below doesn't
+        // actually delete the shred due to reference count)
+        m_shred_dump[i]->detach_ugens();
+        // release
         CK_SAFE_RELEASE( m_shred_dump[i] );
+    }
 
     // clear the dump
     m_shred_dump.clear();
@@ -1780,10 +1787,10 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: shutdown()
-// desc: shutdown a shred
+// name: detach_ugens()
+// desc: detach all associate ugens created on a shred
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM_Shred::shutdown()
+void Chuck_VM_Shred::detach_ugens()
 {
     // check if we have anything in ugen map for this shred
     if( m_ugen_map.size() )
@@ -1808,6 +1815,10 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
 
             // disconnect
             ugen->disconnect( TRUE );
+            // make sure if ugen has an origin shred, it is this one | 1.5.1.5
+            assert( !ugen->originShred() || ugen->originShred() == this );
+            // also clear reference to this shred | 1.5.1.5
+            ugen->setOriginShred( NULL );
 
             // advance the iterator
             iter++;
@@ -1825,6 +1836,19 @@ t_CKBOOL Chuck_VM_Shred::shutdown()
         // clear the release vector
         release_v.clear();
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shutdown()
+// desc: shutdown a shred
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Shred::shutdown()
+{
+    // detach ugens
+    detach_ugens();
 
     // check if we have parent object references to clean up
     if( m_parent_objects.size() )

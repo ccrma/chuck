@@ -4000,10 +4000,21 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     assert( type != NULL );
     assert( type->info != NULL );
 
-    // set origin shred | 1.5.1.5 (ge) was: ugen->shred = shred;
-    if( shred ) object->setOriginShred( shred );
     // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
+    // check if origin shred is available | 1.5.1.5 (ge)
+    if( shred )
+    {
+        // set the origin shred only in specific cases...
+        // UGens: needs shred for auto-disconnect when shred is removed
+        // user-defined classes (that refer to global-scope variables):
+        // ...needs shred to access the global-scope variables across sporking
+        if( type->ugen_info || type->originHint == te_originUserDefined )
+        {
+            // set origin shred | 1.5.1.5 (ge) was: ugen->shred = shred;
+            object->setOriginShred( shred );
+        }
+    }
 
     // allocate virtual table
     object->vtable = new Chuck_VTable;
