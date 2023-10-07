@@ -793,6 +793,8 @@ public:
 
 
 
+// instantiating a chuck string
+Chuck_String * ck_create_string( Chuck_VM * vm, const char * cstr, t_CKBOOL addRef );
 //-----------------------------------------------------------------------------
 // invoking chuck functions from c++
 //-----------------------------------------------------------------------------

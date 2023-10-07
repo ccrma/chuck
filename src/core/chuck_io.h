@@ -231,6 +231,9 @@ public:
     static THREAD_RETURN( THREAD_TYPE writeFloat_thread ) (void * data);
 #endif
 
+    // get filename
+    std::string filename() const { return m_path; }
+
 protected:
     // open flags
     t_CKINT m_flags;
@@ -246,6 +249,12 @@ protected:
     std::string m_path;
     // vm and shred
     Chuck_VM * m_vmRef;
+
+public:
+    // auto prefix | 1.5.1.5
+    std::string m_autoPrefix;
+    // auto extension | 1.5.1.5
+    std::string m_autoExtension;
 };
 
 
@@ -405,6 +414,10 @@ CK_DLL_MFUN( fileio_writeint );
 CK_DLL_MFUN( fileio_writeintflags );
 CK_DLL_MFUN( fileio_writefloat );
 CK_DLL_MFUN( fileio_writefloatflags );
+CK_DLL_MFUN( file_ctrl_autoPrefixAndExtension );
+CK_DLL_MFUN( file_cget_autoPrefix );
+CK_DLL_MFUN( file_cget_autoExtension );
+CK_DLL_MFUN( file_cget_filename );
 CK_DLL_SFUN( fileio_expandpath_impl );
 
 

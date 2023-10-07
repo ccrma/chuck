@@ -1563,7 +1563,7 @@ static Chuck_DL_Api::Object ck_create_without_shred( Chuck_VM * vm, Chuck_DL_Api
 // name: ck_create_string()
 // desc: host-side hook implementation for creating a chuck string
 //-----------------------------------------------------------------------------
-static Chuck_DL_Api::String ck_create_string( Chuck_VM * vm, const char * cstr, t_CKBOOL addRef )
+Chuck_String * ck_create_string( Chuck_VM * vm, const char * cstr, t_CKBOOL addRef )
 {
     // instantiate and initalize object
     Chuck_String * ckstr = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, vm );
@@ -1576,8 +1576,10 @@ static Chuck_DL_Api::String ck_create_string( Chuck_VM * vm, const char * cstr, 
         if( addRef ) CK_SAFE_ADD_REF(ckstr);
     }
     // return reference
-    return (Chuck_DL_Api::String)ckstr;
+    return ckstr;
 }
+
+
 
 
 //-----------------------------------------------------------------------------

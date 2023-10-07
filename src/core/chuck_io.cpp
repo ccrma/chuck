@@ -457,6 +457,28 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->doc = "Write floating point value to file; binary mode: flags indicate float size (IO.FLOAT32 or IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add autoPrefixAndExt() | 1.5.1.5 (ge)
+    func = make_new_mfun( "void", "autoPrefixExtension", file_ctrl_autoPrefixAndExtension ); //! set auto prefix and extension string
+    func->add_arg( "string", "prefix" );
+    func->add_arg( "string", "extension" );
+    func->doc = "set auto prefix and extension for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add autoPrefix()
+    func = make_new_mfun( "string", "autoPrefix", file_cget_autoPrefix ); //! get auto prefix string
+    func->doc = "get auto prefix for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add autoExtension()
+    func = make_new_mfun( "string", "autoExtension", file_cget_autoExtension ); //! get auto extension string
+    func->doc = "get auto extension for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add filename()
+    func = make_new_mfun( "string", "filename", file_cget_filename ); //! get auto extension string
+    func->doc = "get current filename.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add expandPath | 1.5.1.3
     func = make_new_sfun( "string", "expandPath", fileio_expandpath_impl );
     func->add_arg( "string", "path" );
@@ -473,6 +495,7 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "io/seek.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write-auto.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
 
@@ -1658,6 +1681,39 @@ CK_DLL_MFUN( fileio_dirlist )
     RETURN->v_object = a;
 }
 
+CK_DLL_MFUN( file_ctrl_autoPrefixAndExtension )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    Chuck_String * prefix = GET_NEXT_STRING(ARGS);
+    Chuck_String * extension = GET_NEXT_STRING(ARGS);
+
+    f->m_autoPrefix = prefix ? prefix->str() : "";
+    f->m_autoExtension = extension ? extension->str() : "";
+}
+
+CK_DLL_MFUN( file_cget_autoPrefix )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->m_autoPrefix.c_str(), FALSE );
+}
+
+CK_DLL_MFUN( file_cget_autoExtension )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->m_autoExtension.c_str(), FALSE );
+}
+
+CK_DLL_MFUN( file_cget_filename )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->filename().c_str(), FALSE );
+}
 
 // expandPath | 1.5.1.3
 CK_DLL_SFUN( fileio_expandpath_impl )
@@ -3045,6 +3101,10 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
 #ifndef __DISABLE_THREADS__
     m_thread = new XThread;
 #endif
+
+    // initialize prefix and extensions for auto | 1.5.1.5
+    m_autoPrefix = "chuck-file";
+    m_autoExtension = "txt";
 }
 
 
@@ -3073,9 +3133,12 @@ Chuck_IO_File::~Chuck_IO_File()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
 {
+    // the filename
+    string theFilename = path;
+
     // log
     EM_log( CK_LOG_INFO, "FileIO: opening file from disk..." );
-    EM_log( CK_LOG_INFO, "FileIO: path: %s", path.c_str() );
+    EM_log( CK_LOG_INFO, "FileIO: path: %s", theFilename.c_str() );
     EM_pushlog();
 
     // if no flag specified, make it READ by default
@@ -3157,8 +3220,24 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     if( m_io.is_open() )
         this->close();
 
+    // special
+    if( strstr( theFilename.c_str(), "special:auto" ) )
+    {
+        // check output
+        if( theMode & ios_base::out )
+        {
+            // generate auto name
+            theFilename = autoFilename( this->m_autoPrefix, this->m_autoExtension );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): \"special:auto\" can only be used for output" );
+            goto error;
+        }
+    }
+
     // try to open as a dir first (fixed 1.3.0.0 removed warning)
-    m_dir = opendir( path.c_str() );
+    m_dir = opendir( theFilename.c_str() );
     if( m_dir )
     {
         EM_poplog();
@@ -3169,11 +3248,11 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     // readonly
     if( !(flags & FLAG_READONLY) )
     {
-        m_io.open( path.c_str(), ios_base::in );
+        m_io.open( theFilename.c_str(), ios_base::in );
         if( m_io.fail() )
         {
             m_io.clear();
-            m_io.open( path.c_str(), ios_base::out | ios_base::trunc );
+            m_io.open( theFilename.c_str(), ios_base::out | ios_base::trunc );
             m_io.close();
         }
         else
@@ -3181,7 +3260,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     }
 
     //open file
-    m_io.open( path.c_str(), theMode );
+    m_io.open( theFilename.c_str(), theMode );
 
     // seek to beginning if necessary
     if( flags & FLAG_READ_WRITE )
@@ -3194,21 +3273,21 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
      // windows sucks for being creative in the wrong places
      #ifdef __PLATFORM_WINDOWS__
      // if( flags ^ Chuck_IO::TRUNCATE && flags | Chuck_IO::READ ) nMode |= ios::nocreate;
-     m_io.open( path.c_str(), nMode );
+     m_io.open( theFilename.c_str(), nMode );
      #else
-     m_io.open( path.c_str(), (_Ios_Openmode)nMode );
+     m_io.open( theFilename.c_str(), (_Ios_Openmode)nMode );
      #endif
      */
 
      // check for error
     if( !(m_io.is_open()) )
     {
-        // EM_error3( "[chuck](via FileIO): cannot open file: '%s'", path.c_str() );
+        // EM_error3( "[chuck](via FileIO): cannot open file: '%s'", theFilename.c_str() );
         goto error;
     }
 
     // set path
-    m_path = path;
+    m_path = theFilename;
     // set flags
     m_flags = flags;
     if( !(flags & TYPE_BINARY) )
