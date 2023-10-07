@@ -849,7 +849,7 @@ public:
         // log a message in the chuck logging system
         void (CK_DLL_CALL * const em_log)( t_CKINT level, const char * text );
         // system function: remove all shreds in VM; use with care
-        void (CK_DLL_CALL * const system_remove_all_shreds)( Chuck_VM * vm );
+        void (CK_DLL_CALL * const remove_all_shreds)( Chuck_VM * vm );
     } * const vm;
 
     // api to access host-side ChucK objects
