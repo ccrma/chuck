@@ -720,12 +720,12 @@ CK_DLL_TOCK( FeatureCollector_tock )
             // sanity check
             assert( BLOB_IN != NULL );
             // count number of features from this UAna
-            Chuck_Array8 & these_fvals = BLOB_IN->fvals();
+            Chuck_ArrayFloat & these_fvals = BLOB_IN->fvals();
             num_feats += these_fvals.size();
         }
 
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         if( fvals.size() != num_feats )
             fvals.set_size( num_feats );
 
@@ -734,7 +734,7 @@ CK_DLL_TOCK( FeatureCollector_tock )
         {
             // get next blob
             Chuck_UAnaBlobProxy * BLOB_IN = UANA->getIncomingBlob( i );
-            Chuck_Array8 & these_fvals = BLOB_IN->fvals();
+            Chuck_ArrayFloat & these_fvals = BLOB_IN->fvals();
             t_CKINT num_these = these_fvals.size();
             for( j = 0; j < num_these; j++ )
             {
@@ -760,7 +760,7 @@ CK_DLL_PMSG( FeatureCollector_pmsg )
     return TRUE;
 }
 
-static t_CKFLOAT compute_centroid( Chuck_Array8 & buffer, t_CKUINT size )
+static t_CKFLOAT compute_centroid( Chuck_ArrayFloat & buffer, t_CKUINT size )
 {
     t_CKFLOAT m0 = 0.0;
     t_CKFLOAT m1 = 0.0;
@@ -802,7 +802,7 @@ CK_DLL_TOCK( Centroid_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute centroid
         result = compute_centroid( mag, mag.size() );
     }
@@ -814,7 +814,7 @@ CK_DLL_TOCK( Centroid_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -833,7 +833,7 @@ CK_DLL_PMSG( Centroid_pmsg )
 CK_DLL_SFUN( Centroid_compute )
 {
     // get array
-    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // sanity check
     if( !array )
     {
@@ -850,8 +850,8 @@ CK_DLL_SFUN( Centroid_compute )
 // Flux state
 struct StateOfFlux
 {
-    Chuck_Array8 prev;
-    Chuck_Array8 norm;
+    Chuck_ArrayFloat prev;
+    Chuck_ArrayFloat norm;
     t_CKBOOL initialized;
 
     StateOfFlux()
@@ -861,7 +861,7 @@ struct StateOfFlux
 };
 
 // compute norm rms
-static void compute_norm_rms( Chuck_Array8 & curr, Chuck_Array8 & norm )
+static void compute_norm_rms( Chuck_ArrayFloat & curr, Chuck_ArrayFloat & norm )
 {
     t_CKUINT i;
     t_CKFLOAT energy = 0.0;
@@ -899,7 +899,7 @@ static void compute_norm_rms( Chuck_Array8 & curr, Chuck_Array8 & norm )
 }
 
 // compute flux
-static t_CKFLOAT compute_flux( Chuck_Array8 & curr, Chuck_Array8 & prev, Chuck_Array8 * write )
+static t_CKFLOAT compute_flux( Chuck_ArrayFloat & curr, Chuck_ArrayFloat & prev, Chuck_ArrayFloat * write )
 {
     // sanity check
     assert( curr.size() == prev.size() );
@@ -925,7 +925,7 @@ static t_CKFLOAT compute_flux( Chuck_Array8 & curr, Chuck_Array8 & prev, Chuck_A
 }
 
 // compute flux
-static t_CKFLOAT compute_flux( Chuck_Array8 & curr, StateOfFlux & sof )
+static t_CKFLOAT compute_flux( Chuck_ArrayFloat & curr, StateOfFlux & sof )
 {
     // flux
     t_CKFLOAT result = 0.0;
@@ -1003,7 +1003,7 @@ CK_DLL_TOCK( Flux_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute flux
         result = compute_flux( mag, *state );
     }
@@ -1015,7 +1015,7 @@ CK_DLL_TOCK( Flux_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -1042,8 +1042,8 @@ CK_DLL_MFUN( Flux_ctrl_reset )
 CK_DLL_SFUN( Flux_compute )
 {
     // get inputs
-    Chuck_Array8 * lhs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * rhs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * lhs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * rhs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // verify
     if( !lhs || !rhs )
@@ -1072,9 +1072,9 @@ CK_DLL_SFUN( Flux_compute )
 CK_DLL_SFUN( Flux_compute2 )
 {
     // get inputs
-    Chuck_Array8 * lhs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * rhs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * diff = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * lhs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * rhs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * diff = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // verify
     if( !lhs || !rhs )
@@ -1100,7 +1100,7 @@ CK_DLL_SFUN( Flux_compute2 )
     }
 }
 
-static t_CKFLOAT compute_rms( Chuck_Array8 & buffer, t_CKUINT size )
+static t_CKFLOAT compute_rms( Chuck_ArrayFloat & buffer, t_CKUINT size )
 {
     t_CKFLOAT rms = 0.0;
     t_CKFLOAT v;
@@ -1138,7 +1138,7 @@ CK_DLL_TOCK( RMS_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute RMS
         result = compute_rms( mag, mag.size() );
     }
@@ -1150,7 +1150,7 @@ CK_DLL_TOCK( RMS_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -1169,7 +1169,7 @@ CK_DLL_PMSG( RMS_pmsg )
 CK_DLL_SFUN( RMS_compute )
 {
     // get array
-    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // sanity check
     if( !array )
     {
@@ -1411,7 +1411,7 @@ struct MFCC_Object
 MFCC_Object * MFCC_Object::ourMFCC = NULL;
 
 // compute mfcc
-static void compute_mfcc( MFCC_Object * mfcc, Chuck_Array8 & f, t_CKUINT fs, Chuck_Array8 & buffy )
+static void compute_mfcc( MFCC_Object * mfcc, Chuck_ArrayFloat & f, t_CKUINT fs, Chuck_ArrayFloat & buffy )
 {
     t_CKUINT i;
     t_CKFLOAT v;
@@ -1472,9 +1472,9 @@ CK_DLL_TOCK( MFCC_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // compute MFCC
         compute_mfcc( mfcc, mag, mag.size(), fvals );
     }
@@ -1482,7 +1482,7 @@ CK_DLL_TOCK( MFCC_tock )
     else
     {
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // resize
         fvals.set_size( 0 );
     }
@@ -1555,14 +1555,14 @@ CK_DLL_MFUN( MFCC_compute )
     // get object
     MFCC_Object * mfcc = (MFCC_Object *)OBJ_MEMBER_UINT( SELF, MFCC_offset_data );
     // get input
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get output
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // compute mfcc
     compute_mfcc( mfcc, *input, input->size(), *output );
 }
 
-static t_CKFLOAT compute_kurtosis( Chuck_Array8 & input )
+static t_CKFLOAT compute_kurtosis( Chuck_ArrayFloat & input )
 {
     t_CKINT i;
     t_CKFLOAT z = 0.0, mean = 0.0, q = 0.0, b;
@@ -1608,7 +1608,7 @@ CK_DLL_TOCK( Kurtosis_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute Kurtosis
         result = compute_kurtosis( mag );
     }
@@ -1620,7 +1620,7 @@ CK_DLL_TOCK( Kurtosis_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -1639,7 +1639,7 @@ CK_DLL_PMSG( Kurtosis_pmsg )
 CK_DLL_SFUN( Kurtosis_compute )
 {
     // get array
-    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // sanity check
     if( !array )
     {
@@ -1772,7 +1772,7 @@ struct SFM_Object
 SFM_Object * SFM_Object::ourSFM = NULL;
 
 // compute sfm
-static void compute_sfm( SFM_Object * sfm, Chuck_Array8 & input, Chuck_Array8 & output )
+static void compute_sfm( SFM_Object * sfm, Chuck_ArrayFloat & input, Chuck_ArrayFloat & output )
 {
     // update
     sfm->update( input.size() );
@@ -1848,9 +1848,9 @@ CK_DLL_TOCK( SFM_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // compute SFM
         compute_sfm( sfm, mag, fvals );
     }
@@ -1858,7 +1858,7 @@ CK_DLL_TOCK( SFM_tock )
     else
     {
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // resize
         fvals.set_size( 0 );
     }
@@ -1895,9 +1895,9 @@ CK_DLL_MFUN( SFM_compute )
     // get object
     SFM_Object * sfm = (SFM_Object *)OBJ_MEMBER_UINT( SELF, SFM_offset_data );
     // get input
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get output
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // compute sfm
     compute_sfm( sfm, *input, *output );
 }
@@ -2056,7 +2056,7 @@ struct Chroma_Object
 Chroma_Object * Chroma_Object::ourChroma = NULL;
 
 // compute chroma
-static void compute_chroma( Chroma_Object * chroma, Chuck_Array8 & input, Chuck_Array8 & output )
+static void compute_chroma( Chroma_Object * chroma, Chuck_ArrayFloat & input, Chuck_ArrayFloat & output )
 {
     // prepare
     chroma->update( input.size() );
@@ -2105,9 +2105,9 @@ CK_DLL_TOCK( Chroma_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // compute Chroma
         compute_chroma( chroma, mag, fvals );
     }
@@ -2115,7 +2115,7 @@ CK_DLL_TOCK( Chroma_tock )
     else
     {
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // resize
         fvals.set_size( 0 );
     }
@@ -2197,14 +2197,14 @@ CK_DLL_MFUN( Chroma_compute )
     // get object
     Chroma_Object * chroma = (Chroma_Object *)OBJ_MEMBER_UINT( SELF, Chroma_offset_data );
     // get input
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get output
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // compute chroma
     compute_chroma( chroma, *input, *output );
 }
 
-static t_CKFLOAT compute_rolloff( Chuck_Array8 & buffer, t_CKUINT size, t_CKFLOAT percent )
+static t_CKFLOAT compute_rolloff( Chuck_ArrayFloat & buffer, t_CKUINT size, t_CKFLOAT percent )
 {
     t_CKFLOAT sum = 0.0, v, target;
     t_CKINT i;
@@ -2264,7 +2264,7 @@ CK_DLL_TOCK( RollOff_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute rolloff
         result = compute_rolloff( mag, mag.size(), percent );
     }
@@ -2276,7 +2276,7 @@ CK_DLL_TOCK( RollOff_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -2314,7 +2314,7 @@ CK_DLL_CGET( RollOff_cget_percent )
 CK_DLL_SFUN( RollOff_compute )
 {
     // get array
-    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get percent
     t_CKFLOAT percent = GET_NEXT_FLOAT( ARGS );
 
@@ -2452,8 +2452,8 @@ struct Corr_Object
 Corr_Object * Corr_Object::ourCorr = NULL;
 
 // compute correlation
-static void compute_corr( Corr_Object * corr, Chuck_Array8 & f, t_CKINT fs,
-                          Chuck_Array8 & g, t_CKINT gs, Chuck_Array8 & buffy )
+static void compute_corr( Corr_Object * corr, Chuck_ArrayFloat & f, t_CKINT fs,
+                          Chuck_ArrayFloat & g, t_CKINT gs, Chuck_ArrayFloat & buffy )
 {
     t_CKINT i;
     t_CKFLOAT v;
@@ -2528,9 +2528,9 @@ CK_DLL_TOCK( AutoCorr_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // compute autocorr
         compute_corr( ac, mag, mag.size(), mag, mag.size(), fvals );
     }
@@ -2538,7 +2538,7 @@ CK_DLL_TOCK( AutoCorr_tock )
     else
     {
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // resize
         fvals.set_size( 0 );
     }
@@ -2573,11 +2573,11 @@ CK_DLL_CGET( AutoCorr_cget_normalize )
 CK_DLL_SFUN( AutoCorr_compute )
 {
     // get input
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get normalize flag
     t_CKINT normalize = GET_NEXT_INT( ARGS ) != 0;
     // get input
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // set normalize
     Corr_Object::getOurObject()->normalize = normalize;
@@ -2622,10 +2622,10 @@ CK_DLL_TOCK( XCorr_tock )
         // sanity check
         assert( BLOB_F != NULL && BLOB_G != NULL );
         // get the array
-        Chuck_Array8 & mag_f = BLOB_F->fvals();
-        Chuck_Array8 & mag_g = BLOB_G->fvals();
+        Chuck_ArrayFloat & mag_f = BLOB_F->fvals();
+        Chuck_ArrayFloat & mag_g = BLOB_G->fvals();
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // compute xcorr
         compute_corr( xc, mag_f, mag_f.size(), mag_g, mag_g.size(), fvals );
     }
@@ -2633,7 +2633,7 @@ CK_DLL_TOCK( XCorr_tock )
     else
     {
         // get fvals of output BLOB
-        Chuck_Array8 & fvals = BLOB->fvals();
+        Chuck_ArrayFloat & fvals = BLOB->fvals();
         // resize
         fvals.set_size( 0 );
     }
@@ -2668,12 +2668,12 @@ CK_DLL_CGET( XCorr_cget_normalize )
 CK_DLL_SFUN( XCorr_compute )
 {
     // get input
-    Chuck_Array8 * f = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * g = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * f = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * g = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get normalize flag
     t_CKINT normalize = GET_NEXT_INT( ARGS ) != 0;
     // get output
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // set normalize
     Corr_Object::getOurObject()->normalize = normalize;
@@ -2738,7 +2738,7 @@ void xcorr_normalize( SAMPLE * buffy, t_CKINT size, SAMPLE * f, t_CKINT fs, SAMP
 
 // ZeroX
 #define __SGN( x )  (x >= 0.0f ? 1.0f : -1.0f )
-static t_CKINT compute_zerox( Chuck_Array8 & buffer, t_CKUINT size )
+static t_CKINT compute_zerox( Chuck_ArrayFloat & buffer, t_CKUINT size )
 {
     t_CKUINT i, xings = 0;
     t_CKFLOAT v = 0, p = 0;
@@ -2788,7 +2788,7 @@ CK_DLL_TOCK( ZeroX_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & mag = BLOB_IN->fvals();
+        Chuck_ArrayFloat & mag = BLOB_IN->fvals();
         // compute ZeroX
         result = (t_CKFLOAT)( compute_zerox( mag, mag.size() ) + .5 );
     }
@@ -2800,7 +2800,7 @@ CK_DLL_TOCK( ZeroX_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != 1 )
         fvals.set_size( 1 );
@@ -2819,7 +2819,7 @@ CK_DLL_PMSG( ZeroX_pmsg )
 CK_DLL_SFUN( ZeroX_compute )
 {
     // get array
-    Chuck_Array8 * array = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // sanity check
     if( !array )
     {

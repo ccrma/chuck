@@ -1,0 +1,4 @@
+error-static-access-member.ck:9:38: error: non-static member 'foo' used from static function
+[9]     fun static Foo getFoo() { return foo; }
+                                         ^
+error-static-access-member.ck: ...in function 'Foo Bar.getFoo()'

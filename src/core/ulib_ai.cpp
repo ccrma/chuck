@@ -1170,15 +1170,15 @@ DLL_QUERY libai_query( Chuck_DL_Query * QUERY )
 // name: chuck2chai()
 // desc: chuck array (assuming float[][]) conversion to new chai matrix
 //-----------------------------------------------------------------------------
-ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
+ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_ArrayInt & array )
 {
     t_CKINT rows = array.size();
-    Chuck_Array8 * row = (Chuck_Array8 *)array.m_vector[0];
+    Chuck_ArrayFloat * row = (Chuck_ArrayFloat *)array.m_vector[0];
     t_CKINT cols = row->size();
     ChaiMatrixFast<t_CKFLOAT> * matrix = new ChaiMatrixFast<t_CKFLOAT>( rows, cols );
     for( t_CKINT i = 0; i < rows; i++ )
     {
-        row = (Chuck_Array8 *)array.m_vector[i];
+        row = (Chuck_ArrayFloat *)array.m_vector[i];
         for( t_CKINT j = 0; j < cols; j++ )
         {
             matrix->v( i, j ) = row->m_vector[j];
@@ -1191,7 +1191,7 @@ ChaiMatrixFast<t_CKFLOAT> * chuck2chai( Chuck_Array4 & array )
 // name: chuck2chai()
 // desc: chuck array (float []) conversion to new chai vector
 //-----------------------------------------------------------------------------
-ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
+ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_ArrayFloat & array )
 {
     t_CKINT size = array.size();
     ChaiVectorFast<t_CKFLOAT> * vector = new ChaiVectorFast<t_CKFLOAT>( size );
@@ -1206,7 +1206,7 @@ ChaiVectorFast<t_CKFLOAT> * chuck2chai( Chuck_Array8 & array )
 // name: shuffle()
 // desc: shuffle training data
 //-----------------------------------------------------------------------------
-void shuffle( Chuck_Array4 & X, Chuck_Array4 & Y )
+void shuffle( Chuck_ArrayInt & X, Chuck_ArrayInt & Y )
 {
     t_CKUINT temp, j;
     for( t_CKINT i = X.size() - 1; i > 0; i-- )
@@ -1263,7 +1263,7 @@ public:
     }
 
     // train
-    t_CKINT train( Chuck_Array4 & x_, Chuck_Array4 & y_ )
+    t_CKINT train( Chuck_ArrayInt & x_, Chuck_ArrayInt & y_ )
     {
         ChaiMatrixFast<t_CKFLOAT> * x = chuck2chai( x_ );
         ChaiMatrixFast<t_CKFLOAT> * y = chuck2chai( y_ );
@@ -1363,7 +1363,7 @@ public:
     }
 
     // predict
-    t_CKBOOL predict( Chuck_Array8 & x_, Chuck_Array8 & y_ )
+    t_CKBOOL predict( Chuck_ArrayFloat & x_, Chuck_ArrayFloat & y_ )
     {
         // init
         t_CKINT x_dim = x_.size();
@@ -1442,8 +1442,8 @@ CK_DLL_MFUN( SVM_train )
     // get object
     SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
     // get args
-    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * x = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * y = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // add
     svm->train( *x, *y );
 }
@@ -1453,8 +1453,8 @@ CK_DLL_MFUN( SVM_predict )
     // get object
     SVM_Object * svm = (SVM_Object *)OBJ_MEMBER_UINT( SELF, SVM_offset_data );
     // get args
-    Chuck_Array8 * x = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * y = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * x = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * y = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // add
     RETURN->v_int = svm->predict( *x, *y );
 }
@@ -1489,14 +1489,14 @@ public:
     }
 
     // train
-    t_CKINT train( Chuck_Array4 & x_ )
+    t_CKINT train( Chuck_ArrayInt & x_ )
     {
         clear();
         // init
         t_CKINT n_sample = x_.size();
         t_CKUINT v;
         x_.get( 0, &v );
-        Chuck_Array8 * x_i = (Chuck_Array8 *)v;
+        Chuck_ArrayFloat * x_i = (Chuck_ArrayFloat *)v;
         t_CKINT x_dim = x_i->size();
         X = new ChaiMatrixFast<t_CKFLOAT>( n_sample, x_dim );
         weights = new ChaiVectorFast<t_CKFLOAT>( x_dim );
@@ -1504,7 +1504,7 @@ public:
         for( t_CKINT i = 0; i < n_sample; i++ )
         {
             x_.get( i, &v );
-            x_i = (Chuck_Array8 *)v;
+            x_i = (Chuck_ArrayFloat *)v;
             for( t_CKINT j = 0; j < x_dim; j++ )
             {
                 x_i->get( j, &X->v( i, j ) );
@@ -1542,14 +1542,14 @@ public:
     }
 
     // train
-    t_CKINT train( Chuck_Array4 & x_, Chuck_Array4 & y_ )
+    t_CKINT train( Chuck_ArrayInt & x_, Chuck_ArrayInt & y_ )
     {
         clear();
         // init
         t_CKINT n_sample = x_.size();
         t_CKUINT v;
         x_.get( 0, &v );
-        Chuck_Array8 * x_i = (Chuck_Array8 *)v;
+        Chuck_ArrayFloat * x_i = (Chuck_ArrayFloat *)v;
         t_CKUINT x_dim = x_i->size();
         X = new ChaiMatrixFast<t_CKFLOAT>( n_sample, x_dim );
         Y = new ChaiVectorFast<t_CKUINT>( n_sample );
@@ -1558,7 +1558,7 @@ public:
         for( t_CKINT i = 0; i < n_sample; i++ )
         {
             x_.get( i, &v );
-            x_i = (Chuck_Array8 *)v;
+            x_i = (Chuck_ArrayFloat *)v;
             for( t_CKINT j = 0; j < x_dim; j++ )
             {
                 x_i->get( j, &X->v( i, j ) );
@@ -1627,7 +1627,7 @@ public:
     }
 
     // search; returns indices
-    void search0( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & indices_ )
+    void search0( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_ArrayInt & indices_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -1643,7 +1643,7 @@ public:
     }
 
     // search; returns labels
-    void search1( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_ )
+    void search1( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_ArrayInt & labels_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -1659,7 +1659,7 @@ public:
     }
 
     // search; returns labels and indices
-    void search2( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array4 & labels_, Chuck_Array4 & indices_ )
+    void search2( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_ArrayInt & labels_, Chuck_ArrayInt & indices_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -1678,9 +1678,9 @@ public:
     // search; returns labels, indices, and feature vectors
     void search3( const vector<t_CKFLOAT> & query,
                   t_CKINT k,
-                  Chuck_Array4 & labels_,
-                  Chuck_Array4 & indices_,
-                  Chuck_Array4 & features_ )
+                  Chuck_ArrayInt & labels_,
+                  Chuck_ArrayInt & indices_,
+                  Chuck_ArrayInt & features_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -1692,18 +1692,18 @@ public:
         // check dimensions
         if( features_.size() < k )
         {
-            Chuck_Array8 * x_i = features_.size() ? (Chuck_Array8 *)features_.m_vector[0] : NULL;
+            Chuck_ArrayFloat * x_i = features_.size() ? (Chuck_ArrayFloat *)features_.m_vector[0] : NULL;
             EM_error3( "KNN2: insufficient 'features' matrix provided: %dx%d (expecting %dx%d)",
                        features_.size(), x_i != NULL ? x_i->m_vector.size() : 0, k, this->X->xDim() );
             return;
         }
         // copy
-        Chuck_Array8 * x_i;
+        Chuck_ArrayFloat * x_i;
         for( t_CKINT i = 0; i < k; i++ )
         {
             labels_.m_vector[i] = Y->v( indices.v( i ) );
             indices_.m_vector[i] = indices[i];
-            x_i = (Chuck_Array8 *)features_.m_vector[i];
+            x_i = (Chuck_ArrayFloat *)features_.m_vector[i];
             for( t_CKINT j = 0; j < X->yDim(); j++ )
             {
                 x_i->m_vector[j] = X->v( indices.v( i ), j );
@@ -1714,8 +1714,8 @@ public:
     // search; returns labels, indices, and feature vectors
     void search3b( const vector<t_CKFLOAT> & query,
                    t_CKINT k,
-                   Chuck_Array4 & indices_,
-                   Chuck_Array4 & features_ )
+                   Chuck_ArrayInt & indices_,
+                   Chuck_ArrayInt & features_ )
     {
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -1726,17 +1726,17 @@ public:
         // check dimensions
         if( features_.size() < k )
         {
-            Chuck_Array8 * x_i = features_.size() ? (Chuck_Array8 *)features_.m_vector[0] : NULL;
+            Chuck_ArrayFloat * x_i = features_.size() ? (Chuck_ArrayFloat *)features_.m_vector[0] : NULL;
             EM_error3( "KNN: insufficient 'features' matrix provided: %dx%d (expecting %dx%d)",
                        features_.size(), x_i != NULL ? x_i->m_vector.size() : 0, k, this->X->xDim() );
             return;
         }
         // copy
-        Chuck_Array8 * x_i;
+        Chuck_ArrayFloat * x_i;
         for( t_CKINT i = 0; i < k; i++ )
         {
             indices_.m_vector[i] = indices[i];
-            x_i = (Chuck_Array8 *)features_.m_vector[i];
+            x_i = (Chuck_ArrayFloat *)features_.m_vector[i];
             for( t_CKINT j = 0; j < X->yDim(); j++ )
             {
                 x_i->m_vector[j] = X->v( indices.v( i ), j );
@@ -1745,7 +1745,7 @@ public:
     }
 
     // predict
-    t_CKBOOL predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_Array8 & prob_ )
+    t_CKBOOL predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_ArrayFloat & prob_ )
     {
         // TODO: check if model initialized
         // init
@@ -1819,7 +1819,7 @@ CK_DLL_MFUN( KNN_train )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
     // get args
-    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * x = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( x == NULL )
@@ -1837,9 +1837,9 @@ CK_DLL_MFUN( KNN_search )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * indices = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || indices == NULL )
@@ -1857,10 +1857,10 @@ CK_DLL_MFUN( KNN_search2 )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * features = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * indices = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * features = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || indices == NULL || features == NULL )
@@ -1879,7 +1879,7 @@ CK_DLL_MFUN( KNN_weigh )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN_offset_data );
     // get args
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // weigh
     knn->weigh( weights->m_vector );
 }
@@ -1908,8 +1908,8 @@ CK_DLL_MFUN( KNN2_train )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array4 * x = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * y = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * x = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * y = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( x == NULL || y == NULL )
@@ -1927,9 +1927,9 @@ CK_DLL_MFUN( KNN2_predict )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * prob = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * prob = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || prob == NULL )
@@ -1947,9 +1947,9 @@ CK_DLL_MFUN( KNN2_search )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * labels = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || labels == NULL )
@@ -1967,10 +1967,10 @@ CK_DLL_MFUN( KNN2_search2 )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * labels = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * indices = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || labels == NULL || indices == NULL )
@@ -1988,11 +1988,11 @@ CK_DLL_MFUN( KNN2_search3 )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * query = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * query = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT k = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * labels = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * indices = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * features = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * labels = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * indices = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * features = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( query == NULL || labels == NULL || indices == NULL || features == NULL )
@@ -2010,7 +2010,7 @@ CK_DLL_MFUN( KNN2_weigh )
     // get object
     KNN_Object * knn = (KNN_Object *)OBJ_MEMBER_UINT( SELF, KNN2_offset_data );
     // get args
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // weigh
     knn->weigh( weights->m_vector );
 }
@@ -2041,7 +2041,7 @@ public:
     }
 
     // init
-    t_CKINT init( Chuck_Array8 & initial_, Chuck_Array4 & transition_, Chuck_Array4 & emission_ )
+    t_CKINT init( Chuck_ArrayFloat & initial_, Chuck_ArrayInt & transition_, Chuck_ArrayInt & emission_ )
     {
         clear();
         initial = chuck2chai( initial_ );
@@ -2131,7 +2131,7 @@ public:
     }
 
     // train
-    t_CKINT train( t_CKINT n_state, t_CKINT n_emission, Chuck_Array4 & observations )
+    t_CKINT train( t_CKINT n_state, t_CKINT n_emission, Chuck_ArrayInt & observations )
     {
         clear();
         // init
@@ -2210,7 +2210,7 @@ public:
     }
 
     // generate
-    t_CKINT generate( t_CKINT length, Chuck_Array4 & output_ )
+    t_CKINT generate( t_CKINT length, Chuck_ArrayInt & output_ )
     {
         // compute
         t_CKINT state = 0;
@@ -2289,9 +2289,9 @@ CK_DLL_MFUN( HMM_init )
     // get object
     HMM_Object * hmm = (HMM_Object *)OBJ_MEMBER_UINT( SELF, HMM_offset_data );
     // get args
-    Chuck_Array8 * initial = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * transition = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * emission = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * initial = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * transition = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * emission = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // init
     hmm->init( *initial, *transition, *emission );
 }
@@ -2303,7 +2303,7 @@ CK_DLL_MFUN( HMM_train )
     // get args
     t_CKINT n_state = GET_NEXT_INT( ARGS );
     t_CKINT n_emission = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * observations = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * observations = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // train
     hmm->train( n_state, n_emission, *observations );
 }
@@ -2314,7 +2314,7 @@ CK_DLL_MFUN( HMM_generate )
     HMM_Object * hmm = (HMM_Object *)OBJ_MEMBER_UINT( SELF, HMM_offset_data );
     // get args
     t_CKINT length = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * output = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // generate
     hmm->generate( length, *output );
 }
@@ -2405,7 +2405,7 @@ public:
     }
 
     // get dim mins and maxs
-    void getDimMinMaxs( Chuck_Array8 * mins, Chuck_Array8 * maxs )
+    void getDimMinMaxs( Chuck_ArrayFloat * mins, Chuck_ArrayFloat * maxs )
     {
         // get dim
         t_CKINT dims = getDictionaryDim();
@@ -2669,7 +2669,7 @@ public:
     }
 
     // getMostSimilar
-    t_CKBOOL getMostSimilarByWord( const string & word, t_CKINT topn, Chuck_Array4 & output_ )
+    t_CKBOOL getMostSimilarByWord( const string & word, t_CKINT topn, Chuck_ArrayInt & output_ )
     {
         // error flag
         t_CKBOOL hasError = FALSE;
@@ -2737,7 +2737,7 @@ public:
     }
 
     // getByVector
-    t_CKBOOL getMostSimilarByVector( Chuck_Array8 & vec_, t_CKINT topn, Chuck_Array4 & output_ )
+    t_CKBOOL getMostSimilarByVector( Chuck_ArrayFloat & vec_, t_CKINT topn, Chuck_ArrayInt & output_ )
     {
         // error flag
         t_CKBOOL hasError = FALSE;
@@ -2789,7 +2789,7 @@ public:
     }
 
     // getVector
-    t_CKBOOL getVector( const string & word, Chuck_Array8 & output_ )
+    t_CKBOOL getVector( const string & word, Chuck_ArrayFloat & output_ )
     {
         // check
         if( dictionary == NULL )
@@ -2884,7 +2884,7 @@ CK_DLL_MFUN( Word2Vec_getMostSimilarByWord )
     // get args
     Chuck_String * word = GET_NEXT_STRING( ARGS );
     t_CKINT topn = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * output = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( word == NULL || output == NULL )
@@ -2902,9 +2902,9 @@ CK_DLL_MFUN( Word2Vec_getMostSimilarByVector )
     // get object
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
     // get args
-    Chuck_Array8 * vec = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * vec = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT topn = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * output = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( vec == NULL || output == NULL )
@@ -2923,7 +2923,7 @@ CK_DLL_MFUN( Word2Vec_getVector )
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
     // get args
     Chuck_String * word = GET_NEXT_STRING( ARGS );
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // check for NULL
     if( word == NULL || output == NULL )
@@ -2975,8 +2975,8 @@ CK_DLL_MFUN( Word2Vec_getDimMinMax )
     // get object
     Word2Vec_Object * word2vec = (Word2Vec_Object *)OBJ_MEMBER_UINT( SELF, Word2Vec_offset_data );
     // get chuck arrays
-    Chuck_Array8 * mins = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * maxs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * mins = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * maxs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
 
     // get it
     word2vec->getDimMinMaxs( mins, maxs );
@@ -3167,7 +3167,7 @@ public:
     }
 
     // transform
-    static void transform( Chuck_Array4 & input_, t_CKINT npc, Chuck_Array4 & output_ )
+    static void transform( Chuck_ArrayInt & input_, t_CKINT npc, Chuck_ArrayInt & output_ )
     {
         ChaiMatrixFast<t_CKFLOAT> * input = chuck2chai( input_ );
 
@@ -3248,10 +3248,10 @@ public:
            corr_matrix now contains the associated eigenvectors. */
 
         /* Project row data onto the top "npc_" principal components. */
-        Chuck_Array8 * vi;
+        Chuck_ArrayFloat * vi;
         for( t = 0; t < n; t++ )
         {
-            vi = (Chuck_Array8 *)output_.m_vector[t];
+            vi = (Chuck_ArrayFloat *)output_.m_vector[t];
             for( o = 0; o < npc; o++ )
             {
                 vi->m_vector[o] = 0.0;
@@ -3286,9 +3286,9 @@ CK_DLL_DTOR( PCA_dtor )
 CK_DLL_SFUN( PCA_reduce )
 {
     // get args
-    Chuck_Array4 * input = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * input = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     t_CKINT n_components = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * output = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * output = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // transform
     PCA_Object::transform( *input, n_components, *output );
 }
@@ -3534,7 +3534,7 @@ public:
     }
 
 //    // train
-//    void train( Chuck_Array4 & inputs_, Chuck_Array4 & outputs_ )
+//    void train( Chuck_ArrayInt & inputs_, Chuck_ArrayInt & outputs_ )
 //    {
 //        ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
 //        ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
@@ -3544,7 +3544,7 @@ public:
 //    }
 
     // train2
-    void train( Chuck_Array4 & inputs_, Chuck_Array4 & outputs_, t_CKFLOAT learning_rate, t_CKINT max_iterations )
+    void train( Chuck_ArrayInt & inputs_, Chuck_ArrayInt & outputs_, t_CKFLOAT learning_rate, t_CKINT max_iterations )
     {
         ChaiMatrixFast<t_CKFLOAT> * X = chuck2chai( inputs_ );
         ChaiMatrixFast<t_CKFLOAT> * Y = chuck2chai( outputs_ );
@@ -3554,7 +3554,7 @@ public:
     }
 
     // predict
-    t_CKBOOL predict( Chuck_Array8 & input_, Chuck_Array8 & output_ )
+    t_CKBOOL predict( Chuck_ArrayFloat & input_, Chuck_ArrayFloat & output_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3595,7 +3595,7 @@ public:
     }
 
     // get_weights
-    void get_weights( t_CKINT layer, Chuck_Array4 & weights_ )
+    void get_weights( t_CKINT layer, Chuck_ArrayInt & weights_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3603,27 +3603,27 @@ public:
             // error
             EM_error3( "MLP.getWeights(): network not initialized" );
             // courtesy clear the array
-            Chuck_Array8 * wi = NULL;
+            Chuck_ArrayFloat * wi = NULL;
             for( t_CKINT i = 0; i < weights_.size(); i++ )
             {
-                wi = (Chuck_Array8 *)weights_.m_vector[i];
+                wi = (Chuck_ArrayFloat *)weights_.m_vector[i];
                 for( t_CKINT j = 0; j < wi->size(); j++ )
                     wi->m_vector[j] = 0.0;
             }
             return;
         }
 
-        Chuck_Array8 * wi = NULL;
+        Chuck_ArrayFloat * wi = NULL;
         for( t_CKINT i = 0; i < weights_.size(); i++ )
         {
-            wi = (Chuck_Array8 *)weights_.m_vector[i];
+            wi = (Chuck_ArrayFloat *)weights_.m_vector[i];
             for( t_CKINT j = 0; j < wi->size(); j++ )
                 wi->m_vector[j] = weights[layer]->v( j, i );
         }
     }
 
     // get_biases
-    void get_biases( t_CKINT layer, Chuck_Array8 & biases_ )
+    void get_biases( t_CKINT layer, Chuck_ArrayFloat & biases_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3642,7 +3642,7 @@ public:
     }
 
     // get_gradients
-    void get_gradients( t_CKINT layer, Chuck_Array8 & gradients_ )
+    void get_gradients( t_CKINT layer, Chuck_ArrayFloat & gradients_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3661,7 +3661,7 @@ public:
     }
 
     // get_activations
-    void get_activations( t_CKINT layer, Chuck_Array8 & activations_ )
+    void get_activations( t_CKINT layer, Chuck_ArrayFloat & activations_ )
     {
         // sanity check
         if( units_per_layer.size() == 0 )
@@ -3680,7 +3680,7 @@ public:
     }
 
     // forward
-    void forward( Chuck_Array8 & input_ )
+    void forward( Chuck_ArrayFloat & input_ )
     {
         ChaiVectorFast<t_CKFLOAT> * input = chuck2chai( input_ );
         forward( *input );
@@ -3688,7 +3688,7 @@ public:
     }
 
     // backprop
-    void backprop( Chuck_Array8 & output_, t_CKFLOAT learning_rate )
+    void backprop( Chuck_ArrayFloat & output_, t_CKFLOAT learning_rate )
     {
         ChaiVectorFast<t_CKFLOAT> * output = chuck2chai( output_ );
         backprop( *output, learning_rate );
@@ -3839,7 +3839,7 @@ CK_DLL_MFUN( MLP_init )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array4 * units_per_layer = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * units_per_layer = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // init
     mlp->init( units_per_layer->m_vector );
 }
@@ -3849,8 +3849,8 @@ CK_DLL_MFUN( MLP_init2 )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array4 * units_per_layer = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * activation_per_layer = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * units_per_layer = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * activation_per_layer = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // init
     mlp->init( units_per_layer->m_vector, activation_per_layer->m_vector );
 }
@@ -3860,7 +3860,7 @@ CK_DLL_MFUN( MLP_init3 )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array4 * units_per_layer = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * units_per_layer = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     t_CKINT activation_function = GET_NEXT_INT( ARGS );
     // init
     mlp->init( units_per_layer->m_vector, activation_function );
@@ -3871,8 +3871,8 @@ CK_DLL_MFUN( MLP_train )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array4 * inputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * outputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * inputs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * outputs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // train, with defaults
     mlp->train( *inputs, *outputs, .01, 100 );
 }
@@ -3882,8 +3882,8 @@ CK_DLL_MFUN( MLP_train2 )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array4 * inputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * outputs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * inputs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * outputs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     t_CKFLOAT learning_rate = GET_NEXT_FLOAT( ARGS );
     t_CKINT max_iterations = GET_NEXT_INT( ARGS );
     // train2
@@ -3895,8 +3895,8 @@ CK_DLL_MFUN( MLP_predict )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // predict
     RETURN->v_int = mlp->predict( *input, *output );
 }
@@ -3907,7 +3907,7 @@ CK_DLL_MFUN( MLP_get_weights )
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
     t_CKINT layer = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * weights = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * weights = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // get_weights
     mlp->get_weights( layer, *weights );
 }
@@ -3918,7 +3918,7 @@ CK_DLL_MFUN( MLP_get_biases )
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
     t_CKINT layer = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * biases = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * biases = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get_biases
     mlp->get_biases( layer, *biases );
 }
@@ -3929,7 +3929,7 @@ CK_DLL_MFUN( MLP_get_gradients )
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
     t_CKINT layer = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * gradients = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * gradients = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get_gradients
     mlp->get_gradients( layer, *gradients );
 }
@@ -3940,7 +3940,7 @@ CK_DLL_MFUN( MLP_get_activations )
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
     t_CKINT layer = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * activations = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * activations = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // get_activations
     mlp->get_activations( layer, *activations );
 }
@@ -3950,7 +3950,7 @@ CK_DLL_MFUN( MLP_forward )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array8 * input = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * input = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // forward
     mlp->forward( *input );
 }
@@ -3960,7 +3960,7 @@ CK_DLL_MFUN( MLP_backprop )
     // get object
     MLP_Object * mlp = (MLP_Object *)OBJ_MEMBER_UINT( SELF, MLP_offset_data );
     // get args
-    Chuck_Array8 * output = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * output = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKFLOAT learning_rate = GET_NEXT_FLOAT( ARGS );
     // backprop
     mlp->backprop( *output, learning_rate );
@@ -3989,8 +3989,8 @@ CK_DLL_MFUN( MLP_load )
 CK_DLL_SFUN( MLP_shuffle )
 {
     // get args
-    Chuck_Array4 * X = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array4 * Y = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * X = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * Y = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // shuffle
     shuffle( *X, *Y );
 }
@@ -4459,7 +4459,7 @@ public:
     }
 
     // set_inputs
-    void set_inputs( Chuck_Array8 & inputs_ )
+    void set_inputs( Chuck_ArrayFloat & inputs_ )
     {
         if( num_inputs == 0 )
             set_num_inputs( inputs_.size() );
@@ -4472,7 +4472,7 @@ public:
     }
 
     // set_outputs
-    void set_outputs( Chuck_Array8 & outputs_ )
+    void set_outputs( Chuck_ArrayFloat & outputs_ )
     {
         if( num_outputs == 0 )
             set_num_outputs( outputs_.size() );
@@ -5086,7 +5086,7 @@ public:
     }
 
     // set_output_property3
-    void set_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_Array4 & property_value_ )
+    void set_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_ArrayInt & property_value_ )
     {
         // sanity check
         if( output_index < 0 || output_index >= num_outputs )
@@ -5121,7 +5121,7 @@ public:
     }
 
     // get_output_property
-    void get_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_Array4 & property_value_ )
+    void get_output_property( t_CKINT output_index, Chuck_String & property_name, Chuck_ArrayInt & property_value_ )
     {
         // sanity check
         if( output_index < 0 || output_index >= num_outputs )
@@ -5186,7 +5186,7 @@ public:
     }
 
     // predict
-    void predict( Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
+    void predict( Chuck_ArrayFloat & inputs_, Chuck_ArrayFloat & outputs_ )
     {
         // sanity check
         if( inputs_.size() != num_inputs )
@@ -5342,7 +5342,7 @@ public:
     }
 
     // get_obs
-    void get_obs( Chuck_Array4 & obs_ )
+    void get_obs( Chuck_ArrayInt & obs_ )
     {
         // sanity check
         if( obs_.size() < dummy_model.example_ids.size() )
@@ -5350,19 +5350,19 @@ public:
             EM_error3( "Wekinator.get_obs: input array too small." );
             return;
         }
-        Chuck_Array8 * row;
+        Chuck_ArrayFloat * row;
         t_CKINT dim = 3 + num_inputs + num_outputs;
         // copy
         for( t_CKINT i = 0; i < dummy_model.example_ids.size(); i++ )
         {
-            row = (Chuck_Array8 *)obs_.m_vector[i];
+            row = (Chuck_ArrayFloat *)obs_.m_vector[i];
             row->set_size( dim );
             row->m_vector = examples[dummy_model.example_ids[i]];
         }
     }
 
     // get_obs1
-    void get_obs1( t_CKINT output_index, Chuck_Array4 & obs_ )
+    void get_obs1( t_CKINT output_index, Chuck_ArrayInt & obs_ )
     {
         // sanity check
         if( output_index < 0 || output_index >= num_outputs )
@@ -5375,12 +5375,12 @@ public:
             EM_error3( "Wekinator.get_obs1: input array too small." );
             return;
         }
-        Chuck_Array8 * row;
+        Chuck_ArrayFloat * row;
         t_CKINT dim = 3 + num_inputs + num_outputs;
         // copy
         for( t_CKINT i = 0; i < models[output_index].example_ids.size(); i++ )
         {
-            row = (Chuck_Array8 *)obs_.m_vector[i];
+            row = (Chuck_ArrayFloat *)obs_.m_vector[i];
             row->set_size( dim );
             row->m_vector = examples[models[output_index].example_ids[i]];
         }
@@ -5722,7 +5722,7 @@ public:
     }
 
     // add1
-    void add1( Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
+    void add1( Chuck_ArrayFloat & inputs_, Chuck_ArrayFloat & outputs_ )
     {
         // sanity check
         if( inputs_.size() != num_inputs )
@@ -5744,7 +5744,7 @@ public:
     }
 
     // add2
-    void add2( t_CKINT output_index, Chuck_Array8 & inputs_, Chuck_Array8 & outputs_ )
+    void add2( t_CKINT output_index, Chuck_ArrayFloat & inputs_, Chuck_ArrayFloat & outputs_ )
     {
         // sanity check
         if( output_index < 0 || output_index >= num_outputs )
@@ -6058,7 +6058,7 @@ CK_DLL_MFUN( Wekinator_set_output_property3 )
     // get args
     t_CKINT output_index = GET_NEXT_INT( ARGS );
     Chuck_String * property_name = GET_NEXT_STRING( ARGS );
-    Chuck_Array4 * property_value = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * property_value = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // set_output_property3
     wekinator->set_output_property( output_index, *property_name, *property_value );
 }
@@ -6070,7 +6070,7 @@ CK_DLL_MFUN( Wekinator_get_output_property )
     // get args
     t_CKINT output_index = GET_NEXT_INT( ARGS );
     Chuck_String * property_name = GET_NEXT_STRING( ARGS );
-    Chuck_Array4 * property_value = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * property_value = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // get_output_property
     wekinator->get_output_property( output_index, *property_name, *property_value );
 }
@@ -6080,7 +6080,7 @@ CK_DLL_MFUN( Wekinator_set_inputs )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * inputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // set_inputs
     wekinator->set_inputs( *inputs );
 }
@@ -6090,7 +6090,7 @@ CK_DLL_MFUN( Wekinator_set_outputs )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * outputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // set_outputs
     wekinator->set_outputs( *outputs );
 }
@@ -6126,7 +6126,7 @@ CK_DLL_MFUN( Wekinator_get_obs )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array4 * obs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * obs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // get_obs
     wekinator->get_obs( *obs );
 }
@@ -6137,7 +6137,7 @@ CK_DLL_MFUN( Wekinator_get_obs1 )
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
     t_CKINT output_index = GET_NEXT_INT( ARGS );
-    Chuck_Array4 * obs = (Chuck_Array4 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayInt * obs = (Chuck_ArrayInt *)GET_NEXT_OBJECT( ARGS );
     // get_obs1
     wekinator->get_obs1( output_index, *obs );
 }
@@ -6309,8 +6309,8 @@ CK_DLL_MFUN( Wekinator_add1 )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * inputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * outputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // add1
     wekinator->add1( *inputs, *outputs );
 }
@@ -6321,8 +6321,8 @@ CK_DLL_MFUN( Wekinator_add2 )
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
     t_CKINT output_index = GET_NEXT_INT( ARGS );
-    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * inputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * outputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // add2
     wekinator->add2( output_index, *inputs, *outputs );
 }
@@ -6348,8 +6348,8 @@ CK_DLL_MFUN( Wekinator_predict )
     // get object
     Wekinator_Object * wekinator = (Wekinator_Object *)OBJ_MEMBER_UINT( SELF, Wekinator_offset_data );
     // get args
-    Chuck_Array8 * inputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * outputs = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * inputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * outputs = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     // predict
     wekinator->predict( *inputs, *outputs );
 }

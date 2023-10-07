@@ -289,8 +289,9 @@ struct Chuck_Func;
 struct Chuck_Multi;
 struct Chuck_VM;
 struct Chuck_VM_Code;
+struct Chuck_VM_MFunInvoker;
 struct Chuck_DLL;
-// operator loading structs | 1.5.1.4
+// operator loading structs | 1.5.1.5
 struct Chuck_Op_Registry;
 struct Chuck_Op_Semantics;
 struct Chuck_Op_Overload;
@@ -429,7 +430,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Op_Registry | 1.5.1.4 (ge) added
+// name: struct Chuck_Op_Registry | 1.5.1.5 (ge) added
 // desc: operator overloading registry
 //-----------------------------------------------------------------------------
 struct Chuck_Op_Registry
@@ -515,7 +516,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_TypePair | 1.5.1.4 (ge) added
+// name: struct Chuck_TypePair | 1.5.1.5 (ge) added
 // desc: a type pair, used as key in operator overload map
 //-----------------------------------------------------------------------------
 struct Chuck_TypePair
@@ -537,7 +538,7 @@ struct Chuck_TypePair
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Op_Semantics | 1.5.1.4 (ge) added
+// name: struct Chuck_Op_Semantics | 1.5.1.5 (ge) added
 // desc: all overloading information for a particualr operator
 //-----------------------------------------------------------------------------
 struct Chuck_Op_Semantics
@@ -585,7 +586,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Op_Overload | 1.5.1.4 (ge) added
+// name: struct Chuck_Op_Overload | 1.5.1.5 (ge) added
 // desc: a particular overloading
 //-----------------------------------------------------------------------------
 struct Chuck_Op_Overload
@@ -746,7 +747,7 @@ public:
     std::map<std::string, t_CKBOOL> key_types;
     std::map<std::string, t_CKBOOL> key_values;
 
-    // operators mapping registry | 1.5.1.4
+    // operators mapping registry | 1.5.1.5
     Chuck_Op_Registry op_registry;
 
     // deprecated types
@@ -1105,6 +1106,18 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
+public:
+    // pack c-style array of DL_Args into args cache
+    t_CKBOOL pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs );
+    // args cache (used by c++ to chuck function calls) | 1.5.1.5
+    t_CKBYTE * args_cache;
+    // size of args cache
+    t_CKUINT args_cache_size;
+    // setup invoker for this fun (for calling chuck function from c++)
+    t_CKBOOL setup_invoker( t_CKUINT vtable_offet, Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // associate mfun invoker (if applicable)
+    Chuck_VM_MFunInvoker * invoker_mfun;
+
 protected:
     // AST func def from parser | 1.5.0.5 (ge) moved to protected
     // access through funcdef_*() functions
@@ -1137,6 +1150,9 @@ public:
         /*dl_code = NULL;*/
         next = NULL;
         up = NULL;
+        args_cache = NULL;
+        args_cache_size = 0;
+        invoker_mfun = NULL;
     }
 
     // destructor
@@ -1189,7 +1205,7 @@ t_CKBOOL isobj( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
-t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
+te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 
 
 //-----------------------------------------------------------------------------
@@ -1236,7 +1252,7 @@ t_CKBOOL type_engine_import_ugen_ctrl( Chuck_Env * env, const char * type, const
                                        f_ctrl ctrl, t_CKBOOL write, t_CKBOOL read );
 t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex );
 t_CKBOOL type_engine_import_class_end( Chuck_Env * env );
-// add global operator overload | 1.5.1.4 (ge & andrew) chaos
+// add global operator overload | 1.5.1.5 (ge & andrew) chaos
 t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * func );
 t_CKBOOL type_engine_register_deprecate( Chuck_Env * env,
                                          const std::string & former, const std::string & latter );
@@ -1265,11 +1281,11 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
 void type_engine_names2types( Chuck_Env * env, const std::vector<std::string> & typeNames, std::vector<Chuck_Type *> & types );
 // check and process auto types | 1.5.0.8 (ge) added
 t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * type );
-// initialize operator overload subsystem | 1.5.1.4 (ge) added
+// initialize operator overload subsystem | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
-// verify an operator overload | 1.5.1.4 (ge) added
+// verify an operator overload | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
-// type-check an operator overload func def | 1.5.1.4 (ge) added
+// type-check an operator overload func def | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 
 

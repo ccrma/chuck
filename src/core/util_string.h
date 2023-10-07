@@ -106,6 +106,9 @@ t_CKBOOL is_absolute_path( const std::string & path );
 // split "x:y:z"-style path list into {"x","y","z"}
 void parse_path_list( std::string & str, std::list<std::string> & lst );
 
+// generate auto filename (usually with date-time) with file prefix and extension
+std::string autoFilename( const std::string & prefix, const std::string & extension );
+
 // test whether a filename ends in a particular extension
 t_CKBOOL extension_matches( const std::string & filename,
                             const std::string & extension,

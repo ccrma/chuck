@@ -47,7 +47,7 @@
 
 #ifndef __PLATFORM_WINDOWS__
   #include <unistd.h>
-  // linux 64-bit byte ordering | 1.5.1.4
+  // linux 64-bit byte ordering | 1.5.1.5
   #if defined(__PLATFORM_LINUX__)
     #include <endian.h>
     #ifndef htonll
@@ -233,7 +233,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         if( cmd->type == CK_MSG_REPLACE )
             cmd->param = msg->param;
 
-        // interpret param3 | 1.5.1.4 (nshaheed & ge)
+        // interpret param3 | 1.5.1.5 (nshaheed & ge)
         if( msg->param3 )
         {
             // flag this for always-add replace
@@ -309,7 +309,7 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     string buf;
     t_CKUINT amountRead = 0;
 
-    // use this to send | 1.5.1.4
+    // use this to send | 1.5.1.5
     OTF_Net_Msg msg2send;
 
     // parse out command line arguments
@@ -338,13 +338,13 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     {
         // error message
         EM_error2( 0, "(parse error) skipping file '%s' for [%s]...", filename.c_str(), op );
-        // reset parser (clean up) | 1.5.1.4
+        // reset parser (clean up) | 1.5.1.5
         reset_parse();
         // close file descriptor
         fclose( fd );
         return FALSE;
     }
-    // reset parser (clean up) | 1.5.1.4
+    // reset parser (clean up) | 1.5.1.5
     reset_parse();
 
     // stat it
@@ -542,7 +542,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         {
             // arg as c++ string
             string arg = trim(argv[i]);
-            // check for '%' | 1.5.1.4 (nshaheed & ge)
+            // check for '%' | 1.5.1.5 (nshaheed & ge)
             if( arg.length() && arg[0] == '%' )
             {
                 // convert into number

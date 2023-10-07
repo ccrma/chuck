@@ -148,10 +148,6 @@ public: // data
     SAMPLE * m_sum_v;
     SAMPLE * m_current_v;
 
-    // the shred on which the ugen is created
-    Chuck_VM_Shred * shred;
-    // the vm on which the ugen is created
-    Chuck_VM * vm;
     // owner
     Chuck_UGen * owner;
 

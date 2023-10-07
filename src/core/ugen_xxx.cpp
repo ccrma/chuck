@@ -1583,8 +1583,8 @@ CK_DLL_CTOR( foogen_ctor )
         instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index) );
         // func to code
         instrs.push_back(new Chuck_Instr_Func_To_Code);
-        // push stack depth
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(12));
+        // push stack depth for args (this, float input)
+        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(sz_VOIDPTR+sz_FLOAT)); // 1.5.1.5: changed to sz_+sz_; was: 12
         // func call
         instrs.push_back(new Chuck_Instr_Func_Call());
         // push immediate
@@ -1592,7 +1592,7 @@ CK_DLL_CTOR( foogen_ctor )
         // assign primitive
         instrs.push_back(new Chuck_Instr_Assign_Primitive2);
         // pop
-        instrs.push_back(new Chuck_Instr_Reg_Pop_Word2);
+        instrs.push_back(new Chuck_Instr_Reg_Pop_Float);
         // EOC
         instrs.push_back(new Chuck_Instr_EOC);
 
@@ -1606,7 +1606,7 @@ CK_DLL_CTOR( foogen_ctor )
 
         data->shred = new Chuck_VM_Shred;
         data->shred->vm_ref = SHRED->vm_ref;
-        // initialize with stack size hints | 1.5.1.4
+        // initialize with stack size hints | 1.5.1.5
         data->shred->initialize( code, SHRED->childGetMemSize(), SHRED->childGetRegSize() );
     }
     else
@@ -2450,7 +2450,8 @@ CK_DLL_TICK( delayp_tick )
     if ( !d->buffer ) return FALSE;
 
     // area
-    d->now = ((Chuck_UGen*)SELF)->shred->vm_ref->shreduler()->now_system;
+    d->now = ((Chuck_UGen*)SELF)->originVM()->shreduler()->now_system; // 1.5.1.5
+    // d->now = ((Chuck_UGen*)SELF)->originShred()->vm_ref->shreduler()->now_system;
 
     //calculate new write-offset position ( we interpolate if we've been assigned a new write-offset )
     if ( d->now >= d->move_end_time || d->move_duration == 0 ) d->offset = d->offset_target;
@@ -2563,7 +2564,7 @@ CK_DLL_CTRL( delayp_ctrl_delay )
         d->offset_target = target;
         d->offset_start  = d->last_offset;
 
-        t_CKTIME snow = ((Chuck_UGen*)SELF)->shred->now;
+        t_CKTIME snow = ((Chuck_UGen*)SELF)->originShred()->now;
         d->move_end_time = snow + d->move_duration;
     }
     RETURN->v_dur = d->last_offset; // TODO:

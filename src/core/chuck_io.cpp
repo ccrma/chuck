@@ -79,7 +79,7 @@ typedef DWORD uint32_t;
 #endif
 #endif
 
-// for legacy use of disable fileio | 1.5.1.4
+// for legacy use of disable fileio | 1.5.1.5
 #ifdef __DISABLE_FILEIO__
   // auto define new, more granular macro
   #ifndef __DISABLE_ASYNCH_IO__
@@ -203,7 +203,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     // func->doc = "_";
     // if( !type_engine_import_sfun( env, func ) ) goto error;
     // new line string
-    initialize_object( g_newline, env->ckt_string );
+    initialize_object( g_newline, env->ckt_string, NULL, NULL );
     g_newline->set( "\n" );
 
     // add TYPE_ASCII
@@ -457,6 +457,28 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     func->doc = "Write floating point value to file; binary mode: flags indicate float size (IO.FLOAT32 or IO.FLOAT64).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add autoPrefixAndExt() | 1.5.1.5 (ge)
+    func = make_new_mfun( "void", "autoPrefixExtension", file_ctrl_autoPrefixAndExtension ); //! set auto prefix and extension string
+    func->add_arg( "string", "prefix" );
+    func->add_arg( "string", "extension" );
+    func->doc = "set auto prefix and extension for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add autoPrefix()
+    func = make_new_mfun( "string", "autoPrefix", file_cget_autoPrefix ); //! get auto prefix string
+    func->doc = "get auto prefix for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add autoExtension()
+    func = make_new_mfun( "string", "autoExtension", file_cget_autoExtension ); //! get auto extension string
+    func->doc = "get auto extension for \"special:auto\" filename generation (applicable to file writing only).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add filename()
+    func = make_new_mfun( "string", "filename", file_cget_filename ); //! get auto extension string
+    func->doc = "get current filename.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add expandPath | 1.5.1.3
     func = make_new_sfun( "string", "expandPath", fileio_expandpath_impl );
     func->add_arg( "string", "path" );
@@ -473,6 +495,7 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "io/seek.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write2.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "io/write-auto.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/read-byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "io/write-byte.ck" ) ) goto error;
 
@@ -1149,16 +1172,37 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     func->doc = "Open a joystick/gamepad by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add openJoystick()
+    func = make_new_mfun( "int", "openJoystick", HidIn_open_joystick_2 );
+    func->add_arg( "int", "num" );
+    func->add_arg( "int", "suppressErrMsg" );
+    func->doc = "Open a joystick/gamepad by device number, with option (true/false) to suppress error messages.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add openMouse()
     func = make_new_mfun( "int", "openMouse", HidIn_open_mouse );
     func->add_arg( "int", "num" );
     func->doc = "Open a mouse/trackpad by device number.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add openMouse()
+    func = make_new_mfun( "int", "openMouse", HidIn_open_mouse_2 );
+    func->add_arg( "int", "num" );
+    func->add_arg( "int", "suppressErrMsg" );
+    func->doc = "Open a mouse/trackpad by device number, with option (true/false) to suppress error messages.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add openKeyboard()
     func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard );
     func->add_arg( "int", "num" );
     func->doc = "Open a keyboard by device number.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add openKeyboard() | 1.5.1.5 (ge & andrew)
+    func = make_new_mfun( "int", "openKeyboard", HidIn_open_keyboard_2 );
+    func->add_arg( "int", "num" );
+    func->add_arg( "int", "suppressErrMsg" );
+    func->doc = "Open a keyboard by device number, with option (true/false) to suppress error messages.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add openTiltSensor()
@@ -1633,10 +1677,43 @@ CK_DLL_MFUN( fileio_isdir )
 CK_DLL_MFUN( fileio_dirlist )
 {
     Chuck_IO_File * f = (Chuck_IO_File *)SELF;
-    Chuck_Array4 * a = f->dirList();
+    Chuck_ArrayInt * a = f->dirList();
     RETURN->v_object = a;
 }
 
+CK_DLL_MFUN( file_ctrl_autoPrefixAndExtension )
+{
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    Chuck_String * prefix = GET_NEXT_STRING(ARGS);
+    Chuck_String * extension = GET_NEXT_STRING(ARGS);
+
+    f->m_autoPrefix = prefix ? prefix->str() : "";
+    f->m_autoExtension = extension ? extension->str() : "";
+}
+
+CK_DLL_MFUN( file_cget_autoPrefix )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->m_autoPrefix.c_str(), FALSE );
+}
+
+CK_DLL_MFUN( file_cget_autoExtension )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->m_autoExtension.c_str(), FALSE );
+}
+
+CK_DLL_MFUN( file_cget_filename )
+{
+    // get this
+    Chuck_IO_File * f = (Chuck_IO_File *)SELF;
+    // create string, no ref count here, as we are not holding on to it
+    RETURN->v_object = ck_create_string( VM, f->filename().c_str(), FALSE );
+}
 
 // expandPath | 1.5.1.3
 CK_DLL_SFUN( fileio_expandpath_impl )
@@ -2419,7 +2496,8 @@ CK_DLL_MFUN( HidIn_open_named )
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     Chuck_String * name = GET_NEXT_STRING(ARGS);
     std::string s = name->str();
-    RETURN->v_int = min->open( SHRED->vm_ref, s );
+    // set CK_HID_DEV_COUNT as a special flag
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_COUNT, s );
 }
 
 CK_DLL_MFUN( HidIn_open_joystick )
@@ -2429,6 +2507,14 @@ CK_DLL_MFUN( HidIn_open_joystick )
     RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_JOYSTICK, num );
 }
 
+CK_DLL_MFUN( HidIn_open_joystick_2 )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    t_CKINT suppressErrMsg = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_JOYSTICK, num, suppressErrMsg );
+}
+
 CK_DLL_MFUN( HidIn_open_mouse )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
@@ -2436,11 +2522,27 @@ CK_DLL_MFUN( HidIn_open_mouse )
     RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_MOUSE, num );
 }
 
+CK_DLL_MFUN( HidIn_open_mouse_2 )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    t_CKINT suppressErrMsg = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_MOUSE, num, suppressErrMsg );
+}
+
 CK_DLL_MFUN( HidIn_open_keyboard )
 {
     HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
     t_CKINT num = GET_NEXT_INT(ARGS);
     RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num );
+}
+
+CK_DLL_MFUN( HidIn_open_keyboard_2 )
+{
+    HidIn * min = (HidIn *)OBJ_MEMBER_INT(SELF, HidIn_offset_data);
+    t_CKINT num = GET_NEXT_INT(ARGS);
+    t_CKINT suppressErrMsg = GET_NEXT_INT(ARGS);
+    RETURN->v_int = min->open( SHRED->vm_ref, CK_HID_DEV_KEYBOARD, num, suppressErrMsg );
 }
 
 CK_DLL_MFUN( HidIn_open_tiltsensor )
@@ -2602,8 +2704,8 @@ CK_DLL_SFUN( HidIn_read_tilt_sensor )
     static HidIn * hi;
     static t_CKBOOL hi_good = TRUE;
 
-    Chuck_Array4 * array = new Chuck_Array4( FALSE, 3 );
-    initialize_object( array, VM->env()->ckt_array ); // 1.5.0.0 (ge) added
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( FALSE, 3 );
+    initialize_object( array, VM->env()->ckt_array, SHRED, VM ); // 1.5.0.0 (ge) added
     array->set( 0, 0 );
     array->set( 1, 0 );
     array->set( 2, 0 );
@@ -2995,10 +3097,14 @@ Chuck_IO_File::Chuck_IO_File( Chuck_VM * vm )
     m_dir = NULL;
     m_dir_start = 0;
     m_asyncEvent = new Chuck_Event;
-    initialize_object( m_asyncEvent, vm->env()->ckt_event );
+    initialize_object( m_asyncEvent, vm->env()->ckt_event, NULL, vm );
 #ifndef __DISABLE_THREADS__
     m_thread = new XThread;
 #endif
+
+    // initialize prefix and extensions for auto | 1.5.1.5
+    m_autoPrefix = "chuck-file";
+    m_autoExtension = "txt";
 }
 
 
@@ -3027,9 +3133,12 @@ Chuck_IO_File::~Chuck_IO_File()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
 {
+    // the filename
+    string theFilename = path;
+
     // log
     EM_log( CK_LOG_INFO, "FileIO: opening file from disk..." );
-    EM_log( CK_LOG_INFO, "FileIO: path: %s", path.c_str() );
+    EM_log( CK_LOG_INFO, "FileIO: path: %s", theFilename.c_str() );
     EM_pushlog();
 
     // if no flag specified, make it READ by default
@@ -3111,8 +3220,24 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     if( m_io.is_open() )
         this->close();
 
+    // special
+    if( strstr( theFilename.c_str(), "special:auto" ) )
+    {
+        // check output
+        if( theMode & ios_base::out )
+        {
+            // generate auto name
+            theFilename = autoFilename( this->m_autoPrefix, this->m_autoExtension );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): \"special:auto\" can only be used for output" );
+            goto error;
+        }
+    }
+
     // try to open as a dir first (fixed 1.3.0.0 removed warning)
-    m_dir = opendir( path.c_str() );
+    m_dir = opendir( theFilename.c_str() );
     if( m_dir )
     {
         EM_poplog();
@@ -3123,11 +3248,11 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     // readonly
     if( !(flags & FLAG_READONLY) )
     {
-        m_io.open( path.c_str(), ios_base::in );
+        m_io.open( theFilename.c_str(), ios_base::in );
         if( m_io.fail() )
         {
             m_io.clear();
-            m_io.open( path.c_str(), ios_base::out | ios_base::trunc );
+            m_io.open( theFilename.c_str(), ios_base::out | ios_base::trunc );
             m_io.close();
         }
         else
@@ -3135,7 +3260,7 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
     }
 
     //open file
-    m_io.open( path.c_str(), theMode );
+    m_io.open( theFilename.c_str(), theMode );
 
     // seek to beginning if necessary
     if( flags & FLAG_READ_WRITE )
@@ -3148,21 +3273,21 @@ t_CKBOOL Chuck_IO_File::open( const string & path, t_CKINT flags )
      // windows sucks for being creative in the wrong places
      #ifdef __PLATFORM_WINDOWS__
      // if( flags ^ Chuck_IO::TRUNCATE && flags | Chuck_IO::READ ) nMode |= ios::nocreate;
-     m_io.open( path.c_str(), nMode );
+     m_io.open( theFilename.c_str(), nMode );
      #else
-     m_io.open( path.c_str(), (_Ios_Openmode)nMode );
+     m_io.open( theFilename.c_str(), (_Ios_Openmode)nMode );
      #endif
      */
 
      // check for error
     if( !(m_io.is_open()) )
     {
-        // EM_error3( "[chuck](via FileIO): cannot open file: '%s'", path.c_str() );
+        // EM_error3( "[chuck](via FileIO): cannot open file: '%s'", theFilename.c_str() );
         goto error;
     }
 
     // set path
-    m_path = path;
+    m_path = theFilename;
     // set flags
     m_flags = flags;
     if( !(flags & TYPE_BINARY) )
@@ -3376,14 +3501,14 @@ t_CKINT Chuck_IO_File::isDir()
 // name: dirList()
 // desc: ...
 //-----------------------------------------------------------------------------
-Chuck_Array4 * Chuck_IO_File::dirList()
+Chuck_ArrayInt * Chuck_IO_File::dirList()
 {
     // sanity
     if( !m_dir )
     {
         EM_error3( "[chuck](via FileIO): cannot get list: no directory open" );
-        Chuck_Array4 * ret = new Chuck_Array4( TRUE, 0 );
-        initialize_object( ret, m_vmRef->env()->ckt_array );
+        Chuck_ArrayInt * ret = new Chuck_ArrayInt( TRUE, 0 );
+        initialize_object( ret, m_vmRef->env()->ckt_array, NULL, m_vmRef );
         return ret;
     }
 
@@ -3409,8 +3534,8 @@ Chuck_Array4 * Chuck_IO_File::dirList()
     }
 
     // make array
-    Chuck_Array4 * array = new Chuck_Array4( true, entrylist.size() );
-    initialize_object( array, m_vmRef->env()->ckt_array );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt( true, entrylist.size() );
+    initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef );
     for( int i = 0; i < entrylist.size(); i++ )
         array->set( i, (t_CKUINT)entrylist[i] );
     return array;
@@ -3481,7 +3606,7 @@ Chuck_String * Chuck_IO_File::readLine()
     // chuck str
     Chuck_String * str = new Chuck_String( s );
     // initialize | 1.5.0.0 (ge) | added initialize_object
-    initialize_object( str, m_vmRef->env()->ckt_string );
+    initialize_object( str, m_vmRef->env()->ckt_string, NULL, m_vmRef );
 
     // note this chuck string still needs to be initialized
     return str;
@@ -4383,7 +4508,7 @@ Chuck_IO_Chout::Chuck_IO_Chout( Chuck_Carrier * carrier )
     // zero out
     m_callback = NULL;
     // initialize (added 1.3.0.0)
-    initialize_object( this, carrier->env->ckt_chout );
+    initialize_object( this, carrier->env->ckt_chout, NULL, carrier->vm );
     // lock so can't be deleted conventionally
     this->lock();
 }
@@ -4561,7 +4686,7 @@ Chuck_IO_Cherr::Chuck_IO_Cherr( Chuck_Carrier * carrier )
     // zero out
     m_callback = NULL;
     // initialize (added 1.3.0.0)
-    initialize_object( this, carrier->env->ckt_cherr );
+    initialize_object( this, carrier->env->ckt_cherr, NULL, carrier->vm );
     // lock so can't be deleted conventionally
     this->lock();
 }
@@ -5198,7 +5323,7 @@ Chuck_String * Chuck_IO_Serial::readLine()
     }
 
     Chuck_String * str = new Chuck_String;
-    initialize_object(str, m_vmRef->env()->ckt_string);
+    initialize_object(str, m_vmRef->env()->ckt_string, NULL, m_vmRef);
 
     str->set( string((char *)m_tmp_buf) );
 
@@ -5519,7 +5644,7 @@ void Chuck_IO_Serial::write( const t_CKVEC4 & val, t_CKINT flags )
     this->write( val.w, flags );
 }
 
-void Chuck_IO_Serial::writeBytes( Chuck_Array4 * arr )
+void Chuck_IO_Serial::writeBytes( Chuck_ArrayInt * arr )
 {
     if( !good() )
     {
@@ -5669,7 +5794,7 @@ Chuck_Array * Chuck_IO_Serial::getBytes()
        r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->env()->ckt_array);
+        initialize_object(arr, m_vmRef->env()->ckt_array, NULL, m_vmRef);
         m_asyncResponses.get(r);
     }
 
@@ -5692,7 +5817,7 @@ Chuck_Array * Chuck_IO_Serial::getInts()
        r.m_type == TYPE_INT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->env()->ckt_array);
+        initialize_object(arr, m_vmRef->env()->ckt_array, NULL, m_vmRef);
         m_asyncResponses.get(r);
     }
 
@@ -5715,7 +5840,7 @@ Chuck_Array * Chuck_IO_Serial::getFloats()
        r.m_type == TYPE_FLOAT && r.m_status == Request::RQ_STATUS_SUCCESS)
     {
         arr = (Chuck_Array *) r.m_val;
-        initialize_object(arr, m_vmRef->env()->ckt_array);
+        initialize_object(arr, m_vmRef->env()->ckt_array, NULL, m_vmRef);
         m_asyncResponses.get(r);
     }
 
@@ -5924,7 +6049,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_ascii(Chuck_IO_Serial::Request & r)
 {
     t_CKFLOAT val = 0;
     int numRead = 0;
-    Chuck_Array8 * array = new Chuck_Array8(0);
+    Chuck_ArrayFloat * array = new Chuck_ArrayFloat(0);
 
     for(int i = 0; i < r.m_num && !m_do_exit; i++)
     {
@@ -5976,8 +6101,8 @@ t_CKBOOL Chuck_IO_Serial::handle_int_ascii(Chuck_IO_Serial::Request & r)
 {
     t_CKINT val = 0;
     int numRead = 0;
-    Chuck_Array4 * array = new Chuck_Array4(FALSE, 0);
-    initialize_object( array, m_vmRef->env()->ckt_array ); // 1.5.0.0 (ge) added
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, 0);
+    initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         t_CKUINT len = 0;
@@ -6049,8 +6174,8 @@ t_CKBOOL Chuck_IO_Serial::handle_byte(Chuck_IO_Serial::Request & r)
         val = m_tmp_buf[0];
     else
     {
-        Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
-        initialize_object( array, m_vmRef->env()->ckt_array ); // 1.5.0.0 (ge) added
+        Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, r.m_num);
+        initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
         for(int i = 0; i < r.m_num; i++)
         {
             array->set(i, m_tmp_buf[i]);
@@ -6092,7 +6217,7 @@ t_CKBOOL Chuck_IO_Serial::handle_float_binary(Chuck_IO_Serial::Request & r)
     t_CKUINT val = 0;
     t_CKSINGLE * m_floats = (t_CKSINGLE *) m_tmp_buf;
 
-    Chuck_Array8 * array = new Chuck_Array8(r.m_num);
+    Chuck_ArrayFloat * array = new Chuck_ArrayFloat(r.m_num);
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_floats[i]);
@@ -6126,8 +6251,8 @@ t_CKBOOL Chuck_IO_Serial::handle_int_binary(Chuck_IO_Serial::Request & r)
     t_CKUINT val = 0;
     uint32_t * m_ints = (uint32_t *) m_tmp_buf;
 
-    Chuck_Array4 * array = new Chuck_Array4(FALSE, r.m_num);
-    initialize_object( array, m_vmRef->env()->ckt_array ); // 1.5.0.0 (ge) added
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(FALSE, r.m_num);
+    initialize_object( array, m_vmRef->env()->ckt_array, NULL, m_vmRef ); // 1.5.0.0 (ge) added
     for(int i = 0; i < r.m_num; i++)
     {
         array->set(i, m_ints[i]);
@@ -6611,13 +6736,13 @@ CK_DLL_SFUN( serialio_list )
     vector<string> devices = SerialIOManager::availableSerialDevices();
 
     // ISSUE: 64-bit
-    Chuck_Array4 * array = new Chuck_Array4(TRUE, 0);
-    initialize_object( array, SHRED->vm_ref->env()->ckt_array );
+    Chuck_ArrayInt * array = new Chuck_ArrayInt(TRUE, 0);
+    initialize_object( array, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
 
     for(vector<string>::iterator i = devices.begin(); i != devices.end(); i++)
     {
         Chuck_String * name = new Chuck_String(*i);
-        initialize_object(name, SHRED->vm_ref->env()->ckt_string);
+        initialize_object(name, SHRED->vm_ref->env()->ckt_string, SHRED, VM );
         array->push_back((t_CKUINT) name);
     }
 
@@ -6788,7 +6913,7 @@ CK_DLL_MFUN( serialio_writeByte )
 CK_DLL_MFUN( serialio_writeBytes )
 {
     Chuck_IO_Serial * cereal = (Chuck_IO_Serial *) SELF;
-    Chuck_Array4 * arr = (Chuck_Array4 *) GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayInt * arr = (Chuck_ArrayInt *) GET_NEXT_OBJECT(ARGS);
     cereal->writeBytes(arr);
 }
 

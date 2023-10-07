@@ -358,7 +358,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     }
 
     // initialize the Type info object | 1.5.0.0 (ge) added
-    initialize_object( the_class, env->ckt_class );
+    initialize_object( the_class, env->ckt_class, NULL, env->vm() );
 
 done:
 
@@ -2640,7 +2640,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
     env->curr = env->nspc_stack.back();
     env->nspc_stack.pop_back();
 
-    // the parent class | 1.5.1.4 (ge) moved from chuck_type module for earlier info
+    // the parent class | 1.5.1.5 (ge) moved from chuck_type module for earlier info
     t_CKTYPE t_parent = NULL;
 
     // make sure inheritance
@@ -3048,7 +3048,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         }
     }
 
-    // operator overload | 1.5.1.4 (ge) added
+    // operator overload | 1.5.1.5 (ge) added
     if( op_overload )
     {
         // scan operator overload

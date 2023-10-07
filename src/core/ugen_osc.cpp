@@ -1343,7 +1343,7 @@ CK_DLL_CTRL( gen5_coeffs )
     t_CKINT i = 0, j, k, l, size;
     t_CKFLOAT wmax, xmax=0.0, c, amp2, amp1, coeffs[genX_MAX_COEFFS];
 
-    Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * in_args = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(in_args == 0) return;
@@ -1398,7 +1398,7 @@ CK_DLL_CTRL( gen7_coeffs )
     t_CKINT i=0, j, k, l, size;
     t_CKFLOAT wmax, xmax = 0.0, amp2, amp1, coeffs[genX_MAX_COEFFS];
 
-    Chuck_Array8 * in_args = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * in_args = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(in_args == 0) return;
@@ -1451,7 +1451,7 @@ CK_DLL_CTRL( gen9_coeffs )
     t_CKDOUBLE wmax, xmax=0.0;
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
 
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(weights == 0) return;
@@ -1501,7 +1501,7 @@ CK_DLL_CTRL( gen10_coeffs )
     t_CKINT i, j, size;
     t_CKDOUBLE wmax, xmax=0.0;
 
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen10coeffs, %d\n", weights );
     if(weights==0) return;
@@ -1560,7 +1560,7 @@ CK_DLL_CTRL( gen17_coeffs )
     t_CKDOUBLE Tn, Tn1, Tn2, dg, x, wmax = 0.0, xmax = 0.0;
     t_CKFLOAT coeffs[genX_MAX_COEFFS];
 
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen17coeffs, %d\n", weights );
     if(weights == 0) return;
@@ -1621,7 +1621,7 @@ CK_DLL_CTRL( curve_coeffs )
     t_CKUINT ii = 0;
     t_CKFLOAT v = 0.0;
 
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
 
     // CK_FPRINTF_STDOUT( "calling gen17coeffs, %d\n", weights );
     if(weights==0) goto done;
@@ -1724,7 +1724,7 @@ CK_DLL_CTRL( warp_coeffs )
     t_CKFLOAT k_sym  = 1.;
 
     // gewang:
-    Chuck_Array8 * weights = (Chuck_Array8 *)GET_CK_OBJECT(ARGS);
+    Chuck_ArrayFloat * weights = (Chuck_ArrayFloat *)GET_CK_OBJECT(ARGS);
     // check for size
     if( weights->size() != 2 )
     {

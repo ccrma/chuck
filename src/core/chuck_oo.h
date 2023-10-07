@@ -133,12 +133,10 @@ public:
     virtual ~Chuck_Object();
 
 public:
-    // output current state (can be overridden)
-    virtual void dump();
-
-public:
     // output type info (can be overriden; but probably shouldn't be)
     virtual void help();
+    // output current state (can be overridden)
+    virtual void dump();
 
 public:
     // virtual table
@@ -150,6 +148,22 @@ public:
     // the size of the data region
     t_CKUINT data_size;
 
+public:
+    // set VM on which this object was instantiated | 1.5.1.5
+    void setOriginVM( Chuck_VM * vm );
+    // set shred on which this object was instantiated | 1.5.1.5
+    void setOriginShred( Chuck_VM_Shred * shred );
+    // get VM on which this object was instantiated | 1.5.1.5
+    Chuck_VM * originVM() const { return origin_vm; }
+    // get shred on which this object was instantiated | 1.5.1.5
+    Chuck_VM_Shred * originShred() const { return origin_shred; }
+
+protected:
+    // the shred on which this object was instantiated | 1.5.1.5
+    Chuck_VM_Shred * origin_shred;
+    // the VM on which this object was instantiated | 1.5.1.5
+    Chuck_VM * origin_vm;
+
 public: // static
     // vtable offset for toString()
     static t_CKUINT our_vt_toString;
@@ -159,20 +173,20 @@ public: // static
 
 
 // ISSUE: 64-bit (fixed 1.3.1.0)
-#define CHUCK_ARRAY4_DATASIZE sz_INT
-#define CHUCK_ARRAY8_DATASIZE sz_FLOAT
+#define CHUCK_ARRAYINT_DATASIZE sz_INT
+#define CHUCK_ARRAYFLOAT_DATASIZE sz_FLOAT
 #define CHUCK_ARRAY16_DATASIZE sz_COMPLEX
 #define CHUCK_ARRAY24_DATASIZE sz_VEC3 // 1.3.5.3
 #define CHUCK_ARRAY32_DATASIZE sz_VEC4 // 1.3.5.3
-#define CHUCK_ARRAY4_DATAKIND kindof_INT
-#define CHUCK_ARRAY8_DATAKIND kindof_FLOAT
+#define CHUCK_ARRAYINT_DATAKIND kindof_INT
+#define CHUCK_ARRAYFLOAT_DATAKIND kindof_FLOAT
 #define CHUCK_ARRAY16_DATAKIND kindof_COMPLEX
 #define CHUCK_ARRAY24_DATAKIND kindof_VEC3 // 1.3.5.3
 #define CHUCK_ARRAY32_DATAKIND kindof_VEC4 // 1.3.5.3
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
 // desc: native ChucK array (virtual base class)
-//       NOTE due to certain specialized operations, e.g., Array4 is also
+//       NOTE due to certain specialized operations, e.g., ArrayInt is also
 //       used to hold and manage Object references, this class is currently
 //       not templated (and probably cannot be fully templated). For this
 //       reason, some functionalities that requires type-specific arguments
@@ -242,14 +256,16 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array4
-// desc: native ChucK arrays (for 4-byte/8-byte int, and Object references)
+// name: struct Chuck_ArrayInt
+// desc: native ChucK arrays
+//       (for 4-byte/8-byte int, depending on 32-bit vs 64-bit & Object refs)
+//       1.5.1.5 (ge) renamed from Chuck_Array4 to Chuck_ArrayInt
 //-----------------------------------------------------------------------------
-struct Chuck_Array4 : public Chuck_Array
+struct Chuck_ArrayInt : public Chuck_Array
 {
 public:
-    Chuck_Array4( t_CKBOOL is_obj, t_CKINT capacity = 8 );
-    virtual ~Chuck_Array4();
+    Chuck_ArrayInt( t_CKBOOL is_obj, t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayInt();
 
 public: // specific to this class
     // get address
@@ -285,9 +301,9 @@ public: // array interface implementation
     // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
     // size of stored type (from type_ref)
-    virtual t_CKINT data_type_size() { return CHUCK_ARRAY4_DATASIZE; }
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAYINT_DATASIZE; }
     // kind of stored type (from kindof)
-    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY4_DATAKIND; }
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAYINT_DATAKIND; }
     // clear
     virtual void clear();
     // zero out the array by range [start,end)
@@ -337,14 +353,15 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array8
+// name: struct Chuck_ArrayFloat
 // desc: native ChucK arrays (for 8-byte float)
+//       1.5.1.5 (ge) renamed from Chuck_Array8 to Chuck_ArrayFloat
 //-----------------------------------------------------------------------------
-struct Chuck_Array8 : public Chuck_Array
+struct Chuck_ArrayFloat : public Chuck_Array
 {
 public:
-    Chuck_Array8( t_CKINT capacity = 8 );
-    virtual ~Chuck_Array8();
+    Chuck_ArrayFloat( t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayFloat();
 
 public: // specific to this class
     // get address
@@ -380,9 +397,9 @@ public: // array interface implementation
     // set array capacity
     virtual t_CKINT set_capacity( t_CKINT capacity );
     // size of stored type (from type_ref)
-    virtual t_CKINT data_type_size() { return CHUCK_ARRAY8_DATASIZE; }
+    virtual t_CKINT data_type_size() { return CHUCK_ARRAYFLOAT_DATASIZE; }
     // kind of stored type (from kindof)
-    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY8_DATAKIND; }
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAYFLOAT_DATAKIND; }
     // clear
     virtual void clear();
     // zero out the array by range [start,end)
@@ -756,7 +773,7 @@ public: // internal
 public:
     // virtual table offset for can_wait()
     static t_CKUINT our_can_wait;
-    // virtual table offset for waiting_on() | 1.5.1.4 (ge/andrew) added
+    // virtual table offset for waiting_on() | 1.5.1.5 (ge/andrew) added
     static t_CKUINT our_waiting_on;
 
 protected:

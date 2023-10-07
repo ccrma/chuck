@@ -149,7 +149,7 @@ CK_DLL_SFUN( Windowing_blackmanHarris );
 CK_DLL_SFUN( Windowing_rectangle );
 CK_DLL_SFUN( Windowing_triangle );
 // static array
-static Chuck_Array8 * Windowing_array = NULL;
+static Chuck_ArrayFloat * Windowing_array = NULL;
 static FLOAT_XFORM * float_array = NULL;
 static t_CKINT float_array_size = 0;
 
@@ -324,8 +324,8 @@ DLL_QUERY xform_query( Chuck_DL_Query * QUERY )
     QUERY->end_class( QUERY );
 
     // initialize static data
-    Windowing_array = new Chuck_Array8();
-    initialize_object( Windowing_array, QUERY->env()->ckt_array );
+    Windowing_array = new Chuck_ArrayFloat();
+    initialize_object( Windowing_array, QUERY->env()->ckt_array, NULL, QUERY->env()->vm() );
     // TODO: yes? reference count
     Windowing_array->add_ref();
     // set size
@@ -581,10 +581,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
     void transformFromAccum( );
-    void transform( Chuck_Array8 * frame );
+    void transform( Chuck_ArrayFloat * frame );
     void copyTo( Chuck_Array16 * cmp );
 
 public:
@@ -702,7 +702,7 @@ t_CKBOOL FFT_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL FFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL FFT_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -820,7 +820,7 @@ void FFT_object::transformFromAccum()
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void FFT_object::transform( Chuck_Array8 * frame )
+void FFT_object::transform( Chuck_ArrayFloat * frame )
 {
     // convert to right type
     t_CKINT amount = ck_min( frame->size(), m_size );
@@ -971,7 +971,7 @@ CK_DLL_TOCK( FFT_tock )
         cvals.set( i, fft->m_spectrum[i] );
 
     // get fvals of output BLOB; fill with magnitude spectrum
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != fft->m_size/2 )
         fvals.set_size( fft->m_size/2 );
@@ -992,7 +992,7 @@ CK_DLL_MFUN( FFT_transform )
     // get object
     FFT_object * fft = (FFT_object *)OBJ_MEMBER_UINT(SELF, FFT_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // do it
     fft->transform( arr );
 }
@@ -1007,7 +1007,7 @@ CK_DLL_CTRL( FFT_ctrl_window )
     // get object
     FFT_object * fft = (FFT_object *)OBJ_MEMBER_UINT(SELF, FFT_offset_data);
     // get window (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     fft->window( arr, arr != NULL ? arr->size() : 0 );
     // return it through
@@ -1126,10 +1126,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
     void transform( Chuck_Array16 * cmp );
-    void copyTo( Chuck_Array8 * samples );
+    void copyTo( Chuck_ArrayFloat * samples );
 
 public:
     // size of IFFT
@@ -1244,7 +1244,7 @@ t_CKBOOL IFFT_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL IFFT_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL IFFT_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -1360,7 +1360,7 @@ void IFFT_object::transform( Chuck_Array16 * cmp )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void IFFT_object::copyTo( Chuck_Array8 * samples )
+void IFFT_object::copyTo( Chuck_ArrayFloat * samples )
 {
     // buffer could be null
     if( m_buffer == NULL && m_inverse == NULL )
@@ -1483,7 +1483,7 @@ CK_DLL_TOCK( IFFT_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != ifft->m_size )
         fvals.set_size( ifft->m_size );
@@ -1540,7 +1540,7 @@ CK_DLL_CTRL( IFFT_ctrl_window )
     // get object
     IFFT_object * ifft = (IFFT_object *)OBJ_MEMBER_UINT(SELF, IFFT_offset_data );
     // get win (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     ifft->window( arr, arr != NULL ? arr->size() : 0 );
     // return
@@ -1631,7 +1631,7 @@ CK_DLL_MFUN( IFFT_inverse )
     // get object
     IFFT_object * ifft = (IFFT_object *)OBJ_MEMBER_UINT(SELF, IFFT_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {
@@ -1836,10 +1836,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
-    void transform( Chuck_Array8 * frame );
-    void copyTo( Chuck_Array8 * val );
+    void transform( Chuck_ArrayFloat * frame );
+    void copyTo( Chuck_ArrayFloat * val );
 
 public:
     // buffer
@@ -1943,7 +1943,7 @@ t_CKBOOL Flip_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL Flip_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL Flip_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -2031,7 +2031,7 @@ void Flip_object::transform( )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Flip_object::transform( Chuck_Array8 * frame )
+void Flip_object::transform( Chuck_ArrayFloat * frame )
 {
     // convert to right type
     t_CKINT amount = ck_min( frame->size(), m_size );
@@ -2058,7 +2058,7 @@ void Flip_object::transform( Chuck_Array8 * frame )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Flip_object::copyTo( Chuck_Array8 * val )
+void Flip_object::copyTo( Chuck_ArrayFloat * val )
 {
     // buffer could be null
     if( m_buffer == NULL )
@@ -2146,7 +2146,7 @@ CK_DLL_TOCK( Flip_tock )
     t_CKINT i;
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure capacity == resulting size
     if( fvals.size() != flip->m_size )
         fvals.set_size( flip->m_size );
@@ -2167,7 +2167,7 @@ CK_DLL_MFUN( Flip_take )
     // get object
     Flip_object * flip = (Flip_object *)OBJ_MEMBER_UINT(SELF, Flip_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // do it
     flip->transform( arr );
 }
@@ -2182,7 +2182,7 @@ CK_DLL_CTRL( Flip_ctrl_window )
     // get object
     Flip_object * flip = (Flip_object *)OBJ_MEMBER_UINT(SELF, Flip_offset_data);
     // get window (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     flip->window( arr, arr != NULL ? arr->size() : 0 );
     // return it through
@@ -2273,7 +2273,7 @@ CK_DLL_MFUN( Flip_output )
     // get object
     Flip_object * flip = (Flip_object *)OBJ_MEMBER_UINT(SELF, Flip_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {
@@ -2301,10 +2301,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
-    void transform( Chuck_Array8 * val );
-    void copyTo( Chuck_Array8 * samples );
+    void transform( Chuck_ArrayFloat * val );
+    void copyTo( Chuck_ArrayFloat * samples );
 
 public:
     // size of IFFT
@@ -2406,7 +2406,7 @@ t_CKBOOL UnFlip_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL UnFlip_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL UnFlip_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -2490,7 +2490,7 @@ void UnFlip_object::transform( )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void UnFlip_object::transform( Chuck_Array8 * val )
+void UnFlip_object::transform( Chuck_ArrayFloat * val )
 {
     // convert to right type
     t_CKINT amount = ck_min( val->size(), m_size );
@@ -2517,7 +2517,7 @@ void UnFlip_object::transform( Chuck_Array8 * val )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void UnFlip_object::copyTo( Chuck_Array8 * samples )
+void UnFlip_object::copyTo( Chuck_ArrayFloat * samples )
 {
     // buffer could be null
     if( m_buffer == NULL )
@@ -2607,7 +2607,7 @@ CK_DLL_TOCK( UnFlip_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array8 & val = BLOB_IN->fvals();
+        Chuck_ArrayFloat & val = BLOB_IN->fvals();
         // resize if necessary
         if( val.size() > unflip->m_size )
             unflip->resize( val.size() );
@@ -2634,7 +2634,7 @@ CK_DLL_TOCK( UnFlip_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != unflip->m_size )
         fvals.set_size( unflip->m_size );
@@ -2655,7 +2655,7 @@ CK_DLL_MFUN( UnFlip_take )
     // get object
     UnFlip_object * unflip = (UnFlip_object *)OBJ_MEMBER_UINT(SELF, UnFlip_offset_data);
     // get complex array
-    Chuck_Array8 * val = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * val = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // sanity
     if( val == NULL ) goto null_pointer;
     // resize if bigger
@@ -2691,7 +2691,7 @@ CK_DLL_CTRL( UnFlip_ctrl_window )
     // get object
     UnFlip_object * unflip = (UnFlip_object *)OBJ_MEMBER_UINT(SELF, UnFlip_offset_data );
     // get win (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     unflip->window( arr, arr != NULL ? arr->size() : 0 );
     // return
@@ -2782,7 +2782,7 @@ CK_DLL_MFUN( UnFlip_output )
     // get object
     UnFlip_object * unflip = (UnFlip_object *)OBJ_MEMBER_UINT(SELF, UnFlip_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {
@@ -2810,10 +2810,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
     void transform( const t_CKFLOAT * in, t_CKCOMPLEX * out );
-    void copyTo( Chuck_Array8 * frame );
+    void copyTo( Chuck_ArrayFloat * frame );
 
 public:
     // size of DCT
@@ -2935,7 +2935,7 @@ t_CKBOOL DCT_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL DCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL DCT_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -3025,7 +3025,7 @@ void DCT_object::transform( )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void DCT_object::copyTo( Chuck_Array8 * frame )
+void DCT_object::copyTo( Chuck_ArrayFloat * frame )
 {
     // buffer could be null
     if( m_buffer == NULL && m_spectrum == NULL )
@@ -3139,7 +3139,7 @@ CK_DLL_TOCK( DCT_tock )
     t_CKINT i;
 
     // get cvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure capacity == resulting size
     if( fvals.size() != dct->m_size )
         fvals.set_size( dct->m_size );
@@ -3160,7 +3160,7 @@ CK_DLL_MFUN( DCT_transform )
     // get object
 //    DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
     // get array
-//    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+//    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
 }
 
 
@@ -3173,7 +3173,7 @@ CK_DLL_CTRL( DCT_ctrl_window )
     // get object
     DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
     // get window (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     dct->window( arr, arr != NULL ? arr->size() : 0 );
 }
@@ -3260,7 +3260,7 @@ CK_DLL_MFUN( DCT_spectrum )
     // get object
     DCT_object * dct = (DCT_object *)OBJ_MEMBER_UINT(SELF, DCT_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {
@@ -3288,10 +3288,10 @@ public:
 
 public:
     t_CKBOOL resize( t_CKINT size );
-    t_CKBOOL window( Chuck_Array8 * window, t_CKINT win_size );
+    t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
-    void transform( Chuck_Array8 * frame );
-    void copyTo( Chuck_Array8 * samples );
+    void transform( Chuck_ArrayFloat * frame );
+    void copyTo( Chuck_ArrayFloat * samples );
 
 public:
     // size of IDCT
@@ -3410,7 +3410,7 @@ t_CKBOOL IDCT_object::resize( t_CKINT size )
 // name: window()
 // desc: set window
 //-----------------------------------------------------------------------------
-t_CKBOOL IDCT_object::window( Chuck_Array8 * win, t_CKINT win_size )
+t_CKBOOL IDCT_object::window( Chuck_ArrayFloat * win, t_CKINT win_size )
 {
     // sanity check
     assert( win_size >= 0 );
@@ -3496,7 +3496,7 @@ void IDCT_object::transform( )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void IDCT_object::transform( Chuck_Array8 * frame )
+void IDCT_object::transform( Chuck_ArrayFloat * frame )
 {
     // convert to right type
     t_CKINT amount = ck_min( frame->size(), m_size );
@@ -3523,7 +3523,7 @@ void IDCT_object::transform( Chuck_Array8 * frame )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void IDCT_object::copyTo( Chuck_Array8 * samples )
+void IDCT_object::copyTo( Chuck_ArrayFloat * samples )
 {
     // buffer could be null
     if( m_buffer == NULL && m_inverse == NULL )
@@ -3645,7 +3645,7 @@ CK_DLL_TOCK( IDCT_tock )
     }
 
     // get fvals of output BLOB
-    Chuck_Array8 & fvals = BLOB->fvals();
+    Chuck_ArrayFloat & fvals = BLOB->fvals();
     // ensure size == resulting size
     if( fvals.size() != idct->m_size )
         fvals.set_size( idct->m_size );
@@ -3666,7 +3666,7 @@ CK_DLL_MFUN( IDCT_transform )
     // get object
     IDCT_object * idct = (IDCT_object *)OBJ_MEMBER_UINT(SELF, IDCT_offset_data);
     // get complex array
-    Chuck_Array8 * frame = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * frame = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // sanity
     if( frame == NULL ) goto null_pointer;
     // resize if bigger
@@ -3702,7 +3702,7 @@ CK_DLL_CTRL( IDCT_ctrl_window )
     // get object
     IDCT_object * idct = (IDCT_object *)OBJ_MEMBER_UINT(SELF, IDCT_offset_data );
     // get win (can be NULL)
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // set it
     idct->window( arr, arr != NULL ? arr->size() : 0 );
 }
@@ -3789,7 +3789,7 @@ CK_DLL_MFUN( IDCT_inverse )
     // get object
     IDCT_object * idct = (IDCT_object *)OBJ_MEMBER_UINT(SELF, IDCT_offset_data);
     // get array
-    Chuck_Array8 * arr = (Chuck_Array8 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayFloat * arr = (Chuck_ArrayFloat *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {

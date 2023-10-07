@@ -2,24 +2,25 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.4 (October 2023)
+1.5.1.5 (October 2023) "operator overloading + chugins API 9.0"
 =======
-- (added) operator overloading;
-    most operator can be overloaded, within their respective existing
+- (added) operator overloading in language;
+    most operator can now be overloaded, within their respective existing
     forms in the language (e.g., binary operators such as '+' and '=>'
     can be overloaded as binary operators, but not as unary operators);
-    also please note, like public class definitions, operator overloads
-    are local in scope unless declared with 'public' instead of 'fun',
-    global operator overloading will persists until 1) the VM stops or
-    2) the VM is cleared/reset
+    also please note, similar to class definitions, operator overloads
+    are local in scope unless declared with 'public', the latter operator 
+    overloading will persists until 1) the VM stops or 2) the VM is 
+    cleared/reset
     //-----------------------------------------------------------
     // the general format for overload an operator is as follows:
     //-----------------------------------------------------------
     // let's say we define a custom class...
     public class Foo { int num; }
 
-    // persistent operator overloading (trascends contexts)
-    // NOTE the use of 'public' instead of 'fun' -- it's fun for all!
+    // PUBLIC operator overloading (trascends contexts and files;
+    // will persist until stop VM or clear VM. NOTE the use of 'public' 
+    // instead of 'fun' (fun for all!)
     public Foo @operator =^( Foo lhs, Foo rhs )
     { /* do stuff for Foo =^ Foo */ return rhs; }
 
@@ -55,6 +56,11 @@ ChucK VERSIONS log
     // should print 7
     <<< c.num >>>;
     //-----------------------------------------------------------
+- (added) new examples showing basic operator overloading usage
+    examples/oper/overload_overview.ck
+    examples/oper/overload_pre_post.ck
+    examples/oper/overload_public.ck
+    examples/oper/overload_gru.ck
 - (added) the "gruck operator" --> (graphical chuck operator) as part
     of ChuGL (ChucK Graphics Library), which will be part of the ChucK
     language
@@ -102,6 +108,24 @@ ChucK VERSIONS log
 	    Get the operand stack size hint (in bytes) for shreds sporked 
 	    from this one.
         ----
+- (added) FileIO.open() now takes "special:auto" as the filename (output
+    only) to write to a new file with auto-generated filename in the 
+    current directory (based on the current system time, precise to 
+    second;NOTE files created into way at the same system time will have 
+    the same auto-generated filename and may conflict or fail to open).
+    The "auto" prefix and extension can be set and retrieved using the
+    following new functions to FileIO:
+	---
+	string autoExtension();
+	    Get auto extension for "special:auto" filename generation 
+	    (applicable to file writing only).
+	string autoPrefix();
+	    Get auto prefix for "special:auto" filename generation 
+	    (applicable to file writing only).
+	void autoPrefixExtension( string prefix, string extension );
+	    Set auto prefix and extension for "special:auto" filename 
+	    generation (applicable to file writing only).
+	---
 - (fixed) float *=> vec4 now works as intended (instead of producing a
     a compilation error)
 - (fixed) on Windows and --verbose level SYSTEM or higher, when a chugin
@@ -116,7 +140,102 @@ ChucK VERSIONS log
     up file descriptors and leading to instability
 - (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
     space (" ") after prompt text
-- (added; chugins development) new dyanmic linking API for VM operations
+- (updated) chugins headers version incremented to 9.0
+- (added; chugins development) overhauled dyanmic linking API to access
+    chuck host-side operations; this greatly expands chugins capabilities
+    but will unfortunately require API changes that will break chugin
+    builds that uses the existing API.
+    (check out chuck_dl.h: `namespace Chuck_DL_Api`)
+- (added; chugins development) ability to overload operators from chugin
+    query functions in C++:
+    // add binary operator overload; args included
+    f_add_op_overload_binary add_op_overload_binary;
+    // add unary (prefix) operator overload; arg included
+    f_add_op_overload_prefix add_op_overload_prefix;
+    // add unary (postfix) operator overload; arg included
+    f_add_op_overload_postfix add_op_overload_postfix;
+- (added; chugins development) capability to invoke chuck language-side
+    member functions (in chuck) from chugins (in C++)
+    // invoke Object member function (defined either in chuck or c++)
+    // NOTE this will call the member function in IMMEDIATE MODE,
+    // marking it as a time-critical function when called in this 
+    // manner; any time/event operations therein will throw an exception
+    Chuck_DL_Return API->vm->invoke_mfun_immediate_mode( 
+        Chuck_Object * obj, t_CKUINT func_vt_offset, Chuck_VM * vm, 
+        Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+- (added; chugins development) new API->type API for C++/chugins to 
+    lookup types in the type system, virtual function offsets (useful
+    for API->vm->invoke_mfun_immediate_mode() above)
+- (added and updated; chugins development) across all existing
+    chugins DL API and many additions; the chugins runtime API 9.0
+    =============================
+    // C++ chugins runtime API for VM access (access from chugins using API->vm->...)
+    // get sample rate | 1.5.1.4
+    t_CKUINT srate( Chuck_VM * vm );
+    // get chuck now | 1.5.1.4
+    t_CKTIME now( Chuck_VM * vm );
+    // create a new lock-free one-producer, one-consumer buffer | 1.5.1.4
+    CBufferSimple * create_event_buffer( Chuck_VM * vm );
+    // queue an event; num_msg must be 1; buffer should be created using create_event_buffer() above | 1.5.1.4
+    t_CKBOOL queue_event( Chuck_VM * vm, Chuck_Event * event, t_CKINT num_msg, CBufferSimple * buffer );
+    // invoke Chuck_Object member function (defined either in chuck or c++) | 1.5.1.4 (ge & andrew)
+    // NOTE this will call the member function in IMMEDIATE MODE,
+    // marking it as a time-critical function when called in this manner;
+    // any time/event operations therein will throw an exception
+    Chuck_DL_Return invoke_mfun_immediate_mode( Chuck_Object * obj, t_CKUINT func_vt_offset,
+        Chuck_VM * vm, Chuck_VM_Shred * shred, Chuck_DL_Arg * ARGS, t_CKUINT numArgs );
+    // throw an exception; if shred is passed in, it will be halted
+    void throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
+    // log a message in the chuck logging system
+    void em_log( t_CKINT level, const char * text );
+    // system function: remove all shreds in VM; use with care
+    void remove_all_shreds( Chuck_VM * vm );
+    --------------------------------
+    // C++ chugins runtime API for object access (access using API->object->...)
+    // function pointer get_type()
+    Type get_type( Object object );
+    // add reference count
+    void add_ref( Object object );
+    // release reference count
+    void release( Object object );
+    // get reference count
+    t_CKUINT refcount( Object object );
+    // instantiating and initializing a ChucK object by type, with reference to a parent shred
+    // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+    // NOTE set addRef to TRUE if you intend to keep a reference of the newly created object around
+    // NOTE set addRref to FALSE if the created object is to be returned without keeping a reference around
+    Object create( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
+    // instantiating and initializing a ChucK object by type, with no reference to a parent shred
+    // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+    Object create_without_shred( Chuck_VM *, Type type, t_CKBOOL addRef );
+    // instantiate and initialize a ChucK string by type
+    // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
+    String create_string( Chuck_VM *, const char * value, t_CKBOOL addRef );
+    // function pointers for get_mvar_*()
+    t_CKBOOL get_mvar_int( Object object, const char * name, t_CKINT & value );
+    t_CKBOOL get_mvar_float( Object object, const char * name, t_CKFLOAT & value );
+    t_CKBOOL get_mvar_dur( Object object, const char * name, t_CKDUR & value );
+    t_CKBOOL get_mvar_time( Object object, const char * name, t_CKTIME & value );
+    t_CKBOOL get_mvar_string( Object object, const char * name, String & value );
+    t_CKBOOL get_mvar_object( Object object, const char * name, Object & value );
+    // function pointer for set_string()
+    t_CKBOOL set_string( String string, const char * value );
+    // array_int operations
+    t_CKBOOL array_int_size( ArrayInt array, t_CKINT & value );
+    t_CKBOOL array_int_push_back( ArrayInt array, t_CKUINT value );
+    t_CKBOOL array_int_get_idx( ArrayInt array, t_CKINT idx, t_CKUINT & value );
+    t_CKBOOL array_int_get_key( ArrayInt array, const std::string & key, t_CKUINT & value );
+    --------------------------------
+    // C++ chugins runtime API for type access (new; access using API->type->...)
+    // function pointer get_type()
+    Type lookup( Chuck_VM *, const char * name );
+    // function pointer for get_vtable_offset(); returns < 0 if not found
+    t_CKINT get_vtable_offset( Chuck_VM *, Type type, const char * value );
+    // test if two chuck types are equal
+    t_CKBOOL is_equal(Type lhs, Type rhs);
+    // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
+    t_CKBOOL isa(Type lhs, Type rhs);
+    =============================
 
 
 1.5.1.3 (September 2023) "ChucK to School"

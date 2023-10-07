@@ -247,7 +247,7 @@ long htol( c_str str )
  will test using isatty()) */
 %option never-interactive
 
-/* 1.5.1.4 (ge) reentrant lexer */
+/* 1.5.1.5 (ge) reentrant lexer */
 /* %option reentrant */
 
 /* float exponent | 1.5.0.5 (ge) */

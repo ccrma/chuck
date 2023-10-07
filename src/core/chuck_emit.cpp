@@ -69,9 +69,9 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
 t_CKBOOL emit_engine_emit_op_unchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
 t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
 t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs );
-t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary binary ); // 1.5.1.4
-t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary unary ); // 1.5.1.4
-t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix ); // 1.5.1.4
+t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary binary ); // 1.5.1.5
+t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary unary ); // 1.5.1.5
+t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix ); // 1.5.1.5
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary );
 t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp );
 t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast );
@@ -497,24 +497,24 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                     {
                         // (added 1.3.1.0 -- multiply by type size; #64-bit)
                         // (fixed 1.3.1.2 -- uh... decl should also be int-sized, so changed to INT/WORD)
-                        emit->append( new Chuck_Instr_Reg_Pop_Word4( exp->decl.num_var_decls * sz_INT / sz_WORD ) );
+                        emit->append( new Chuck_Instr_Reg_Pop_WordsMulti( exp->decl.num_var_decls * sz_INT / sz_WORD ) );
                     }
                     else if( exp->type->size == sz_INT && iskindofint(emit->env, exp->type) ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     {
                         // is an object left on the stack for the stmt
                         if( exp->s_type == ae_exp_func_call && isobj(emit->env, exp->type) )
-                        { emit->append( new Chuck_Instr_Release_Object3_Pop_Word ); }
+                        { emit->append( new Chuck_Instr_Release_Object3_Pop_Int ); }
                         else // not an object
-                        { emit->append( new Chuck_Instr_Reg_Pop_Word ); }
+                        { emit->append( new Chuck_Instr_Reg_Pop_Int ); }
                     }
                     else if( exp->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
-                        emit->append( new Chuck_Instr_Reg_Pop_Word2 );
+                        emit->append( new Chuck_Instr_Reg_Pop_Float );
                     else if( exp->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-                        emit->append( new Chuck_Instr_Reg_Pop_Word3 );
+                        emit->append( new Chuck_Instr_Reg_Pop_Complex );
                     else if( exp->type->size == sz_VEC3 ) // ge: added 1.3.5.3
-                        emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC3/sz_WORD) );
+                        emit->append( new Chuck_Instr_Reg_Pop_WordsMulti(sz_VEC3/sz_WORD) );
                     else if( exp->type->size == sz_VEC4 ) // ge: added 1.3.5.3
-                        emit->append( new Chuck_Instr_Reg_Pop_Word4(sz_VEC4/sz_WORD) );
+                        emit->append( new Chuck_Instr_Reg_Pop_WordsMulti(sz_VEC4/sz_WORD) );
                     else
                     {
                         EM_error2( exp->where,
@@ -871,8 +871,8 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
             e = e->next;
         }
 
-        // pop (changed to Chuck_Instr_Reg_Pop_Word4 in 1.3.1.0)
-        if( num_words > 0 ) emit->append( new Chuck_Instr_Reg_Pop_Word4( num_words ) );
+        // pop (changed to Chuck_Instr_Reg_Pop_WordsMulti in 1.3.1.0)
+        if( num_words > 0 ) emit->append( new Chuck_Instr_Reg_Pop_WordsMulti( num_words ) );
     }
 
     // go back to do check the condition
@@ -1871,7 +1871,7 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         emit->append( op = new Chuck_Instr_Branch_Eq_int( 0 ) );
 
         // pop default result
-        emit->append( new Chuck_Instr_Reg_Pop_Word );
+        emit->append( new Chuck_Instr_Reg_Pop_Int );
 
         // result of whole expression is now result of rhs
         right = emit_engine_emit_exp( emit, binary->rhs );
@@ -1903,7 +1903,7 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         emit->append( op = new Chuck_Instr_Branch_Neq_int( 0 ) );
 
         // pop default result
-        emit->append( new Chuck_Instr_Reg_Pop_Word );
+        emit->append( new Chuck_Instr_Reg_Pop_Int );
 
         // result of whole expression is now result of rhs
         right = emit_engine_emit_exp( emit, binary->rhs );
@@ -1925,7 +1925,7 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
         // take care of objects in terms of reference counting
         doRefLeft = TRUE;
     }
-    // check operator overload | 1.5.1.4 (ge)
+    // check operator overload | 1.5.1.5 (ge)
     t_CKBOOL op_overload = (binary->ck_overload_func != NULL);
     if( op_overload && isobj( emit->env, binary->lhs->type ) )
     {
@@ -1976,7 +1976,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
     // whether an operator should be using an explicit overloading
     if( binary->ck_overload_func )
     {
-        // emit operator overload | 1.5.1.4 (ge) added
+        // emit operator overload | 1.5.1.5 (ge) added
         return emit_engine_emit_op_overload_binary( emit, binary );
     }
 
@@ -2904,7 +2904,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
 
 //-----------------------------------------------------------------------------
-// name: emit_engine_emit_op_overload_binary() | 1.5.1.4 (ge) added
+// name: emit_engine_emit_op_overload_binary() | 1.5.1.5 (ge) added
 // desc: emit binary operator overload
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary binary )
@@ -2920,7 +2920,7 @@ t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary
 
 
 //-----------------------------------------------------------------------------
-// name: emit_engine_emit_op_overload_unary() | 1.5.1.4 (ge) added
+// name: emit_engine_emit_op_overload_unary() | 1.5.1.5 (ge) added
 // desc: emit unary (prefix) operator overload
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
@@ -2936,7 +2936,7 @@ t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary u
 
 
 //-----------------------------------------------------------------------------
-// name: emit_engine_emit_op_overload_postfix() | 1.5.1.4 (ge) added
+// name: emit_engine_emit_op_overload_postfix() | 1.5.1.5 (ge) added
 // desc: emit unary (postfix) operator overload
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix )
@@ -3007,7 +3007,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
         rhs->s_type == ae_exp_primary && !strcmp( "now", S_name(rhs->primary.var) ) )
     {
         // pop now
-        emit->append( new Chuck_Instr_Reg_Pop_Word2 );
+        emit->append( new Chuck_Instr_Reg_Pop_Float );
         emit->append( instr = new Chuck_Instr_Event_Wait );
         instr->set_linepos( lhs->line );
 
@@ -3163,7 +3163,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
             if( rhs->s_type == ae_exp_primary && !strcmp( "now", S_name(rhs->primary.var) ) )
             {
                 // pop the now addr
-                emit->append( new Chuck_Instr_Reg_Pop_Word2 );
+                emit->append( new Chuck_Instr_Reg_Pop_Float );
                 // advance time
                 Chuck_Instr * instr = NULL;
                 emit->append( instr = new Chuck_Instr_Time_Advance );
@@ -3226,7 +3226,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
 {
-    // check operator overload | 1.5.1.4 (ge)
+    // check operator overload | 1.5.1.5 (ge)
     t_CKBOOL op_overload = (unary->ck_overload_func != NULL);
     t_CKBOOL doRef = FALSE;
     if( op_overload && isobj( emit->env, unary->exp->type ) )
@@ -3243,7 +3243,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
     Chuck_Type * t = unary->self->type;
     assert( t != NULL );
 
-    // check overloading | 1.5.1.4 (ge) added
+    // check overloading | 1.5.1.5 (ge) added
     if( unary->ck_overload_func )
     {
         // emit overloading | FYI spork can't be overloaded for now
@@ -3532,7 +3532,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
     case ae_primary_str:
         // TODO: fix this
         str = new Chuck_String();
-        if( !str || !initialize_object( str, emit->env->ckt_string ) )
+        if( !str || !initialize_object( str, emit->env->ckt_string, NULL, emit->env->vm() ) )
         {
             // error (TODO: why is this a CK_SAFE_RELEASE and not CK_SAFE_DELETE?)
             CK_SAFE_RELEASE( str );
@@ -3781,7 +3781,7 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postfix )
 {
-    // check operator overload | 1.5.1.4 (ge)
+    // check operator overload | 1.5.1.5 (ge)
     t_CKBOOL op_overload = (postfix->ck_overload_func != NULL);
     t_CKBOOL doRef = FALSE;
     if( op_overload && isobj( emit->env, postfix->exp->type ) )
@@ -3794,7 +3794,7 @@ t_CKBOOL emit_engine_emit_exp_postfix( Chuck_Emitter * emit, a_Exp_Postfix postf
     if( !emit_engine_emit_exp( emit, postfix->exp, doRef ) )
         return FALSE;
 
-    // check overloading | 1.5.1.4 (ge) added
+    // check overloading | 1.5.1.5 (ge) added
     if( postfix->ck_overload_func )
     {
         // emit overloading
@@ -4038,7 +4038,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
                 emit->append( instr = new Chuck_Instr_Func_Call_Member( kind, func ) );
             else if( is_static )
                 emit->append( instr = new Chuck_Instr_Func_Call_Static( kind, func ) );
-            else // 1.5.1.4 (ge & andrew) new planes of existence --> this is in global-scope (not global variable)
+            else // 1.5.1.5 (ge & andrew) new planes of existence --> this is in global-scope (not global variable)
                 emit->append( instr = new Chuck_Instr_Func_Call_Global( kind, func ) );
         }
         else
@@ -5164,7 +5164,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     emit->stack.push_back( emit->code );
     // make a new one
     emit->code = new Chuck_Code;
-    // name the code | 1.5.1.4 use signature()
+    // name the code | 1.5.1.5 use signature()
     emit->code->name += func->signature();
     // name the code (older code)
     // emit->code->name = emit->env->class_def ? emit->env->class_def->base_name + "." : "";
@@ -5398,7 +5398,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         // *** ... could result in extra ref count
         // type->info->pre_ctor->add_ref();
         // ----------------------
-        // use CK_SAFE_REF_ASSIGN to add_ref RHS then releae LHS | 1.5.1.4
+        // use CK_SAFE_REF_ASSIGN to add_ref RHS then releae LHS | 1.5.1.5
         // maintain refcount integrity whether type->info->pre_ctor==NULL or not
         // ----------------------
         CK_SAFE_REF_ASSIGN( type->info->pre_ctor,
@@ -5425,7 +5425,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // check again
     if( !ret )
     {
-        // release | 1.5.1.4 (ge) changed from DELETE to RELEASE
+        // release | 1.5.1.5 (ge) changed from DELETE to RELEASE
         CK_SAFE_RELEASE( type->info->pre_ctor );
     }
 
@@ -5505,9 +5505,9 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     {
         // is an object?
         if( isobj( emit->env, exp->ret_type) )
-        { emit->append( new Chuck_Instr_Release_Object3_Pop_Word ); }
+        { emit->append( new Chuck_Instr_Release_Object3_Pop_Int ); }
         else // not an object
-        { emit->append( new Chuck_Instr_Reg_Pop_Word ); }
+        { emit->append( new Chuck_Instr_Reg_Pop_Int ); }
     }
 
     // emit the function call, with special flag

@@ -1900,10 +1900,10 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Pop_Word
-// desc: pop word from reg stack
+// name: struct Chuck_Instr_Reg_Pop_Int
+// desc: pop an int from reg stack
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Word : public Chuck_Instr
+struct Chuck_Instr_Reg_Pop_Int : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -1913,10 +1913,10 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Pop_Word2
-// desc: pop t_CKFLOAT word from reg stack
+// name: struct Chuck_Instr_Reg_Pop_Float
+// desc: pop a float value from reg stack
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Word2 : public Chuck_Instr
+struct Chuck_Instr_Reg_Pop_Float : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -1926,10 +1926,10 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Pop_Word3
-// desc: pop a complex value from reg stack (change 1.3.1.0)
+// name: struct Chuck_Instr_Reg_Pop_Complex
+// desc: pop a complex/polar value from reg stack (change 1.3.1.0)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Word3 : public Chuck_Instr
+struct Chuck_Instr_Reg_Pop_Complex : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -1939,13 +1939,39 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Pop_Word4
+// name: struct Chuck_Instr_Reg_Pop_Vec3
+// desc: pop a vec3 value from reg stack | 1.5.1.5
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Pop_Vec3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Pop_Vec4
+// desc: pop a vec4 value from reg stack | 1.5.1.5
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Pop_Vec4 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Pop_WordsMulti
 // desc: pop arbitrary num of word from reg stack (added 1.3.1.0)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Word4 : public Chuck_Instr_Unary_Op
+struct Chuck_Instr_Reg_Pop_WordsMulti : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Reg_Pop_Word4( t_CKUINT num ) { this->set( num ); }
+    Chuck_Instr_Reg_Pop_WordsMulti( t_CKUINT num ) { this->set( num ); }
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
@@ -3037,11 +3063,11 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Release_Object3_Pop_Word
+// name: struct Chuck_Instr_Release_Object3_Pop_Int
 // desc: release object reference + pop from reg stack | 1.5.0.0 (ge) added
 //       the variant assumes object pointer directly on stack (not offset)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Release_Object3_Pop_Word : public Chuck_Instr
+struct Chuck_Instr_Release_Object3_Pop_Int : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -4207,7 +4233,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * vm );
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm );
 // initialize object using Type
-t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type );
+t_CKBOOL initialize_object( Chuck_Object * obj, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm );
 
 // "throw exception" (halt current shred, print message)
 void ck_throw_exception(Chuck_VM_Shred * shred, const char * name);

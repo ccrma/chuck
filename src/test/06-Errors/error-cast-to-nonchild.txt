@@ -1,0 +1,3 @@
+error-cast-to-nonchild.ck:11:3: error: invalid cast from 'Event' to 'Foo'
+[11] e $ Foo @=> Foo @ f;
+       ^

@@ -983,8 +983,8 @@ CK_DLL_SFUN( gauss_impl )
 // cossim (ge) | added 1.5.0.0
 CK_DLL_SFUN( cossim_impl )
 {
-    Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * b = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * a = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * b = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT size = 0;
 
     // in case of error
@@ -1111,8 +1111,8 @@ CK_DLL_SFUN( cossim4d_impl )
 // euclidean (ge) | added 1.5.0.0
 CK_DLL_SFUN( euclidean_impl )
 {
-    Chuck_Array8 * a = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
-    Chuck_Array8 * b = (Chuck_Array8 *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * a = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
+    Chuck_ArrayFloat * b = (Chuck_ArrayFloat *)GET_NEXT_OBJECT( ARGS );
     t_CKINT size = 0;
 
     // in case of error

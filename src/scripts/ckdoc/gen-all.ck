@@ -102,7 +102,7 @@ doc.addGroup(
 // add group
 doc.addGroup(
     [ "UAna", "UAnaBlob", "Centroid", "Chroma", "Flux", "Kurtosis", "MFCC", "RMS", "RollOff", "SFM", "ZeroX",
-    "AutoCorr", "DCT", "FeatureCollector", "FFT", "Flip", "IDCT", "IFFT", "UnFlip", "XCorr" ],
+    "AutoCorr", "DCT", "FeatureCollector", "FFT", "Flip", "IDCT", "IFFT", "UnFlip", "XCorr", "Windowing" ],
     // group name
     "Unit Analyzers",
     // file name

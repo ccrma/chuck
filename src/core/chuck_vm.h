@@ -64,6 +64,7 @@ struct Chuck_VM_Func;
 struct Chuck_VM_FTable;
 struct Chuck_Msg;
 struct Chuck_Globals_Manager; // added 1.4.1.0 (jack)
+struct Chuck_Instr_Reg_Push_Imm; // 1.5.1.5 (ge)
 class CBufferSimple;
 #ifndef __DISABLE_SERIAL__
 // hack: spencer?
@@ -108,7 +109,7 @@ public: // linked list
 
 public: // state
     t_CKBOOL m_is_init;
-    t_CKUINT m_size; // 1.5.1.4
+    t_CKUINT m_size; // 1.5.1.5
 };
 
 
@@ -134,7 +135,7 @@ public:
 
     // name of this code
     std::string name;
-    // the depth of any function arguments
+    // the depth of any function arguments (in bytes)
     t_CKUINT stack_depth;
     // whether the function needs 'this' pointer or not
     t_CKBOOL need_this;
@@ -230,7 +231,7 @@ public: // machine components
     // children shreds
     std::map<t_CKUINT, Chuck_VM_Shred *> children;
 
-    // child stack size hints | 1.5.1.4
+    // child stack size hints | 1.5.1.5
     t_CKINT memStackSize;
     t_CKINT regStackSize;
 
@@ -283,11 +284,59 @@ public: // ge: 1.3.5.3
     // loop counter pointer stack
     std::vector<t_CKUINT *> m_loopCounters;
 
+public: // immediate mode temporal restriction | 1.5.1.5 (ge)
+    // while in this mode, exception will be thrown on any time ops:
+    // 1) if shred advances time (even by 0 duration)
+    // 2) if shred waits on event
+    // 3) if shred yields, or calls Machine.eval()
+    //    which implicits yields to runs code on a new shred
+    // this is typically set in specific cases where the programmer
+    // is expected to provide a callback function that must return
+    // immediately without any shreduling; for example Chugen.tick( float in )
+    // or GGen.update( float dt );
+
+    // toggle immediate mode
+    void setImmediateMode( t_CKBOOL onOff ) { is_immediate_mode = onOff; }
+    // check if shred is in immediate mode
+    t_CKBOOL immediateMode() const { return is_immediate_mode; }
+    // check if shred is in immediate mode
+    t_CKBOOL immediateModeVioation() const { return is_immediate_mode_violation; }
+    // test and report for immediate mode violations
+    t_CKBOOL checkImmediatModeException( t_CKUINT linepos = 0 );
+
+protected:
+    t_CKBOOL is_immediate_mode;
+    t_CKBOOL is_immediate_mode_violation;
+
 #ifndef __DISABLE_SERIAL__
 private:
     // serial IO list for event synchronization
     std::list<Chuck_IO_Serial *> * m_serials;
 #endif
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Shreds_Watcher
+// desc: ChucK virtual machine
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Shreds_Watcher
+{
+    // function pointer to call
+    f_shreds_watcher cb;
+    // user data
+    void * userdata;
+
+    // constructor
+    Chuck_VM_Shreds_Watcher( f_shreds_watcher f = NULL, void * data = NULL ) : cb(f), userdata(data) { }
+    // copy constructor
+    Chuck_VM_Shreds_Watcher( const Chuck_VM_Shreds_Watcher & other )
+    : cb(other.cb), userdata(other.userdata) { }
+    // ==
+    bool operator ==( const Chuck_VM_Shreds_Watcher & other )
+    { return this->cb == other.cb; }
 };
 
 
@@ -353,7 +402,7 @@ public:
 // name: struct Chuck_VM_Shreduler
 // desc: a ChucK shreduler shredules shreds
 //-----------------------------------------------------------------------------
-struct Chuck_VM_Shreduler : Chuck_Object
+struct Chuck_VM_Shreduler : public Chuck_Object
 {
 //-----------------------------------------------------------------------------
 // functions
@@ -480,7 +529,7 @@ public:
 // name: struct Chuck_VM
 // desc: ChucK virtual machine
 //-----------------------------------------------------------------------------
-struct Chuck_VM : Chuck_Object
+struct Chuck_VM : public Chuck_Object
 {
 //-----------------------------------------------------------------------------
 // functions
@@ -582,6 +631,15 @@ public:
     // 1.4.1.0 (jack): get associated globals manager
     Chuck_Globals_Manager * globals_manager() const { return m_globals_manager; }
 
+public:
+    // subscribe shreds watcher callback | 1.5.1.5
+    void subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data = NULL );
+    // notify watchers | 1.5.1.5
+    void notify_watchers( ckvmShredsWatcherFlag which, Chuck_VM_Shred * shred,
+                          std::list<Chuck_VM_Shreds_Watcher> & v );
+    // remove shreds watcher callback | 1.5.1.5
+    void remove_watcher( f_shreds_watcher cb );
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -634,7 +692,7 @@ protected:
     Chuck_VM_Shred * m_shreds;
     t_CKUINT m_num_shreds;
     t_CKUINT m_shred_id;
-    t_CKBOOL m_shred_check4dupes; // 1.5.1.4
+    t_CKBOOL m_shred_check4dupes; // 1.5.1.5
     Chuck_VM_Shreduler * m_shreduler;
     // place to put dumped shreds
     std::vector<Chuck_VM_Shred *> m_shred_dump;
@@ -651,6 +709,13 @@ protected:
 protected:
     // 1.4.1.0 (jack): manager for global variables
     Chuck_Globals_Manager * m_globals_manager;
+
+protected:
+    // 1.5.1.5 (ge & andrew) shreds watchers
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_spork;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_remove;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_suspend;
+    std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_activate;
 };
 
 
@@ -704,7 +769,7 @@ struct Chuck_Msg
     t_CKTIME when;
     // pointer to status struct, as applicable
     Chuck_VM_Status * status;
-    // whether to always add | 1.5.1.4
+    // whether to always add | 1.5.1.5
     t_CKBOOL alwaysAdd;
 
     // reply callback
@@ -749,6 +814,43 @@ struct Chuck_Msg
             (*args) = *vargs;
         }
     }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_MFunInvoker | 1.5.1.5 (ge)
+// desc: construct for calling chuck-defined member functions from c++,
+//       either from VM execution or outside the VM execution context
+//-----------------------------------------------------------------------------
+struct Chuck_VM_MFunInvoker
+{
+public:
+    // constructor
+    Chuck_VM_MFunInvoker();
+    // destructor
+    ~Chuck_VM_MFunInvoker();
+
+public:
+    // set up the invoker; needed before invoke()
+    t_CKBOOL setup( Chuck_Func * func, t_CKUINT func_vt_offset,
+                    Chuck_VM * vm, Chuck_VM_Shred * caller );
+    // invoke the member function
+    Chuck_DL_Return invoke( Chuck_Object * obj,
+                            const std::vector<Chuck_DL_Arg> & args );
+    // clean up
+    void cleanup();
+
+public:
+    // dedicated shred to call the mfun on
+    Chuck_VM_Shred * shred;
+    // instructions for args (to be filled on invoke)
+    std::vector<Chuck_Instr *> instr_args;
+    // instruction to update on invoke: pushing this pointer
+    Chuck_Instr_Reg_Push_Imm * instr_pushThis;
+    // instruction to update on invoke: pushing the var to receive return
+    Chuck_Instr_Reg_Push_Imm * instr_pushReturnVar;
 };
 
 

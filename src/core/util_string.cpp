@@ -1072,6 +1072,29 @@ std::string timestamp_formatted()
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: autoFilename()
+// desc: generate auto filename | 1.5.0.0 (ge) refactored into this function
+//-----------------------------------------------------------------------------
+std::string autoFilename( const std::string & prefix, const std::string & fileExt )
+{
+    char buffer[1024];
+    time_t t; time(&t);
+    strcpy( buffer, prefix.c_str() );
+    strcat( buffer, "(" );
+    strncat( buffer, ctime(&t), 24 );
+    buffer[strlen(prefix.c_str())+14] = 'h';
+    buffer[strlen(prefix.c_str())+17] = 'm';
+    strcat( buffer, ")." );
+    strcat( buffer, fileExt.c_str() );
+    // return
+    return buffer;
+}
+
+
+
+
 static t_CKBOOL str_contains( const string & s, char c )
 { return s.find( c ) != string::npos; }
 

@@ -47,6 +47,7 @@
 #include "chuck_oo.h"
 #include "util_math.h"
 #include "util_platforms.h"
+#include "util_string.h"
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -4819,11 +4820,11 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_ctrl_autoPrefix ); //! set/get auto prefix string
     func->add_arg( "string", "value" );
-    func->doc = "set auto prefix string.";
+    func->doc = "set auto prefix string for \"special:auto\" filename generation.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "autoPrefix", WvOut_cget_autoPrefix ); //! set/get auto prefix string
-    func->doc = "get auto prefix string.";
+    func->doc = "get auto prefix string for \"special:auto\" filename generation.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "fileGain", WvOut_ctrl_fileGain ); //! set/get auto prefix string
@@ -27936,7 +27937,7 @@ CK_DLL_DTOR( WvOut_dtor )
     w->closeFile();
 
     // REFACTOR-2017: get the carrier
-    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->vm, "WvOut dtor" );
+    Chuck_Carrier * carrier = getCarrier( ((Chuck_UGen *)(SELF))->originVM(), "WvOut dtor" );
     // check
     if( carrier != NULL )
     {
@@ -28002,28 +28003,6 @@ CK_DLL_TICKF( WvOut2_tickf )
 CK_DLL_PMSG( WvOut_pmsg )
 {
     return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: autoFilename()
-// desc: generate auto filename | 1.5.0.0 (ge) refactored into this function
-//-----------------------------------------------------------------------------
-static std::string autoFilename( const std::string & prefix, const std::string & fileExt )
-{
-    char buffer[1024];
-    time_t t; time(&t);
-    strcpy( buffer, prefix.c_str() );
-    strcat( buffer, "(" );
-    strncat( buffer, ctime(&t), 24 );
-    buffer[strlen(prefix.c_str())+14] = 'h';
-    buffer[strlen(prefix.c_str())+17] = 'm';
-    strcat( buffer, ")." );
-    strcat( buffer, fileExt.c_str() );
-    // return
-    return buffer;
 }
 
 

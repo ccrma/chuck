@@ -73,9 +73,9 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
 t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary );
-t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op, Chuck_Type * lhs, Chuck_Type * rhs, a_Exp_Binary binary ); // 1.5.1.4
-t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op, Chuck_Type * rhs, a_Exp_Unary unary ); // 1.5.1.4
-t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs, ae_Operator op, a_Exp_Postfix post ); // 1.5.1.4
+t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op, Chuck_Type * lhs, Chuck_Type * rhs, a_Exp_Binary binary ); // 1.5.1.5
+t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op, Chuck_Type * rhs, a_Exp_Unary unary ); // 1.5.1.5
+t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lhs, ae_Operator op, a_Exp_Postfix post ); // 1.5.1.5
 t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp );
 t_CKTYPE type_engine_check_exp_complex_lit( Chuck_Env * env, a_Exp_Primary exp );
@@ -431,7 +431,7 @@ t_CKBOOL Chuck_Env::is_global()
 t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 {
     // call initialize_object() to initialize objT itself as an instance of Object
-    initialize_object( objT, env->ckt_class );
+    initialize_object( objT, env->ckt_class, NULL, env->vm() );
 
     // ensure namespace allocation
     if( objT->info == NULL )
@@ -454,7 +454,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
         {
             // initialize each function type as an object instance
             // (special cases: these should not be initialized yet)
-            initialize_object( f->value_ref->type, env->ckt_class );
+            initialize_object( f->value_ref->type, env->ckt_class, NULL, env->vm() );
             // next f
             f = f->next;
         }
@@ -2077,7 +2077,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_divide_chuck:
     case ae_op_percent_chuck:
         {
-            // check overload | 1.5.1.4 (ge) added
+            // check overload | 1.5.1.5 (ge) added
             Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
             // if we have a hit
             if( ret ) return ret;
@@ -2374,7 +2374,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     default: break;
     }
 
-    // check overload | 1.5.1.4 (ge) added
+    // check overload | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2753,7 +2753,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         // aggregate types
         else
         {
-            // check overloading of => | 1.5.1.4 (ge) added
+            // check overloading of => | 1.5.1.5 (ge) added
             Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
             // if we have a hit
             if( ret ) return ret;
@@ -2768,7 +2768,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
         }
     }
 
-    // check overloading of => | 1.5.1.4 (ge) added
+    // check overloading of => | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_chuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2795,7 +2795,7 @@ t_CKTYPE type_engine_check_op_unchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // ugen =< ugen
     if( isa( left, env->ckt_ugen ) && isa( right, env->ckt_ugen ) ) return right;
 
-    // check overloading of =< | 1.5.1.4 (ge) added
+    // check overloading of =< | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_unchuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2822,7 +2822,7 @@ t_CKTYPE type_engine_check_op_upchuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a_
     // uana =^ uana
     if( isa( left, env->ckt_uana ) && isa( right, env->ckt_uana ) ) return right;
 
-    // check overloading of =^ | 1.5.1.4 (ge) added
+    // check overloading of =^ | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_upchuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -2912,7 +2912,7 @@ t_CKTYPE type_engine_check_op_at_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs, a
         return NULL;
     }
 
-    // check overloading of @=> (disallowed for now) | 1.5.1.4 (ge) added
+    // check overloading of @=> (disallowed for now) | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, ae_op_at_chuck, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
@@ -3092,7 +3092,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         default: break;
     }
 
-    // check overloading of unary operator | 1.5.1.4 (ge) added
+    // check overloading of unary operator | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_unary( env, unary->op, t, unary );
     // if we have a hit
     if( ret ) return ret;
@@ -3835,7 +3835,7 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
         return NULL;
     }
 
-    // check overloading of postfix operator | 1.5.1.4 (ge) added
+    // check overloading of postfix operator | 1.5.1.5 (ge) added
     Chuck_Type * ret = type_engine_check_op_overload_postfix( env, t, postfix->op, postfix );
     // if we have a hit
     if( ret ) return ret;
@@ -5577,10 +5577,10 @@ t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {   return isa( type, env->ckt_int ) || isobj( env, type ); }
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type ) // added 1.5.0.0
 {   return isa( type, env->ckt_void ); }
-t_CKUINT getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
+te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {
     // the kind (1.3.1.0)
-    t_CKUINT kind = kindof_VOID;
+    te_KindOf kind = kindof_VOID;
 
     // check size
     if( type->size == sz_INT && iskindofint(env, type) )
@@ -6351,7 +6351,7 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
         env->class_def->base_name != env->ckt_array->base_name )
     {
         // initialize the type as object | 1.5.0.0 (ge) added
-        initialize_object( env->class_def, env->ckt_class );
+        initialize_object( env->class_def, env->ckt_class, NULL, env->vm() );
     }
 
     // pop the class
@@ -6666,7 +6666,7 @@ t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * sfun )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_init_op_overload_builtin() | 1.5.1.4 (ge) added
+// name: type_engine_init_op_overload_builtin() | 1.5.1.5 (ge) added
 // desc: reserve builtin default operator overloads; this disallows certain
 //       overloadings, e.g., int + int
 //-----------------------------------------------------------------------------
@@ -6937,7 +6937,7 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_init_op_overload() | 1.5.1.4 (ge) added
+// name: type_engine_init_op_overload() | 1.5.1.5 (ge) added
 // desc: initialize operator overload
 //       NOTE this is typically called from init_type_system()
 //-----------------------------------------------------------------------------
@@ -7011,7 +7011,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_scan_func_op_overload() | 1.5.1.4 (ge) added
+// name: type_engine_scan_func_op_overload() | 1.5.1.5 (ge) added
 // desc: verify an operator overload
 //       NOTE this is typically called from scan2_func_def()
 //-----------------------------------------------------------------------------
@@ -7119,7 +7119,7 @@ t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def f )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_func_op_overload()
-// desc: type-check an operator overload | 1.5.1.4 (ge) added
+// desc: type-check an operator overload | 1.5.1.5 (ge) added
 //       NOTE this is typically called from check_func_def()
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, ae_Operator op, a_Func_Def func_def )
@@ -7151,7 +7151,7 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     if( env->ckt_class->info != NULL )
     {
         // initialize it as Type object | 1.5.0.0 (ge) added
-        initialize_object( theType, env->ckt_class );
+        initialize_object( theType, env->ckt_class, NULL, env->vm() );
     }
 
     return theType;
@@ -7677,9 +7677,9 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // copy the function pointer - the type doesn't matter here
     // ...since we copying into a void * - so mfun is used
     func_def->dl_func_ptr = (void *)dl_fun->mfun;
-    // copy the operator overload info | 1.5.1.4
+    // copy the operator overload info | 1.5.1.5
     func_def->op2overload = dl_fun->op2overload;
-    // set if unary postfix overload | 1.5.1.4
+    // set if unary postfix overload | 1.5.1.5
     func_def->overload_post = (dl_fun->opOverloadKind == te_op_overload_unary_post);
 
     return func_def;
@@ -8326,6 +8326,13 @@ Chuck_Func::~Chuck_Func()
     CK_SAFE_RELEASE( this->code );
     CK_SAFE_RELEASE( this->value_ref );
 
+    // release args cache | 1.5.1.5
+    CK_SAFE_DELETE_ARRAY( this->args_cache );
+    this->args_cache_size = 0;
+
+    // release invoker(s) | 1.5.1.5
+    CK_SAFE_DELETE( this->invoker_mfun );
+
     // TODO: check if more references to release, e.g., up and next?
 }
 
@@ -8490,6 +8497,79 @@ void Chuck_Func::funcdef_cleanup()
 
     // zero out
     this->m_def = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pack_cache() | 1.5.1.5
+// desc: pack c-style array of DL_Args into args cache
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Func::pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs )
+{
+    // data size in bytes
+    t_CKUINT size = 0;
+    // count the number of bytes needed
+    for( t_CKUINT i = 0; i < numArgs; i++ )
+        size += dlargs[i].sizeInBytes();
+    // (re)allocate if needed
+    if( size > args_cache_size )
+    {
+        CK_SAFE_DELETE_ARRAY( args_cache );
+        args_cache = new t_CKBYTE[size];
+        if( !args_cache ) {
+            EM_error3( "error allocating argument cache of size '%lu'", size );
+            return FALSE;
+        }
+        memset( args_cache, 0, size );
+        args_cache_size = size;
+    }
+
+    // pointer for copying
+    t_CKBYTE * here = args_cache;
+    // iterate and copy
+    for( t_CKUINT j = 0; j < numArgs; j++ )
+    {
+        switch( dlargs[j].kind )
+        {
+            case kindof_INT: memcpy( here, &dlargs[j].value.v_int, sizeof(dlargs[j].value.v_int) ); break;
+            case kindof_FLOAT: memcpy( here, &dlargs[j].value.v_float, sizeof(dlargs[j].value.v_float) ); break;
+            case kindof_COMPLEX:memcpy( here, &dlargs[j].value.v_complex, sizeof(dlargs[j].value.v_complex) ); break;
+            case kindof_VEC3: memcpy( here, &dlargs[j].value.v_vec3, sizeof(dlargs[j].value.v_vec3) ); break;
+            case kindof_VEC4: memcpy( here, &dlargs[j].value.v_vec4, sizeof(dlargs[j].value.v_vec4) ); break;
+
+            // shouldn't get here
+            case kindof_VOID:
+                EM_error3( "(internal error) Chuck_Func.pack_cache() void argument encountered..." ); return FALSE;
+        }
+    }
+
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setup_invoker() | 1.5.1.5
+// desc: setup invoker for this fun (for calling chuck function from c++)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Func::setup_invoker( t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // if already setup
+    if( invoker_mfun != NULL ) return TRUE;
+    // check if member function
+    if( !this->is_member ) return FALSE;
+    // check if needed
+    if( this->code->native_func ) return FALSE;
+    // instantiate
+    invoker_mfun = new Chuck_VM_MFunInvoker;
+    // set up invoker
+    invoker_mfun->setup( this, func_vt_offset, vm, shred );
+    // done
+    return TRUE;
 }
 
 
