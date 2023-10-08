@@ -13,5 +13,5 @@ Step step => Node node => blackhole;
 1::samp => now;
 
 // check if equal (or at least equal enough)
-if( Math.equal(.5, step.last() ) )
+if( Math.equal(.5, node.last() ) )
    <<< "success" >>>;
