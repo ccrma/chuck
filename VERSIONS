@@ -227,9 +227,10 @@ ChucK VERSIONS log
     t_CKBOOL array_int_get_key( ArrayInt array, const std::string & key, t_CKUINT & value );
     --------------------------------
     // C++ chugins runtime API for type access (new; access using API->type->...)
-    // function pointer get_type()
+    // lookup type by name
     Type lookup( Chuck_VM *, const char * name );
-    // function pointer for get_vtable_offset(); returns < 0 if not found
+    // get vtable offset for named function; if overloaded, returns first;
+    // (returns < 0 if not found)
     t_CKINT get_vtable_offset( Chuck_VM *, Type type, const char * value );
     // test if two chuck types are equal
     t_CKBOOL is_equal(Type lhs, Type rhs);

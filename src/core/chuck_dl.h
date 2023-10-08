@@ -902,10 +902,10 @@ public:
     struct TypeApi
     {
         TypeApi();
-        // function pointer get_type()
+        // look up type by name
         Type (CK_DLL_CALL * const lookup)( Chuck_VM *, const char * name );
-        // function pointer for get_vtable_offset(); returns < 0 if not found
-        t_CKINT (CK_DLL_CALL * const get_vtable_offset)( Chuck_VM *, Type type, const char * value );
+        // get vtable offset for named function (if overloaded, returns first one); returns < 0 if not found
+        t_CKINT (CK_DLL_CALL * const get_vtable_offset)( Chuck_VM *, Type type, const char * funcName );
         // test if two chuck types are equal
         t_CKBOOL (CK_DLL_CALL * const is_equal)(Type lhs, Type rhs);
         // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
