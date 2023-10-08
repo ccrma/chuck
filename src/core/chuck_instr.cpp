@@ -3991,7 +3991,7 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 // name: instantiate_object()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
+t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm, t_CKBOOL setShredOrigin )
 {
     // check if already initialized | 1.5.1.5
     if( object->vtable != NULL ) return TRUE;
@@ -4009,7 +4009,8 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
         // UGens: needs shred for auto-disconnect when shred is removed
         // user-defined classes (that refer to global-scope variables):
         // ...needs shred to access the global-scope variables across sporking
-        if( type->ugen_info || type->originHint == te_originUserDefined )
+        // setShredOrigin: if true, this is likely a registered callback_on_instantiate
+        if( type->ugen_info || type->originHint == te_originUserDefined || setShredOrigin )
         {
             // set origin shred | 1.5.1.5 (ge) was: ugen->shred = shred;
             object->setOriginShred( shred );
@@ -4130,6 +4131,8 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     Chuck_Object * object = NULL;
     Chuck_UGen * ugen = NULL;
     Chuck_UAna * uana = NULL;
+    vector<Chuck_Type::CallbackOnInstantiate> instance_cbs;
+    t_CKBOOL setShredOrigin = FALSE;
 
     // sanity
     assert( type != NULL );
@@ -4184,9 +4187,24 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     // check to see enough memory
     if( !object ) goto out_of_memory;
 
-    // initialize
-    if( !initialize_object( object, type, shred, vm ) ) goto error;
+    // check for callback
+    setShredOrigin = type->cbs_on_instantiate( instance_cbs );
 
+    // initialize
+    if( !initialize_object( object, type, shred, vm, setShredOrigin ) ) goto error;
+
+    // check for callback
+    if( instance_cbs.size() )
+    {
+        // loop over callbacks to call
+        for( t_CKUINT i = 0; i < instance_cbs.size(); i++ )
+        {
+            // call it
+            instance_cbs[i].callback( type, shred, vm );
+        }
+    }
+
+    // return the instantiated object
     return object;
 
 out_of_memory:

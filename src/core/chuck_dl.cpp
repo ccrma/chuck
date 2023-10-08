@@ -70,7 +70,7 @@ void CK_DLL_CALL ck_remove_all_shreds( Chuck_VM * vm );
 Chuck_DL_Api::Type CK_DLL_CALL ck_type_lookup( Chuck_VM * vm, const char * name );
 t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
-
+void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback, Chuck_Type * base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
 
 
 
@@ -1952,7 +1952,8 @@ Chuck_DL_Api::Api::TypeApi::TypeApi() :
 lookup(ck_type_lookup),
 get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
-isa(ck_type_isa)
+isa(ck_type_isa),
+callback_on_instantiate(ck_callback_on_instantiate)
 { }
 
 
@@ -2111,6 +2112,21 @@ t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs )
 {
     if( !lhs || !rhs ) return FALSE;
     return ::isa( lhs, rhs );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_callback_on_instantiate()
+// desc: register a callback to be invoked whenever a base-type (or its subclass)
+//       is instantiated, with option for type system to auto-set shred origin if available
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback,
+    Chuck_Type * base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin )
+{
+    // register the callback with chuck type
+    base_type->add_instantiate_cb( callback, shouldSetShredOrigin );
 }
 
 

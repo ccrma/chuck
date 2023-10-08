@@ -1009,6 +1009,32 @@ protected: // apropos-related helper function
     void apropos_vars( std::string & output, const std::string & prefix, t_CKBOOL inherited );
     // dump info about examples
     void apropos_examples( std::string & output, const std::string & prefix );
+
+public:
+    // struct to hold callback on instantiate
+    struct CallbackOnInstantiate
+    {
+        // whether to auto-set shred origin at instantiation;
+        // see t_CKBOOL initialize_object( ... )
+        t_CKBOOL shouldSetShredOrigin;
+        // the callback
+        f_callback_on_instantiate callback;
+        // constructor
+        CallbackOnInstantiate( f_callback_on_instantiate cb = NULL, t_CKBOOL setShredOrigin = FALSE )
+        : callback(cb), shouldSetShredOrigin(setShredOrigin) { }
+    };
+    // register type instantiation callback
+    void add_instantiate_cb( f_callback_on_instantiate cb, t_CKBOOL setShredOrigin );
+    // unregister type instantiation callback
+    void remove_instantiate_cb( f_callback_on_instantiate cb );
+    // get vector of callbacks (including this and parents), return whether any requires setShredOrigin
+    t_CKBOOL cbs_on_instantiate( std::vector<CallbackOnInstantiate> & results );
+
+protected:
+    // vector of callbacks on instantiation of this type (or its subclass)
+    std::vector<CallbackOnInstantiate> m_cbs_on_instantiate;
+    // internal get vector of callbacks (including this and parents), return whether any requires setShredOrigin
+    t_CKBOOL do_cbs_on_instantiate( std::vector<CallbackOnInstantiate> & results );
 };
 
 

@@ -10393,3 +10393,90 @@ bool Chuck_Op_Overload::operator <( const Chuck_Op_Overload & other ) const
     // (aL, aR) < (bL, bR) iff (aL < bL) OR ( aL == bL && aR < bR )
     return (aL < bL) || (aL == bL && aR < bR);
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_instantiate_cb()
+// desc: register type instantiation callback
+//-----------------------------------------------------------------------------
+void Chuck_Type::add_instantiate_cb( f_callback_on_instantiate cb, t_CKBOOL setShredOrigin )
+{
+    // avoid duplicate
+    for( t_CKUINT i = 0; i < m_cbs_on_instantiate.size(); i++ )
+    {
+        // compare callback pointer
+        if( cb == m_cbs_on_instantiate[i].callback ) return;
+    }
+    // append
+    m_cbs_on_instantiate.push_back( CallbackOnInstantiate(cb, setShredOrigin) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: remove_instantiate_cb()
+// desc: unregister type instantiation callback
+//-----------------------------------------------------------------------------
+void Chuck_Type::remove_instantiate_cb( f_callback_on_instantiate cb )
+{
+    // iterator
+    vector<CallbackOnInstantiate>::iterator it = m_cbs_on_instantiate.begin();
+    // iterate
+    while( it != m_cbs_on_instantiate.end() )
+    {
+        // check the callback
+        if( (*it).callback == cb )
+        {
+            // erase while iterating | c++11 or higher
+            it = m_cbs_on_instantiate.erase( it );
+            // m_cbs_on_instantiate.erase( it++ ); // before c++11
+        }
+        else
+        {
+            it++;
+        }
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cbs_on_instantiate()
+// desc: get vector of callbacks (including this and parents), return whether any requires setShredOrigin
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Type::cbs_on_instantiate( std::vector<CallbackOnInstantiate> & results )
+{
+    // clear
+    results.clear();
+    // process this
+    return this->do_cbs_on_instantiate( results );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: do_cbs_on_instantiate()
+// desc: internal get vector of callbacks (including this and parents), return whether any requires setShredOrigin
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Type::do_cbs_on_instantiate( std::vector<CallbackOnInstantiate> & results )
+{
+    // number of callbacks in total
+    t_CKBOOL retval = 0;
+    // process parents
+    if( this->parent ) retval = this->parent->do_cbs_on_instantiate( results );
+    // process this
+    for( t_CKUINT i = 0; i < m_cbs_on_instantiate.size(); i++ )
+    {
+        // copy
+        results.push_back( m_cbs_on_instantiate[i] );
+        // if and set shred origin
+        if( m_cbs_on_instantiate[i].shouldSetShredOrigin ) retval = TRUE;
+    }
+    // done
+    return retval;
+}
