@@ -21,6 +21,11 @@ fun Foo @operator +( Foo lhs, Foo rhs )
 fun Foo @operator *( Foo lhs, Foo rhs )
 { Foo retval; lhs.num * rhs.num => retval.num; return retval; }
 
+// NOTE % can be overloaded, but due to polar e.g., `%(1,pi)`
+// need to use the formal parenthesis notation to disambiguate
+fun int @operator(%)( Foo foo, int mod )
+{ mod %=> foo.num; return foo.num; }
+
 // define unary operator overload for '!'
 fun int @operator !( Foo foo )
 { return !foo.num; }
@@ -38,5 +43,5 @@ Foo a, b; 1 => a.num; 2 => b.num;
 a + b * b + a @=> Foo c;
 // post ++ on c
 c++;
-// should print 7
-<<< c.num >>>;
+// should print 3
+<<< c % 4 >>>;
