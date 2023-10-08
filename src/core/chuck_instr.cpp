@@ -4200,7 +4200,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         for( t_CKUINT i = 0; i < instance_cbs.size(); i++ )
         {
             // call it
-            instance_cbs[i].callback( type, shred, vm );
+            instance_cbs[i].callback( object, type, shred, vm );
         }
     }
 

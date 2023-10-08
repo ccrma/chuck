@@ -288,6 +288,9 @@ struct Chuck_DL_Arg
 // macro for defining Chuck DLL export shreds watcher functions
 // example: CK_DLL_SHREDS_WATCHER(foo)
 #define CK_DLL_SHREDS_WATCHER(name) CK_DLL_EXPORT(void) name( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE )
+// macro for defining Chuck DLL export type on instantiate functions
+// example: CK_DLL_TYPE_ON_INSTANTIATE(foo)
+#define CK_DLL_TYPE_ON_INSTANTIATE(name) CK_DLL_EXPORT(void) name( Chuck_Object * OBJECT, Chuck_Type * TYPE, Chuck_VM_Shred * SHRED, Chuck_VM * VM )
 
 // macros for DLL exports
 // example: DLL_QUERY  query( Chuck_DL_Query * QUERY )
@@ -335,7 +338,7 @@ typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
 // shreds watcher callback
 typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 // type instantiation callback
-typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Type * typeInstantiated, Chuck_VM_Shred * originShred, Chuck_VM * VM );
+typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Object * OBJECT, Chuck_Type * TYPE, Chuck_VM_Shred * originShred, Chuck_VM * VM );
 }
 
 
