@@ -2266,7 +2266,7 @@ t_CKBOOL Chuck_VM_Shred::checkImmediatModeException( t_CKUINT linepos )
                   "\nPotential fix: ensure the function in question has no time/event operations as\n"
                   "described above, either directly in the function or its function calls.\n"
                   "(NB `spork ~` and `Machine.add()` can be used in this mode, as these are\n"
-                  "non-context-switching.)");
+                  "non-context-switching.)\n------");
         // set violation
         is_immediate_mode_violation = TRUE;
         // report back

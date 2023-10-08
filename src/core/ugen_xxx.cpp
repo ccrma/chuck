@@ -1527,11 +1527,15 @@ CK_DLL_CTOR( subgraph_ctor )
 //-----------------------------------------------------------------------------
 struct FooGen_Data
 {
-    Chuck_VM_Shred * shred;
     Chuck_VM * vm;
+    // invoker of member functions
+    Chuck_VM_MFunInvoker * invoker;
 
     t_CKFLOAT input;
     t_CKFLOAT output;
+
+    // constructor
+    FooGen_Data() : vm(NULL), invoker(NULL), input(0), output(0) { }
 };
 
 
@@ -1541,20 +1545,27 @@ struct FooGen_Data
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( foogen_ctor )
 {
+    // create new data
     FooGen_Data * data = new FooGen_Data;
-
-    data->shred = NULL;
+    // set data
     data->vm = SHRED->vm_ref;
 
     // 1.3.1.0: changed from unsigned int to t_CKUINT
     OBJ_MEMBER_UINT(SELF, foogen_offset_data) = (t_CKUINT)data;
 
+    // this
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    int tick_fun_index = -1;
+    // a chuck function ref
+    Chuck_Func * func = NULL;
+    // function vtable offset
+    t_CKINT tick_fun_index = -1;
 
-    for(int i = 0; i < ugen->vtable->funcs.size(); i++)
+    // iterate over functions in the virtual table
+    for( t_CKINT i = 0; i < ugen->vtable->funcs.size(); i++ )
     {
-        Chuck_Func * func = ugen->vtable->funcs[i];
+        // the function
+        func = ugen->vtable->funcs[i];
+        // check for specific signature
         if(func->name.find("tick") == 0 &&
            // ensure has one argument
            func->def()->arg_list != NULL &&
@@ -1570,51 +1581,19 @@ CK_DLL_CTOR( foogen_ctor )
         }
     }
 
-    if( tick_fun_index != -1 )
-    {
-        vector<Chuck_Instr *> instrs;
-        // push arg (float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Deref2( (t_CKUINT)&data->input ) );
-        // push this (as func arg)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)SELF) ); // 1.3.1.0: changed to t_CKUINT
-        // reg dup last (push this again) (for member func resolution)
-        instrs.push_back(new Chuck_Instr_Reg_Dup_Last);
-        // dot member func
-        instrs.push_back(new Chuck_Instr_Dot_Member_Func(tick_fun_index) );
-        // func to code
-        instrs.push_back(new Chuck_Instr_Func_To_Code);
-        // push stack depth for args (this, float input)
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm(sz_VOIDPTR+sz_FLOAT)); // 1.5.1.5: changed to sz_+sz_; was: 12
-        // func call
-        instrs.push_back(new Chuck_Instr_Func_Call());
-        // push immediate
-        instrs.push_back(new Chuck_Instr_Reg_Push_Imm((t_CKUINT)&data->output) ); // 1.3.1.0: changed to t_CKUINT
-        // assign primitive
-        instrs.push_back(new Chuck_Instr_Assign_Primitive2);
-        // pop
-        instrs.push_back(new Chuck_Instr_Reg_Pop_Float);
-        // EOC
-        instrs.push_back(new Chuck_Instr_EOC);
-
-        Chuck_VM_Code * code = new Chuck_VM_Code;
-
-        code->instr = new Chuck_Instr*[instrs.size()];
-        code->num_instr = instrs.size();
-        for(int i = 0; i < instrs.size(); i++) code->instr[i] = instrs[i];
-        code->stack_depth = 0;
-        code->need_this = 0;
-
-        data->shred = new Chuck_VM_Shred;
-        data->shred->vm_ref = SHRED->vm_ref;
-        // initialize with stack size hints | 1.5.1.5
-        data->shred->initialize( code, SHRED->childGetMemSize(), SHRED->childGetRegSize() );
-    }
-    else
+    // if we have a valid
+    if( tick_fun_index < 0 )
     {
         // SPENCERTODO: warn on Chugen definition instead of instantiation?
-        EM_log(CK_LOG_WARNING, "ChuGen '%s' does not define a suitable tick function",
-               ugen->type_ref->base_name.c_str());
+        EM_error3( "ChuGen '%s' does not define a `fun float tick( float int )` function...",
+                   ugen->type_ref->base_name.c_str());
+        return;
     }
+
+    // create invoker | 1.5.1.5
+    data->invoker = new Chuck_VM_MFunInvoker();
+    // set up the invoker | 1.5.1.5 (ge) encapsulated into invoker
+    data->invoker->setup( func, tick_fun_index, VM, SHRED );
 }
 
 
@@ -1624,53 +1603,45 @@ CK_DLL_CTOR( foogen_ctor )
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( foogen_dtor )
 {
-    FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
-    OBJ_MEMBER_UINT(SELF, foogen_offset_data) = 0;
-    CK_SAFE_DELETE(data);
+    FooGen_Data * data = (FooGen_Data *)OBJ_MEMBER_UINT(SELF, foogen_offset_data);
+    OBJ_MEMBER_UINT( SELF, foogen_offset_data ) = 0;
+    CK_SAFE_DELETE( data->invoker );
+    CK_SAFE_DELETE( data );
 }
 
 //-----------------------------------------------------------------------------
 // name: foogen_tick()
-// desc: ...
+// desc: Chugen tick function, which in turn calls user provided tick()
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( foogen_tick )
 {
+    // get internal data
     FooGen_Data * data = (FooGen_Data *) OBJ_MEMBER_UINT(SELF, foogen_offset_data);
+
+    // set up argument into tick
+    vector<Chuck_DL_Arg> args;
+    args.push_back( Chuck_DL_Arg() );
+    args[0].kind = kindof_FLOAT;
+    args[0].value.v_float = in;
+    // the return value
+    Chuck_DL_Return ret;
 
     // default: passthru
     data->output = in;
-
-    if(data->shred)
+    // check we have an invoker
+    if( data->invoker )
     {
-        // reset shred
-
-        // program counter
-        data->shred->pc = 0;
-        data->shred->next_pc = 1;
-        // shred in dump (all done)
-        data->shred->is_dumped = FALSE;
-        // shred done
-        data->shred->is_done = FALSE;
-        // shred running
-        data->shred->is_running = FALSE;
-        // shred abort
-        data->shred->is_abort = FALSE;
-        // set the instr
-        data->shred->instr = data->shred->code->instr;
-        // zero out the id
-        data->shred->xid = 0;
-        // set vmRef
-        data->shred->vm_ref = data->vm;
-
         // set input
         data->input = in;
-
-        // run shred
-        data->shred->run( data->vm );
+        // invoke the function | 1.5.1.5 (ge) encapsulated into invoker
+        ret = data->invoker->invoke( SELF, args );
+        // set output
+        data->output = ret.v_float;
     }
-
+    // set out for tick function
     *out = data->output;
 
+    // done
     return TRUE;
 }
 
