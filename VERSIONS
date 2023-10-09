@@ -4,14 +4,14 @@ ChucK VERSIONS log
 
 1.5.1.5 (October 2023) "operator overloading + chugins API 9.0"
 =======
-- (added) operator overloading in language;
-    most operator can now be overloaded, within their respective existing
+- (added) operator overloading is here!
+    Most operator can now be overloaded, within their respective existing
     forms in the language (e.g., binary operators such as '+' and '=>'
-    can be overloaded as binary operators, but not as unary operators);
-    also please note, similar to class definitions, operator overloads
-    are local in scope unless declared with 'public', the latter operator 
-    overloading will persists until 1) the VM stops or 2) the VM is 
-    cleared/reset
+    can be overloaded as binary operators, but not as unary operators).
+    Similar to class definitions, operator overloads are local in scope 
+    to the file context, unless declared with 'public'. operator 
+    overloading marked as 'public' will persists until 1) the VM stops or 
+    2) the VM is cleared/reset.
     //-----------------------------------------------------------
     // the general format for overload an operator is as follows:
     //-----------------------------------------------------------

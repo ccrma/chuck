@@ -89,8 +89,8 @@ doc.addGroup(
 doc.addGroup(
     [ "ABSaturator", "AmbPan3", "Bitcrusher", "Elliptic", "ExpDelay", "ExpEnv", "FIR", 
       "FoldbackSaturator", "GVerb", "KasFilter", "MagicSine", "Mesh2D", "Multicomb", 
-      "Pan4", "Pan8", "Pan16", "PitchTrack", "PowerADSR", "Sigmund", "Spectacle", 
-      "WinFuncEnv", "WPDiodeLadder", "WPKorg35" ],
+      "Pan4", "Pan8", "Pan16", "PitchTrack", "PowerADSR", "RegEx", "Sigmund",
+      "Spectacle", "WinFuncEnv", "WPDiodeLadder", "WPKorg35" ],
     // group name
     "Chugins Library",
     // file name
