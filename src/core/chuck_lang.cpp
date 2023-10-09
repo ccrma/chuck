@@ -1584,7 +1584,7 @@ CK_DLL_MFUN( ugen_op )
 
     // for multiple channels
     Chuck_DL_Return ret;
-    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
+    // added 1.3.0.0 -- Chuck_DL_Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_op( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply op to subgraph outlet
@@ -1628,7 +1628,7 @@ CK_DLL_MFUN( ugen_next )
 
     // for multiple channels
     Chuck_DL_Return ret;
-    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
+    // added 1.3.0.0 -- Chuck_DL_Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_next( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply op to subgraph outlet
@@ -1660,7 +1660,7 @@ CK_DLL_MFUN( ugen_gain )
 
     // for multiple channels
     Chuck_DL_Return ret;
-    // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
+    // added 1.3.0.0 -- Chuck_DL_Api::instance()
     for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         ugen_gain( ugen->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
     // added 1.3.0.2 -- apply gain to subgraph outlet
@@ -1773,7 +1773,7 @@ CK_DLL_CTOR( uana_ctor )
     Chuck_UAnaBlobProxy * proxy = new Chuck_UAnaBlobProxy( blob );
     // remember it
     OBJ_MEMBER_INT(SELF, uana_offset_blob) = (t_CKINT)proxy;
-    // HACK: DANGER: manually call blob's ctor (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
+    // HACK: DANGER: manually call blob's ctor (added 1.3.0.0 -- Chuck_DL_Api::instance())
     uanablob_ctor( blob, NULL, VM, SHRED, API );
 }
 
@@ -1814,7 +1814,7 @@ CK_DLL_MFUN( uana_upchuck )
     {
         // for multiple channels
         Chuck_DL_Return ret;
-        // added 1.3.0.0 -- Chuck_DL_Api::Api::instance()
+        // added 1.3.0.0 -- Chuck_DL_Api::instance()
         for( t_CKUINT i = 0; i < uana->m_multi_chan_size; i++ )
             uana_upchuck( uana->m_multi_chan[i], ARGS, &ret, VM, SHRED, API );
 

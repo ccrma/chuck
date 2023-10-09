@@ -321,10 +321,10 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->ckt_dac)
     env()->ckt_dac->ugen_info->num_outs = env()->ckt_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_dac, this );
-    // Chuck_DL_Api::Api::instance() added 1.3.0.0
-    object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
-    stereo_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: is the NULL shred a problem?
-    multi_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::Api::instance() );  // TODO: remove and let type system do this
+    // Chuck_DL_Api::instance() added 1.3.0.0
+    object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
+    stereo_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: is the NULL shred a problem?
+    multi_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() );  // TODO: remove and let type system do this
     m_dac->add_ref();
     // lock it
     m_dac->lock();
@@ -334,10 +334,10 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // (REFACTOR-2017: g_t_adc changed to env()->ckt_adc)
     env()->ckt_adc->ugen_info->num_ins = env()->ckt_adc->ugen_info->num_outs = m_num_adc_channels;
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_adc, this );
-    // Chuck_DL_Api::Api::instance() added 1.3.0.0
-    object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: this can't be the place to do this
-    stereo_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::Api::instance() );
-    multi_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::Api::instance() ); // TODO: remove and let type system do this
+    // Chuck_DL_Api::instance() added 1.3.0.0
+    object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
+    stereo_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() );
+    multi_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: remove and let type system do this
     m_adc->add_ref();
     // lock it
     m_adc->lock();

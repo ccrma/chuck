@@ -72,7 +72,9 @@ struct Chuck_DL_Ctrl;
 union  Chuck_DL_Return;
 struct Chuck_DL_MainThreadHook;
 struct Chuck_DLL;
-namespace Chuck_DL_Api { struct Api; }
+struct Chuck_DL_Api;
+// un-namespaced Chuck_DL_Api | 1.5.1.5 (ge)
+// namespace Chuck_DL_Api { struct Api; }
 
 // object forward references
 struct Chuck_UGen;
@@ -170,7 +172,7 @@ struct Chuck_UAnaBlobProxy;
   #define CK_DLL_CALL
 #endif
 
-typedef const Chuck_DL_Api::Api *CK_DL_API;
+typedef const Chuck_DL_Api * CK_DL_API;
 
 
 
@@ -818,18 +820,16 @@ Chuck_DL_Return CK_DLL_CALL ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t
 //-----------------------------------------------------------------------------
 // dynamic linking callable API to ChucK's innards
 //-----------------------------------------------------------------------------
-namespace Chuck_DL_Api
+struct Chuck_DL_Api
 {
-typedef Chuck_Object * Object;
-typedef Chuck_Type * Type;
-typedef Chuck_String * String;
-typedef Chuck_ArrayInt * ArrayInt; // 1.5.0.1 (ge) added
+    typedef Chuck_Object * Object;
+    typedef Chuck_Type * Type;
+    typedef Chuck_String * String;
+    typedef Chuck_ArrayInt * ArrayInt; // 1.5.0.1 (ge) added
 
-struct Api
-{
 public:
-    static Api g_api;
-    static inline const Api * instance() { return &g_api; }
+    static Chuck_DL_Api g_api;
+    static inline const Chuck_DL_Api * instance() { return &g_api; }
 
     // api to access host-side ChucK virtual machine
     struct VMApi
@@ -922,7 +922,7 @@ public:
     } * const type;
 
     // constructor
-    Api() :
+    Chuck_DL_Api() :
         vm(new VMApi),
         object(new ObjectApi),
         type(new TypeApi)
@@ -930,15 +930,15 @@ public:
 
 private:
     // make this object un-copy-able
-    Api( Api & a ) :
+    Chuck_DL_Api( Chuck_DL_Api & a ) :
         vm(a.vm),
         object(a.object),
         type(a.type)
     { assert(0); };
     // make this object un-copy-able, part 2
-    Api & operator=( Api & a ) { assert(0); return a; }
+    Chuck_DL_Api & operator=( Chuck_DL_Api & a ) { assert(0); return a; }
 };
-}
+
 
 
 
@@ -961,7 +961,7 @@ private:
           #define RTLD_LAZY         0x1
           #define RTLD_NOW          0x2
           #define RTLD_LOCAL        0x4
-      #define RTLD_GLOBAL       0x8
+          #define RTLD_GLOBAL       0x8
           #define RTLD_NOLOAD       0x10
           #define RTLD_SHARED       0x20    /* not used, the default */
           #define RTLD_UNSHARED     0x40

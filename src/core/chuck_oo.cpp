@@ -282,7 +282,7 @@ Chuck_Object::~Chuck_Object()
             // sanity check
             assert( type->info->dtor && type->info->dtor->native_func );
             // REFACTOR-2017: do we know which VM to pass in? (currently NULL)
-            ((f_dtor)(type->info->dtor->native_func))( this, NULL, NULL, Chuck_DL_Api::Api::instance() );
+            ((f_dtor)(type->info->dtor->native_func))( this, NULL, NULL, Chuck_DL_Api::instance() );
         }
 
         // go up the inheritance

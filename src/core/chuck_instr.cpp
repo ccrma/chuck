@@ -4143,7 +4143,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
     {
         // check type TODO: make this faster
         if( type->allocator )
-            object = type->allocator( vm, shred, Chuck_DL_Api::Api::instance() );
+            object = type->allocator( vm, shred, Chuck_DL_Api::instance() );
         else if( isa( type, vm->env()->ckt_fileio ) ) object = new Chuck_IO_File( vm );
         else if( isa( type, vm->env()->ckt_event ) ) object = new Chuck_Event;
         else if( isa( type, vm->env()->ckt_string ) ) object = new Chuck_String;
@@ -4967,15 +4967,15 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     {
         // cast to right type
         f_ctor f = (f_ctor)func->native_func;
-        // call (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, vm, shred, Chuck_DL_Api::Api::instance() );
+        // call (added 1.3.0.0 -- Chuck_DL_Api::instance())
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, vm, shred, Chuck_DL_Api::instance() );
     }
     else
     {
         // cast to right type
         f_mfun f = (f_mfun)func->native_func;
-        // call the function (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+        // call the function (added 1.3.0.0 -- Chuck_DL_Api::instance())
+        f( (Chuck_Object *)(*mem_sp), mem_sp + 1, &retval, vm, shred, Chuck_DL_Api::instance() );
     }
 
     // push the return
@@ -5110,9 +5110,9 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     }
 
     // call the function
-    // (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
+    // (added 1.3.0.0 -- Chuck_DL_Api::instance())
     // (added 1.4.1.0 -- base_type)
-    f( (Chuck_Type *)(*mem_sp), mem_sp+1, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    f( (Chuck_Type *)(*mem_sp), mem_sp+1, &retval, vm, shred, Chuck_DL_Api::instance() );
 
     // push the return
     // 1.3.1.0: check type to use kind instead of size
@@ -5238,7 +5238,7 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     }
 
     // call the function
-    f( mem_sp, &retval, vm, shred, Chuck_DL_Api::Api::instance() );
+    f( mem_sp, &retval, vm, shred, Chuck_DL_Api::instance() );
 
     // push the return
     // 1.3.1.0: check type to use kind instead of size
@@ -7287,8 +7287,8 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     Chuck_Object * obj = (Chuck_Object *)(*sp);
     // return
     Chuck_DL_Return RETURN;
-    // get toString from it (added 1.3.0.0 -- Chuck_DL_Api::Api::instance())
-    object_toString( obj, NULL, &RETURN, vm, shred, Chuck_DL_Api::Api::instance() );
+    // get toString from it (added 1.3.0.0 -- Chuck_DL_Api::instance())
+    object_toString( obj, NULL, &RETURN, vm, shred, Chuck_DL_Api::instance() );
     // get pointer
     Chuck_String * str = RETURN.v_string;
     // set it

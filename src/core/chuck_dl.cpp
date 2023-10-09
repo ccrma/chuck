@@ -1281,7 +1281,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     }
 
     // get DL API reference | 1.5.1.5
-    m_api = Chuck_DL_Api::Api::instance();
+    m_api = Chuck_DL_Api::instance();
 
     linepos = 0;
     errorEncountered = FALSE;
@@ -1396,10 +1396,7 @@ Chuck_DL_MainThreadHook::Chuck_DL_MainThreadHook( f_mainthreadhook hook, f_maint
 //       module load-time; this ensures that the actual instantiation is in
 //       alignment with whatever host is loading the module.
 //-----------------------------------------------------------------------------
-namespace Chuck_DL_Api
-{
-    Api Api::g_api;
-}
+Chuck_DL_Api Chuck_DL_Api::g_api;
 
 
 //-----------------------------------------------------------------------------
@@ -1935,7 +1932,7 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, cons
 //-----------------------------------------------------------------------------
 // constructor for the VMApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
-Chuck_DL_Api::Api::VMApi::VMApi() :
+Chuck_DL_Api::VMApi::VMApi() :
 srate(ck_srate),
 now(ck_now),
 create_event_buffer(ck_create_event_buffer),
@@ -1952,7 +1949,7 @@ remove_all_shreds(ck_remove_all_shreds)
 //-----------------------------------------------------------------------------
 // constructor for the ObjectApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
-Chuck_DL_Api::Api::ObjectApi::ObjectApi() :
+Chuck_DL_Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
 create(ck_create_with_shred),
 create_without_shred(ck_create_without_shred),
@@ -1981,7 +1978,7 @@ array_int_get_key(ck_array_int_get_key)
 //-----------------------------------------------------------------------------
 // constructor for the TypeApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
-Chuck_DL_Api::Api::TypeApi::TypeApi() :
+Chuck_DL_Api::TypeApi::TypeApi() :
 lookup(ck_type_lookup),
 get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
@@ -2021,7 +2018,7 @@ Chuck_DL_Return CK_DLL_CALL ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t
         // pack the args_list into memory
         func->pack_cache( args_list, numArgs );
         // call the function | added 1.3.0.0: the DL API instance
-        f( obj, func->args_cache, &RETURN, vm, caller_shred, Chuck_DL_Api::Api::instance() );
+        f( obj, func->args_cache, &RETURN, vm, caller_shred, Chuck_DL_Api::instance() );
     }
     else
     {
