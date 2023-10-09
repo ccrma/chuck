@@ -681,8 +681,8 @@ protected:
     // remove all shreds from VM
     void removeAll();
     // free shred
-    t_CKBOOL free( Chuck_VM_Shred * shred, t_CKBOOL cascade,
-                   t_CKBOOL dec = TRUE );
+    t_CKBOOL free_shred( Chuck_VM_Shred * shred, t_CKBOOL cascade,
+                         t_CKBOOL dec = TRUE );
     void dump_shred( Chuck_VM_Shred * shred );
     void release_dump();
 

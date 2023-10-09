@@ -530,7 +530,7 @@ t_CKBOOL Chuck_VM::compute()
                 // track shred deactivation
                 CK_TRACK( Chuck_Stats::instance()->deactivate_shred( shred ) );
 
-                this->free( shred, TRUE );
+                this->free_shred( shred, TRUE );
                 shred = NULL;
                 if( !m_num_shreds && m_halt ) return FALSE;
             }
@@ -809,7 +809,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
 
             // print
             const char * s = (msg->shred ? msg->shred->name.c_str() : msg->code->name.c_str());
-            EM_print2orange( "(VM) (optional) replacing shred: %%%lu not found...", msg->param );
+            EM_print2orange( "(VM) (optional) replacing shred: %lu not found...", msg->param );
             EM_print2green( "(VM) sporking incoming shred: %lu (%s)...", shred->xid, mini(s) );
 
             // return value
@@ -823,7 +823,9 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
         {
             EM_print2blue( "(VM) replacing shred %lu (%s) with %lu (%s)...",
                             out->xid, mini(out->name.c_str()), shred->xid, mini(shred->name.c_str()) );
-            this->free( out, TRUE, FALSE );
+            // free shred; dec==TRUE since spork above always increments shred count
+            this->free_shred( out, TRUE, TRUE );
+            // set return value to shred ID
             retval = shred->xid;
             // tracking new shred
             CK_TRACK( Chuck_Stats::instance()->add_shred( shred ) );
@@ -851,13 +853,13 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
 
             t_CKUINT xid = m_shred_id;
             Chuck_VM_Shred * shred = NULL;
-            while( xid >= 0 && m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) == 0 )
+            while( xid > 0 && m_shreduler->remove( shred = m_shreduler->lookup( xid ) ) == 0 )
                 xid--;
-            if( xid >= 0 )
+            if( xid > 0 )
             {
                 EM_print2orange( "(VM) removing recent shred: %lu (%s)...",
                                  xid, mini(shred->name.c_str()) );
-                this->free( shred, TRUE );
+                this->free_shred( shred, TRUE );
                 retval = xid;
             }
             else
@@ -883,7 +885,7 @@ t_CKUINT Chuck_VM::process_msg( Chuck_Msg * & msg )
                 goto done;
             }
             EM_print2orange( "(VM) removing shred: %lu (%s)...", msg->param, mini(shred->name.c_str()) );
-            this->free( shred, TRUE );
+            this->free_shred( shred, TRUE );
             retval = msg->param;
         }
     }
@@ -1052,7 +1054,7 @@ t_CKUINT Chuck_VM::next_id( const Chuck_VM_Shred * shred )
             m_shred_id = shred->xid;
         }
         // return the shred's ID back
-        return m_shred_id;
+        return shred->xid;
     }
 
     // test for bound
@@ -1260,7 +1262,7 @@ void Chuck_VM::removeAll()
         if( m_shreduler->remove( *s ) )
         {
             // free the shred
-            this->free( *s, TRUE );
+            this->free_shred( *s, TRUE );
         }
     }
 
@@ -1276,10 +1278,10 @@ void Chuck_VM::removeAll()
 
 
 //-----------------------------------------------------------------------------
-// name: free()
+// name: free_shred()
 // desc: deallocate a shred
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec )
+t_CKBOOL Chuck_VM::free_shred( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec )
 {
     assert( cascade );
 
@@ -1303,7 +1305,7 @@ t_CKBOOL Chuck_VM::free( Chuck_VM_Shred * shred, t_CKBOOL cascade, t_CKBOOL dec 
         for( iter = shred->children.begin(); iter != shred->children.end(); iter++ )
             list[i++] = (*iter).second;
         for( i = 0; i < size; i++ )
-            this->free( list[i], cascade );
+            this->free_shred( list[i], cascade );
     }
 
     // make sure it's done
