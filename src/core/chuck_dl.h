@@ -43,7 +43,8 @@
 #include "chuck_oo.h"
 #include <string>
 #include <vector>
-#include <map>
+
+
 
 
 // major version must be the same between chuck:chugin
