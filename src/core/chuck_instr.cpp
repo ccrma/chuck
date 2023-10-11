@@ -6957,36 +6957,58 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: print the first field of a complex/polar/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // reg contains pointer to complex elsewhere
     if( m_is_mem )
     {
-        // stack
+        // pointer to var (regardless of value type)
         t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
         // pop
         pop_( sp, 1 );
-        // push the addr on
+        // push var addr or value?
         if( m_emit_addr ) {
-            // t_CKFLOAT a = (*(t_CKCOMPLEX **)sp)->re;
+            // push addr (NOTE this works for complex/polar/vec3/vec4)
             push_( sp, (t_CKUINT)(&((*(t_CKCOMPLEX **)sp)->re)) );
         } else {
+            // push value
             push_float( sp, (*(t_CKCOMPLEX **)sp)->re );
         }
     }
     else
     {
-        // stack
-        t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
-        // pop
-        pop_( sp, 1 );
-        // push the addr, um we can't
-        if( m_emit_addr ) {
-            assert( FALSE );
-        } else {
-            push_float( sp, sp->re );
+        // make sure
+        assert( m_emit_addr == FALSE );
+
+        // which kind of datatype?
+        switch( m_kind )
+        {
+            // get corresponding value, pop that value, push field
+            case kindof_COMPLEX:
+            {
+                t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->re );
+            }
+            break;
+
+            case kindof_VEC3:
+            {
+                t_CKVEC3 *& sp = (t_CKVEC3 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->x );
+            }
+            break;
+
+            case kindof_VEC4:
+            {
+                t_CKVEC4 *& sp = (t_CKVEC4 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->x );
+            }
+            break;
+
+            // shouldn't get here
+            default: assert( FALSE ); break;
         }
     }
 }
@@ -6996,35 +7018,58 @@ void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: print the second field of a complex/polar/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // reg contains pointer to complex elsewhere
     if( m_is_mem )
     {
-        // stack
+        // pointer to var (regardless of value type)
         t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
         // pop
         pop_( sp, 1 );
-        // push the addr on
+        // emit as var address or as value?
         if( m_emit_addr ) {
+            // push addr (works for complex/polar/vec3/vec4)
             push_( sp, (t_CKUINT)(&((*(t_CKCOMPLEX **)sp)->im)) );
         } else {
+            // push value
             push_float( sp, (*(t_CKCOMPLEX **)sp)->im );
         }
     }
     else
     {
-        // stack
-        t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
-        // pop
-        pop_( sp, 1 );
-        // push the addr, um we can't
-        if( m_emit_addr ) {
-            assert( FALSE );
-        } else {
-            push_float( sp, sp->im );
+        // make sure
+        assert( m_emit_addr == FALSE );
+
+        // which kind of datatype?
+        switch( m_kind )
+        {
+            // get corresponding value, pop that value, push field
+            case kindof_COMPLEX:
+            {
+                t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->im );
+            }
+            break;
+
+            case kindof_VEC3:
+            {
+                t_CKVEC3 *& sp = (t_CKVEC3 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->y );
+            }
+            break;
+
+            case kindof_VEC4:
+            {
+                t_CKVEC4 *& sp = (t_CKVEC4 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->y );
+            }
+            break;
+
+            // shouldn't get here
+            default: assert( FALSE ); break;
         }
     }
 }
@@ -7034,35 +7079,51 @@ void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: print the third field of a complex/polar/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Third::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // reg contains pointer to complex elsewhere
     if( m_is_mem )
     {
-        // stack
+        // pointer
         t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
         // pop
         pop_( sp, 1 );
-        // push the addr on
+        // var addr or value?
         if( m_emit_addr ) {
+            // push addr
             push_( sp, (t_CKUINT)(&((*(t_CKVEC3 **)sp)->z)) );
         } else {
+            // push value
             push_float( sp, (*(t_CKVEC3 **)sp)->z );
         }
     }
     else
     {
-        // stack
-        t_CKVEC3 *& sp = (t_CKVEC3 *&)shred->reg->sp;
-        // pop
-        pop_( sp, 1 );
-        // push the addr, um we can't
-        if( m_emit_addr ) {
-            assert( FALSE );
-        } else {
-            push_float( sp, sp->z );
+        // make sure
+        assert( m_emit_addr == FALSE );
+
+        // which kind of datatype?
+        switch( m_kind )
+        {
+            // get corresponding value, pop that value, push field
+            case kindof_VEC3:
+            {
+                t_CKVEC3 *& sp = (t_CKVEC3 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->z );
+            }
+            break;
+
+            case kindof_VEC4:
+            {
+                t_CKVEC4 *& sp = (t_CKVEC4 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->z );
+            }
+            break;
+
+            // shouldn't get here
+            default: assert( FALSE ); break;
         }
     }
 }
@@ -7072,36 +7133,36 @@ void Chuck_Instr_Dot_Cmp_Third::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: print the fourth field of a complex/polar/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Fourth::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     // reg contains pointer to complex elsewhere
     if( m_is_mem )
     {
-        // stack
+        // pointer
         t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
         // pop
         pop_( sp, 1 );
-        // push the addr on
+        // push var addr or value?
         if( m_emit_addr ) {
+            // push addr
             push_( sp, (t_CKUINT)(&((*(t_CKVEC4 **)sp)->w)) );
         } else {
+            // push value
             push_float( sp, (*(t_CKVEC4 **)sp)->w );
         }
     }
     else
     {
-        // stack
+        // make sure...
+        assert( m_emit_addr == FALSE );
+        assert( m_kind == kindof_VEC4 );
+
+        // get vec4 value, pop that value, push field
         t_CKVEC4 *& sp = (t_CKVEC4 *&)shred->reg->sp;
-        // pop
         pop_( sp, 1 );
-        // push the addr, um we can't
-        if( m_emit_addr ) {
-            assert( FALSE );
-        } else {
-            push_float( sp, sp->w );
-        }
+        push_float( sp, sp->w );
     }
 }
 
@@ -8480,7 +8541,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                     if( *(sp) == 0 )
                         CK_FPRINTF_STDERR( "null " );
                     else
-                        CK_FPRINTF_STDERR( "0x%lx (refcount=%d)", *(sp), obj->m_ref_count );
+                        CK_FPRINTF_STDERR( "0x%lx (refcount=%d) ", *(sp), obj->m_ref_count );
                 }
                 else
                 {

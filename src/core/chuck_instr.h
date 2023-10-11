@@ -3547,8 +3547,8 @@ protected:
 struct Chuck_Instr_Dot_Cmp_First : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Cmp_First( t_CKUINT is_mem, t_CKUINT emit_addr )
-    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Cmp_First( t_CKUINT is_mem, t_CKUINT emit_addr, te_KindOf kind )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; m_kind = kind; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -3560,6 +3560,7 @@ public:
 protected:
     t_CKUINT m_is_mem;
     t_CKUINT m_emit_addr;
+    te_KindOf m_kind;
 };
 
 
@@ -3572,8 +3573,8 @@ protected:
 struct Chuck_Instr_Dot_Cmp_Second : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Cmp_Second( t_CKUINT is_mem, t_CKUINT emit_addr )
-    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Cmp_Second( t_CKUINT is_mem, t_CKUINT emit_addr, te_KindOf kind )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; m_kind = kind; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -3585,6 +3586,7 @@ public:
 protected:
     t_CKUINT m_is_mem;
     t_CKUINT m_emit_addr;
+    te_KindOf m_kind;
 };
 
 
@@ -3597,8 +3599,8 @@ protected:
 struct Chuck_Instr_Dot_Cmp_Third : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Cmp_Third( t_CKUINT is_mem, t_CKUINT emit_addr )
-    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Cmp_Third( t_CKUINT is_mem, t_CKUINT emit_addr, te_KindOf kind )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; m_kind = kind; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -3610,6 +3612,7 @@ public:
 protected:
     t_CKUINT m_is_mem;
     t_CKUINT m_emit_addr;
+    te_KindOf m_kind;
 };
 
 
@@ -3622,8 +3625,8 @@ protected:
 struct Chuck_Instr_Dot_Cmp_Fourth : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Cmp_Fourth( t_CKUINT is_mem, t_CKUINT emit_addr )
-    { m_is_mem = is_mem; m_emit_addr = emit_addr; }
+    Chuck_Instr_Dot_Cmp_Fourth( t_CKUINT is_mem, t_CKUINT emit_addr, te_KindOf kind )
+    { m_is_mem = is_mem; m_emit_addr = emit_addr; m_kind = kind; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -3635,6 +3638,7 @@ public:
 protected:
     t_CKUINT m_is_mem;
     t_CKUINT m_emit_addr;
+    te_KindOf m_kind;
 };
 
 

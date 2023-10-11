@@ -2974,7 +2974,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             }
 
             // check type
-            if( !unary->ck_overload_func && ( isa( t, env->ckt_int ) || isa( t, env->ckt_float ) ) )
+            if( !unary->ck_overload_func && ( isa( t, env->ckt_int ) /*|| isa( t, env->ckt_float )*/ ) )
             {
                 // emit as variable instead of value
                 unary->exp->emit_var = TRUE;
@@ -3820,7 +3820,7 @@ t_CKTYPE type_engine_check_exp_postfix( Chuck_Env * env, a_Exp_Postfix postfix )
             // TODO: mark somewhere we need to post increment
 
             // check type
-            if( !postfix->ck_overload_func && ( isa( t, env->ckt_int ) || isa( t, env->ckt_float ) ) )
+            if( !postfix->ck_overload_func && ( isa( t, env->ckt_int ) /*|| isa( t, env->ckt_float )*/ ) )
             {
                 // emit as variable instead of value
                 postfix->exp->emit_var = TRUE;

@@ -4157,9 +4157,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         string str = S_name(member->xid);
         // check
         if( str == "re" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
         else if( str == "im" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
         else
             goto check_func;
 
@@ -4185,9 +4185,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         string str = S_name(member->xid);
         // check
         if( str == "mag" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
         else if( str == "phase" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
         else
             goto check_func;
 
@@ -4196,6 +4196,8 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
     }
     else if( member->t_base->xid == te_vec3 || member->t_base->xid == te_vec4 )
     {
+        // remember the kind
+        te_KindOf kind = member->t_base->xid == te_vec3 ? kindof_VEC3 : kindof_VEC4;
         // mark to emit addr
         if( member->base->s_meta == ae_meta_var )
             member->base->emit_var = TRUE;
@@ -4214,13 +4216,13 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         string str = S_name(member->xid);
         // check for .xyz[w] .rgb[a] .value/goal/slew
         if( str == "x" || str == "r" || str == "value" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
         else if( str == "y" || str == "g" || str == "goal" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
         else if( str == "z" || str == "b" || str == "slew" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Third( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Third( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
         else if( member->t_base->xid == te_vec4 && ( str == "w" || str == "a" ) )
-            emit->append( new Chuck_Instr_Dot_Cmp_Fourth( member->base->s_meta == ae_meta_var, emit_addr ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Fourth( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
         else
             goto check_func;
 
