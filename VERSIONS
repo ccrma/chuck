@@ -2,6 +2,22 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.6 (October 2023) patch release
+=======
+- (fixed) a serious issue accessing vec3/vec4 fields (.x, .y, .z. .w)
+  where the operand stack was incorrectly cleaned, which could lead
+  to stack overflow. This issue has been addressed.
+
+
+=======
+NOTE: 1.5.1.5 is the alpha-release / soft launch of ChuGL, a unified 
+audiovisual programmming framework built into the ChucK programming 
+language. It offers real-time, unified audio synthesis and 3D/2D graphics 
+programming in a single strongly-timed language.
+------
+https://chuck.stanford.edu/chugl/
+=======
+
 1.5.1.5 (October 2023) "operator overloading + chugins API 9.0"
 =======
 - (added) operator overloading is here!
