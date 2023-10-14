@@ -6642,17 +6642,17 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
 
     // add getByte
     func = make_new_mfun("int", "getByte", serialio_getByte);
-    func->doc = "get next requested byte. ";
+    func->doc = "get next requested byte.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getBytes
     func = make_new_mfun("int[]", "getBytes", serialio_getBytes);
-    func->doc = "get next requested number of bytes. ";
+    func->doc = "get next requested number of bytes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
-    func->doc = "get next requested number of integers. ";
+    func->doc = "get next requested number of integers.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add writeByte

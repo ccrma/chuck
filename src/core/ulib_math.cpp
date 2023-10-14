@@ -133,7 +133,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, atan2_impl, "float", "atan2" );
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute arc tangent of two variables (y/x). " );
+    QUERY->doc_func( QUERY, "Compute arc tangent of two variables (y/x)." );
 
     // sinh
     QUERY->add_sfun( QUERY, sinh_impl, "float", "sinh" );

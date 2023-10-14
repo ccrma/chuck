@@ -358,7 +358,7 @@ public:
         // TODO
     }
 
-    // add OSC method, e.g,. "/foo/frequency"
+    // add OSC method, e.g., "/foo/frequency"
     void addMethod( const std::string & method, OscIn * obj )
     {
         // message to server

@@ -782,12 +782,10 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 // set current function documentation
 t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 {
-// #ifdef CK_DOC // disable unless CK_DOC
     if(query->curr_func)
         query->curr_func->doc = doc;
     else
         return FALSE;
-// #endif // CK_DOC
 
     return TRUE;
 }

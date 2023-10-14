@@ -61,8 +61,11 @@ std::string ltrim( const std::string & val );
 // right trim
 std::string rtrim( const std::string & val );
 
-// return capitalized copy of a string
+// return capitalized copy of string
 std::string capitalize( const std::string & s );
+
+// return capiitalized copy of string with trailing punc, adding . as needed
+std::string capitalize_and_periodize( const std::string & s );
 
 // replace tabs
 std::string replace_tabs( const std::string & s,

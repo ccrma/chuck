@@ -9117,7 +9117,7 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     sout << endl;
     // description
     if( this->doc != "" )
-        sout << PREFIX << "  |- " << capitalize(this->doc) << "" << endl;
+        sout << PREFIX << "  |- " << capitalize_and_periodize(this->doc) << "" << endl;
     // inheritance
     if( type->parent != NULL )
     {
@@ -9202,7 +9202,7 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
     // close paren
     sout << ");" << endl;
     // output doc
-    if( theFunc->doc != "" ) sout << PREFIX << "    " << capitalize(theFunc->doc) << endl;
+    if( theFunc->doc != "" ) sout << PREFIX << "    " << capitalize_and_periodize(theFunc->doc) << endl;
 }
 
 
@@ -9336,7 +9336,7 @@ void apropos_var( std::ostringstream & sout, Chuck_Value * var,
     sout << var->name << ";" << endl;
 
     // output doc
-    if( var->doc != "" ) sout << PREFIX << "    " << capitalize(var->doc) << endl;
+    if( var->doc != "" ) sout << PREFIX << "    " << capitalize_and_periodize(var->doc) << endl;
 }
 
 
