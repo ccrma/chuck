@@ -102,6 +102,8 @@ public:
     virtual void write( const t_CKCOMPLEX & val, t_CKINT flags ) = 0;
     virtual void write( const t_CKPOLAR & val ) = 0;
     virtual void write( const t_CKPOLAR & val, t_CKINT flags ) = 0;
+    virtual void write( const t_CKVEC2 & val ) = 0;
+    virtual void write( const t_CKVEC2 & val, t_CKINT flags ) = 0;
     virtual void write( const t_CKVEC3 & val ) = 0;
     virtual void write( const t_CKVEC3 & val, t_CKINT flags ) = 0;
     virtual void write( const t_CKVEC4 & val ) = 0;
@@ -219,6 +221,8 @@ public:
     virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
     virtual void write( const t_CKPOLAR & val );
     virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC2 & val );
+    virtual void write( const t_CKVEC2 & val, t_CKINT flags );
     virtual void write( const t_CKVEC3 & val );
     virtual void write( const t_CKVEC3 & val, t_CKINT flags );
     virtual void write( const t_CKVEC4 & val );
@@ -296,6 +300,8 @@ public:
     virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
     virtual void write( const t_CKPOLAR & val );
     virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC2 & val );
+    virtual void write( const t_CKVEC2 & val, t_CKINT flags );
     virtual void write( const t_CKVEC3 & val );
     virtual void write( const t_CKVEC3 & val, t_CKINT flags );
     virtual void write( const t_CKVEC4 & val );
@@ -351,6 +357,8 @@ public:
     virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
     virtual void write( const t_CKPOLAR & val );
     virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC2 & val );
+    virtual void write( const t_CKVEC2 & val, t_CKINT flags );
     virtual void write( const t_CKVEC3 & val );
     virtual void write( const t_CKVEC3 & val, t_CKINT flags );
     virtual void write( const t_CKVEC4 & val );
@@ -639,6 +647,8 @@ public:
     virtual void write( const t_CKCOMPLEX & val, t_CKINT flags );
     virtual void write( const t_CKPOLAR & val );
     virtual void write( const t_CKPOLAR & val, t_CKINT flags );
+    virtual void write( const t_CKVEC2 & val );
+    virtual void write( const t_CKVEC2 & val, t_CKINT flags );
     virtual void write( const t_CKVEC3 & val );
     virtual void write( const t_CKVEC3 & val, t_CKINT flags );
     virtual void write( const t_CKVEC4 & val );

@@ -791,6 +791,127 @@ void Chuck_Instr_Divide_polar_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: add two vec2 (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Add_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+    t_CKFLOAT *& sp_float = (t_CKFLOAT *&)sp;
+    pop_( sp, 2 );
+    // result
+    t_CKVEC2 r;
+    r.x = sp->x + (sp+1)->x;
+    r.y = sp->y + (sp+1)->y;
+    push_( sp_float, r.x );
+    push_( sp_float, r.y );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: subtract two vec2 (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Minus_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+    t_CKFLOAT *& sp_float = (t_CKFLOAT *&)sp;
+    pop_( sp, 2 );
+    // result
+    t_CKVEC2 r;
+    r.x = sp->x - (sp+1)->x;
+    r.y = sp->y - (sp+1)->y;
+    push_( sp_float, r.x );
+    push_( sp_float, r.y );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: float * vec2 (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC2 );
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)sp);
+    // the vector
+    t_CKVEC2 v = *((t_CKVEC2 *)(sp+sz_FLOAT));
+    // result
+    t_CKVEC2 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    // pointer as vec2
+    t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)sp;
+    // push on reg stack
+    push_( sp_vec2, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec2*float (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec2_Times_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC2 );
+    // the vector
+    t_CKVEC2 v = *((t_CKVEC2 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC2));
+    // result
+    t_CKVEC2 r;
+    r.x = v.x * f;
+    r.y = v.y * f;
+    // pointer as vec2
+    t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)sp;
+    // push on reg stack
+    push_( sp_vec2, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec2/float (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec2_Divide_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    // pointer number of bytes
+    pop_( sp, sz_FLOAT+sz_VEC2 );
+    // the vector
+    t_CKVEC2 v = *((t_CKVEC2 *)sp);
+    // the float
+    t_CKFLOAT f = *((t_CKFLOAT *)(sp+sz_VEC2));
+    // result
+    t_CKVEC2 r;
+    r.x = v.x / f;
+    r.y = v.y / f;
+    // pointer as vec2
+    t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)sp;
+    // push on reg stack
+    push_( sp_vec2, r );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: add two vec3; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Add_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -813,7 +934,7 @@ void Chuck_Instr_Add_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: subtract two vec3; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Minus_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -835,7 +956,7 @@ void Chuck_Instr_Minus_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vector cross-product (ge) added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_XProduct_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -857,7 +978,7 @@ void Chuck_Instr_XProduct_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: multiply two vec3; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_float_Times_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -885,7 +1006,7 @@ void Chuck_Instr_float_Times_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: scaling a vec3; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_vec3_Times_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -913,7 +1034,7 @@ void Chuck_Instr_vec3_Times_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: divide by scalar; ge: added 1.3.5.3 with other vec3 vec4 instructions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_vec3_Divide_float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1491,7 +1612,91 @@ void Chuck_Instr_Divide_polar_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * s
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec2 +=> vec2var
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Add_vec2_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC2 temp;
+    // pop value + pointer
+    pop_( sp, sz_VEC2 + sz_UINT );
+
+    // assign
+    temp.x = (*(t_CKVEC2 **)(sp+sz_VEC2))->x += ((t_CKVEC2 *&)sp)->x;
+    temp.y = (*(t_CKVEC2 **)(sp+sz_VEC2))->y += ((t_CKVEC2 *&)sp)->y;
+    // push result
+    push_( (t_CKVEC2 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec2 -=> vec2var
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Minus_vec2_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC2 temp;
+    // pop value + pointer
+    pop_( sp, sz_VEC2 + sz_UINT );
+
+    // assign
+    temp.x = (*(t_CKVEC2 **)(sp+sz_VEC2))->x -= ((t_CKVEC2 *&)sp)->x;
+    temp.y = (*(t_CKVEC2 **)(sp+sz_VEC2))->y -= ((t_CKVEC2 *&)sp)->y;
+    // push result
+    push_( (t_CKVEC2 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: float *=> vec2var
+//-----------------------------------------------------------------------------
+void Chuck_Instr_float_Times_vec2_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC2 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+
+    // assign
+    temp.x = (*(t_CKVEC2 **)(sp+sz_FLOAT))->x *= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC2 **)(sp+sz_FLOAT))->y *= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC2 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: float /=> vec2var
+//-----------------------------------------------------------------------------
+void Chuck_Instr_vec2_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
+    t_CKVEC2 temp;
+    // pop float + pointer
+    pop_( sp, sz_FLOAT + sz_UINT );
+
+    // assign
+    temp.x = (*(t_CKVEC2 **)(sp+sz_FLOAT))->x /= *((t_CKFLOAT *)sp);
+    temp.y = (*(t_CKVEC2 **)(sp+sz_FLOAT))->y /= *((t_CKFLOAT *)sp);
+    // push result
+    push_( (t_CKVEC2 *&)sp, temp );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec3 +=> vec3var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Add_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1513,7 +1718,7 @@ void Chuck_Instr_Add_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec3 -=> vec3var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Minus_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1535,7 +1740,7 @@ void Chuck_Instr_Minus_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: float *=> vec3var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_float_Times_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1557,7 +1762,7 @@ void Chuck_Instr_float_Times_vec3_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: float /=> vec3var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_vec3_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1579,7 +1784,7 @@ void Chuck_Instr_vec3_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shre
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: float +=> vec4var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Add_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1602,7 +1807,7 @@ void Chuck_Instr_Add_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: floa -=> vec4var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Minus_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1625,7 +1830,7 @@ void Chuck_Instr_Minus_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: float *=> vec4var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_float_Times_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1648,7 +1853,7 @@ void Chuck_Instr_float_Times_vec4_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: float /=> vec4var
 //-----------------------------------------------------------------------------
 void Chuck_Instr_vec4_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -2552,7 +2757,7 @@ void Chuck_Instr_Reg_Pop_Mem::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: pop an int value from reg stack
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Pop_Int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -2567,7 +2772,7 @@ void Chuck_Instr_Reg_Pop_Int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: pop a float value from reg stack
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Pop_Float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -2582,11 +2787,11 @@ void Chuck_Instr_Reg_Pop_Float::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: pop a vec2/complex/polar value from reg stack
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Pop_Complex::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Reg_Pop_Vec2ComplexPolar::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    t_CKCOMPLEX *& reg_sp = (t_CKCOMPLEX *&)shred->reg->sp;
+    t_CKVEC2 *& reg_sp = (t_CKVEC2 *&)shred->reg->sp;
 
     // pop word from reg stack
     pop_( reg_sp, 1 );
@@ -3403,7 +3608,39 @@ void Chuck_Instr_Neq_complex::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec2 == vec2
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Eq_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // also works for polar
+    t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+    t_CKUINT *& sp_uint = (t_CKUINT *&)sp;
+    pop_( sp, 2 );
+    push_( sp_uint, (sp->x == (sp+1)->x) && (sp->y == (sp+1)->y) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec2 != vec2
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Neq_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // also works for polar
+    t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+    t_CKUINT *& sp_uint = (t_CKUINT *&)sp;
+    pop_( sp, 2 );
+    push_( sp_uint, (sp->x != (sp+1)->x) || (sp->y != (sp+1)->y) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: vec3 == vec3
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Eq_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3420,7 +3657,7 @@ void Chuck_Instr_Eq_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec3 != vec3
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Neq_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3437,7 +3674,7 @@ void Chuck_Instr_Neq_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec4 == vec4
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Eq_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -3454,7 +3691,7 @@ void Chuck_Instr_Eq_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: vec4 != vec4
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Neq_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -4412,19 +4649,19 @@ void Chuck_Instr_Assign_Primitive2::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: assign primitive (4 word)
+// desc: assign primitive (4 word) vec2 complex polar
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Assign_Primitive4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
     // pop word from reg stack
-    pop_( reg_sp, 1 + (sz_COMPLEX / sz_UINT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+    pop_( reg_sp, 1 + (sz_VEC2 / sz_UINT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
     // copy popped value into mem stack
-    *( (t_CKCOMPLEX*)(*(reg_sp+(sz_COMPLEX/sz_UINT))) ) = *(t_CKCOMPLEX *)reg_sp; // ISSUE: 64-bit (fixed 1.3.1.0)
+    *( (t_CKVEC2*)(*(reg_sp+(sz_VEC2/sz_UINT))) ) = *(t_CKVEC2 *)reg_sp; // ISSUE: 64-bit (fixed 1.3.1.0)
 
-    t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
-    push_( sp_complex, *sp_complex );
+    t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)reg_sp;
+    push_( sp_vec2, *sp_vec2 );
 }
 
 
@@ -5003,12 +5240,12 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
         push_( sp_double, retval.v_float );
     }
-    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
     {
         // push the return args
-        t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
-        // TODO: polar same?
-        push_( sp_complex, retval.v_complex );
+        t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)reg_sp;
+        // in this context vec2 = complex = polar
+        push_( sp_vec2, retval.v_vec2 );
     }
     else if( m_val == kindof_VEC3 ) // 1.3.5.3
     {
@@ -5139,12 +5376,12 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
         push_( sp_double, retval.v_float );
     }
-    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
     {
         // push the return args
-        t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
-        // TODO: polar same?
-        push_( sp_complex, retval.v_complex );
+        t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)reg_sp;
+        // in this context vec2 = complex = polar
+        push_( sp_vec2, retval.v_vec2 );
     }
     else if( m_val == kindof_VEC3 ) // 1.3.5.3
     {
@@ -5265,12 +5502,12 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         t_CKFLOAT *& sp_double = (t_CKFLOAT *&)reg_sp;
         push_( sp_double, retval.v_float );
     }
-    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
     {
         // push the return args
-        t_CKCOMPLEX *& sp_complex = (t_CKCOMPLEX *&)reg_sp;
-        // TODO: polar same?
-        push_( sp_complex, retval.v_complex );
+        t_CKVEC2 *& sp_vec2 = (t_CKVEC2 *&)reg_sp;
+        // in this context vec2 = complex = polar
+        push_( sp_vec2, retval.v_vec2 );
     }
     else if( m_val == kindof_VEC3 ) // 1.3.5.3
     {
@@ -5635,16 +5872,16 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // push the pointer
         push_( reg_sp, (t_CKUINT)array );
     }
-    else if( m_type_ref->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_type_ref->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | also should work for vec2 (noted 1.5.1.7)
     {
         // pop the values
-        pop_( reg_sp, m_length * (sz_COMPLEX / sz_INT) ); // 1.3.1.0 added size division
+        pop_( reg_sp, m_length * (sz_VEC2 / sz_INT) ); // 1.3.1.0 added size division
         // instantiate array
         Chuck_Array16 * array = new Chuck_Array16( m_length );
         // problem
         if( !array ) goto out_of_memory;
         // fill array
-        t_CKCOMPLEX * sp = (t_CKCOMPLEX *)reg_sp;
+        t_CKVEC2 * sp = (t_CKVEC2 *)reg_sp;
         // intialize object
         initialize_object( array, vm->env()->ckt_array, shred, vm );
         // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
@@ -5842,7 +6079,7 @@ Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
             // initialize_object( baseX, vm->env()->ckt_array );
             return baseX;
         }
-        else if( kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
         {
             Chuck_Array16 * baseX = new Chuck_Array16( *capacity );
             if( !baseX ) goto out_of_memory;
@@ -6104,9 +6341,10 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     t_CKINT ni = 0; // normalized
     t_CKUINT val = 0;
     t_CKFLOAT fval = 0;
-    t_CKCOMPLEX cval;
-    cval.re = 0;
-    cval.im = 0;
+    t_CKVEC2 v2;
+    v2.x = 0;
+    v2.y = 0;
+    // vec2 should behave here as complex
     t_CKVEC3 v3;
     t_CKVEC4 v4;
 
@@ -6166,7 +6404,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit
+    else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit | 1.5.1.7 (ge) complex -> vec2
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
@@ -6184,10 +6422,10 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( ni, &cval ) )
+            if( !arr->get( ni, &v2 ) )
                 goto array_out_of_bound;
             // push the value
-            push_( ((t_CKCOMPLEX *&)sp), cval );
+            push_( ((t_CKVEC2 *&)sp), v2 );
         }
     }
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
@@ -6278,9 +6516,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     Chuck_String * key = NULL;
     t_CKUINT val = 0;
     t_CKFLOAT fval = 0;
-    t_CKCOMPLEX cval;
-    cval.re = 0;
-    cval.im = 0;
+    t_CKVEC2 v2; v2.x = v2.y = 0;
     t_CKVEC3 v3;
     t_CKVEC4 v4;
 
@@ -6336,7 +6572,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
@@ -6352,10 +6588,10 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &cval ) )
+            if( !arr->get( key->str(), &v2 ) )
                 goto error;
             // push the value
-            push_( ((t_CKCOMPLEX *&)sp), cval );
+            push_( ((t_CKVEC2 *&)sp), v2 );
         }
     }
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
@@ -6441,9 +6677,9 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     t_CKINT i = 0;
     t_CKUINT val = 0, j;
     t_CKFLOAT fval = 0;
-    t_CKCOMPLEX cval;
     t_CKINT * ptr = NULL;
-    t_CKUINT index = 0; cval.re = cval.im = 0;
+    t_CKUINT index = 0;
+    t_CKVEC2 v2; v2.x = v2.y = 0;
     t_CKVEC3 v3;
     t_CKVEC4 v4;
 
@@ -6537,7 +6773,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             push_( ((t_CKFLOAT *&)sp), fval );
         }
     }
-    else if( m_kind == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(base);
@@ -6553,10 +6789,10 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( i, &cval ) )
+            if( !arr->get( i, &v2 ) )
                 goto array_out_of_bound;
             // push the value
-            push_( ((t_CKCOMPLEX *&)sp), cval );
+            push_( ((t_CKVEC2 *&)sp), v2 );
         }
     }
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
@@ -6656,9 +6892,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // t_CKINT i = 0;
     t_CKUINT val = 0;
     t_CKFLOAT fval = 0;
-    t_CKCOMPLEX cval;
-    cval.re = 0;
-    cval.im = 0;
+    t_CKVEC2 v2; v2.x = v2.y = 0;
     t_CKVEC3 v3;
     t_CKVEC4 v4;
 
@@ -6667,7 +6901,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // check kind
     if( m_val == kindof_INT ) howmuch = 1;
     else if( m_val == kindof_FLOAT ) howmuch = sz_FLOAT / sz_INT;
-    else if( m_val == kindof_COMPLEX ) howmuch = sz_COMPLEX / sz_INT;
+    else if( m_val == kindof_VEC2 ) howmuch = sz_VEC2 / sz_INT;
     else if( m_val == kindof_VEC3 ) howmuch = sz_VEC3 / sz_INT;
     else if( m_val == kindof_VEC4 ) howmuch = sz_VEC4 / sz_INT;
     // pop (1.3.1.0: use howmuch instead of m_val/4)
@@ -6696,14 +6930,14 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // append
         arr->push_back( fval );
     }
-    else if( m_val == kindof_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_val == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
         Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
         // get value
-        cval = (*(t_CKCOMPLEX *)(sp+1));
+        v2 = (*(t_CKVEC2 *)(sp+1));
         // append
-        arr->push_back( cval );
+        arr->push_back( v2 );
     }
     else if( m_val == kindof_VEC3 ) // 1.3.5.3
     {
@@ -6780,7 +7014,7 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         // 1.3.1.0: check type to use kind instead of size
         if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
         else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        else if( m_kind == kindof_VEC2 ) { push_vec2( sp, *((t_CKVEC2 *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) | in this context, vec2 = complex = polar
         else if( m_kind == kindof_VEC3 ) { push_vec3( sp, *((t_CKVEC3 *)data) ); } // 1.3.5.3
         else if( m_kind == kindof_VEC4 ) { push_vec4( sp, *((t_CKVEC4 *)data) ); } // 1.3.5.3
         else assert( FALSE );
@@ -6894,7 +7128,7 @@ void Chuck_Instr_Dot_Static_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         // 1.3.1.0: check type to use kind instead of size
         if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
         else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        else if( m_kind == kindof_VEC2 ) { push_vec2( sp, *((t_CKVEC2 *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) | in this context, vec2 = complex = polar
         else if( m_kind == kindof_VEC3 ) { push_vec3( sp, *((t_CKVEC3 *)data) ); } // 1.3.5.3
         else if( m_kind == kindof_VEC4 ) { push_vec4( sp, *((t_CKVEC4 *)data) ); } // 1.3.5.3
         else assert( FALSE );
@@ -6925,7 +7159,7 @@ void Chuck_Instr_Dot_Static_Import_Data::execute( Chuck_VM * vm, Chuck_VM_Shred 
         // 1.3.1.0: check type to use kind instead of size
         if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
         else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
-        else if( m_kind == kindof_COMPLEX ) { push_complex( sp, *((t_CKCOMPLEX *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0) // TODO: polar same?
+        else if( m_kind == kindof_VEC2 ) { push_vec2( sp, *((t_CKVEC2 *)m_addr) ); } // ISSUE: 64-bit (fixed 1.3.1.0) | in this context, vec2 = complex = polar
         else if( m_kind == kindof_VEC3 ) { push_vec3( sp, *((t_CKVEC3 *)m_addr) ); } // 1.3.5.3
         else if( m_kind == kindof_VEC4 ) { push_vec4( sp, *((t_CKVEC4 *)m_addr) ); } // 1.3.5.3
         else assert( FALSE );
@@ -6957,7 +7191,7 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: print the first field of a complex/polar/vec3/vec4 value
+// desc: access the first field of a complex/polar/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -6970,7 +7204,7 @@ void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         pop_( sp, 1 );
         // push var addr or value?
         if( m_emit_addr ) {
-            // push addr (NOTE this works for complex/polar/vec3/vec4)
+            // push addr (NOTE this works for complex/polar/vec2/vec3/vec4)
             push_( sp, (t_CKUINT)(&((*(t_CKCOMPLEX **)sp)->re)) );
         } else {
             // push value
@@ -6986,10 +7220,10 @@ void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         switch( m_kind )
         {
             // get corresponding value, pop that value, push field
-            case kindof_COMPLEX:
+            case kindof_VEC2:
             {
-                t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
-                pop_( sp, 1 ); push_float( sp, sp->re );
+                t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->x );
             }
             break;
 
@@ -7018,7 +7252,7 @@ void Chuck_Instr_Dot_Cmp_First::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: print the second field of a complex/polar/vec3/vec4 value
+// desc: access the second field of a complex/polar/vec2/vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7031,7 +7265,7 @@ void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
         pop_( sp, 1 );
         // emit as var address or as value?
         if( m_emit_addr ) {
-            // push addr (works for complex/polar/vec3/vec4)
+            // push addr (works for complex/polar/vec2/vec3/vec4)
             push_( sp, (t_CKUINT)(&((*(t_CKCOMPLEX **)sp)->im)) );
         } else {
             // push value
@@ -7047,10 +7281,10 @@ void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
         switch( m_kind )
         {
             // get corresponding value, pop that value, push field
-            case kindof_COMPLEX:
+            case kindof_VEC2:
             {
-                t_CKCOMPLEX *& sp = (t_CKCOMPLEX *&)shred->reg->sp;
-                pop_( sp, 1 ); push_float( sp, sp->im );
+                t_CKVEC2 *& sp = (t_CKVEC2 *&)shred->reg->sp;
+                pop_( sp, 1 ); push_float( sp, sp->y );
             }
             break;
 
@@ -7079,7 +7313,7 @@ void Chuck_Instr_Dot_Cmp_Second::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: print the third field of a complex/polar/vec3/vec4 value
+// desc: access the third field of a vec3/vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Third::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7133,7 +7367,7 @@ void Chuck_Instr_Dot_Cmp_Third::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: print the fourth field of a complex/polar/vec3/vec4 value
+// desc: access the fourth field of a vec4 value
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Cmp_Fourth::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7310,11 +7544,40 @@ void Chuck_Instr_Cast_polar2complex::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: cast vec2 to vec3 on reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Cast_vec2tovec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
+    // zero pad for z
+    push_( sp, 0 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: cast vec2 to vec4 on reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Cast_vec2tovec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
+    // zero pad for z, w
+    push_( sp, 0 );
+    push_( sp, 0 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: cast vec3 to vec4 on reg stack
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Cast_vec3tovec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
     // zero pad it
     push_( sp, 0 );
 }
@@ -7324,11 +7587,39 @@ void Chuck_Instr_Cast_vec3tovec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: cast vec3 to vec2 on reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Cast_vec3tovec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
+    // remove z component
+    pop_( sp, 1 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: cast vec4 to vec2 on reg stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Cast_vec4tovec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
+    // remove z and w components
+    pop_( sp, 2 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: cast vec4 to vec3 on reg stack
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Cast_vec4tovec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
+    t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
     // remove w component
     pop_( sp, 1 );
 }
@@ -7901,12 +8192,12 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
                 arr->get( *counter, (t_CKFLOAT *)pVar );
                 break;
             }
-            case kindof_COMPLEX:
+            case kindof_VEC2:
             {
                 // cast to specific array type
                 Chuck_Array16 * arr = (Chuck_Array16 *) array;
                 // get element
-                arr->get( *counter, (t_CKCOMPLEX *)pVar );
+                arr->get( *counter, (t_CKVEC2 *)pVar );
                 break;
             }
             case kindof_VEC3:
@@ -8249,6 +8540,48 @@ done:
 
 
 //-----------------------------------------------------------------------------
+// name: execute() | 1.5.1.7
+// desc: insert vec2 value into output stream
+//-----------------------------------------------------------------------------
+void Chuck_Instr_IO_out_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
+
+    // pop the value
+    pop_( sp, 1 + (sz_VEC2 / sz_INT) ); // ISSUE: 64-bit (fixed 1.3.1.0)
+
+    // ISSUE: 64-bit
+    // the IO
+    Chuck_IO **& ppIO = (Chuck_IO **&)sp;
+
+    // check it
+    if( *(ppIO) == NULL ) goto null_pointer;
+
+    // write the value
+    (*ppIO)->write( *((t_CKVEC2 *)(sp+1)) );
+
+    // push the IO
+    push_( sp, (t_CKINT)(*(ppIO)) );
+
+    return;
+
+null_pointer:
+    // we have a problem
+    EM_exception(
+        "NullPointer: (IO output vec2) on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str() );
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute() | 1.5.1.0
 // desc: insert vec3 value into output stream
 //-----------------------------------------------------------------------------
@@ -8423,7 +8756,7 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // print it
         CK_FPRINTF_STDERR( "%f :(%s)\n", *(sp-1), m_type_ref->c_name() );
     }
-    else if( m_type_ref->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+    else if( m_type_ref->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         if( m_type_ref->xid == te_complex )
         {
@@ -8436,6 +8769,12 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
             // print it
             CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) :(%s)\n", *(sp-2), *(sp-1)/CK_ONE_PI, m_type_ref->c_name() );
+        }
+        else if( m_type_ref->xid == te_vec2 ) // 1.5.1.7
+        {
+            t_CKFLOAT * sp = (t_CKFLOAT *)shred->reg->sp;
+            // print it
+            CK_FPRINTF_STDERR( "@(%.4f,%.4f) :(%s)\n", *(sp-2), *(sp-1), m_type_ref->c_name() );
         }
         else
         {
@@ -8565,7 +8904,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
             the_sp += sz_FLOAT; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
-        else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+        else if( type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
         {
             t_CKFLOAT * sp = (t_CKFLOAT *)the_sp;
             if( type->xid == te_complex )
@@ -8574,8 +8913,11 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
             else if( type->xid == te_polar )
                 // print it
                 CK_FPRINTF_STDERR( "%%(%.4f,%.4f*pi) ", *(sp), *(sp+1)/CK_ONE_PI );
+            else if( type->xid == te_vec2 ) // 1.5.1.7
+                // print it
+                CK_FPRINTF_STDERR( "@(%.4f,%.4f) ", *(sp), *(sp+1) );
 
-            the_sp += sz_COMPLEX; // ISSUE: 64-bit (fixed 1.3.1.0)
+            the_sp += sz_VEC2; // ISSUE: 64-bit (fixed 1.3.1.0)
         }
         else if( type->size == sz_VEC3 ) // 1.3.5.3
         {

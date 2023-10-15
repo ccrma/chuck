@@ -293,6 +293,30 @@ t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp )
 
 
 //-----------------------------------------------------------------------------
+// name: ck_vec2_magnitude()
+// desc: magnitude of vec2
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_vec2_magnitude( const t_CKVEC2 & v )
+{
+    return ::sqrt( v.x*v.x + v.y*v.y );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_vec2_phase()
+// desc: phase of vec2 (treated as a complex value)
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & cmp )
+{
+    return ::atan2( cmp.x, cmp.y );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_vec3_magnitude()
 // desc: magnitude of vec3
 //-----------------------------------------------------------------------------

@@ -1510,7 +1510,7 @@ t_CKUINT Chuck_Array16::addr( const string & key )
 // name: get()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::get( t_CKINT i, t_CKCOMPLEX * val )
+t_CKINT Chuck_Array16::get( t_CKINT i, t_CKVEC2 * val )
 {
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
@@ -1522,6 +1522,9 @@ t_CKINT Chuck_Array16::get( t_CKINT i, t_CKCOMPLEX * val )
     // return good
     return 1;
 }
+// redirect as vec2
+t_CKINT Chuck_Array16::get( t_CKINT i, t_CKCOMPLEX * val )
+{ return this->get( i, (t_CKVEC2 *)val ); }
 
 
 
@@ -1530,14 +1533,14 @@ t_CKINT Chuck_Array16::get( t_CKINT i, t_CKCOMPLEX * val )
 // name: get()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::get( const string & key, t_CKCOMPLEX * val )
+t_CKINT Chuck_Array16::get( const string & key, t_CKVEC2 * val )
 {
     // set to zero
-    val->re = 0.0;
-    val->im = 0.0;
+    val->x = 0;
+    val->y = 0;
 
     // iterator
-    map<string, t_CKCOMPLEX>::iterator iter = m_map.find( key );
+    map<string, t_CKVEC2>::iterator iter = m_map.find( key );
 
     // check
     if( iter != m_map.end() )
@@ -1549,6 +1552,9 @@ t_CKINT Chuck_Array16::get( const string & key, t_CKCOMPLEX * val )
     // return good
     return 1;
 }
+// redirect as vec2
+t_CKINT Chuck_Array16::get( const string & key, t_CKCOMPLEX * val )
+{ return this->get( key, (t_CKVEC2 *)val ); }
 
 
 
@@ -1557,7 +1563,7 @@ t_CKINT Chuck_Array16::get( const string & key, t_CKCOMPLEX * val )
 // name: set()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKCOMPLEX & val )
+t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKVEC2 & val )
 {
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
@@ -1569,6 +1575,9 @@ t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKCOMPLEX & val )
     // return good
     return 1;
 }
+// redirect as vec2
+t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKCOMPLEX & val )
+{ return this->set( i, (t_CKVEC2 &)val ); }
 
 
 
@@ -1577,10 +1586,10 @@ t_CKINT Chuck_Array16::set( t_CKINT i, const t_CKCOMPLEX & val )
 // name: set()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::set( const string & key, const t_CKCOMPLEX & val )
+t_CKINT Chuck_Array16::set( const string & key, const t_CKVEC2 & val )
 {
     // 1.3.1.1: removed this
-    // map<string, t_CKCOMPLEX>::iterator iter = m_map.find( key );
+    // map<string, t_CKVEC2>::iterator iter = m_map.find( key );
 
     // 1.3.5.3: removed this
     // if( val.re == 0 && val.im == 0 ) m_map.erase( key ); else
@@ -1589,6 +1598,9 @@ t_CKINT Chuck_Array16::set( const string & key, const t_CKCOMPLEX & val )
     // return good
     return 1;
 }
+// redirect as vec2
+t_CKINT Chuck_Array16::set( const string & key, const t_CKCOMPLEX & val )
+{ return this->set( key, (t_CKVEC2 &)val ); }
 
 
 
@@ -1597,7 +1609,7 @@ t_CKINT Chuck_Array16::set( const string & key, const t_CKCOMPLEX & val )
 // name: insert() | 1.5.0.8 (ge) added
 // desc: insert before position | O(n) running time
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::insert( t_CKINT i, const t_CKCOMPLEX & val )
+t_CKINT Chuck_Array16::insert( t_CKINT i, const t_CKVEC2 & val )
 {
     // bound check
     if( i < 0 || i >= m_vector.capacity() )
@@ -1640,7 +1652,7 @@ t_CKINT Chuck_Array16::map_erase( const string & key )
 // name: push_back()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::push_back( const t_CKCOMPLEX & val )
+t_CKINT Chuck_Array16::push_back( const t_CKVEC2 & val )
 {
     // add to vector
     m_vector.push_back( val );
@@ -1662,8 +1674,8 @@ t_CKINT Chuck_Array16::pop_back( )
         return 0;
 
     // zero
-    m_vector[m_vector.size()-1].re = 0.0;
-    m_vector[m_vector.size()-1].im = 0.0;
+    m_vector[m_vector.size()-1].x = 0;
+    m_vector[m_vector.size()-1].y = 0;
     // add to vector
     m_vector.pop_back();
 
@@ -1677,7 +1689,7 @@ t_CKINT Chuck_Array16::pop_back( )
 // name: push_front() | 1.5.0.8 (ge) added
 // desc: prepend element by value | O(n) running time
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::push_front( const t_CKCOMPLEX & val )
+t_CKINT Chuck_Array16::push_front( const t_CKVEC2 & val )
 {
     // add to vector
     m_vector.insert( m_vector.begin(), val );
@@ -1760,7 +1772,7 @@ void Chuck_Array16::get_keys( std::vector<std::string> & keys )
     // clear the return array
     keys.clear();
     // iterator
-    for( std::map<std::string,t_CKCOMPLEX>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
+    for( std::map<std::string,t_CKVEC2>::iterator iter = m_map.begin(); iter !=m_map.end(); iter++ )
     {
         // add to list
         keys.push_back((*iter).first);
@@ -1798,7 +1810,7 @@ void Chuck_Array16::shuffle()
 // name: ck_compare_polar()
 // desc: compare function for sorting chuck polar values
 //-----------------------------------------------------------------------------
-static bool ck_compare_polar( const t_CKCOMPLEX & lhs, const t_CKCOMPLEX & rhs )
+static bool ck_compare_polar( const t_CKVEC2 & lhs, const t_CKVEC2 & rhs )
 {
     // cast to polar
     const t_CKPOLAR * pL = (const t_CKPOLAR *)&lhs;
@@ -1811,6 +1823,29 @@ static bool ck_compare_polar( const t_CKCOMPLEX & lhs, const t_CKCOMPLEX & rhs )
     if( x == y ) {
         // compare phase
         return pL->phase < pR->phase;
+    }
+    // return magnitude comparison
+    return x < y;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_vec2()
+// desc: compare function for sorting chuck vec2 values
+//-----------------------------------------------------------------------------
+static bool ck_compare_vec2( const t_CKVEC2 & lhs, const t_CKVEC2 & rhs )
+{
+    // compare magnitude first
+    t_CKFLOAT x = ck_vec2_magnitude(lhs);
+    t_CKFLOAT y = ck_vec2_magnitude(rhs);
+    // if magnitude equal
+    if( x == y ) {
+        // compare phase
+        t_CKFLOAT xp = ck_vec2_phase(lhs);
+        t_CKFLOAT yp = ck_vec2_phase(rhs);
+        return xp < yp;
     }
     // return magnitude comparison
     return x < y;
@@ -1856,7 +1891,7 @@ void Chuck_Array16::sort()
     if( m_isPolarType )
         std::sort( m_vector.begin(), m_vector.end(), ck_compare_polar );
     else
-        std::sort( m_vector.begin(), m_vector.end(), ck_compare_complex );
+        std::sort( m_vector.begin(), m_vector.end(), ck_compare_vec2 );
 }
 
 
@@ -1866,7 +1901,7 @@ void Chuck_Array16::sort()
 // name: back()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKINT Chuck_Array16::back( t_CKCOMPLEX * val ) const
+t_CKINT Chuck_Array16::back( t_CKVEC2 * val ) const
 {
     // check
     if( m_vector.size() == 0 )
@@ -1961,8 +1996,8 @@ void Chuck_Array16::zero( t_CKUINT start, t_CKUINT end )
     for( t_CKUINT i = start; i < end; i++ )
     {
         // zero
-        m_vector[i].re = 0.0;
-        m_vector[i].im = 0.0;
+        m_vector[i].x = 0;
+        m_vector[i].y = 0;
     }
 }
 

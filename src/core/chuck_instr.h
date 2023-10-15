@@ -610,6 +610,71 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec2
+// desc: add two vec2 (ge) added 1.5.1.7 with the rise of the planet of ChuGL
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec2
+// desc: subtract two vec2 (ge) added 1.5.1.7 with the rise of the planet of ChuGL
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec2
+// desc: float * vec2 (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec2_Times_float
+// desc: vec2*float (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec2_Times_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec2_Divide_float
+// desc: divide two vec2 (ge) added 1.5.1.7 with ChuGL
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec2_Divide_float : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Add_vec3
 // desc: add two vec3, 1.3.5.3
 //-----------------------------------------------------------------------------
@@ -1000,6 +1065,32 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Add_vec2_Assign
+// desc: add assign two vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Add_vec2_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Minus_vec2_Assign
+// desc: minus assign two vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Minus_vec2_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Add_vec3_Assign
 // desc: add assign two vec3
 //-----------------------------------------------------------------------------
@@ -1078,6 +1169,19 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_float_Times_vec2_Assign
+// desc: float *=> vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_float_Times_vec2_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_float_Times_vec3_Assign
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1100,6 +1204,18 @@ public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_vec2_Divide_float_Assign
+// desc: float /=> vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_vec2_Divide_float_Assign : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
 
 
 
@@ -1652,6 +1768,32 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Eq_vec2
+// desc: vec2 == vec2 | 1.5.1.7 (ge) added
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Eq_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Neq_vec2
+// desc: vec2 != vec2 | 1.5.1.7 (ge) added
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Neq_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Eq_vec3
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -1926,10 +2068,23 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Pop_Complex
-// desc: pop a complex/polar value from reg stack (change 1.3.1.0)
+// name: struct Chuck_Instr_Reg_Pop_Vec2ComplexPolar
+// desc: pop a complex/polar/vec2 value from reg stack (change 1.3.1.0)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Pop_Complex : public Chuck_Instr
+struct Chuck_Instr_Reg_Pop_Vec2ComplexPolar : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Pop_Vec2
+// desc: pop a vec2 value from reg stack | 1.5.1.7
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Pop_Vec2 : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
@@ -3931,6 +4086,58 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec2tovec3
+// desc: cast frmo vec2 to vec3
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec2tovec3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec2tovec4
+// desc: cast frmo vec2 to vec4
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec2tovec4 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec3tovec2
+// desc: cast frmo vec3 to vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec3tovec2 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_vec4tovec2
+// desc: cast frmo vec4 to vec2
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_vec4tovec2 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Cast_vec3tovec4
 // desc: cast frmo vec3 to vec4
 //-----------------------------------------------------------------------------
@@ -4045,7 +4252,7 @@ struct Chuck_Instr_ForEach_Inc_And_Branch : public Chuck_Instr_Branch_Op
 {
 public:
     // constructor
-    Chuck_Instr_ForEach_Inc_And_Branch( t_CKUINT kind, t_CKUINT size )
+    Chuck_Instr_ForEach_Inc_And_Branch( te_KindOf kind, t_CKUINT size )
     { m_dataKind = kind; m_dataSize = size; this->set( 0 ); }
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 
@@ -4053,10 +4260,10 @@ protected:
     // type of VAR (will determine which array to operate on):
     // kindof_INT
     // kindof_FLOAT
-    // kindof_COMPLEX
+    // kindof_VEC2
     // kindof_VEC3
     // kindof_VEC4
-    t_CKUINT m_dataKind;
+    te_KindOf m_dataKind;
     // size of VAR
     t_CKUINT m_dataSize;
 };
@@ -4156,8 +4363,21 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_IO_out_vec2
+// desc: insert vec2 value into output stream
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_IO_out_vec2 : public Chuck_Instr_Binary_Op
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_out_vec3
-// desc: insert complex value into output stream
+// desc: insert vec3 value into output stream
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_IO_out_vec3 : public Chuck_Instr_Binary_Op
 {
@@ -4170,7 +4390,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_out_vec4
-// desc: insert complex value into output stream
+// desc: insert vec4 value into output stream
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_IO_out_vec4 : public Chuck_Instr_Binary_Op
 {
@@ -4183,7 +4403,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_IO_out_string
-// desc: ...
+// desc: insert string value into output stream
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_IO_out_string : public Chuck_Instr_Binary_Op
 {
@@ -4251,6 +4471,7 @@ void ck_handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm, const std::strin
 #define push_( sp, val )         *(sp) = (val); (sp)++
 #define push_float( sp, val )    *((t_CKFLOAT *&)sp) = (val); ((t_CKFLOAT *&)sp)++
 #define push_complex( sp, val )  *((t_CKCOMPLEX *&)sp) = (val); ((t_CKCOMPLEX *&)sp)++
+#define push_vec2( sp, val )     *((t_CKVEC2 *&)sp) = (val); ((t_CKVEC2 *&)sp)++
 #define push_vec3( sp, val )     *((t_CKVEC3 *&)sp) = (val); ((t_CKVEC3 *&)sp)++
 #define push_vec4( sp, val )     *((t_CKVEC4 *&)sp) = (val); ((t_CKVEC4 *&)sp)++
 #define pop_( sp, n )            sp -= (n)

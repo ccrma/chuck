@@ -153,6 +153,7 @@ Chuck_Env::Chuck_Env()
     ckt_dur = NULL;
     ckt_complex = NULL;
     ckt_polar = NULL;
+    ckt_vec2 = NULL;
     ckt_vec3 = NULL;
     ckt_vec4 = NULL;
     ckt_null = NULL;
@@ -209,6 +210,7 @@ t_CKBOOL Chuck_Env::init()
     ckt_dur = new Chuck_Type( this, te_dur, "dur", NULL, sizeof(t_CKTIME) );
     ckt_complex = new Chuck_Type( this, te_complex, "complex", NULL, sizeof(t_CKCOMPLEX) );
     ckt_polar = new Chuck_Type( this, te_polar, "polar", NULL, sizeof(t_CKPOLAR) );
+    ckt_vec2 = new Chuck_Type( this, te_vec2, "vec2", NULL, sizeof(t_CKVEC2) ); // 1.5.1.7
     ckt_vec3 = new Chuck_Type( this, te_vec3, "vec3", NULL, sizeof(t_CKVEC3) ); // 1.3.5.3
     ckt_vec4 = new Chuck_Type( this, te_vec4, "vec4", NULL, sizeof(t_CKVEC4) ); // 1.3.5.3
     ckt_null = new Chuck_Type( this, te_null, "@null", NULL, sizeof(void *) );
@@ -257,6 +259,7 @@ void Chuck_Env::cleanup()
     CK_SAFE_UNLOCK_DELETE(ckt_dur);
     CK_SAFE_UNLOCK_DELETE(ckt_complex);
     CK_SAFE_UNLOCK_DELETE(ckt_polar);
+    CK_SAFE_UNLOCK_DELETE(ckt_vec2);
     CK_SAFE_UNLOCK_DELETE(ckt_vec3);
     CK_SAFE_UNLOCK_DELETE(ckt_vec4);
     CK_SAFE_UNLOCK_DELETE(ckt_fileio);
@@ -503,6 +506,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     env->global()->type.add( env->ckt_dur->base_name, env->ckt_dur );            env->ckt_dur->lock();
     env->global()->type.add( env->ckt_complex->base_name, env->ckt_complex );    env->ckt_complex->lock();
     env->global()->type.add( env->ckt_polar->base_name, env->ckt_polar );        env->ckt_polar->lock();
+    env->global()->type.add( env->ckt_vec2->base_name, env->ckt_vec2 );          env->ckt_vec2->lock();
     env->global()->type.add( env->ckt_vec3->base_name, env->ckt_vec3 );          env->ckt_vec3->lock();
     env->global()->type.add( env->ckt_vec4->base_name, env->ckt_vec4 );          env->ckt_vec4->lock();
     env->global()->type.add( env->ckt_object->base_name, env->ckt_object );      env->ckt_object->lock();
@@ -560,6 +564,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     init_class_fileio( env, env->ckt_fileio );
     init_class_chout( env, env->ckt_chout ); // 1.3.0.0
     init_class_cherr( env, env->ckt_cherr ); // 1.3.0.0
+    init_class_vec2( env, env->ckt_vec2 ); // 1.5.1.7
     init_class_vec3( env, env->ckt_vec3 ); // 1.3.5.3
     init_class_vec4( env, env->ckt_vec4 ); // 1.3.5.3
     init_class_function(env, env->ckt_function ); // 1.5.0.0
@@ -1938,6 +1943,10 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         case ae_op_minus:
             CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
             else CK_LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec2, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec4, te_vec2 ) right = rhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec2, te_vec3 ) left = lhs->cast_to = env->ckt_vec3;
+            else CK_LR( te_vec3, te_vec2 ) right = rhs->cast_to = env->ckt_vec3;
         case ae_op_times:
         case ae_op_divide:
         case ae_op_lt:
@@ -1994,8 +2003,10 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             CK_LR( te_int, te_dur ) left = lhs->cast_to = env->ckt_float;
             else CK_LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
             // vectors, 1.3.5.3
+            else CK_LR( te_int, te_vec2 ) left = lhs->cast_to = env->ckt_float; // 1.5.1.7
             else CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
             else CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec2, te_int ) right = rhs->cast_to = env->ckt_float; // 1.5.1.7
             else CK_LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
             else CK_LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
         }
@@ -2003,8 +2014,10 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         {
             CK_LR( te_dur, te_int ) right = rhs->cast_to = env->ckt_float;
             // vectors, 1.3.5.3
+            else CK_LR( te_int, te_vec2 ) left = lhs->cast_to = env->ckt_float; // 1.5.1.7
             else CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
             else CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
+            else CK_LR( te_vec2, te_int ) right = rhs->cast_to = env->ckt_float; // 1.5.1.7
             else CK_LR( te_vec3, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
             else CK_LR( te_vec4, te_int ) right = rhs->cast_to = env->ckt_float; // 1.3.5.3
         }
@@ -2012,11 +2025,13 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         // op_chuck
         if( op == ae_op_times_chuck )
         {
+            CK_LR( te_int, te_vec2 ) left = lhs->cast_to = env->ckt_float; // 1.5.1.7
             CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
             CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
         }
         else if( op == ae_op_divide_chuck )
         {
+            CK_LR( te_int, te_vec2 ) left = lhs->cast_to = env->ckt_float; // 1.5.1.7
             CK_LR( te_int, te_vec3 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
             CK_LR( te_int, te_vec4 ) left = lhs->cast_to = env->ckt_float; // 1.3.5.3
         }
@@ -2203,8 +2218,11 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec2; // 1.5.1.7
         CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
+        CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_vec4; // 1.5.1.7
         CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
         CK_COMMUTE( te_dur, te_time ) return env->ckt_time;
         if( isa( left, env->ckt_string ) && isa( right, env->ckt_string ) ) return env->ckt_string;
@@ -2224,8 +2242,11 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec2; // 1.5.1.7
         CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
+        CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_vec4; // 1.5.1.7
         CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
@@ -2239,8 +2260,11 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec3; // 1.5.1.7
         CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
+        CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
+        CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_vec4; // 1.5.1.7
         CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
 
@@ -2254,6 +2278,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_COMMUTE( te_float, te_dur ) return env->ckt_dur;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
+        CK_COMMUTE( te_float, te_vec2 ) return env->ckt_vec2; // 1.5.1.7
         CK_COMMUTE( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_COMMUTE( te_float, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
@@ -2264,6 +2289,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_float, te_dur ) return env->ckt_dur;
         CK_LR( te_complex, te_complex ) return env->ckt_complex;
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_float, te_vec2 ) return env->ckt_vec2; // 1.5.1.7
         CK_LR( te_float, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_float, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
     break;
@@ -2276,6 +2302,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_float, te_float ) return env->ckt_float;
         CK_LR( te_complex, te_complex ) return env->ckt_complex;
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_vec2, te_float ) return env->ckt_vec2;
         CK_LR( te_vec3, te_float ) return env->ckt_vec3;
         CK_LR( te_vec4, te_float ) return env->ckt_vec4;
     break;
@@ -2287,33 +2314,43 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_float, te_dur ) return env->ckt_dur;
         CK_LR( te_complex, te_complex ) return env->ckt_complex;
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
+        CK_LR( te_float, te_vec2 ) return env->ckt_vec2; // 1.5.1.7
+        CK_LR( te_float, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
+        CK_LR( te_float, te_vec4 ) return env->ckt_vec4; // 1.5.1.7
     break;
 
+    case ae_op_eq:
+    case ae_op_neq:
+        // null
+        // if( isa( left, env->ckt_object ) && isa( right, env->ckt_null ) ) return env->ckt_int;
+        // if( isa( left, env->ckt_null ) && isa( right, env->ckt_object ) ) return env->ckt_int;
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_int; // 1.5.1.7
+        CK_LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
+        CK_LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
+    case ae_op_lt:
     case ae_op_le:
+    {
         // file output
-        if( isa( left, env->ckt_io ) )
+        if( op == ae_op_le &&  isa( left, env->ckt_io ) )
         {
             if( isa( right, env->ckt_int ) ) return left;
             else if( isa( right, env->ckt_float ) ) return left;
             else if( isa( right, env->ckt_string ) ) return left;
             else if( isa( right, env->ckt_complex ) ) return left;
             else if( isa( right, env->ckt_polar ) ) return left;
+            else if( isa( right, env->ckt_vec2 ) ) return left;
             else if( isa( right, env->ckt_vec3 ) ) return left;
             else if( isa( right, env->ckt_vec4 ) ) return left;
             else // error
             {
                 EM_error2( binary->where, "no suitable IO action for '%s' <= '%s'",
-                    left->c_name(), right->c_name() );
+                          left->c_name(), right->c_name() );
                 return NULL;
             }
         }
-    case ae_op_eq:
-        // null
-        // if( isa( left, env->ckt_object ) && isa( right, env->ckt_null ) ) return env->ckt_int;
-        // if( isa( left, env->ckt_null ) && isa( right, env->ckt_object ) ) return env->ckt_int;
-    case ae_op_lt:
-    case ae_op_gt:    case ae_op_ge:
-    case ae_op_neq:
+    }
+    case ae_op_gt:
+    case ae_op_ge:
         CK_LR( te_int, te_int ) return env->ckt_int;
         CK_LR( te_float, te_float ) return env->ckt_int;
         CK_LR( te_dur, te_dur ) return env->ckt_int;
@@ -2322,9 +2359,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_int;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_int;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_int;
-        CK_LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
-        CK_LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
-        CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_int; // 1.3.5.3
+        // CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_int; // 1.5.1.7
+        // CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_int; // 1.5.1.7
+        // CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_int; // 1.3.5.3
         if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
     break;
 
@@ -2687,6 +2724,8 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     CK_LR( te_int, te_float ) left = lhs->cast_to = env->ckt_float;
     CK_LR( te_int, te_complex ) left = lhs->cast_to = env->ckt_complex;
     CK_LR( te_int, te_polar ) left = lhs->cast_to = env->ckt_polar;
+    CK_LR( te_vec2, te_vec3 ) left = lhs->cast_to = env->ckt_vec3;
+    CK_LR( te_vec2, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
     CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
 
     // assignment or something else
@@ -3681,6 +3720,10 @@ t_CKTYPE type_engine_check_exp_vec_lit( Chuck_Env * env, a_Exp_Primary exp )
     }
 
     // check number of arguments
+    if( val->numdims < 3 )
+        return env->ckt_vec2;
+
+    // check number of arguments
     if( val->numdims < 4 )
         return env->ckt_vec3;
 
@@ -3747,7 +3790,11 @@ t_CKBOOL type_engine_check_cast_valid( Chuck_Env * env, t_CKTYPE to, t_CKTYPE fr
     if( isa( to, env->ckt_polar ) && isa( from, env->ckt_float ) ) return TRUE;
     if( isa( to, env->ckt_complex ) && isa( from, env->ckt_polar ) ) return TRUE;
     if( isa( to, env->ckt_polar ) && isa( from, env->ckt_complex ) ) return TRUE;
+    if( isa( to, env->ckt_vec2 ) && isa( from, env->ckt_vec3 ) ) return TRUE;
+    if( isa( to, env->ckt_vec2 ) && isa( from, env->ckt_vec4 ) ) return TRUE;
+    if( isa( to, env->ckt_vec3 ) && isa( from, env->ckt_vec2 ) ) return TRUE;
     if( isa( to, env->ckt_vec3 ) && isa( from, env->ckt_vec4 ) ) return TRUE;
+    if( isa( to, env->ckt_vec4 ) && isa( from, env->ckt_vec2 ) ) return TRUE;
     if( isa( to, env->ckt_vec4 ) && isa( from, env->ckt_vec3 ) ) return TRUE;
 
     return FALSE;
@@ -4383,7 +4430,8 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp_Func_Call func_
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_exp_dot_member_special()
-// desc: check special case for complex, polar, vec3, vec4; ge: 1.3.5.3
+// desc: check special case for complex, polar, vec3, vec4 (ge) 1.3.5.3
+//       add support for vec2 (ge) 1.5.1.7
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Member member )
 {
@@ -4427,6 +4475,33 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
                 // error
                 EM_error2( member->base->where,
                           "cannot assign value to literal polar value" );
+                return NULL;
+            }
+
+            return env->ckt_float;
+        }
+        else
+        {
+            // not valid
+            EM_error2( member->where,
+                      "type '%s' has no member named '%s'", member->t_base->c_name(), str.c_str() );
+            return NULL;
+        }
+    }
+    // vec2
+    else if( member->t_base->xid == te_vec2 )
+    {
+        // get as string
+        string str = S_name(member->xid);
+        // verify member is either re or im
+        if( str == "x" || str == "y" || str == "u" || str == "v" || str == "s" || str == "t" )
+        {
+            // check addressing consistency (ISSUE: emit_var set after!)
+            if( member->self->emit_var && member->base->s_meta != ae_meta_var )
+            {
+                // error
+                EM_error2( member->base->where,
+                          "cannot assign value to literal vec2 value" );
                 return NULL;
             }
 
@@ -4549,6 +4624,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     {
         case te_complex:
         case te_polar:
+        case te_vec2:
         case te_vec3:
         case te_vec4:
             return type_engine_check_exp_dot_member_special( env, member );
@@ -5564,7 +5640,7 @@ t_CKBOOL type_engine_check_primitive( Chuck_Env * env, Chuck_Type * type )
 {
     return ( isa(type, env->ckt_void) || isa(type, env->ckt_int) || isa(type, env->ckt_float) || isa(type, env->ckt_dur) ||
              isa(type, env->ckt_time) || isa(type, env->ckt_complex) || isa(type, env->ckt_polar) ||
-             isa(type, env->ckt_vec3) || isa(type, env->ckt_vec4) )
+             isa(type, env->ckt_vec2) || isa(type, env->ckt_vec3) || isa(type, env->ckt_vec4) )
              && ( type->array_depth == 0 );
 }
 t_CKBOOL isprim( Chuck_Env * env, Chuck_Type * type )
@@ -5587,8 +5663,8 @@ te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
         kind = kindof_INT;
     else if( type->size == sz_FLOAT )
         kind = kindof_FLOAT;
-    else if( type->size == sz_COMPLEX )
-        kind = kindof_COMPLEX;
+    else if( type->size == sz_VEC2 )
+        kind = kindof_VEC2;
     else if( type->size == sz_VEC3 )
         kind = kindof_VEC3;
     else if( type->size == sz_VEC4 )
@@ -6714,8 +6790,11 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_plus, env->ckt_dur );
     registry->reserve( env->ckt_complex, ae_op_plus, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_plus, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_plus, env->ckt_vec2 ); // 1.5.1.7
     registry->reserve( env->ckt_vec3, ae_op_plus, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_plus, env->ckt_vec4 );
+    registry->reserve( env->ckt_vec2, ae_op_plus, env->ckt_vec3, TRUE ); // commute | 1.5.1.7
+    registry->reserve( env->ckt_vec2, ae_op_plus, env->ckt_vec4, TRUE ); // commute | 1.5.1.7
     registry->reserve( env->ckt_vec3, ae_op_plus, env->ckt_vec4, TRUE ); // commute
     registry->reserve( env->ckt_object, ae_op_plus, env->ckt_string ); // object +=> string
     registry->reserve( env->ckt_int, ae_op_plus, env->ckt_string, TRUE ); // int/float +=> string
@@ -6728,16 +6807,21 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_dur, ae_op_minus, env->ckt_dur );
     registry->reserve( env->ckt_complex, ae_op_minus, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_minus, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_minus, env->ckt_vec2 ); // 1.5.1.7
     registry->reserve( env->ckt_vec3, ae_op_minus, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_minus, env->ckt_vec4 );
+    registry->reserve( env->ckt_vec2, ae_op_minus, env->ckt_vec3, TRUE ); // commute | 1.5.1.7
+    registry->reserve( env->ckt_vec2, ae_op_minus, env->ckt_vec4, TRUE ); // commute | 1.5.1.7
     registry->reserve( env->ckt_vec3, ae_op_minus, env->ckt_vec4, TRUE );
     // *
     registry->reserve( env->ckt_int, ae_op_times, env->ckt_int );
     registry->reserve( env->ckt_float, ae_op_times, env->ckt_float );
     registry->reserve( env->ckt_complex, ae_op_times, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_times, env->ckt_polar );
+    /* no 2D cross product; use vec3 and vec4 */
     registry->reserve( env->ckt_vec3, ae_op_times, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_times, env->ckt_vec4 );
+    registry->reserve( env->ckt_float, ae_op_times, env->ckt_vec2, TRUE ); // commute | 1.5.1.7
     registry->reserve( env->ckt_float, ae_op_times, env->ckt_vec3, TRUE );
     registry->reserve( env->ckt_float, ae_op_times, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_float, ae_op_times, env->ckt_dur, TRUE );
@@ -6749,6 +6833,9 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_divide, env->ckt_dur );
     registry->reserve( env->ckt_complex, ae_op_divide, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_divide, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_divide, env->ckt_float );
+    registry->reserve( env->ckt_vec3, ae_op_divide, env->ckt_float );
+    registry->reserve( env->ckt_vec4, ae_op_divide, env->ckt_float );
 
     //-------------------------------------------------------------------------
     // == != < > <= >=
@@ -6759,8 +6846,11 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_eq, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_eq, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_eq, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_eq, env->ckt_vec2 );
     registry->reserve( env->ckt_vec3, ae_op_eq, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_eq, env->ckt_vec4 );
+    registry->reserve( env->ckt_vec2, ae_op_eq, env->ckt_vec3, TRUE );
+    registry->reserve( env->ckt_vec2, ae_op_eq, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_vec3, ae_op_eq, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_eq, env->ckt_object );
     // !=
@@ -6770,8 +6860,11 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_neq, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_neq, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_neq, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_neq, env->ckt_vec2 );
     registry->reserve( env->ckt_vec3, ae_op_neq, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_neq, env->ckt_vec4 );
+    registry->reserve( env->ckt_vec2, ae_op_neq, env->ckt_vec3, TRUE );
+    registry->reserve( env->ckt_vec2, ae_op_neq, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_vec3, ae_op_neq, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_neq, env->ckt_object );
     // <
@@ -6781,9 +6874,12 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_lt, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_lt, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_lt, env->ckt_polar );
-    registry->reserve( env->ckt_vec3, ae_op_lt, env->ckt_vec3 );
-    registry->reserve( env->ckt_vec4, ae_op_lt, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_lt, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_lt, env->ckt_vec2 );
+    // registry->reserve( env->ckt_vec3, ae_op_lt, env->ckt_vec3 );
+    // registry->reserve( env->ckt_vec4, ae_op_lt, env->ckt_vec4 );
+    // registry->reserve( env->ckt_vec2, ae_op_lt, env->ckt_vec3, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_lt, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec3, ae_op_lt, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_lt, env->ckt_object );
     // >
     registry->reserve( env->ckt_int, ae_op_gt, env->ckt_int );
@@ -6792,9 +6888,12 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_gt, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_gt, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_gt, env->ckt_polar );
-    registry->reserve( env->ckt_vec3, ae_op_gt, env->ckt_vec3 );
-    registry->reserve( env->ckt_vec4, ae_op_gt, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_gt, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_gt, env->ckt_vec2 );
+    // registry->reserve( env->ckt_vec3, ae_op_gt, env->ckt_vec3 );
+    // registry->reserve( env->ckt_vec4, ae_op_gt, env->ckt_vec4 );
+    // registry->reserve( env->ckt_vec2, ae_op_gt, env->ckt_vec3, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_gt, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec3, ae_op_gt, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_gt, env->ckt_object );
     // <=
     registry->reserve( env->ckt_int, ae_op_le, env->ckt_int );
@@ -6803,9 +6902,12 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_le, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_le, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_le, env->ckt_polar );
-    registry->reserve( env->ckt_vec3, ae_op_le, env->ckt_vec3 );
-    registry->reserve( env->ckt_vec4, ae_op_le, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_le, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_le, env->ckt_vec2 );
+    // registry->reserve( env->ckt_vec3, ae_op_le, env->ckt_vec3 );
+    // registry->reserve( env->ckt_vec4, ae_op_le, env->ckt_vec4 );
+    // registry->reserve( env->ckt_vec2, ae_op_le, env->ckt_vec3, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_le, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec3, ae_op_le, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_le, env->ckt_object );
     // IO <= rhs
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_int );
@@ -6814,6 +6916,7 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_time );
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_complex );
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_polar );
+    registry->reserve( env->ckt_io, ae_op_le, env->ckt_vec2 );
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_vec3 );
     registry->reserve( env->ckt_io, ae_op_le, env->ckt_vec4 );
     // >=
@@ -6823,9 +6926,12 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_ge, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_ge, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_ge, env->ckt_polar );
-    registry->reserve( env->ckt_vec3, ae_op_ge, env->ckt_vec3 );
-    registry->reserve( env->ckt_vec4, ae_op_ge, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_ge, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_ge, env->ckt_vec2 );
+    // registry->reserve( env->ckt_vec3, ae_op_ge, env->ckt_vec3 );
+    // registry->reserve( env->ckt_vec4, ae_op_ge, env->ckt_vec4 );
+    // registry->reserve( env->ckt_vec2, ae_op_ge, env->ckt_vec3, TRUE );
+    // registry->reserve( env->ckt_vec2, ae_op_ge, env->ckt_vec4, TRUE );
+    // registry->reserve( env->ckt_vec3, ae_op_ge, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_ge, env->ckt_object );
 
     //-------------------------------------------------------------------------
@@ -6855,10 +6961,12 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_time, ae_op_plus_chuck, env->ckt_dur );
     registry->reserve( env->ckt_complex, ae_op_plus_chuck, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_plus_chuck, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_plus_chuck, env->ckt_vec2 );
     registry->reserve( env->ckt_vec3, ae_op_plus_chuck, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_plus_chuck, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_plus_chuck, env->ckt_vec4);
-    registry->reserve( env->ckt_vec4, ae_op_plus_chuck, env->ckt_vec3 );
+    registry->reserve( env->ckt_vec2, ae_op_plus_chuck, env->ckt_vec3, TRUE );
+    registry->reserve( env->ckt_vec2, ae_op_plus_chuck, env->ckt_vec4, TRUE );
+    registry->reserve( env->ckt_vec3, ae_op_plus_chuck, env->ckt_vec4, TRUE );
     registry->reserve( env->ckt_object, ae_op_plus_chuck, env->ckt_string ); // object +=> string
     registry->reserve( env->ckt_int, ae_op_plus_chuck, env->ckt_string ); // int/float +=> string
     registry->reserve( env->ckt_float, ae_op_plus_chuck, env->ckt_string ); // string +=> int/float
@@ -6871,18 +6979,22 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_dur, ae_op_minus_chuck, env->ckt_time );
     registry->reserve( env->ckt_complex, ae_op_minus_chuck, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_minus_chuck, env->ckt_polar );
+    registry->reserve( env->ckt_vec2, ae_op_minus_chuck, env->ckt_vec2 );
     registry->reserve( env->ckt_vec3, ae_op_minus_chuck, env->ckt_vec3 );
     registry->reserve( env->ckt_vec4, ae_op_minus_chuck, env->ckt_vec4 );
-    registry->reserve( env->ckt_vec3, ae_op_minus_chuck, env->ckt_vec4);
-    registry->reserve( env->ckt_vec4, ae_op_minus_chuck, env->ckt_vec3 );
+    registry->reserve( env->ckt_vec2, ae_op_minus_chuck, env->ckt_vec3, TRUE );
+    registry->reserve( env->ckt_vec2, ae_op_minus_chuck, env->ckt_vec4, TRUE );
+    registry->reserve( env->ckt_vec3, ae_op_minus_chuck, env->ckt_vec4, TRUE );
     // *=>
     registry->reserve( env->ckt_int, ae_op_times_chuck, env->ckt_int );
     registry->reserve( env->ckt_float, ae_op_times_chuck, env->ckt_float );
     registry->reserve( env->ckt_complex, ae_op_times_chuck, env->ckt_complex );
     registry->reserve( env->ckt_polar, ae_op_times_chuck, env->ckt_polar );
+    registry->reserve( env->ckt_float, ae_op_times_chuck, env->ckt_vec2 );
     registry->reserve( env->ckt_float, ae_op_times_chuck, env->ckt_vec3 );
     registry->reserve( env->ckt_float, ae_op_times_chuck, env->ckt_vec4 );
     registry->reserve( env->ckt_float, ae_op_times_chuck, env->ckt_dur );
+    registry->reserve( env->ckt_int, ae_op_times_chuck, env->ckt_vec2 );
     registry->reserve( env->ckt_int, ae_op_times_chuck, env->ckt_vec3 );
     registry->reserve( env->ckt_int, ae_op_times_chuck, env->ckt_vec4 );
     registry->reserve( env->ckt_int, ae_op_times_chuck, env->ckt_dur );
@@ -6890,11 +7002,15 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_int, ae_op_divide_chuck, env->ckt_int );
     registry->reserve( env->ckt_float, ae_op_divide_chuck, env->ckt_float );
     registry->reserve( env->ckt_float, ae_op_divide_chuck, env->ckt_dur );
-    registry->reserve( env->ckt_complex, ae_op_divide_chuck, env->ckt_complex );
-    registry->reserve( env->ckt_polar, ae_op_divide_chuck, env->ckt_polar );
+    registry->reserve( env->ckt_float, ae_op_divide_chuck, env->ckt_vec2 );
+    registry->reserve( env->ckt_float, ae_op_divide_chuck, env->ckt_vec3 );
+    registry->reserve( env->ckt_float, ae_op_divide_chuck, env->ckt_vec4 );
+    registry->reserve( env->ckt_int, ae_op_divide_chuck, env->ckt_vec2 );
     registry->reserve( env->ckt_int, ae_op_divide_chuck, env->ckt_vec3 );
     registry->reserve( env->ckt_int, ae_op_divide_chuck, env->ckt_vec4 );
     registry->reserve( env->ckt_int, ae_op_divide_chuck, env->ckt_dur );
+    registry->reserve( env->ckt_complex, ae_op_divide_chuck, env->ckt_complex );
+    registry->reserve( env->ckt_polar, ae_op_divide_chuck, env->ckt_polar );
 
     //-------------------------------------------------------------------------
     // &=> |=> ^=> >>=> <<=> %=>
@@ -8535,7 +8651,7 @@ t_CKBOOL Chuck_Func::pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs )
         {
             case kindof_INT: memcpy( here, &dlargs[j].value.v_int, sizeof(dlargs[j].value.v_int) ); break;
             case kindof_FLOAT: memcpy( here, &dlargs[j].value.v_float, sizeof(dlargs[j].value.v_float) ); break;
-            case kindof_COMPLEX:memcpy( here, &dlargs[j].value.v_complex, sizeof(dlargs[j].value.v_complex) ); break;
+            case kindof_VEC2: memcpy( here, &dlargs[j].value.v_vec2, sizeof(dlargs[j].value.v_vec2) ); break;
             case kindof_VEC3: memcpy( here, &dlargs[j].value.v_vec3, sizeof(dlargs[j].value.v_vec3) ); break;
             case kindof_VEC4: memcpy( here, &dlargs[j].value.v_vec4, sizeof(dlargs[j].value.v_vec4) ); break;
 

@@ -56,6 +56,7 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL init_class_vec2( Chuck_Env * env, Chuck_Type * type ); // 1.5.1.7
 t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type ); // 1.3.5.3
 t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type ); // 1.5.0.0
@@ -251,8 +252,13 @@ CK_DLL_MFUN( string_parent);
 
 
 //-----------------------------------------------------------------------------
-// vector API (vec3, vec4, eventually vector) ge: 1.3.5.3
+// vector API (vec3, vec4, eventually vector) (ge) 1.3.5.3
+// add vec2 (ge) 1.5.1.7
 //-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec2_set );
+CK_DLL_MFUN( vec2_setAll );
+CK_DLL_MFUN( vec2_magnitude );
+CK_DLL_MFUN( vec2_normalize );
 CK_DLL_MFUN( vec3_set );
 CK_DLL_MFUN( vec3_setAll );
 CK_DLL_MFUN( vec3_magnitude );

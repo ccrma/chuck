@@ -509,8 +509,10 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
                     }
                     else if( exp->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                         emit->append( new Chuck_Instr_Reg_Pop_Float );
-                    else if( exp->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-                        emit->append( new Chuck_Instr_Reg_Pop_Complex );
+                    else if( exp->type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                    {
+                        emit->append( new Chuck_Instr_Reg_Pop_Vec2ComplexPolar );
+                    }
                     else if( exp->type->size == sz_VEC3 ) // ge: added 1.3.5.3
                         emit->append( new Chuck_Instr_Reg_Pop_WordsMulti(sz_VEC3/sz_WORD) );
                     else if( exp->type->size == sz_VEC4 ) // ge: added 1.3.5.3
@@ -857,8 +859,8 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
                 num_words += sz_FLOAT / sz_WORD; // changed to compute number of words; 1.3.1.0
             else if( e->type->size == sz_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 num_words += sz_INT / sz_WORD; // changed to compute number of words; 1.3.1.0
-            else if( e->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-                num_words += sz_COMPLEX / sz_WORD; // changed to compute number of words; 1.3.1.0
+            else if( e->type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                num_words += sz_VEC2 / sz_WORD; // changed to compute number of words; 1.3.1.0
             else if( e->type->size != 0 )
             {
                 EM_error2( e->where,
@@ -917,7 +919,6 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
 t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
 {
     Chuck_Instr_ForEach_Inc_And_Branch * op = NULL;
-    t_CKUINT num_words = 0;
     t_CKBOOL ret = TRUE;
     // codestr prefix for better description | 1.5.0.8
     string codestr_prefix = "/** loop control **/";
@@ -1008,7 +1009,7 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     t_CKUINT start_index = emit->next_index();
 
     // get data kind and size relevant to array
-    t_CKUINT dataKind = getkindof( emit->env, stmt->theIter->type );
+    te_KindOf dataKind = getkindof( emit->env, stmt->theIter->type );
     t_CKUINT dataSize = stmt->theIter->type->size;
     // compare branch condition and increment loop counter
     op = new Chuck_Instr_ForEach_Inc_And_Branch( dataKind, dataSize );
@@ -2059,10 +2060,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Add_polar );
                 break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Add_vec2 );
+                break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Add_vec3 );
                 break;
-                case te_vec4:
+            case te_vec4:
                 emit->append( instr = new Chuck_Instr_Add_vec4 );
                 break;
 
@@ -2135,6 +2139,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Add_polar_Assign );
                 break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Add_vec2_Assign );
+                break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Add_vec3_Assign );
                 break;
@@ -2168,6 +2175,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
                 break;
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Minus_polar );
+                break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Minus_vec2 );
                 break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Minus_vec3 );
@@ -2203,6 +2213,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Minus_polar_Assign );
                 break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Minus_vec2_Assign );
+                break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Minus_vec3_Assign );
                 break;
@@ -2217,7 +2230,15 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     case ae_op_times:
         // check
-        if( left == te_float && right == te_vec3 )
+        if( left == te_float && right == te_vec2 ) // 1.5.1.7 (ge) added
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec2 );
+        }
+        else if( left == te_vec2 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec2_Times_float );
+        }
+        else if( left == te_float && right == te_vec3 )
         {
             emit->append( instr = new Chuck_Instr_float_Times_vec3 );
         }
@@ -2264,7 +2285,11 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     case ae_op_times_chuck:
         // check
-        if( left == te_float && right == te_vec3 )
+        if( left == te_float && right == te_vec2 )
+        {
+            emit->append( instr = new Chuck_Instr_float_Times_vec2_Assign );
+        }
+        else if( left == te_float && right == te_vec3 )
         {
             emit->append( instr = new Chuck_Instr_float_Times_vec3_Assign );
         }
@@ -2296,7 +2321,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     case ae_op_divide:
         if( ( left == te_time && right == te_dur ) ) // time / dur = float
+        {
             emit->append( instr = new Chuck_Instr_Divide_double );
+        }
+        else if( left == te_vec2 && right == te_float )
+        {
+            emit->append( instr = new Chuck_Instr_vec2_Divide_float );
+        }
         else if( left == te_vec3 && right == te_float )
         {
             emit->append( instr = new Chuck_Instr_vec3_Divide_float );
@@ -2332,9 +2363,14 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
     case ae_op_divide_chuck:
         // reverse
         if( ( left == te_dur && right == te_time ) ) // time / dur = float
+        {
             emit->append( instr = new Chuck_Instr_Divide_double_Assign );
-        else
-        if( left == te_float && right == te_vec3 )
+        }
+        else if( left == te_float && right == te_vec2 )
+        {
+            emit->append( instr = new Chuck_Instr_vec2_Divide_float_Assign );
+        }
+        else if( left == te_float && right == te_vec3 )
         {
             emit->append( instr = new Chuck_Instr_vec3_Divide_float_Assign );
         }
@@ -2638,6 +2674,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Eq_complex );
                 break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Eq_vec2 );
+                break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Eq_vec3 );
                 break;
@@ -2675,6 +2714,9 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             case te_complex:
             case te_polar:
                 emit->append( instr = new Chuck_Instr_Neq_complex );
+                break;
+            case te_vec2:
+                emit->append( instr = new Chuck_Instr_Neq_vec2 );
                 break;
             case te_vec3:
                 emit->append( instr = new Chuck_Instr_Neq_vec3 );
@@ -2754,6 +2796,11 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
                 else if( isa( t_right, emit->env->ckt_polar ) )
                 {
                     emit->append( instr = new Chuck_Instr_IO_out_polar );
+                    instr->set_linepos( rhs->line );
+                }
+                else if( isa( t_right, emit->env->ckt_vec2 ) )
+                {
+                    emit->append( instr = new Chuck_Instr_IO_out_vec2 );
                     instr->set_linepos( rhs->line );
                 }
                 else if( isa( t_right, emit->env->ckt_vec3 ) )
@@ -3182,7 +3229,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                     emit->append( new Chuck_Instr_Assign_Primitive );
                 else if( right->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive2 );
-                else if( right->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                else if( right->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
                     emit->append( new Chuck_Instr_Assign_Primitive4 );
                 else if( right->size == sz_VEC3 ) // ge: added 1.3.5.3
                     emit->append( new Chuck_Instr_Assign_PrimitiveVec3 );
@@ -3689,8 +3736,8 @@ t_CKBOOL emit_engine_emit_vec_lit( Chuck_Emitter * emit, a_Vec val )
     if( !emit_engine_emit_exp( emit, val->args ) )
         return FALSE;
 
-    // zero pad if needed
-    t_CKINT n = 3 - val->numdims;
+    // zero pad if needed, using smallest type: vec2 | 1.5.1.7
+    t_CKINT n = sz_VEC2/sz_FLOAT - val->numdims;
     // any remaining
     while( n > 0 )
     {
@@ -3755,6 +3802,14 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         emit->append( new Chuck_Instr_Cast_complex2polar );
     else if( equals( to, emit->env->ckt_complex ) && equals( from, emit->env->ckt_polar ) )
         emit->append( new Chuck_Instr_Cast_polar2complex );
+    else if( equals( to, emit->env->ckt_vec2 ) && equals( from, emit->env->ckt_vec3 ) ) // 1.5.1.7
+        emit->append( new Chuck_Instr_Cast_vec3tovec2 );
+    else if( equals( to, emit->env->ckt_vec2 ) && equals( from, emit->env->ckt_vec4 ) ) // 1.5.1.7
+        emit->append( new Chuck_Instr_Cast_vec4tovec2 );
+    else if( equals( to, emit->env->ckt_vec3 ) && equals( from, emit->env->ckt_vec2 ) ) // 1.5.1.7
+        emit->append( new Chuck_Instr_Cast_vec2tovec3 );
+    else if( equals( to, emit->env->ckt_vec4 ) && equals( from, emit->env->ckt_vec2 ) ) // 1.5.1.7
+        emit->append( new Chuck_Instr_Cast_vec2tovec4 );
     else if( equals( to, emit->env->ckt_vec3 ) && equals( from, emit->env->ckt_vec4 ) )
         emit->append( new Chuck_Instr_Cast_vec4tovec3 );
     else if( equals( to, emit->env->ckt_vec4 ) && equals( from, emit->env->ckt_vec3 ) )
@@ -3927,7 +3982,7 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 
     // make sure
     // ISSUE: 64-bit (fixed 1.3.1.0)
-    if( type->size != sz_INT && type->size != sz_FLOAT && type->size != sz_COMPLEX &&
+    if( type->size != sz_INT && type->size != sz_FLOAT && type->size != sz_VEC2 &&
         type->size != sz_VEC3 && type->size != sz_VEC4 )
     {
         EM_error2( array->where,
@@ -4030,7 +4085,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     if( func->def()->s_type == ae_func_builtin )
     {
         // ISSUE: 64-bit (fixed 1.3.1.0)
-        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_COMPLEX ||
+        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_VEC2 ||
             size == sz_VEC3 || sz_VEC4 )
         {
             // is member (1.3.1.0: changed to use kind instead of size)
@@ -4129,7 +4184,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_dot_member_special()
-// desc: emit special dot member: complex, polar, vec3, vec4
+// desc: emit special dot member: complex, polar, vec2, vec3, vec4
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
                                                   a_Exp_Dot_Member member )
@@ -4157,9 +4212,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         string str = S_name(member->xid);
         // check
         if( str == "re" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_VEC2 ) );
         else if( str == "im" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_VEC2 ) );
         else
             goto check_func;
 
@@ -4185,9 +4240,40 @@ t_CKBOOL emit_engine_emit_exp_dot_member_special( Chuck_Emitter * emit,
         string str = S_name(member->xid);
         // check
         if( str == "mag" )
-            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kindof_VEC2 ) );
         else if( str == "phase" )
-            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_COMPLEX ) );
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kindof_VEC2 ) );
+        else
+            goto check_func;
+
+        // done
+        return TRUE;
+    }
+    else if( member->t_base->xid == te_vec2 )
+    {
+        // remember the kind
+        te_KindOf kind = kindof_VEC2;
+        // mark to emit addr
+        if( member->base->s_meta == ae_meta_var )
+            member->base->emit_var = TRUE;
+        else if( emit_addr )
+        {
+            EM_error2( member->base->where,
+                      "(emit): cannot assign value to literal '%s' value...",
+                      member->t_base->c_name() );
+            return FALSE;
+        }
+
+        // emit the base
+        if( !emit_engine_emit_exp( emit, member->base ) )
+            return FALSE;
+
+        string str = S_name(member->xid);
+        // check for .xy .us
+        if( str == "x" || str == "u" || str == "s" )
+            emit->append( new Chuck_Instr_Dot_Cmp_First( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
+        else if( str == "y" || str == "v" || str == "t" )
+            emit->append( new Chuck_Instr_Dot_Cmp_Second( member->base->s_meta == ae_meta_var, emit_addr, kind ) );
         else
             goto check_func;
 
@@ -4334,6 +4420,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     {
         case te_complex:
         case te_polar:
+        case te_vec2:
         case te_vec3:
         case te_vec4:
             // emit special
@@ -4850,7 +4937,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Reg_Push_Imm( 0 ) );
             else if( type->size == sz_FLOAT ) // ISSUE: 64-bit
                 emit->append( new Chuck_Instr_Reg_Push_Imm2( 0.0 ) );
-            else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit
+            else if( type->size == sz_VEC2 ) // ISSUE: 64-bit
                 emit->append( new Chuck_Instr_Reg_Push_Imm4( 0.0, 0.0 ) );
             else
             {
@@ -4874,8 +4961,8 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                 emit->append( new Chuck_Instr_Alloc_Member_Word( value->offset ) );
             else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Alloc_Member_Word2( value->offset ) );
-            else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-                emit->append( new Chuck_Instr_Alloc_Member_Word4( value->offset ) );
+            else if( type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                emit->append( new Chuck_Instr_Alloc_Member_Word4( value->offset ) ); // 1.5.1.7 (ge) NOTE also handles vec2
             else if( type->size == sz_VEC3 ) // ge: added 1.3.5.3
                 emit->append( new Chuck_Instr_Alloc_Member_Vec3( value->offset ) );
             else if( type->size == sz_VEC4 ) // ge: added 1.3.5.3
@@ -4986,7 +5073,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     instr->set_linepos( decl->line );
                     emit->append( instr );
                 }
-                else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+                else if( type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 {
                     emit->append( new Chuck_Instr_Alloc_Word4( local->offset ) );
                 }
@@ -5063,7 +5150,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
             else if( type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Assign_Primitive2 );
             // size 16 primitive
-            else if( type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
+            else if( type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
                 emit->append( new Chuck_Instr_Assign_Primitive4 );
             else
                 assert( FALSE );
@@ -5705,8 +5792,8 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
             emit->append( new Chuck_Instr_Reg_Push_Mem( v->offset, v->is_context_global ) );
         else if( v->type->size == sz_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
             emit->append( new Chuck_Instr_Reg_Push_Mem2( v->offset, v->is_context_global ) );
-        else if( v->type->size == sz_COMPLEX ) // ISSUE: 64-bit (fixed 1.3.1.0)
-            emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global ) );
+        else if( v->type->size == sz_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
+            emit->append( new Chuck_Instr_Reg_Push_Mem4( v->offset, v->is_context_global ) ); // 1.5.1.7 (ge) NOTE also handles vec2
         else if( v->type->size == sz_VEC3 ) // ge: added 1.3.5.3
             emit->append( new Chuck_Instr_Reg_Push_Mem_Vec3( v->offset, v->is_context_global ) );
         else if( v->type->size == sz_VEC4 ) // ge: added 1.3.5.3

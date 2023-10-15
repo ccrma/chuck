@@ -100,6 +100,10 @@ unsigned long ck_ensurepow2( unsigned long i );
 t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp );
 // phase of complex number
 t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp );
+// magnitude of vec2
+t_CKFLOAT ck_vec2_magnitude( const t_CKVEC2 & v );
+// phase of vec2
+t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & v );
 // magnitude of vec3
 t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
 // magnitude of vec4
