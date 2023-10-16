@@ -113,7 +113,7 @@ void Chuck_VM_Object::add_ref()
 
 //-----------------------------------------------------------------------------
 // name: release()
-// desc: remove reference
+// desc: decrement reference; deletes objects when refcount reaches 0;
 //-----------------------------------------------------------------------------
 void Chuck_VM_Object::release()
 {
@@ -122,10 +122,10 @@ void Chuck_VM_Object::release()
     //-----------------------------------------------------------------------------
     if( m_ref_count <= 0 )
     {
-        // print warning
+        // log warning
         EM_log( CK_LOG_FINEST, "(internal) Object.release() refcount already %d", m_ref_count );
 
-        // print error
+        // disabled: error out
         // EM_error3( "[chuck]: (internal error) Object.release() refcount == %d", m_ref_count );
         // make sure there is at least one reference
         // assert( m_ref_count > 0 );
@@ -136,8 +136,6 @@ void Chuck_VM_Object::release()
         m_ref_count--;
     }
 
-    // added 1.3.0.0
-    // CK_VM_DEBUG(CK_FPRINTF_STDERR( "Chuck_VM_Object::release() : 0x%08x, %s, %ulu\n", this, mini_type(typeid(*this).name()), m_ref_count));
     // updated 1.5.0.5 to use Chuck_VM_Debug
     CK_VM_DEBUGGER( release( this ) );
 
@@ -148,10 +146,10 @@ void Chuck_VM_Object::release()
         if( our_locks_in_effect && m_locked )
         {
             EM_error2( 0, "(internal error) releasing locked VM object!" );
-            // fail
+            // bail out
             assert( FALSE );
             // in case assert is disabled
-            *(int *)0 = 1;
+            // *(int *)0 = 1;
         }
 
     #ifndef __CHUNREAL_ENGINE__
@@ -165,8 +163,9 @@ void Chuck_VM_Object::release()
         // track | 1.5.0.5 (ge)
         CK_VM_DEBUGGER( destruct( this ) );
 
-        // REFACTOR-2017: doing this for now
-        delete this;
+        // trigger this object's deletion / destructors
+        // should be valid as long as no members are used beyond this point
+        delete this; // REFACTOR-2017
     }
 }
 

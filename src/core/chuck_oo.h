@@ -77,7 +77,7 @@ public:
 public:
     // add reference (ge: april 2013: made these virtual)
     virtual void add_ref();
-    // release reference
+    // decrement reference; deletes objects when refcount reaches 0
     virtual void release();
     // lock
     virtual void lock();
