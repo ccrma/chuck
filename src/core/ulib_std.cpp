@@ -255,7 +255,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add ftoi
     QUERY->add_sfun( QUERY, ftoi_impl, "int", "ftoi" ); //! float to int
     QUERY->add_arg( QUERY, "float", "f" );
-    QUERY->doc_func( QUERY, "convert float to integer. " );
+    QUERY->doc_func( QUERY, "convert float to integer." );
 
     // add getenv
     QUERY->add_sfun( QUERY, getenv_impl, "string", "getenv" ); //! fetch environment variable

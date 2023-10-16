@@ -851,7 +851,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add cget: valueAt
     func = make_new_mfun( "float", "valueAt", sndbuf_cget_valueAt );
     func->add_arg( "int", "pos" );
-    func->doc = "get sample value at given position (in samples). ";
+    func->doc = "get sample value at given position (in samples).";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -1091,7 +1091,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_add_ex( env, "special/LiSa-munger1.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-munger2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-munger3.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "special/LiSa-load.ck.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/LiSa-load.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-simplelooping.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-trigger.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-track1.ck" ) ) goto error;

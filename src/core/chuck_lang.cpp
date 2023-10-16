@@ -627,6 +627,59 @@ error:
 
 
 //-----------------------------------------------------------------------------
+// name: init_class_vec2()
+// desc: initialize primitive type vec2
+//-----------------------------------------------------------------------------
+t_CKBOOL init_class_vec2( Chuck_Env * env, Chuck_Type * type )
+{
+    // init as base class
+    Chuck_DL_Func * func = NULL;
+
+    // log
+    EM_log( CK_LOG_SEVERE, "class 'vec2' (primitive)" );
+
+    // document
+    const char * doc = "a primitive type for a 2-dimensional vector; potentially useful for 2D and UV coordinates.";
+
+    // init as base class
+    if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
+        return FALSE;
+
+    // add set(float,float,float)
+    func = make_new_mfun( "void", "set", vec2_set );
+    func->add_arg( "float", "x" );
+    func->add_arg( "float", "y" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add setAll(float)
+    func = make_new_mfun( "void", "setAll", vec2_setAll );
+    func->add_arg( "float", "value" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add magnitude()
+    func = make_new_mfun( "float", "magnitude", vec2_magnitude );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add normalize()
+    func = make_new_mfun( "void", "normalize", vec2_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return TRUE;
+
+error:
+    // end the class import
+    type_engine_import_class_end( env );
+
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_class_vec3()
 // desc: initialize primitive type vec3
 //-----------------------------------------------------------------------------
@@ -1878,10 +1931,10 @@ CK_DLL_MFUN( uana_cval )
     if( i < 0 || cvals.size() <= i ) RETURN->v_complex.re = RETURN->v_complex.im = 0;
     else
     {
-        // get
-        t_CKCOMPLEX val;
+        // get as vec2
+        t_CKVEC2 val;
         cvals.get( i, &val );
-        RETURN->v_complex = val;
+        RETURN->v_vec2 = val;
     }
 }
 
@@ -2026,9 +2079,9 @@ CK_DLL_MFUN( uanablob_cval )
     else
     {
         // get
-        t_CKCOMPLEX val;
+        t_CKVEC2 val;
         cvals->get( i, &val );
-        RETURN->v_complex = val;
+        RETURN->v_vec2 = val;
     }
 }
 
@@ -2082,6 +2135,54 @@ CK_DLL_MFUN( event_waiting_on )
 {
     // do nothing here; this function could be overridden as needed
     // FYI get the calling shred with 'SHRED' parameter to this function
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// vec2 API
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( vec2_set )
+{
+    // HACK: this is a particularly horrid cast from (Chuck_Object *)
+    // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
+    t_CKVEC2 * vec2 = (t_CKVEC2 *)SELF;
+    // get index
+    vec2->x = GET_NEXT_FLOAT(ARGS);
+    vec2->y = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec2_setAll )
+{
+    // get data pointer
+    t_CKVEC2 * vec2 = (t_CKVEC2 *)SELF;
+    // get index
+    vec2->x = vec2->y = GET_NEXT_FLOAT(ARGS);
+}
+
+CK_DLL_MFUN( vec2_magnitude )
+{
+    // get data pointer
+    t_CKVEC2 * vec2 = (t_CKVEC2 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec2->x*vec2->x + vec2->y*vec2->y );
+    // return
+    RETURN->v_float = mag;
+}
+
+CK_DLL_MFUN( vec2_normalize )
+{
+    // get data pointer
+    t_CKVEC2 * vec2 = (t_CKVEC2 *)SELF;
+    // compute magnitude
+    t_CKFLOAT mag = ::sqrt( vec2->x*vec2->x + vec2->y*vec2->y );
+    // check for zero
+    if( mag > 0 )
+    {
+        vec2->x /= mag;
+        vec2->y /= mag;
+    }
 }
 
 
@@ -2224,12 +2325,12 @@ CK_DLL_MFUN( vec4_set )
 {
     // HACK: this is a particularly horrid cast from (Chuck_Object *)
     // t_CKVEC3 is neither a super- or sub-class of Chuck_Object...
-    t_CKVEC4 * vec3 = (t_CKVEC4 *)SELF;
+    t_CKVEC4 * vec4 = (t_CKVEC4 *)SELF;
     // get index
-    vec3->x = GET_NEXT_FLOAT(ARGS);
-    vec3->y = GET_NEXT_FLOAT(ARGS);
-    vec3->z = GET_NEXT_FLOAT(ARGS);
-    vec3->w = GET_NEXT_FLOAT(ARGS);
+    vec4->x = GET_NEXT_FLOAT(ARGS);
+    vec4->y = GET_NEXT_FLOAT(ARGS);
+    vec4->z = GET_NEXT_FLOAT(ARGS);
+    vec4->w = GET_NEXT_FLOAT(ARGS);
 }
 
 CK_DLL_MFUN( vec4_setAll )
@@ -3007,7 +3108,7 @@ CK_DLL_MFUN( array_push_back )
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_COMPLEX( ARGS ) );
+        RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_VEC2( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
         RETURN->v_int = ((Chuck_Array24 *)array)->push_back( GET_NEXT_VEC3( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
@@ -3029,7 +3130,7 @@ CK_DLL_MFUN( array_insert )
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_COMPLEX( ARGS ) );
+        RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_VEC2( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
         RETURN->v_int = ((Chuck_Array24 *)array)->insert( position, GET_NEXT_VEC3( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
@@ -3056,7 +3157,7 @@ CK_DLL_MFUN( array_push_front )
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_front( GET_NEXT_FLOAT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->push_front( GET_NEXT_COMPLEX( ARGS ) );
+        RETURN->v_int = ((Chuck_Array16 *)array)->push_front( GET_NEXT_VEC2( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
         RETURN->v_int = ((Chuck_Array24 *)array)->push_front( GET_NEXT_VEC3( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )

@@ -391,7 +391,7 @@ public:
 
         if(type->doc.size() > 0)
         {
-            std::string doc = capitalize(type->doc);
+            std::string doc = capitalize_and_periodize(type->doc);
             m_outputStr += "<p class=\"class_description\">" + doc + "<p>\n";
         }
         else
@@ -478,7 +478,7 @@ public:
         m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + capitalize(var->doc) + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize(var->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -503,7 +503,7 @@ public:
         m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + capitalize(var->doc) + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize(var->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -537,7 +537,7 @@ public:
         m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + capitalize(m_func->doc) + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize(m_func->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 
@@ -573,7 +573,7 @@ public:
         m_outputStr += ")</p>\n";
 
         if(m_func->doc.size() > 0)
-            m_outputStr += "<p class=\"member_description\">" + capitalize(m_func->doc) + "</p>\n";
+            m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize(m_func->doc) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
 

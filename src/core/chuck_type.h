@@ -52,7 +52,7 @@ typedef enum {
     te_function, te_object, te_user, te_array, te_null, te_ugen, te_uana,
     te_event, te_void, te_stdout, te_stderr, te_adc, te_dac, te_bunghole,
     te_uanablob, te_io, te_fileio, te_chout, te_cherr, te_multi,
-    te_vec3, te_vec4, te_vector, te_auto
+    te_vec2, te_vec3, te_vec4, te_vector, te_auto
 } te_Type;
 
 
@@ -765,6 +765,7 @@ public:
     Chuck_Type * ckt_dur;
     Chuck_Type * ckt_complex;
     Chuck_Type * ckt_polar;
+    Chuck_Type * ckt_vec2;
     Chuck_Type * ckt_vec3;
     Chuck_Type * ckt_vec4;
     Chuck_Type * ckt_null;

@@ -77,7 +77,7 @@ public:
 public:
     // add reference (ge: april 2013: made these virtual)
     virtual void add_ref();
-    // release reference
+    // decrement reference; deletes objects when refcount reaches 0
     virtual void release();
     // lock
     virtual void lock();
@@ -180,7 +180,7 @@ public: // static
 #define CHUCK_ARRAY32_DATASIZE sz_VEC4 // 1.3.5.3
 #define CHUCK_ARRAYINT_DATAKIND kindof_INT
 #define CHUCK_ARRAYFLOAT_DATAKIND kindof_FLOAT
-#define CHUCK_ARRAY16_DATAKIND kindof_COMPLEX
+#define CHUCK_ARRAY16_DATAKIND kindof_VEC2 // 1.5.1.7
 #define CHUCK_ARRAY24_DATAKIND kindof_VEC3 // 1.3.5.3
 #define CHUCK_ARRAY32_DATAKIND kindof_VEC4 // 1.3.5.3
 //-----------------------------------------------------------------------------
@@ -443,7 +443,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array16
-// desc: native ChucK arrays (for 16-byte)
+// desc: native ChucK arrays (for 16-byte) | vec2, complex, polar
 //-----------------------------------------------------------------------------
 struct Chuck_Array16 : public Chuck_Array
 {
@@ -456,24 +456,28 @@ public: // specific to this class
     t_CKUINT addr( t_CKINT i );
     t_CKUINT addr( const std::string & key );
     // get value
+    t_CKINT get( t_CKINT i, t_CKVEC2 * val );
     t_CKINT get( t_CKINT i, t_CKCOMPLEX * val );
+    t_CKINT get( const std::string & key, t_CKVEC2 * val );
     t_CKINT get( const std::string & key, t_CKCOMPLEX * val );
     // set value
+    t_CKINT set( t_CKINT i, const t_CKVEC2 & val );
     t_CKINT set( t_CKINT i, const t_CKCOMPLEX & val );
+    t_CKINT set( const std::string & key, const t_CKVEC2 & val );
     t_CKINT set( const std::string & key, const t_CKCOMPLEX & val );
 
     // append value
-    t_CKINT push_back( const t_CKCOMPLEX & val );
+    t_CKINT push_back( const t_CKVEC2 & val );
     // get value of last element
-    t_CKINT back( t_CKCOMPLEX * val ) const;
+    t_CKINT back( t_CKVEC2 * val ) const;
     // prepend value | 1.5.0.8 (ge) added
     // NOTE linear time O(n) operation
-    t_CKINT push_front( const t_CKCOMPLEX & val );
+    t_CKINT push_front( const t_CKVEC2 & val );
     // get value of last element
-    t_CKINT front( t_CKCOMPLEX * val ) const;
+    t_CKINT front( t_CKVEC2 * val ) const;
     // insert before position | 1.5.0.8 (ge)
     // NOTE linear time O(n) operation
-    t_CKINT insert( t_CKINT pos, const t_CKCOMPLEX & val );
+    t_CKINT insert( t_CKINT pos, const t_CKVEC2 & val );
 
 public: // array interface implementation
     // get array size
@@ -520,8 +524,8 @@ public: // map only
     virtual t_CKINT map_erase( const std::string & key );
 
 public:
-    std::vector<t_CKCOMPLEX> m_vector;
-    std::map<std::string, t_CKCOMPLEX> m_map;
+    std::vector<t_CKVEC2> m_vector;
+    std::map<std::string, t_CKVEC2> m_map;
     // semantic hint; in certain situations (like sorting)
     // need to distinguish between complex and polar | 1.5.1.0
     t_CKBOOL m_isPolarType;

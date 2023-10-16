@@ -68,10 +68,10 @@
 // [6] http://smirk.cs.princeton.edu/
 // sMIRk | Small Music Information Retrieval toolKit
 //
-// [7] Tzanetakis, G. and P. R. Cook. 2000 "MARSYAS: A Framework for Audio
+// [7] Tzanetakis, G. and P. R. Cook. 2000. "MARSYAS: A Framework for Audio
 // Analysis." Organised Sound. 4:(3)
 //
-// [8] Tzanetakis, G. and P. R. Cook. 2002 "Musical Genre Classification of
+// [8] Tzanetakis, G. and P. R. Cook. 2002. "Musical Genre Classification of
 // Audio Signals." IEEE Transaction on Speech and Audio Processing. 10(5).
 //
 // [9] Wang, G., R. Fiebrink, P. R. Cook. 2007. "Combining Analysis and

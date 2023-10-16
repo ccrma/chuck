@@ -167,7 +167,7 @@ string toupper( const string & str )
 
 //-----------------------------------------------------------------------------
 // name: capitalize()
-// capitalize first character
+// desc: capiitalize first character
 //-----------------------------------------------------------------------------
 string capitalize( const string & s )
 {
@@ -176,6 +176,45 @@ string capitalize( const string & s )
     // if not empty and first character is a lower-case letter
     if( retval.length() > 0 && retval[0] >= 'a' && retval[0] <= 'z' )
         retval[0] -= 32;
+    // done
+    return retval;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: capitalize_and_periodize()
+// desc: capiitalize first character and ensure trailing period
+//-----------------------------------------------------------------------------
+string capitalize_and_periodize( const string & s )
+{
+    // copy
+    string retval = capitalize( trim(s) );
+    // check
+    if( retval.length() > 0 )
+    {
+        char c = retval[retval.length()-1];
+        // check for other punctuation
+        switch( c )
+        {
+            case '.':
+            case ',':
+            case '!':
+            case '?':
+            case ')':
+            case '(':
+            case '#':
+            case '\'':
+            case '\"':
+            case '\n':
+                break;
+
+            // in all other cases, append .
+            default:
+                retval += '.';
+        }
+    }
     // done
     return retval;
 }

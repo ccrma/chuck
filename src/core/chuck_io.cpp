@@ -4332,6 +4332,63 @@ void Chuck_IO_File::write( const t_CKPOLAR & val, t_CKINT flags )
     }
 }
 
+void Chuck_IO_File::write( const t_CKVEC2 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_File::write( const t_CKVEC2 & val, t_CKINT flags )
+{
+    // sanity
+    if( !(m_io.is_open()) ) {
+        EM_error3( "[chuck](via FileIO): cannot write: no file open" );
+        return;
+    }
+    if( m_io.fail() ) {
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+        return;
+    }
+    if( m_dir ) {
+        EM_error3( "[chuck](via FileIO): cannot write to a directory" );
+        return;
+    }
+
+    // check ASCII or BINARY
+    if( m_flags & TYPE_ASCII )
+    {
+        // insert into stream
+        m_io << "@(" << val.x << "," << val.y << ")";
+    }
+    else if( m_flags & TYPE_BINARY )
+    {
+        // 1.5.0.1 (ge) add distinction between different float sizes
+        if( flags & Chuck_IO::FLOAT32 )
+        {
+            // 32-bit
+            float v = (float)val.x; m_io.write( (char *)&v, 4 );
+                  v = (float)val.y; m_io.write( (char *)&v, 4 );
+        }
+        else if( flags & Chuck_IO::FLOAT64 )
+        {
+            // 64-bit
+            double v = (double)val.x; m_io.write( (char *)&v, 8 );
+                   v = (double)val.y; m_io.write( (char *)&v, 8 );
+        }
+        else
+        {
+            EM_error3( "[chuck](via FileIO): writeFloat error: invalid/unsupport datatype size flag" );
+        }
+    }
+    else
+    {
+        EM_error3( "[chuck](via FileIO): write error: invalid ASCII/binary flag" );
+    }
+
+    if( m_io.fail() ) { // check both before and after write if stream is ok
+        EM_error3( "[chuck](via FileIO): cannot write: I/O stream failed" );
+    }
+}
+
 void Chuck_IO_File::write( const t_CKVEC3 & val )
 {
     this->write( val, Chuck_IO::FLOAT32 );
@@ -4646,6 +4703,18 @@ void Chuck_IO_Chout::write( const t_CKPOLAR & val, t_CKINT flags )
     this->write( val );
 }
 
+void Chuck_IO_Chout::write( const t_CKVEC2 & v )
+{
+    // print vec2 value
+    m_buffer << "@(" << v.x << "," << v.y << ")";
+}
+
+void Chuck_IO_Chout::write( const t_CKVEC2 & v, t_CKINT flags )
+{
+    // ignore flags for chout
+    this->write( v );
+}
+
 void Chuck_IO_Chout::write( const t_CKVEC3 & v )
 {
     // print vec3 value
@@ -4824,6 +4893,19 @@ void Chuck_IO_Cherr::write( const t_CKPOLAR & val, t_CKINT flags )
 {
     // ignore flags for cherr
     this->write( val );
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC2 & v )
+{
+    // print vec2 value
+    m_buffer << "@(" << v.x << "," << v.y << ")";
+    flush(); // always flush for cerr | 1.5.0.0 (ge) added
+}
+
+void Chuck_IO_Cherr::write( const t_CKVEC2 & v, t_CKINT flags )
+{
+    // ignore flags for cherr
+    this->write( v );
 }
 
 void Chuck_IO_Cherr::write( const t_CKVEC3 & v )
@@ -5615,6 +5697,18 @@ void Chuck_IO_Serial::write( const t_CKPOLAR & val, t_CKINT flags )
     // NOTE this will NOT output chuck-format polar %(modulus,phase) in ASCII mode
     this->write( val.modulus, flags );
     this->write( val.phase, flags );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC2 & val )
+{
+    this->write( val, Chuck_IO::FLOAT32 );
+}
+
+void Chuck_IO_Serial::write( const t_CKVEC2 & val, t_CKINT flags )
+{
+    // NOTE this will NOT output chuck-format vec2 @(x,y) in ASCII mode
+    this->write( val.x, flags );
+    this->write( val.y, flags );
 }
 
 void Chuck_IO_Serial::write( const t_CKVEC3 & val )
@@ -6642,17 +6736,17 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
 
     // add getByte
     func = make_new_mfun("int", "getByte", serialio_getByte);
-    func->doc = "get next requested byte. ";
+    func->doc = "get next requested byte.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getBytes
     func = make_new_mfun("int[]", "getBytes", serialio_getBytes);
-    func->doc = "get next requested number of bytes. ";
+    func->doc = "get next requested number of bytes.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add getInts
     func = make_new_mfun("int[]", "getInts", serialio_getInts);
-    func->doc = "get next requested number of integers. ";
+    func->doc = "get next requested number of integers.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add writeByte

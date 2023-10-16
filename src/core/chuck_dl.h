@@ -93,6 +93,7 @@ struct Chuck_UAnaBlobProxy;
 #define GET_CK_DUR(ptr)        (*(t_CKDUR *)ptr)
 #define GET_CK_COMPLEX(ptr)    (*(t_CKCOMPLEX *)ptr)
 #define GET_CK_POLAR(ptr)      (*(t_CKPOLAR *)ptr)
+#define GET_CK_VEC2(ptr)       (*(t_CKVEC2 *)ptr)
 #define GET_CK_VEC3(ptr)       (*(t_CKVEC3 *)ptr)
 #define GET_CK_VEC4(ptr)       (*(t_CKVEC4 *)ptr)
 #define GET_CK_VECTOR(ptr)     (*(t_CKVECTOR *)ptr)
@@ -110,6 +111,7 @@ struct Chuck_UAnaBlobProxy;
 #define GET_NEXT_DUR(ptr)      (*((t_CKDUR *&)ptr)++)
 #define GET_NEXT_COMPLEX(ptr)  (*((t_CKCOMPLEX *&)ptr)++)
 #define GET_NEXT_POLAR(ptr)    (*((t_CKPOLAR *&)ptr)++)
+#define GET_NEXT_VEC2(ptr)     (*((t_CKVEC2 *&)ptr)++)
 #define GET_NEXT_VEC3(ptr)     (*((t_CKVEC3 *&)ptr)++)
 #define GET_NEXT_VEC4(ptr)     (*((t_CKVEC4 *&)ptr)++)
 #define GET_NEXT_VECTOR(ptr)   (*((t_CKVECTOR *&)ptr)++)
@@ -125,6 +127,7 @@ struct Chuck_UAnaBlobProxy;
 #define SET_CK_UINT(ptr,v)       (*(t_CKUINT *&)ptr=v)
 #define SET_CK_TIME(ptr,v)       (*(t_CKTIME *&)ptr=v)
 #define SET_CK_DUR(ptr,v)        (*(t_CKDUR *&)ptr=v)
+#define SET_CK_VEC2(ptr,v)       (*(t_CKVEC2 *&)ptr=v)
 #define SET_CK_VEC3(ptr,v)       (*(t_CKVEC3 *&)ptr=v)
 #define SET_CK_VEC4(ptr,v)       (*(t_CKVEC4 *&)ptr=v)
 #define SET_CK_VECTOR(ptr,v)     (*(t_CKVECTOR *&)ptr=v)
@@ -138,6 +141,7 @@ struct Chuck_UAnaBlobProxy;
 #define SET_NEXT_UINT(ptr,v)     (*((t_CKUINT *&)ptr)++=v)
 #define SET_NEXT_TIME(ptr,v)     (*((t_CKTIME *&)ptr)++=v)
 #define SET_NEXT_DUR(ptr,v)      (*((t_CKDUR *&)ptr)++=v)
+#define SET_NEXT_VEC2(ptr,v)     (*((t_CKVEC2 *&)ptr)++=v)
 #define SET_NEXT_VEC3(ptr,v)     (*((t_CKVEC3 *&)ptr)++=v)
 #define SET_NEXT_VEC4(ptr,v)     (*((t_CKVEC4 *&)ptr)++=v)
 #define SET_NEXT_VECTOR(ptr,v)   (*((t_CKVECTOR *&)ptr)++=v)
@@ -152,6 +156,7 @@ struct Chuck_UAnaBlobProxy;
 #define OBJ_MEMBER_UINT(obj,offset)     (*(t_CKUINT *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_TIME(obj,offset)     (*(t_CKTIME *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_DUR(obj,offset)      (*(t_CKDUR *)OBJ_MEMBER_DATA(obj,offset))
+#define OBJ_MEMBER_VEC2(obj,offset)     (*(t_CKVEC2 *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_VEC3(obj,offset)     (*(t_CKVEC3 *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_VEC4(obj,offset)     (*(t_CKVEC4 *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_VECTOR(obj,offset)   (*(t_CKVECTOR *)OBJ_MEMBER_DATA(obj,offset))
@@ -191,6 +196,7 @@ union Chuck_DL_Return
     t_CKTIME v_time;
     t_CKCOMPLEX v_complex;
     t_CKPOLAR v_polar;
+    t_CKVEC2 v_vec2; // ge: added 1.5.1.7
     t_CKVEC3 v_vec3; // ge: added 1.3.5.3
     t_CKVEC4 v_vec4; // ge: added 1.3.5.3
     Chuck_Object * v_object;
@@ -223,8 +229,8 @@ struct Chuck_DL_Arg
         {
             case kindof_INT: return sz_INT;
             case kindof_FLOAT: return sz_FLOAT;
-            case kindof_COMPLEX: return sz_COMPLEX;
-            case kindof_VEC3: return sz_COMPLEX;
+            case kindof_VEC2: return sz_VEC2;
+            case kindof_VEC3: return sz_VEC3;
             case kindof_VEC4: return sz_VEC4;
             case kindof_VOID: return sz_VOID;
         }

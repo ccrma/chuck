@@ -133,7 +133,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, atan2_impl, "float", "atan2" );
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute arc tangent of two variables (y/x). " );
+    QUERY->doc_func( QUERY, "Compute arc tangent of two variables (y/x)." );
 
     // sinh
     QUERY->add_sfun( QUERY, sinh_impl, "float", "sinh" );
@@ -389,6 +389,12 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "a[]" );
     QUERY->add_arg( QUERY, "float", "b[]" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance between arrays a and b." );
+
+    // add euclean (ge: added 1.5.1.7)
+    QUERY->add_sfun( QUERY, euclidean2d_impl, "float", "euclidean" ); //! euclidean similarity
+    QUERY->add_arg( QUERY, "vec2", "a" );
+    QUERY->add_arg( QUERY, "vec2", "b" );
+    QUERY->doc_func( QUERY, "Compute the euclidean distance between 2D vectors a and b." );
 
     // add euclean (ge: added 1.5.0.0)
     QUERY->add_sfun( QUERY, euclidean3d_impl, "float", "euclidean" ); //! euclidean similarity
@@ -1149,6 +1155,25 @@ CK_DLL_SFUN( euclidean_impl )
         d = v1[i] - v2[i];
         sum += d*d;
     }
+
+    // set return value
+    RETURN->v_float = ::sqrt(sum);
+}
+
+
+// euclidean (ge) | added 1.5.1.7
+CK_DLL_SFUN( euclidean2d_impl )
+{
+    t_CKVEC2 a = GET_NEXT_VEC2( ARGS );
+    t_CKVEC2 b = GET_NEXT_VEC2( ARGS );
+
+    // in case of error
+    RETURN->v_float = 0.0;
+
+    t_CKFLOAT d;
+    t_CKFLOAT sum = 0.0;
+    d = a.x - b.x; sum += d*d;
+    d = a.y - b.y; sum += d*d;
 
     // set return value
     RETURN->v_float = ::sqrt(sum);

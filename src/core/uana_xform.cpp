@@ -1341,7 +1341,7 @@ void IFFT_object::transform( Chuck_Array16 * cmp )
     for( t_CKINT i = 0; i < amount; i++ )
     {
         // real and imag
-        cmp->get( i, &v );
+        cmp->get( i, (t_CKVEC2 *)&v );
         m_buffer[i*2] = v.re;
         m_buffer[i*2+1] = v.im;
     }
@@ -1465,7 +1465,7 @@ CK_DLL_TOCK( IFFT_tock )
         for( t_CKINT i = 0; i < ifft->m_size/2; i++ )
         {
             // copy complex value in
-            cmp.get( i, &cval );
+            cmp.get( i, (t_CKVEC2 *)&cval );
             ifft->m_buffer[i*2] = cval.re;
             ifft->m_buffer[i*2+1] = cval.im;
         }
@@ -3627,7 +3627,7 @@ CK_DLL_TOCK( IDCT_tock )
         for( t_CKINT i = 0; i < idct->m_size/2; i++ )
         {
             // copy complex value in
-            cmp.get( i, &cval );
+            cmp.get( i, (t_CKVEC2 *)&cval );
             idct->m_buffer[i*2] = cval.re;
             idct->m_buffer[i*2+1] = cval.im;
         }

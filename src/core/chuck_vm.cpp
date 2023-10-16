@@ -3236,7 +3236,7 @@ t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset
                 instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
                 break;
 
-            case kindof_COMPLEX:
+            case kindof_VEC2: // vec2 / complex / polar
                 // push value FLOAT FLOAT
                 instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
                 instr_args.push_back( new Chuck_Instr_Reg_Push_Imm2(0) );
@@ -3325,9 +3325,9 @@ t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset
             instructions.push_back( new Chuck_Instr_Assign_Primitive2 );
             instructions.push_back( new Chuck_Instr_Reg_Pop_Float );
            break;
-        case kindof_COMPLEX: // assign complex / polar
+        case kindof_VEC2: // assign vec2 / complex / polar
             instructions.push_back( new Chuck_Instr_Assign_Primitive4 );
-            instructions.push_back( new Chuck_Instr_Reg_Pop_Complex );
+            instructions.push_back( new Chuck_Instr_Reg_Pop_Vec2ComplexPolar );
             break;
         case kindof_VEC3: // assign vec3
             instructions.push_back( new Chuck_Instr_Assign_PrimitiveVec3 );
@@ -3456,11 +3456,11 @@ Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<C
                 instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
                 instr_pushFloat->set( arg.value.v_float );
                 break;
-            case kindof_COMPLEX:
+            case kindof_VEC2:
                 instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
-                instr_pushFloat->set( arg.value.v_complex.re );
+                instr_pushFloat->set( arg.value.v_vec2.x );
                 instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
-                instr_pushFloat->set( arg.value.v_complex.im );
+                instr_pushFloat->set( arg.value.v_vec2.y );
                 break;
             case kindof_VEC3:
                 instr_pushFloat = ckvm_next_instr_as_float(instr_args, index); if( !instr_pushFloat ) goto error;
