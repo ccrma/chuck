@@ -3349,6 +3349,70 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Stmt_Start
+// desc: executed at the start of a statement:
+//       1) during type-checking, each stmt notes how many objects needs
+//          releasing by stmt end, including a) func-calls that return Objects
+//          b) `new` expressions which may or may not be assigned to vars
+//          (verify these auto-add_refs to make the math work out)
+//       2) during emit, if a stmt has any objects to release, one of these
+//          instruction will be emitted to begin a statement, purpose:
+//          make room on reg stack for objects to release at end of stmt\
+//       3) operations that return Objects (func calls and `new; not variables
+//          since those references are accounted for) should be given the means
+//          to add its return value to the list of objects refs to release
+//          in the reg stack section allocated by the Stmt_Start instr
+//       4) at stmt's end, a Stmt_Cleanup instr will be issued that cleans up
+//          the reg stack, including all objects references
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Stmt_Start
+{
+public:
+    // constructor
+    Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases = 0)
+    { m_numObjReleases = numObjReleases; m_objectsToRelease = NULL; }
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    // clean up object references
+    void cleanupRefs();
+
+public:
+    // number of objects to release at the end of statement
+    t_CKUINT m_numObjReleases;
+    // pointer to beginning of objects section
+    t_CKUINT * m_objectsToRelease;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Stmt_Cleanup
+// desc: called at the end of each statement for cleanup
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Stmt_Cleanup
+{
+public:
+    // constructor
+    Chuck_Instr_Stmt_Cleanup( te_KindOf kind = kindof_VOID,
+                              Chuck_Instr_Stmt_Start * start = NULL )
+    { m_kindRemainOnRegStack = kind; m_stmtStart = start; }
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+protected:
+    // what kind of value remains on the reg stack after a statement
+    te_KindOf m_kindRemainOnRegStack;
+    // corresponding Stmt_Start
+    Chuck_Instr_Stmt_Start * m_stmtStart;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Spork
 // desc: ...
 //-----------------------------------------------------------------------------

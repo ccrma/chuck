@@ -5552,7 +5552,7 @@ error_overflow:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: return from a function
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -5573,6 +5573,53 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // set the shred
     shred->code = func;
     shred->instr = func->instr;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: clean up after a statement
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Stmt_Cleanup::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // which kind?
+    switch( m_kindRemainOnRegStack )
+    {
+        case kindof_INT:
+        {
+            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+            pop_( reg_sp, 1 );
+        }
+        case kindof_FLOAT:
+        {
+            t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
+            pop_( reg_sp, 1 );
+        }
+        case kindof_VEC2:
+        {
+            t_CKVEC2 *& reg_sp = (t_CKVEC2 *&)shred->reg->sp;
+            pop_( reg_sp, 1 );;
+        }
+        case kindof_VEC3:
+        {
+            t_CKVEC3 *& reg_sp = (t_CKVEC3 *&)shred->reg->sp;
+            pop_( reg_sp, 1 );
+        }
+        case kindof_VEC4:
+        {
+            t_CKVEC4 *& reg_sp = (t_CKVEC4 *&)shred->reg->sp;
+            pop_( reg_sp, 1 );
+        }
+
+        case kindof_VOID:
+            // do nothing
+        break;
+    }
+
+    // clear the objects returns by function calls in the statement
+    if( m_stmtStart ) m_stmtStart->cleanupRefs();
 }
 
 
