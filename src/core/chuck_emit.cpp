@@ -168,7 +168,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // make sure the code is NULL
     assert( emit->code == NULL );
     // make sure the stack is empty
-    assert( emit->stack.size() == 0 );
+    assert( emit->code_stack.size() == 0 );
     // make sure there is a context to emit
     assert( emit->env->context != NULL );
     // make sure no code
@@ -193,7 +193,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // reset the func
     emit->func = NULL;
     // clear the code stack
-    emit->stack.clear();
+    emit->code_stack.clear();
     // whether code need this
     emit->code->need_this = TRUE;
     // keep track of full path (added 1.3.0.0)
@@ -279,17 +279,17 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         // clear the code stack
         Chuck_Code * code = NULL;
         // while stack not empty
-        while( emit->stack.size() )
+        while( emit->code_stack.size() )
         {
             // get the top of the stack
-            code = emit->stack.back();
+            code = emit->code_stack.back();
             // manually delete the instructions
             for( t_CKUINT i = 0; i < code->code.size(); i++ )
             { CK_SAFE_DELETE( code->code[i] ); }
             // delete the code
             CK_SAFE_DELETE( code );
             // pop the stack
-            emit->stack.pop_back();
+            emit->code_stack.pop_back();
         }
     }
 
@@ -1738,9 +1738,9 @@ t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp()
 // desc: (doAddRef added 1.3.0.0 -- typically this is set to TRUE for function
-//        calls so that pointers on the reg is accounted for;  this is important
+//        calls so that pointers on reg stack is accounted for; this is important
 //        in case the object is released/reclaimed before the value is used;
-//        on particular case is when sporking with a local object as argument)
+//        one particular case is when sporking with a local object as argument)
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef )
 {
@@ -5250,7 +5250,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // set the func
     emit->env->func = func;
     // push the current code
-    emit->stack.push_back( emit->code );
+    emit->code_stack.push_back( emit->code );
     // make a new one
     emit->code = new Chuck_Code;
     // name the code | 1.5.1.5 use signature()
@@ -5383,9 +5383,9 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // delete the code
     CK_SAFE_DELETE( emit->code );
     // pop the code
-    assert( emit->stack.size() );
-    emit->code = emit->stack.back();
-    emit->stack.pop_back();
+    assert( emit->code_stack.size() );
+    emit->code = emit->code_stack.back();
+    emit->code_stack.pop_back();
 
     return TRUE;
 }
@@ -5427,7 +5427,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     emit->env->class_stack.push_back( emit->env->class_def );
     emit->env->class_def = type;
     // push the current code
-    emit->stack.push_back( emit->code );
+    emit->code_stack.push_back( emit->code );
     // make a new one
     emit->code = new Chuck_Code;
     // name the code
@@ -5524,9 +5524,9 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // delete the code
     CK_SAFE_DELETE( emit->code );
     // pop the code
-    assert( emit->stack.size() );
-    emit->code = emit->stack.back();
-    emit->stack.pop_back();
+    assert( emit->code_stack.size() );
+    emit->code = emit->code_stack.back();
+    emit->code_stack.pop_back();
 
     return ret;
 }
@@ -5561,7 +5561,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     }
 
     // push the current code
-    emit->stack.push_back( emit->code );
+    emit->code_stack.push_back( emit->code );
     // make a new one (spork~exp shred)
     emit->code = new Chuck_Code;
     // handle need this
@@ -5617,10 +5617,10 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // code->name = string("spork~exp");
 
     // restore the code to sporker shred
-    assert( emit->stack.size() > 0 );
-    emit->code = emit->stack.back();
+    assert( emit->code_stack.size() > 0 );
+    emit->code = emit->code_stack.back();
     // pop
-    emit->stack.pop_back();
+    emit->code_stack.pop_back();
 
     a_Exp e = exp->args;
     t_CKUINT size = 0;

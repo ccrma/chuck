@@ -5580,6 +5580,25 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: executed at the start of a statement (see header for details)
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Stmt_Start::execute(Chuck_VM* vm, Chuck_VM_Shred * shred)
+{
+    // if nothing to push, no op
+    if( !m_numObjReleases ) return;
+
+    // get reg stack pointer
+    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    // make room for all the object references to release
+    for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
+        push_( sp, 0 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: clean up after a statement
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Stmt_Cleanup::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )

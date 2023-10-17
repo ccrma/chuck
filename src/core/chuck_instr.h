@@ -3405,7 +3405,7 @@ public:
 protected:
     // what kind of value remains on the reg stack after a statement
     te_KindOf m_kindRemainOnRegStack;
-    // corresponding Stmt_Start
+    // pointer to corresponding Stmt_Start
     Chuck_Instr_Stmt_Start * m_stmtStart;
 };
 
