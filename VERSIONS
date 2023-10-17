@@ -2,6 +2,14 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.7 (October 2023)
+=======
+- (added) new type 'vec2' 2D vector type
+    for 2D animation (ChuGL) as well as texture mapping UV or ST 
+    coordinates; access fields with .x/.y OR .u/.v OR .s/.t
+- (added) new examples/vector/vec2.ck
+
+
 1.5.1.6 (October 2023) patch release
 =======
 - (fixed) a serious issue accessing vec3/vec4 fields (.x, .y, .z. .w)
