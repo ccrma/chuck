@@ -4538,7 +4538,7 @@ char *yytext;
 #include <string.h>
 
 // check platforms
-#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(__USE_CHUCK_YACC__)
 #include "chuck.tab.h" // use fresh bison/flex-generated header
 #else
 #include "chuck_yacc.h" // use pre-generated header (no bison/flex needed)
@@ -4729,7 +4729,7 @@ long htol( c_str str )
  TTY input. (FYI the opposite of this option is `%option interactive`
  if neither `never-interactive` nor `interactive` is specified, bison
  will test using isatty()) */
-/* 1.5.1.4 (ge) reentrant lexer */
+/* 1.5.1.5 (ge) reentrant lexer */
 /* %option reentrant */
 /* float exponent | 1.5.0.5 (ge) */
 /* universal character name */
