@@ -883,9 +883,9 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         dyno_ctor, dyno_dtor, dyno_tick, NULL, doc.c_str() ) )
         return FALSE;
 
-    if( !type_engine_import_add_ex( env, "Dyno-compress.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "Dyno-duck.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "Dyno-limit.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/Dyno-compress.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/Dyno-duck.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/Dyno-limit.ck" ) ) goto error;
 
     // add member variable
     dyno_offset_data = type_engine_import_mvar( env, "int", "@dyno_data", FALSE );
