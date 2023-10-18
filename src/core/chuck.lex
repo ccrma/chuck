@@ -51,7 +51,7 @@ IS          (u|U|l|L)*
 #include <string.h>
 
 // check platforms
-#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#if !defined(__PLATFORM_WINDOWS__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(__USE_CHUCK_YACC__)
 #include "chuck.tab.h" // use fresh bison/flex-generated header
 #else
 #include "chuck_yacc.h" // use pre-generated header (no bison/flex needed)
