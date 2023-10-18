@@ -5226,7 +5226,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
         {
             // get return value as object reference
-            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            Chuck_VM_Object * obj = (Chuck_VM_Object *)retval.v_uint;
             if( obj )
             {
                 // always add reference to returned objects (should release outside)
@@ -5362,7 +5362,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
         {
             // get return value as object reference
-            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            Chuck_VM_Object * obj = (Chuck_VM_Object *)retval.v_uint;
             if( obj )
             {
                 // always add reference to returned objects (should release outside)
@@ -5488,7 +5488,7 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         if( m_func_ref && isobj(vm->env(), m_func_ref->def()->ret_type) )
         {
             // get return value as object reference
-            Chuck_VM_Object * obj = (Chuck_VM_Object *) retval.v_uint;
+            Chuck_VM_Object * obj = (Chuck_VM_Object *)retval.v_uint;
             if( obj )
             {
                 // always add reference to returned objects (should release outside)
@@ -5582,16 +5582,166 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: executed at the start of a statement (see header for details)
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Stmt_Start::execute(Chuck_VM* vm, Chuck_VM_Shred * shred)
+void Chuck_Instr_Stmt_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
+    // get reg stack pointer
+    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    // remember stack pointer
+    m_objectsToRelease = sp;
+
     // if nothing to push, no op
     if( !m_numObjReleases ) return;
 
-    // get reg stack pointer
+    // make room for all the object references to release
+    for( t_CKUINT i = 0; i < m_numObjReleases; i++ ) push_( sp, 0 );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: nextOffset()
+// desc: returns next offset on success; 0 if we have exceeded numObjeReleases
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Instr_Stmt_Start::nextOffset( t_CKUINT & offset )
+{
+    // clear offset
+    offset = 0;
+    // check
+    if( m_nextOffset >= m_numObjReleases )
+    {
+        EM_exception(
+            "(internal error) out of bounds in Stmt_Start.nextIndex(): nextOffset == %lu",
+            m_nextOffset );
+
+        // return
+        return FALSE;
+    }
+
+    // copy into return variable, then increment
+    offset = m_nextOffset++;
+    // return
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setObject()
+// desc: set object into data region of objects to release by stmt's end
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Instr_Stmt_Start::setObject( Chuck_VM_Object * object, t_CKUINT offset )
+{
+    // check
+    if( offset >= m_numObjReleases )
+    {
+        EM_exception(
+            "(internal error) offset out of bounds in Stmt_Start.setObject(): offset == %lu",
+            offset );
+        // return
+        return FALSE;
+    }
+
+    // pointer arithmetic
+    t_CKUINT * pInt = m_objectsToRelease + offset;
+    // object pointer
+    *pInt = (t_CKUINT)object;
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanupRefs()
+// desc: clean up references
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
+{
+    // if nothing to push, no op
+    if( !m_numObjReleases ) return TRUE;
+
+    // if no stack pointer
+    if( !m_objectsToRelease )
+    {
+        // we have a problem
+        EM_exception(
+            "(internal error) NULL data region in Stmt_Start.cleanupRef() on shred[id=%lu:%s]",
+            shred->xid, shred->name.c_str() );
+        // bail out
+        return FALSE;
+    }
+
+    // cast pointer to data region as Object pointers
+    t_CKUINT * pInt = m_objectsToRelease;
+    // get stack pointer
     t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    // pop
+    pop_( sp, m_numObjReleases );
+
+    // if no stack pointer
+    if( sp != pInt )
+    {
+        // we have a problem
+        EM_exception(
+            "(internal error) reg stack sp mismatch in cleanupRefs()\n... [sp=%lu vs. saved=%lu] on shred[id=%lu:%s pc=%lu]",
+            (t_CKUINT)sp, (t_CKUINT)pInt, shred->xid, shred->name.c_str(), shred->pc );
+        // bail out
+        return FALSE;
+    }
+
     // make room for all the object references to release
     for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
-        push_( sp, 0 );
+    {
+        // object pointer
+        Chuck_VM_Object * object = (Chuck_VM_Object *)(*pInt);
+        // release (could be NULL)
+        CK_SAFE_RELEASE( object );
+        // advance pointer
+        pInt++;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: remember obj ref on reg stack for stmt-related cleanup
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Stmt_Remember_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // get stack pointer
+    t_CKUINT * reg_sp = (t_CKUINT *)shred->reg->sp;
+    Chuck_VM_Object * obj = (Chuck_VM_Object *)(*(reg_sp-1));
+
+    // check
+    if( !m_stmtStart )
+    {
+        EM_exception(
+            "(internal error) missing data region information in Stmt_Remember_Object instruction..." );
+        goto error;
+    }
+
+    // clear the objects returns by function calls in the statement
+    if( !m_stmtStart->setObject( obj, m_offset ) )
+    {
+        EM_exception(
+            "(internal error) cannot setObject() in Stmt_Remember_Object instruction..." );
+        goto error;
+    }
+
+    // done
+    return;
+
+error:
+    // done
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -5637,8 +5787,25 @@ void Chuck_Instr_Stmt_Cleanup::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         break;
     }
 
-    // clear the objects returns by function calls in the statement
-    if( m_stmtStart ) m_stmtStart->cleanupRefs();
+    // check
+    if( !m_stmtStart )
+    {
+        EM_exception(
+            "(internal error) missing data region in Stmt_Cleanup instruction..." );
+        goto error;
+    }
+
+    // clean up references
+    if( !m_stmtStart->cleanupRefs( shred ) )
+        goto error;
+
+    // done
+    return;
+
+error:
+    // done
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -5646,7 +5813,7 @@ void Chuck_Instr_Stmt_Cleanup::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: spork a shred from code
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Spork::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {

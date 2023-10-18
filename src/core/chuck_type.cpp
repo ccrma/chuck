@@ -1038,6 +1038,9 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
     if( !stmt )
         return TRUE;
 
+    // push stmt | 1.5.1.7
+    env->stmt_stack.push_back( stmt );
+
     // the type of stmt
     switch( stmt->s_type )
     {
@@ -1132,6 +1135,9 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
             ret = FALSE;
             break;
     }
+
+    // pop stmt stack | 1.5.1.7
+    env->stmt_stack.pop_back();
 
     return ret;
 }
@@ -1735,6 +1741,12 @@ t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp )
             curr->func_call.ret_type = curr->type;
             // add reference | 1.5.0.5
             CK_SAFE_ADD_REF( curr->func_call.ret_type );
+            // check if return type is an Obj | 1.5.1.7
+            if( curr->type && isobj( env, curr->type ) && env->stmt_stack.size() )
+            {
+                // increment # of objects in this stmt that needs release
+                env->stmt_stack.back()->numObjsToRelease++;
+            }
         break;
 
         case ae_exp_dot_member:
@@ -2321,12 +2333,10 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
 
     case ae_op_eq:
     case ae_op_neq:
-        // null
-        // if( isa( left, env->ckt_object ) && isa( right, env->ckt_null ) ) return env->ckt_int;
-        // if( isa( left, env->ckt_null ) && isa( right, env->ckt_object ) ) return env->ckt_int;
         CK_LR( te_vec2, te_vec2 ) return env->ckt_int; // 1.5.1.7
         CK_LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
+        if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
     case ae_op_lt:
     case ae_op_le:
     {
@@ -2362,7 +2372,9 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         // CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_int; // 1.5.1.7
         // CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_int; // 1.5.1.7
         // CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_int; // 1.3.5.3
-        if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
+
+        // disallowed | 1.5.1.7 (moved to EQ and NEQ only)
+        // if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
     break;
 
     case ae_op_shift_left:
@@ -2542,7 +2554,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     t_CKTYPE left = lhs->type, right = rhs->type;
 
     // chuck to function
-    if( isa( right, env->ckt_function ) )
+    if( !isnull(env, right) && isa( right, env->ckt_function ) )
     {
         // treat this function call
         return type_engine_check_exp_func_call( env, rhs, lhs, binary->ck_func, binary->where );
@@ -4306,6 +4318,14 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     // void type for args
     t_CKTYPE a = env->ckt_void;
 
+    // make sure not 'null'
+    if( isnull(env, f) )
+    {
+        EM_error2( exp_func->where,
+            "function call using a non-function value 'null'" );
+        return NULL;
+    }
+
     // make sure we have a function
     if( !isa( f, env->ckt_function ) )
     {
@@ -4389,6 +4409,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
     else assert( FALSE );
 
+    // copy ck_func out (return by reference)
     ck_func = theFunc;
 
     // if sporking, then don't track dependencies...
@@ -5428,7 +5449,7 @@ t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
         curr = curr->parent;
     }
 
-    // if lhs is null and rhs is a object
+    // if lhs is null and rhs is a object | removed 1.5.1.7?
     if( (lhs == *(lhs.env_ref->ckt_null)) && (rhs <= *(rhs.env_ref->ckt_object)) ) return TRUE;
 
     return FALSE;
@@ -5653,6 +5674,8 @@ t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {   return isa( type, env->ckt_int ) || isobj( env, type ); }
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type ) // added 1.5.0.0
 {   return isa( type, env->ckt_void ); }
+t_CKBOOL isnull( Chuck_Env * env, Chuck_Type * type ) // added 1.5.0.0
+{   return equals( type, env->ckt_null ); }
 te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 {
     // the kind (1.3.1.0)

@@ -42,6 +42,7 @@
 // forward references
 struct Chuck_Instr;
 struct Chuck_Instr_Goto;
+struct Chuck_Instr_Stmt_Start;
 struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 

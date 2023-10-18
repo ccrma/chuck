@@ -428,6 +428,8 @@ struct a_Stmt_
     ae_Stmt_Type s_type;
     // used to track control paths in non-void functions
     t_CKBOOL allControlPathsReturn; // 1.5.1.0 (ge) added
+    // number of obj refs that needs releasing after | 1.5.1.7
+    t_CKUINT numObjsToRelease;
 
     // mushed into one!
     union
