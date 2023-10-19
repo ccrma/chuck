@@ -5579,6 +5579,21 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
+// name: params()
+// desc: for instruction dumps
+//-----------------------------------------------------------------------------
+// for printing
+const char * Chuck_Instr_Stmt_Start::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjReleases=%lu", (unsigned long)m_numObjReleases );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: executed at the start of a statement (see header for details)
 //-----------------------------------------------------------------------------
@@ -5715,6 +5730,21 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: for instruction dumps
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Stmt_Remember_Object::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu", (unsigned long)m_offset );
+    return buffer;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: remember obj ref on reg stack for stmt-related cleanup
@@ -5748,6 +5778,20 @@ error:
     // done
     shred->is_running = FALSE;
     shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: for instruction dumps
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Stmt_Cleanup::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjRelease=%lu", (unsigned long)(m_stmtStart ? m_stmtStart->m_numObjReleases : 0) );
+    return buffer;
 }
 
 

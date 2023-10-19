@@ -3373,12 +3373,8 @@ public:
     { m_numObjReleases = numObjReleases; m_objectsToRelease = NULL; m_nextOffset = 0; }
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-
     // for printing
-    virtual const char * params() const
-    { static char buffer[CK_PRINT_BUF_LENGTH];
-      snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjReleases=%lu", m_numObjReleases );
-      return buffer; }
+    virtual const char * params() const;
 
 public:
     // get next index; returns offset on success; 0 if we have exceeded numObjeReleases
@@ -3414,10 +3410,7 @@ public:
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     // for printing
-    virtual const char * params() const
-    { static char buffer[CK_PRINT_BUF_LENGTH];
-      snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu", m_offset );
-      return buffer; }
+    virtual const char * params() const;
 
 protected:
     // pointer to corresponding Stmt_Start
@@ -3445,10 +3438,7 @@ public:
 
 public:
     // for printing
-    virtual const char * params() const
-    { static char buffer[CK_PRINT_BUF_LENGTH];
-      snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjRelease=%lu", m_stmtStart ? m_stmtStart->m_numObjReleases : 0 );
-      return buffer; }
+    virtual const char * params() const;
 
 protected:
     // what kind of value remains on the reg stack after a statement
