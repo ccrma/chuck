@@ -5645,7 +5645,13 @@ t_CKBOOL Chuck_Instr_Stmt_Start::setObject( Chuck_VM_Object * object, t_CKUINT o
 
     // pointer arithmetic
     t_CKUINT * pInt = m_objectsToRelease + offset;
-    // object pointer
+
+    // release if not NULL; what was previously there is no-longer accessible
+    // NOTE this could happen in the case of a loop:
+    // e.g., while( foo() ) { ... } // where foo() returns an object
+    Chuck_VM_Object * outgoing = (Chuck_VM_Object *)(*pInt); CK_SAFE_RELEASE( outgoing );
+
+    // copy incoming object pointer
     *pInt = (t_CKUINT)object;
     // done
     return TRUE;
