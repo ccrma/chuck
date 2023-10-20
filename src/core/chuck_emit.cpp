@@ -1721,8 +1721,13 @@ t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont )
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
 {
+    // track dangling refs, but instead of doing this inside the emit_exp(),
+    // we need to this here, outside, since we must ensure that the object left
+    // on the stack can't be released until after we make add_ref below | 1.5.1.7
+    Chuck_Instr_Stmt_Start * start = emit_engine_track_stmt_refs_start( emit, stmt->self );
+
     // emit the value
-    if( !emit_engine_emit_exp( emit, stmt->val, FALSE, stmt->self ) )
+    if( !emit_engine_emit_exp( emit, stmt->val /*, FALSE, stmt->self */ ) )
         return FALSE;
 
     // if return is an object type
@@ -1731,6 +1736,9 @@ t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
         // add reference (to be released by the function caller)
         emit->append( new Chuck_Instr_Reg_AddRef_Object3 );
     }
+
+    // clean up any dangling object refs | 1.5.1.7
+    emit_engine_track_stmt_refs_cleanup( emit, start );
 
     // 1.5.0.0 (ge) | traverse and unwind current scope frames, release object
     // references given the current state of the stack frames; every `return`
