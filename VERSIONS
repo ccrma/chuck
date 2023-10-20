@@ -13,8 +13,10 @@ ChucK VERSIONS log
     statement and balances reference counts; previously there was
     a chance that object refcount were not correctly released,
     causing incorrect behavior including memory leaks.
-    examples (assuming foo() returns an Object of some kind):
-    `foo().bar;` or `foo(), foo()` (multi-expression stmt)
+    "dangling object references tracking and cleanup"
+    examples include (assumption: foo() returns an Object):
+    `foo().bar;` or `foo(), foo()` (multi-expression stmt) or
+    `while( foo().bar ) { ... }` (loop stmt) and many more.
 - (fixed) incorrect reference count for certain usages of 'null'
     where the expression was interpreted incorrectly as a
     function call, e.g., obj == null
