@@ -62,7 +62,7 @@ t_CKBOOL emit_engine_emit_break( Chuck_Emitter * emit, a_Stmt_Break br );
 t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont );
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt );
 t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
-t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef = FALSE );
+t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef = FALSE, a_Stmt enclosingStmt = NULL );
 t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary );
 t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
 t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
@@ -104,6 +104,8 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Typ
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
                                   t_CKUINT line, t_CKUINT where );
+Chuck_Instr_Stmt_Start * emit_engine_track_stmt_refs_start( Chuck_Emitter * emit, a_Stmt stmt );
+void emit_engine_track_stmt_refs_cleanup( Chuck_Emitter * emit, Chuck_Instr_Stmt_Start * start );
 // disabled until further notice (added 1.3.0.0)
 // t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Stmt stmt );
 
@@ -459,23 +461,13 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
     // get next index | 1.5.0.0 (ge) added
     nextIndex = emit->next_index();
 
-    // the stmt_start to push into stack | 1.5.1.7
-    Chuck_Instr_Stmt_Start * start = NULL;
-    // see if we need to emit an instruction
-    if( stmt->numObjsToRelease ) {
-        // emit statement release
-        emit->append( start = new Chuck_Instr_Stmt_Start( stmt->numObjsToRelease ) );
-    }
-    // push stack regardless, including if NULL
-    emit->stmt_stack.push_back( start );
-
     // loop over statements
     switch( stmt->s_type )
     {
         case ae_stmt_exp:  // expression statement
         {
             // emit the expression(s) that make up this stmt
-            ret = emit_engine_emit_exp( emit, stmt->stmt_exp );
+            ret = emit_engine_emit_exp( emit, stmt->stmt_exp, FALSE, stmt );
             if( !ret )
                 return FALSE;
 
@@ -653,16 +645,6 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
             break;
     }
 
-    // pop stmt stack | 1.5.1.7 (ge) added
-    emit->stmt_stack.pop_back();
-
-    // if objs to release | 1.5.1.7
-    if( stmt->numObjsToRelease )
-    {
-        // emit statement release
-        emit->append( new Chuck_Instr_Stmt_Cleanup( kindof_VOID, start ) );
-    }
-
     // see if we added at least one instruction
     if( codestr != "" && nextIndex < emit->next_index() )
     {
@@ -696,7 +678,7 @@ t_CKBOOL emit_engine_emit_if( Chuck_Emitter * emit, a_Stmt_If stmt )
     emit->push_scope();
 
     // emit the condition
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret )
         return FALSE;
 
@@ -882,7 +864,7 @@ t_CKBOOL emit_engine_emit_for( Chuck_Emitter * emit, a_Stmt_For stmt )
         // get the index
         t_CKUINT c3_index = emit->next_index();
         // emit the expression
-        ret = emit_engine_emit_exp( emit, stmt->c3 );
+        ret = emit_engine_emit_exp( emit, stmt->c3, FALSE, stmt->self );
         if( !ret ) return FALSE;
         // add code str
         emit->code->code[c3_index]->prepend_codestr( codestr_prefix + " " + codestr );
@@ -973,8 +955,8 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     codestr = absyn2str( stmt->theIter );
     // get the index
     cond_index = emit->next_index();
-    // emit the iter part
-    ret = emit_engine_emit_exp( emit, stmt->theIter );
+    // emit the iter part (can/should only be a decl; no releasing of stmt->exp dangling references)
+    ret = emit_engine_emit_exp( emit, stmt->theIter /*, FALSE, stmt->self */ );
     if( !ret ) return FALSE;
     // add code str | 1.5.0.8
     emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
@@ -1000,8 +982,13 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     codestr = absyn2str( stmt->theArray );
     // get the index
     cond_index = emit->next_index();
+    // track dangling refs, but instead of doing this inside the emit_exp(),
+    // we need to this here, outside, since we must ensure that the array left
+    // on the stack can't be released until after we make the assignment to
+    // @foreach_array | 1.5.1.7
+    Chuck_Instr_Stmt_Start * start = emit_engine_track_stmt_refs_start( emit, stmt->self );
     // emit the array part
-    ret = emit_engine_emit_exp( emit, stmt->theArray );
+    ret = emit_engine_emit_exp( emit, stmt->theArray /*, FALSE, stmt->self */ );
     if( !ret ) return FALSE;
     // add code str | 1.5.0.8
     emit->code->code[cond_index]->prepend_codestr( codestr_prefix + " " + codestr );
@@ -1023,6 +1010,8 @@ t_CKBOOL emit_engine_emit_foreach( Chuck_Emitter * emit, a_Stmt_ForEach stmt )
     emit->append( new Chuck_Instr_Alloc_Word( localArray->offset, TRUE ) );
     // copy object
     emit->append( new Chuck_Instr_Assign_Object() );
+    // clean up any dangling object refs | 1.5.1.7
+    emit_engine_track_stmt_refs_cleanup( emit, start );
 
     //-------------------------------------------------------------------------
     // emit implicit iter COUNTER
@@ -1171,7 +1160,7 @@ t_CKBOOL emit_engine_emit_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     t_CKUINT cond_index = emit->next_index();
 
     // emit the cond
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret ) return FALSE;
 
     // add code str | 1.5.0.8
@@ -1293,7 +1282,7 @@ t_CKBOOL emit_engine_emit_do_while( Chuck_Emitter * emit, a_Stmt_While stmt )
     t_CKUINT cond_index = emit->next_index();
 
     // emit the cond
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret ) return FALSE;
 
     // add code str | 1.5.0.8
@@ -1391,7 +1380,7 @@ t_CKBOOL emit_engine_emit_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     t_CKUINT cond_index = emit->next_index();
 
     // emit the cond
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret ) return FALSE;
 
     // add code str | 1.5.0.8
@@ -1512,7 +1501,7 @@ t_CKBOOL emit_engine_emit_do_until( Chuck_Emitter * emit, a_Stmt_Until stmt )
     t_CKUINT cond_index = emit->next_index();
 
     // emit the cond
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret ) return FALSE;
 
     // add code str | 1.5.0.8
@@ -1596,7 +1585,7 @@ t_CKBOOL emit_engine_emit_loop( Chuck_Emitter * emit, a_Stmt_Loop stmt )
     t_CKUINT cond_index = emit->next_index();
 
     // emit the cond
-    ret = emit_engine_emit_exp( emit, stmt->cond );
+    ret = emit_engine_emit_exp( emit, stmt->cond, FALSE, stmt->self );
     if( !ret ) return FALSE;
 
     // add code str | 1.5.0.8
@@ -1733,7 +1722,7 @@ t_CKBOOL emit_engine_emit_continue( Chuck_Emitter * emit, a_Stmt_Continue cont )
 t_CKBOOL emit_engine_emit_return( Chuck_Emitter * emit, a_Stmt_Return stmt )
 {
     // emit the value
-    if( !emit_engine_emit_exp( emit, stmt->val ) )
+    if( !emit_engine_emit_exp( emit, stmt->val, FALSE, stmt->self ) )
         return FALSE;
 
     // if return is an object type
@@ -1774,16 +1763,68 @@ t_CKBOOL emit_engine_emit_switch( Chuck_Emitter * emit, a_Stmt_Switch stmt );
 
 
 //-----------------------------------------------------------------------------
+// name: emit_engine_track_stmt_refs_start()
+// desc: as needed start tracking stmt-level dangling object refs
+//-----------------------------------------------------------------------------
+Chuck_Instr_Stmt_Start * emit_engine_track_stmt_refs_start( Chuck_Emitter * emit, a_Stmt stmt )
+{
+    // the stmt_start to push into stack | 1.5.1.7
+    Chuck_Instr_Stmt_Start * start = NULL;
+    // see if we need to emit an instruction
+    if( stmt && stmt->numObjsToRelease )
+    {
+        // emit statement release
+        emit->append( start = new Chuck_Instr_Stmt_Start( stmt->numObjsToRelease ) );
+        // push stack
+        emit->stmt_stack.push_back( start );
+    }
+    // done; could be NULL
+    return start;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_track_stmt_refs_cleanup()
+// desc: as needed cleanup tracking stmt-level dangling object refs
+//-----------------------------------------------------------------------------
+void emit_engine_track_stmt_refs_cleanup( Chuck_Emitter * emit, Chuck_Instr_Stmt_Start * start )
+{
+    // if objs to release | 1.5.1.7
+    if( start )
+    {
+        // emit statement release
+        emit->append( new Chuck_Instr_Stmt_Cleanup( start ) );
+        // pop stmt stack | 1.5.1.7 (ge) added
+        emit->stmt_stack.pop_back();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp()
-// desc: (doAddRef added 1.3.0.0 -- typically this is set to TRUE for function
+// desc: emit code for an expression
+//       1.3.0.0 | added doAddRef -- typically this is set to TRUE for function
 //        calls so that arguments on reg stack are accounted for; this is important
 //        in case the object is released/reclaimed before the value is used;
 //        one particular case is when sporking with a local object as argument)
+//       1.5.1.7 | added enclosingStmt -- this should only be set by an enclosing
+//        statement to track object references that needs releasing, e.g.,
+//        returning Object from a function, or a `new` allocation; this argument
+//        enables checking and emitting instructions to track and clean these
+//        "dangling" reference at the stmt->exp level
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef )
+t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRef,
+                               a_Stmt enclosingStmt )
 {
     // for now...
     // assert( exp->next == NULL );
+
+    // the stmt_start to push into stack | 1.5.1.7
+    Chuck_Instr_Stmt_Start * start = emit_engine_track_stmt_refs_start( emit, enclosingStmt );
 
     // loop over
     while( exp )
@@ -1890,6 +1931,9 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
         // next exp
         exp = exp->next;
     }
+
+    // clean up any dangling object refs
+    emit_engine_track_stmt_refs_cleanup( emit, start );
 
     return TRUE;
 }

@@ -3371,6 +3371,9 @@ public:
     // constructor
     Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases )
     { m_numObjReleases = numObjReleases; m_objectsToRelease = NULL; m_nextOffset = 0; }
+    // destructor
+    virtual ~Chuck_Instr_Stmt_Start()
+    { CK_SAFE_DELETE_ARRAY( m_objectsToRelease ); }
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     // for printing
@@ -3430,9 +3433,8 @@ struct Chuck_Instr_Stmt_Cleanup : public Chuck_Instr
 {
 public:
     // constructor
-    Chuck_Instr_Stmt_Cleanup( te_KindOf kind = kindof_VOID,
-                              Chuck_Instr_Stmt_Start * start = NULL )
-    { m_kindRemainOnRegStack = kind; m_stmtStart = start; }
+    Chuck_Instr_Stmt_Cleanup( Chuck_Instr_Stmt_Start * start = NULL )
+    { m_stmtStart = start; }
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 
@@ -3441,8 +3443,6 @@ public:
     virtual const char * params() const;
 
 protected:
-    // what kind of value remains on the reg stack after a statement
-    te_KindOf m_kindRemainOnRegStack;
     // pointer to corresponding Stmt_Start
     Chuck_Instr_Stmt_Start * m_stmtStart;
 };

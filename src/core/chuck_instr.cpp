@@ -5599,16 +5599,22 @@ const char * Chuck_Instr_Stmt_Start::params() const
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Stmt_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    // get reg stack pointer
-    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
-    // remember stack pointer
-    m_objectsToRelease = sp;
-
     // if nothing to push, no op
     if( !m_numObjReleases ) return;
 
+    // make room
+    if( !m_objectsToRelease )
+    {
+        // allocate for re-use
+        m_objectsToRelease = new t_CKUINT[m_numObjReleases];
+    }
+
     // make room for all the object references to release
-    for( t_CKUINT i = 0; i < m_numObjReleases; i++ ) push_( sp, 0 );
+    for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
+    {
+        // zero out
+        m_objectsToRelease[i] = 0;
+    }
 }
 
 
@@ -5698,21 +5704,6 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
 
     // cast pointer to data region as Object pointers
     t_CKUINT * pInt = m_objectsToRelease;
-    // get stack pointer
-    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
-    // pop
-    pop_( sp, m_numObjReleases );
-
-    // if no stack pointer
-    if( sp != pInt )
-    {
-        // we have a problem
-        EM_exception(
-            "(internal error) reg stack sp mismatch in cleanupRefs()\n... [sp=%lu vs. saved=%lu] on shred[id=%lu:%s pc=%lu]",
-            (t_CKUINT)sp, (t_CKUINT)pInt, shred->xid, shred->name.c_str(), shred->pc );
-        // bail out
-        return FALSE;
-    }
 
     // make room for all the object references to release
     for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
@@ -5804,40 +5795,6 @@ const char * Chuck_Instr_Stmt_Cleanup::params() const
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Stmt_Cleanup::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    // which kind?
-    switch( m_kindRemainOnRegStack )
-    {
-        case kindof_INT:
-        {
-            t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-            pop_( reg_sp, 1 );
-        }
-        case kindof_FLOAT:
-        {
-            t_CKFLOAT *& reg_sp = (t_CKFLOAT *&)shred->reg->sp;
-            pop_( reg_sp, 1 );
-        }
-        case kindof_VEC2:
-        {
-            t_CKVEC2 *& reg_sp = (t_CKVEC2 *&)shred->reg->sp;
-            pop_( reg_sp, 1 );;
-        }
-        case kindof_VEC3:
-        {
-            t_CKVEC3 *& reg_sp = (t_CKVEC3 *&)shred->reg->sp;
-            pop_( reg_sp, 1 );
-        }
-        case kindof_VEC4:
-        {
-            t_CKVEC4 *& reg_sp = (t_CKVEC4 *&)shred->reg->sp;
-            pop_( reg_sp, 1 );
-        }
-
-        case kindof_VOID:
-            // do nothing
-        break;
-    }
-
     // check
     if( !m_stmtStart )
     {
@@ -7296,7 +7253,7 @@ void Chuck_Instr_Dot_Member_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     {
         // 4 or 8 or 16
         // 1.3.1.0: check type to use kind instead of size
-        if( m_kind == kindof_INT ) { push_( sp, *((t_CKUINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
+        if( m_kind == kindof_INT ) { push_( sp, *((t_CKINT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
         else if( m_kind == kindof_FLOAT ) { push_float( sp, *((t_CKFLOAT *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0)
         else if( m_kind == kindof_VEC2 ) { push_vec2( sp, *((t_CKVEC2 *)data) ); } // ISSUE: 64-bit (fixed 1.3.1.0) | in this context, vec2 = complex = polar
         else if( m_kind == kindof_VEC3 ) { push_vec3( sp, *((t_CKVEC3 *)data) ); } // 1.3.5.3
