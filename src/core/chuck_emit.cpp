@@ -476,7 +476,10 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
             {
                 // exp
                 a_Exp exp = stmt->stmt_exp;
-                // hack
+
+                // HACK: this won't work if <<< >>> is not the first in an expression chain
+                // <<< 1 >>>, 2, 3, 4 won't clean up the reg stack correctly
+                // 1, <<< 2 >>>, 3 needs to be checked
                 if( exp->s_type == ae_exp_primary && exp->primary.s_type == ae_primary_hack )
                     exp = exp->primary.exp;
 
