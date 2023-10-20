@@ -5586,7 +5586,7 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 const char * Chuck_Instr_Stmt_Start::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjReleases=%lu", (unsigned long)m_numObjReleases );
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjReleases=%lu this=%p", (unsigned long)m_numObjReleases, this );
     return buffer;
 }
 
@@ -5664,7 +5664,8 @@ t_CKBOOL Chuck_Instr_Stmt_Start::setObject( Chuck_VM_Object * object, t_CKUINT o
     // release if not NULL; what was previously there is no-longer accessible
     // NOTE this could happen in the case of a loop:
     // e.g., while( foo() ) { ... } // where foo() returns an object
-    Chuck_VM_Object * outgoing = (Chuck_VM_Object *)(*pInt); CK_SAFE_RELEASE( outgoing );
+    Chuck_VM_Object * outgoing = (Chuck_VM_Object *)(*pInt);
+    CK_SAFE_RELEASE( outgoing );
 
     // copy incoming object pointer
     *pInt = (t_CKUINT)object;
@@ -5738,7 +5739,7 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
 const char * Chuck_Instr_Stmt_Remember_Object::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu", (unsigned long)m_offset );
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu start=%p", (unsigned long)m_offset, m_stmtStart );
     return buffer;
 }
 
@@ -5790,7 +5791,7 @@ error:
 const char * Chuck_Instr_Stmt_Cleanup::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjRelease=%lu", (unsigned long)(m_stmtStart ? m_stmtStart->m_numObjReleases : 0) );
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "numObjRelease=%lu start=%p", (unsigned long)(m_stmtStart ? m_stmtStart->m_numObjReleases : 0), m_stmtStart );
     return buffer;
 }
 
