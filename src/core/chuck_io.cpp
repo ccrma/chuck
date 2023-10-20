@@ -204,6 +204,11 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     // if( !type_engine_import_sfun( env, func ) ) goto error;
     // new line string
     initialize_object( g_newline, env->ckt_string, NULL, NULL );
+    // add reference, since we are keeping a reference of it | 1.5.1.7
+    CK_SAFE_ADD_REF( g_newline );
+    // also lock it | 1.5.1.7
+    g_newline->lock();
+    // set as newline
     g_newline->set( "\n" );
 
     // add TYPE_ASCII

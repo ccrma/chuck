@@ -42,6 +42,7 @@
 // forward references
 struct Chuck_Instr;
 struct Chuck_Instr_Goto;
+struct Chuck_Instr_Stmt_Start;
 struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 
@@ -119,10 +120,12 @@ struct Chuck_Emitter : public Chuck_VM_Object
     // current function definition
     Chuck_Func * func;
 
-    // code stack
-    std::vector<Chuck_Code *> stack;
     // locals
     std::vector<Chuck_Local *> locals;
+    // code stack
+    std::vector<Chuck_Code *> code_stack;
+    // stmt stack
+    std::vector<Chuck_Instr_Stmt_Start *> stmt_stack;
 
     // dump
     t_CKBOOL dump;

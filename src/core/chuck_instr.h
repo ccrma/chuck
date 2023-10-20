@@ -3349,13 +3349,116 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Stmt_Start
+// desc: executed at the start of a statement:
+//       1) during type-checking, each stmt notes how many objects needs
+//          releasing by stmt end, including a) func-calls that return Objects
+//          b) `new` expressions which may or may not be assigned to vars
+//          (verify these auto-add_refs to make the math work out)
+//       2) during emit, if a stmt has any objects to release, one of these
+//          instruction will be emitted to begin a statement, purpose:
+//          make room on reg stack for objects to release at end of stmt\
+//       3) operations that return Objects (func calls and `new; not variables
+//          since those references are accounted for) should be given the means
+//          to add its return value to the list of objects refs to release
+//          in the reg stack section allocated by the Stmt_Start instr
+//       4) at stmt's end, a Stmt_Cleanup instr will be issued that cleans up
+//          the reg stack, including all objects references
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Stmt_Start : public Chuck_Instr
+{
+public:
+    // constructor
+    Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases )
+    { m_numObjReleases = numObjReleases; m_objectsToRelease = NULL; m_nextOffset = 0; }
+    // destructor
+    virtual ~Chuck_Instr_Stmt_Start()
+    { CK_SAFE_DELETE_ARRAY( m_objectsToRelease ); }
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
+
+public:
+    // get next index; returns offset on success; 0 if we have exceeded numObjeReleases
+    t_CKBOOL nextOffset( t_CKUINT & offset );
+    // set object reference by offset
+    t_CKBOOL setObject( Chuck_VM_Object * object, t_CKUINT offset );
+    // clean up object references stored in this
+    t_CKBOOL cleanupRefs( Chuck_VM_Shred * shred );
+
+public:
+    // next index
+    t_CKUINT m_nextOffset;
+    // number of objects to release at the end of statement
+    t_CKUINT m_numObjReleases;
+    // pointer to beginning of objects section on reg stack
+    t_CKUINT * m_objectsToRelease;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Stmt_Remember_Object
+// desc: called to remember obj ref on reg stack for stmt-related cleanup
+//       does not alter contents of stack (in-place)
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Stmt_Remember_Object : public Chuck_Instr
+{
+public:
+    // constructor
+    Chuck_Instr_Stmt_Remember_Object( Chuck_Instr_Stmt_Start * start, t_CKUINT offset )
+    { m_stmtStart = start; m_offset = offset; }
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
+
+protected:
+    // pointer to corresponding Stmt_Start
+    Chuck_Instr_Stmt_Start * m_stmtStart;
+    // data offset
+    t_CKUINT m_offset;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Stmt_Cleanup
+// desc: called at the end of each statement for cleanup
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Stmt_Cleanup : public Chuck_Instr
+{
+public:
+    // constructor
+    Chuck_Instr_Stmt_Cleanup( Chuck_Instr_Stmt_Start * start = NULL )
+    { m_stmtStart = start; }
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    // for printing
+    virtual const char * params() const;
+
+protected:
+    // pointer to corresponding Stmt_Start
+    Chuck_Instr_Stmt_Start * m_stmtStart;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Spork
-// desc: ...
+// desc: spork instruction
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Spork : public Chuck_Instr_Unary_Op
 {
 public:
     Chuck_Instr_Spork( t_CKUINT v = 0 ) { this->set( v ); }
+
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 };
@@ -4468,13 +4571,13 @@ void ck_throw_exception(Chuck_VM_Shred * shred, const char * name, const char * 
 void ck_handle_overflow( Chuck_VM_Shred * shred, Chuck_VM * vm, const std::string & reason = "" );
 
 // define SP offset
-#define push_( sp, val )         *(sp) = (val); (sp)++
-#define push_float( sp, val )    *((t_CKFLOAT *&)sp) = (val); ((t_CKFLOAT *&)sp)++
-#define push_complex( sp, val )  *((t_CKCOMPLEX *&)sp) = (val); ((t_CKCOMPLEX *&)sp)++
-#define push_vec2( sp, val )     *((t_CKVEC2 *&)sp) = (val); ((t_CKVEC2 *&)sp)++
-#define push_vec3( sp, val )     *((t_CKVEC3 *&)sp) = (val); ((t_CKVEC3 *&)sp)++
-#define push_vec4( sp, val )     *((t_CKVEC4 *&)sp) = (val); ((t_CKVEC4 *&)sp)++
-#define pop_( sp, n )            sp -= (n)
+#define push_( sp, val )         do { *(sp) = (val); (sp)++; } while(0)
+#define push_float( sp, val )    do { *((t_CKFLOAT *&)sp) = (val); ((t_CKFLOAT *&)sp)++; } while(0)
+#define push_complex( sp, val )  do { *((t_CKCOMPLEX *&)sp) = (val); ((t_CKCOMPLEX *&)sp)++; } while(0)
+#define push_vec2( sp, val )     do { *((t_CKVEC2 *&)sp) = (val); ((t_CKVEC2 *&)sp)++; } while(0)
+#define push_vec3( sp, val )     do { *((t_CKVEC3 *&)sp) = (val); ((t_CKVEC3 *&)sp)++; } while(0)
+#define push_vec4( sp, val )     do { *((t_CKVEC4 *&)sp) = (val); ((t_CKVEC4 *&)sp)++; } while(0)
+#define pop_( sp, n )            do { sp -= (n); } while(0)
 #define val_( sp )               *(sp)
 
 // stack overflow detection

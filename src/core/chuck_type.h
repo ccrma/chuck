@@ -742,6 +742,9 @@ public:
     // control scope (for break, continue)
     std::vector<a_Stmt> breaks;
 
+    // stmt stack (for tracking object references)
+    std::vector<a_Stmt> stmt_stack;
+
     // reserved words
     std::map<std::string, t_CKBOOL> key_words;
     std::map<std::string, t_CKBOOL> key_types;
@@ -1231,6 +1234,7 @@ t_CKBOOL isprim( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isobj( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isfunc( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
+t_CKBOOL isnull( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
 te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
 

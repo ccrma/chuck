@@ -2,6 +2,24 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.7 (October 2023)
+=======
+- (added) new type 'vec2' 2D vector type
+    for 2D animation (ChuGL) as well as texture mapping UV or ST 
+    coordinates; access fields with .x/.y OR .u/.v OR .s/.t
+- (added) new examples/vector/vec2.ck
+- (reworked) memory managment across function calls that return
+    Object types; now correctly tracks all instances within a 
+    statement and balances reference counts; previously there was
+    a chance that object refcount were not correctly released,
+    causing incorrect behavior including memory leaks.
+    examples (assuming foo() returns an Object of some kind):
+    `foo().bar;` or `foo(), foo()` (multi-expression stmt)
+- (fixed) incorrect reference count for certain usages of 'null'
+    where the expression was interpreted incorrectly as a
+    function call, e.g., obj == null
+
+
 1.5.1.6 (October 2023) patch release
 =======
 - (fixed) a serious issue accessing vec3/vec4 fields (.x, .y, .z. .w)
