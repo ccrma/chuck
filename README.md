@@ -8,7 +8,7 @@ Welcome to ChucK!
 ## Installing ChucK
 To download and install ChucK, visit the **[official ChucK release page](https://chuck.stanford.edu/release/)**.
 
-For more information, including documentation, examples, research publications, and community resources, vist the **[ChucK homepage](https://chuck.stanford.edu/)** or its **[Princeton mirror](https://chuck.cs.princeton.edu/)**.
+For more information, including documentation, examples, research publications, and community resources, visit the **[ChucK homepage](https://chuck.stanford.edu/)** or its **[Princeton mirror](https://chuck.cs.princeton.edu/)**.
 
 ### Homebrew
 ```
