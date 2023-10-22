@@ -44,7 +44,7 @@ sudo apt install build-essential bison flex libsndfile1-dev \
 ```
 For other Linux distributions, the setup should be similar although the package install tools and package names may be slightly different. (_NOTE: setups that do not need JACK or PulseAudio can omit either or both of these packages. ALSA is needed for MIDI support on Linux._)
 
-To build **chuck** (with all suppported drivers: ALSA, PulseAudio, JACK), navigate to the `chuck/src` directory and run `make`:
+To build **chuck** (with all supported drivers: ALSA, PulseAudio, JACK), navigate to the `chuck/src` directory and run `make`:
 ```
 cd chuck/src
 make linux-all
