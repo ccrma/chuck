@@ -85,7 +85,11 @@
 #include "chuck_errmsg.h"
 #include "util_math.h"
 
-
+#ifndef __CHUNREAL_ENGINE__
+#define CK_TYPEID_CSTR(t) ( typeid( t ).name() )
+#else
+#define CK_TYPEID_CSTR(t) ( "[chunreal type info disabled]" )
+#endif
 
 
 // query
@@ -136,7 +140,7 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast allocation failure: %s, %d x %d...\n",
-                               typeid( T ).name(), xDim, yDim );
+                               CK_TYPEID_CSTR( T ), xDim, yDim );
             // bail
             return FALSE;
         }
@@ -156,7 +160,7 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiMatrixFast out of bound: %s[%d][%d]...\n",
-                               typeid( T ).name(), x, y );
+                               CK_TYPEID_CSTR( T ), x, y );
             // halt
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
@@ -236,7 +240,7 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast allocation failure: %s[%d]...\n",
-                               typeid( T ).name(), length );
+                               CK_TYPEID_CSTR( T ), length );
             // bail
             return FALSE;
         }
@@ -296,7 +300,7 @@ public:
         {
             // error
             CK_FPRINTF_STDERR( "[chuck]: ChaiVectorFast out of bound: %s[%d] (capacity=%d)...\n",
-                               typeid( T ).name(), i, m_length );
+                               CK_TYPEID_CSTR( T ), i, m_length );
             // TODO: this should throw (a shred-level, probably) exception
             assert( FALSE );
         }

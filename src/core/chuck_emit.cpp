@@ -3636,8 +3636,8 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         }
         else if( exp->var == insert_symbol( "pi" ) )
         {
-            double pi = 3.14159265358979323846;
-            emit->append( new Chuck_Instr_Reg_Push_Imm2( pi ) );
+            double ckPi = 3.14159265358979323846;
+            emit->append( new Chuck_Instr_Reg_Push_Imm2( ckPi ) );
         }
         else if( exp->var == insert_symbol( "dac" ) )
         {

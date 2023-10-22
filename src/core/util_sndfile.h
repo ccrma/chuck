@@ -49,6 +49,12 @@
 //          Ari Lazier (alazier@alumni.princeton.edu)
 // libsndfile: Erik de Castro Lopo (erikd@mega-nerd.com)
 //-----------------------------------------------------------------------------
+
+#pragma warning(disable : 4668)  // -Wundef
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wundef"
+#endif
+
 #ifndef __UTIL_SNDFILE_H__
 #define __UTIL_SNDFILE_H__
 

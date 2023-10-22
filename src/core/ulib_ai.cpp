@@ -3437,7 +3437,7 @@ public:
                 else if( activation_per_layer[i] == g_at_softmax )
                     v = exp( v );
                 else if( activation_per_layer[i] == g_at_linear )
-                    v = v;
+                {   /* v = v; */ }
                 activations[i + 1]->v( j ) = v;
             }
             if( activation_per_layer[i] == g_at_softmax )
