@@ -766,7 +766,7 @@ public:
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
         m_done_query(FALSE), m_api_version_func(NULL), m_info_func(NULL), m_query_func(NULL),
-        m_query( carrier, this ), m_versionMajor(0), m_versionMinor(0)
+        m_query( carrier, this ), m_apiVersionMajor(0), m_apiVersionMinor(0)
     { }
     // destructor
     ~Chuck_DLL() { this->unload(); }
@@ -790,8 +790,8 @@ protected:
     Chuck_DL_Query m_query;
 
 protected: // addition info 1.5.0.4 (ge) added
-    t_CKUINT m_versionMajor;
-    t_CKUINT m_versionMinor;
+    t_CKUINT m_apiVersionMajor;
+    t_CKUINT m_apiVersionMinor;
 };
 
 

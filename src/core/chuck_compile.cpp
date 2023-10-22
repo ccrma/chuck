@@ -1037,7 +1037,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     }
 
     // print
-    EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::green("OK",true).c_str(), dll->versionMajor(), dll->versionMinor() );
+    EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s]", TC::green("OK",true).c_str() );
     // add to compiler
     compiler->m_dlls.push_back(dll);
     // commit operator overloads | 1.5.1.5
