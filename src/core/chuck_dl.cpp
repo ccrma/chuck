@@ -861,7 +861,7 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
 t_CKBOOL Chuck_DLL::load( f_ck_query query_func, t_CKBOOL lazy )
 {
     m_query_func = query_func;
-    m_version_func = ck_builtin_declversion;
+    m_api_version_func = ck_builtin_declversion;
     m_done_query = FALSE;
     m_func = "ck_query";
 
@@ -904,18 +904,18 @@ const Chuck_DL_Query * Chuck_DLL::query()
         return &m_query;
 
     // get the address of the DL version function from the DLL
-    if( !m_version_func )
-        m_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
-    if( !m_version_func )
-        m_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
-    if( !m_version_func )
+    if( !m_api_version_func )
+        m_api_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
+    if( !m_api_version_func )
+        m_api_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
+    if( !m_api_version_func )
     {
         m_last_error = string("no version function found in dll '") + m_filename + string("'");
         return NULL;
     }
 
     // check version
-    t_CKUINT dll_version = m_version_func();
+    t_CKUINT dll_version = m_api_version_func();
     // get major and minor version numbers
     m_versionMajor = CK_DLL_VERSION_GETMAJOR(dll_version);
     m_versionMinor = CK_DLL_VERSION_GETMINOR(dll_version);
@@ -930,10 +930,10 @@ const Chuck_DL_Query * Chuck_DLL::query()
     {
         // construct error string
         ostringstream oss;
-        oss << "chugin version incompatible..." << endl
+        oss << "chugin API version incompatible..." << endl
             << "chugin path: '" << m_filename << "'" << endl
-            << "chugin version: " << m_versionMajor << "." << m_versionMinor
-            << " VS host version: " << CK_DLL_VERSION_MAJOR << "." << CK_DLL_VERSION_MINOR;
+            << "chugin API version: " << m_versionMajor << "." << m_versionMinor
+            << " VS host API version: " << CK_DLL_VERSION_MAJOR << "." << CK_DLL_VERSION_MINOR;
         m_last_error = oss.str();
         return NULL;
     }
@@ -1069,18 +1069,18 @@ t_CKBOOL Chuck_DLL::probe()
     }
 
     // get the address of the DL version function from the DLL
-    if( !m_version_func )
-        m_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
-    if( !m_version_func )
-        m_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
-    if( !m_version_func )
+    if( !m_api_version_func )
+        m_api_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
+    if( !m_api_version_func )
+        m_api_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
+    if( !m_api_version_func )
     {
         m_last_error = string("no version function found in dll '") + m_filename + string("'");
         return FALSE;
     }
 
     // check version
-    t_CKUINT dll_version = m_version_func();
+    t_CKUINT dll_version = m_api_version_func();
     // get major and minor version numbers
     m_versionMajor = CK_DLL_VERSION_GETMAJOR(dll_version);
     m_versionMinor = CK_DLL_VERSION_GETMINOR(dll_version);
@@ -1216,8 +1216,10 @@ t_CKBOOL Chuck_DLL::compatible()
     if( m_versionMajor == CK_DLL_VERSION_MAJOR && m_versionMinor <= CK_DLL_VERSION_MINOR )
     { return TRUE; }
     else {
-        m_last_error = string("version incompatible with host ") +
-                       ck_itoa(CK_DLL_VERSION_MAJOR) + "." + ck_itoa(CK_DLL_VERSION_MINOR);
+        m_last_error = string("incompatible API version: chugin (") + ck_itoa(m_versionMajor) + "." + ck_itoa(m_versionMinor)
+                       + string(") vs. host (")
+                       + ck_itoa(CK_DLL_VERSION_MAJOR) + "." + ck_itoa(CK_DLL_VERSION_MINOR)
+                       + ")";
         return FALSE;
     }
 }

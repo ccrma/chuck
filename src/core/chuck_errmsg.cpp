@@ -822,6 +822,62 @@ void EM_log( t_CKINT level, const char * message, ... )
 
 
 //-----------------------------------------------------------------------------
+// name: EM_log_opts()
+// desc: output log message at a particular log level (no NL)
+//-----------------------------------------------------------------------------
+void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, ... )
+{
+    va_list ap;
+
+    if( level > CK_LOG_ALL ) level = CK_LOG_ALL;
+    else if( level <= CK_LOG_NONE ) level = CK_LOG_NONE + 1;
+
+    // check level
+    if( level > g_loglevel ) return;
+
+    // whether to print prefix
+    t_CKBOOL prefix = !(options & EM_LOG_NO_PREFIX);
+    // whether to print newline at end
+    t_CKBOOL nl = !(options & EM_LOG_NO_NEWLINE);
+
+    #ifndef __DISABLE_THREADS__
+    g_logmutex.acquire();
+    #endif
+
+    // check option
+    if( prefix )
+    {
+        TC::off();
+        CK_FPRINTF_STDERR( "[%s:%s:%s]: ",
+                           TC::blue("chuck", true).c_str(),
+                           TC::blue( ck_itoa(level), false ).c_str(),
+                           TC::blue( g_str[level] ).c_str() );
+        TC::on();
+
+        // if( g_logstack ) CK_FPRINTF_STDERR( " " );
+        for( int i = 0; i < g_logstack; i++ )
+            CK_FPRINTF_STDERR( " | " );
+    }
+
+    va_start( ap, message );
+    CK_VFPRINTF_STDERR( message, ap );
+    va_end( ap );
+
+    // print newline
+    if( nl ) CK_FPRINTF_STDERR( "\n" );
+
+    // flush
+    CK_FFLUSH_STDERR();
+
+    #ifndef __DISABLE_THREADS__
+    g_logmutex.release();
+    #endif
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_setlog()
 // desc: set log level
 //-----------------------------------------------------------------------------

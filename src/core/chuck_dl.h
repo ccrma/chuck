@@ -322,6 +322,7 @@ struct Chuck_DL_Arg
 extern "C" {
 // query
 typedef t_CKUINT (CK_DLL_CALL * f_ck_declversion)();
+typedef const char * (CK_DLL_CALL * f_ck_info)( const char * key );
 typedef t_CKBOOL (CK_DLL_CALL * f_ck_query)( Chuck_DL_Query * QUERY );
 // object
 typedef Chuck_Object * (CK_DLL_CALL * f_alloc)( Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
@@ -764,7 +765,7 @@ public:
     // constructor
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),
-        m_done_query(FALSE), m_version_func(NULL), m_query_func(NULL),
+        m_done_query(FALSE), m_api_version_func(NULL), m_info_func(NULL), m_query_func(NULL),
         m_query( carrier, this ), m_versionMajor(0), m_versionMinor(0)
     { }
     // destructor
@@ -779,8 +780,13 @@ protected:
     std::string m_func;
     t_CKBOOL m_done_query;
 
-    f_ck_declversion m_version_func;
+    // host/client api version
+    f_ck_declversion m_api_version_func;
+    // chugin info func
+    f_ck_info m_info_func;
+    // the query func
     f_ck_query m_query_func;
+    // the query shuttle object
     Chuck_DL_Query m_query;
 
 protected: // addition info 1.5.0.4 (ge) added

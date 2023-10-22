@@ -976,9 +976,12 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
                                        const char * name,
                                        const char * dl_path )
 {
+    // get env
     Chuck_Env * env = compiler->env();
 
-    // EM_log(CK_LOG_SEVERE, "loading chugin '%s'", name);
+    // log with no newline; print status next
+    // NOTE this is more informative if the chugin crashes, we can see the name
+    EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name );
 
     Chuck_DLL * dll = new Chuck_DLL( compiler->carrier(), name );
     t_CKBOOL query_failed = FALSE;
@@ -992,7 +995,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
         if( !dll->compatible() )
         {
             // print
-            EM_log( CK_LOG_SEVERE, "[%s] loading chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(), dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
             EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
@@ -1007,7 +1010,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
         if( query_failed || !type_engine_add_dll2( env, dll, "global" ) )
         {
             // print
-            EM_log( CK_LOG_SEVERE, "[%s] loading chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(), dll->versionMajor(), dll->versionMinor() );
             EM_pushlog();
             // if add_dll2 failed, an error should have already been output
             if( query_failed )
@@ -1024,7 +1027,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     else
     {
         // print
-        EM_log( CK_LOG_SEVERE, "[%s] chugin '%s' load...", TC::red("FAILED",true).c_str(), name );
+        EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s]", TC::red("FAILED",true).c_str() );
         // more info
         EM_pushlog();
         EM_log( CK_LOG_SEVERE, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
@@ -1034,7 +1037,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     }
 
     // print
-    EM_log( CK_LOG_SEVERE, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+    EM_log_opts( CK_LOG_SEVERE, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::green("OK",true).c_str(), dll->versionMajor(), dll->versionMinor() );
     // add to compiler
     compiler->m_dlls.push_back(dll);
     // commit operator overloads | 1.5.1.5
@@ -1192,6 +1195,10 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
     // create dynamic module
     Chuck_DLL * dll = new Chuck_DLL( NULL, name );
 
+    // log with no newline; print status next
+    // NOTE this is more informative if the chugin crashes, we can see the name
+    EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name );
+
     // load the dll, lazy mode
     if( dll->load(dl_path, CK_QUERY_FUNC, TRUE) )
     {
@@ -1201,12 +1208,14 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         if( dll->compatible() )
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::green("OK",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::green("OK",true).c_str(),
+                         dll->versionMajor(), dll->versionMinor() );
         }
         else
         {
             // print
-            EM_log( CK_LOG_SYSTEM, "[%s] chugin %s (%d.%d)", TC::red("FAILED",true).c_str(), name, dll->versionMajor(), dll->versionMinor() );
+            EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(),
+                         dll->versionMajor(), dll->versionMinor() );
             // push
             EM_pushlog();
             EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
@@ -1217,7 +1226,7 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
     else
     {
         // print
-        EM_log( CK_LOG_SYSTEM, "[%s] chugin '%s' load...", TC::red("FAILED",true).c_str(), name );
+        EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s]...", TC::red("FAILED",true).c_str() );
         // more info
         EM_pushlog();
         EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );

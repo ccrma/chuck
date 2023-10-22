@@ -52,6 +52,13 @@
 #define CK_LOG_CORE             1
 #define CK_LOG_NONE             0  // set this to log nothing
 
+// bitwise options for EM_log_opts
+enum em_LogOpts
+{
+    EM_LOG_NONE = 0,
+    EM_LOG_NO_NEWLINE = 0x1,
+    EM_LOG_NO_PREFIX = 0x10
+};
 
 // C linkage
 #if defined(_cplusplus) || defined(__cplusplus)
@@ -66,8 +73,11 @@ extern "C" {
 #define CK_LOG( level, ... ) do{ if(level <= g_loglevel) \
                                  { EM_log( level, __VA_ARGS__ ); } }while(0)
 
+
 // output log message
 void EM_log( t_CKINT, c_constr, ... );
+// output log message (with options)
+void EM_log_opts( t_CKINT level, enum em_LogOpts options, c_constr, ... );
 // set log level [CK_LOG_NONE, CK_LOG_ALL]
 void EM_setlog( t_CKINT level );
 // push the log indentation
