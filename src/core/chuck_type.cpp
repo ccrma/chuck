@@ -8205,16 +8205,16 @@ static t_CKBOOL g_escape_ready = FALSE;
 void escape_table( )
 {
     // escape
-    g_escape['\''] = '\'';
-    g_escape['"'] = '"';
-    g_escape['\\'] = '\\';
-    g_escape['a'] = (char)7; // audible bell
-    g_escape['b'] = (char)8; // back space
-    g_escape['f'] = (char)12; // form feed
-    g_escape['n'] = (char)10; // new line
-    g_escape['r'] = (char)13; // carriage return
-    g_escape['t'] = (char)9; // horizontal tab
-    g_escape['v'] = (char)11; // vertical tab
+    g_escape[(t_CKUINT)'\''] = '\'';
+    g_escape[(t_CKUINT)'"'] = '"';
+    g_escape[(t_CKUINT)'\\'] = '\\';
+    g_escape[(t_CKUINT)'a'] = (char)7; // audible bell
+    g_escape[(t_CKUINT)'b'] = (char)8; // back space
+    g_escape[(t_CKUINT)'f'] = (char)12; // form feed
+    g_escape[(t_CKUINT)'n'] = (char)10; // new line
+    g_escape[(t_CKUINT)'r'] = (char)13; // carriage return
+    g_escape[(t_CKUINT)'t'] = (char)9; // horizontal tab
+    g_escape[(t_CKUINT)'v'] = (char)11; // vertical tab
 
     // done
     g_escape_ready = TRUE;

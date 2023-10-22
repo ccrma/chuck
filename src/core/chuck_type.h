@@ -1018,11 +1018,11 @@ public:
     // struct to hold callback on instantiate
     struct CallbackOnInstantiate
     {
+        // the callback
+        f_callback_on_instantiate callback;
         // whether to auto-set shred origin at instantiation;
         // see t_CKBOOL initialize_object( ... )
         t_CKBOOL shouldSetShredOrigin;
-        // the callback
-        f_callback_on_instantiate callback;
         // constructor
         CallbackOnInstantiate( f_callback_on_instantiate cb = NULL, t_CKBOOL setShredOrigin = FALSE )
         : callback(cb), shouldSetShredOrigin(setShredOrigin) { }

@@ -1949,11 +1949,11 @@ remove_all_shreds(ck_remove_all_shreds)
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::ObjectApi::ObjectApi() :
 get_type(ck_get_type),
-create(ck_create_with_shred),
-create_without_shred(ck_create_without_shred),
 add_ref(ck_add_ref),
 release(ck_release),
 refcount(ck_refcount),
+create(ck_create_with_shred),
+create_without_shred(ck_create_without_shred),
 create_string(ck_create_string),
 get_origin_shred(ck_get_origin_shred),
 set_origin_shred(ck_set_origin_shred),

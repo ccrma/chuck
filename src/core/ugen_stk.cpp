@@ -7963,7 +7963,7 @@ MY_FLOAT Delay :: lastOut(void) const
   return FilterStk::lastOut();
 }
 
-MY_FLOAT Delay :: nextOut(void) const
+MY_FLOAT Delay :: nextOut(void)
 {
   return inputs[outPoint];
 }
@@ -8486,7 +8486,7 @@ void Echo :: set( MY_FLOAT max )
     MY_FLOAT delay = delayLine ? delayLine->getDelay() : length>>1;
     if( delayLine ) delete delayLine;
     if( delay >= max ) delay = max;
-    delayLine = new Delay(length>>1, length);
+    delayLine = new class Delay(length>>1, length);
     this->clear();
     this->setDelay(delay+.5);
 }
@@ -10428,15 +10428,15 @@ JCRev :: JCRev(MY_FLOAT T60)
   }
 
   for (i=0; i<3; i++)
-      allpassDelays[i] = new Delay(lengths[i+4], lengths[i+4]);
+      allpassDelays[i] = new class Delay(lengths[i+4], lengths[i+4]);
 
   for (i=0; i<4; i++)   {
-    combDelays[i] = new Delay(lengths[i], lengths[i]);
+    combDelays[i] = new class Delay(lengths[i], lengths[i]);
     combCoefficient[i] = pow(10.0,(-3 * lengths[i] / (T60 * Stk::sampleRate())));
   }
 
-  outLeftDelay = new Delay(lengths[7], lengths[7]);
-  outRightDelay = new Delay(lengths[8], lengths[8]);
+  outLeftDelay = new class Delay(lengths[7], lengths[7]);
+  outRightDelay = new class Delay(lengths[8], lengths[8]);
   allpassCoefficient = 0.7;
   effectMix = 0.3;
   this->clear();
@@ -11888,12 +11888,12 @@ NRev :: NRev(MY_FLOAT T60)
   }
 
   for (i=0; i<6; i++) {
-    combDelays[i] = new Delay( lengths[i], lengths[i]);
+    combDelays[i] = new class Delay( lengths[i], lengths[i]);
     combCoefficient[i] = pow(10.0, (-3 * lengths[i] / (T60 * Stk::sampleRate())));
   }
 
   for (i=0; i<8; i++)
-    allpassDelays[i] = new Delay(lengths[i+6], lengths[i+6]);
+    allpassDelays[i] = new class Delay(lengths[i+6], lengths[i+6]);
 
   allpassCoefficient = 0.7;
   effectMix = 0.3;
@@ -12275,8 +12275,8 @@ PRCRev :: PRCRev(MY_FLOAT T60)
   }
 
   for (i=0; i<2; i++)   {
-    allpassDelays[i] = new Delay( lengths[i], lengths[i] );
-    combDelays[i] = new Delay( lengths[i+2], lengths[i+2] );
+    allpassDelays[i] = new class Delay( lengths[i], lengths[i] );
+    combDelays[i] = new class Delay( lengths[i+2], lengths[i+2] );
     combCoefficient[i] = pow(10.0,(-3 * lengths[i+2] / (T60 * Stk::sampleRate())));
   }
 
@@ -23549,7 +23549,7 @@ CK_DLL_CGET( StifKarp_cget_baseLoopGain )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Delay_ctor )
 {
-    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)new Delay;
+    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)new class Delay;
 }
 
 
@@ -23559,7 +23559,7 @@ CK_DLL_CTOR( Delay_ctor )
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( Delay_dtor )
 {
-    delete (Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    delete (class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
     OBJ_MEMBER_UINT(SELF, Delay_offset_data) = 0;
 }
 
@@ -23570,7 +23570,7 @@ CK_DLL_DTOR( Delay_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( Delay_tick )
 {
-    *out = (SAMPLE)((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->tick( in );
+    *out = (SAMPLE)((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->tick( in );
     return TRUE;
 }
 
@@ -23591,8 +23591,8 @@ CK_DLL_PMSG( Delay_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( Delay_ctrl_delay )
 {
-    ((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->setDelay( (long)(GET_NEXT_DUR(ARGS)+.5) );
-    RETURN->v_dur = (t_CKDUR)((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->getDelay();
+    ((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->setDelay( (long)(GET_NEXT_DUR(ARGS)+.5) );
+    RETURN->v_dur = (t_CKDUR)((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->getDelay();
 }
 
 
@@ -23602,7 +23602,7 @@ CK_DLL_CTRL( Delay_ctrl_delay )
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Delay_cget_delay )
 {
-    RETURN->v_dur = (t_CKDUR)((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->getDelay();
+    RETURN->v_dur = (t_CKDUR)((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->getDelay();
 }
 
 
@@ -23612,11 +23612,11 @@ CK_DLL_CGET( Delay_cget_delay )
 //-----------------------------------------------------------------------------
 CK_DLL_CTRL( Delay_ctrl_max )
 {
-    Delay * delay = (Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    class Delay * delay = (class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
     t_CKFLOAT val = (t_CKFLOAT)delay->getDelay();
     t_CKDUR max = GET_NEXT_DUR(ARGS);
     delay->set( (long)(val+.5), (long)(max+1.5) );
-    RETURN->v_dur = (t_CKDUR)((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->length-1.0;
+    RETURN->v_dur = (t_CKDUR)((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->length-1.0;
 }
 
 
@@ -23626,7 +23626,7 @@ CK_DLL_CTRL( Delay_ctrl_max )
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Delay_cget_max )
 {
-    RETURN->v_dur = (t_CKDUR)((Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->length-1.0;
+    RETURN->v_dur = (t_CKDUR)((class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data))->length-1.0;
 }
 
 
@@ -23636,7 +23636,7 @@ CK_DLL_CGET( Delay_cget_max )
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( Delay_clear )
 {
-    Delay * delay = (Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    class Delay * delay = (class Delay *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
     delay->clear();
 }
 
