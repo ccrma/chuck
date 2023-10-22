@@ -681,7 +681,7 @@ public:
 
 
 /***************************************************/
-/*! \class Delay
+/*! \class DelayBase
     \brief STK non-interpolating delay line class.
 
     This protected Filter subclass implements
@@ -704,18 +704,18 @@ public:
 #define __DELAY_H
 
 
-class Delay : public FilterStk
+class DelayBase : public FilterStk
 {
 public:
 
   //! Default constructor creates a delay-line with maximum length of 4095 samples and zero delay.
-  Delay();
+  DelayBase();
 
   //! Overloaded constructor which specifies the current and maximum delay-line lengths.
-  Delay(long theDelay, long maxDelay);
+  DelayBase(long theDelay, long maxDelay);
 
   //! Class destructor.
-  virtual ~Delay();
+  virtual ~DelayBase();
 
   //! Clears the internal state of the delay line.
   void clear();
@@ -797,7 +797,7 @@ public:
 #define __DELAYL_H
 
 
-class DelayL : public Delay
+class DelayL : public DelayBase
 {
 public:
 
@@ -2459,7 +2459,7 @@ class Bowed : public Instrmnt
 #define __DelayA_h
 
 
-class DelayA : public Delay
+class DelayA : public DelayBase
 {
 public:
 
@@ -2871,7 +2871,7 @@ public:
   MY_FLOAT *tick(MY_FLOAT *vector, unsigned int vectorSize);
 
 public:
-  class Delay *delayLine;
+  DelayBase *delayLine;
   long length;
   MY_FLOAT lastOutput;
   MY_FLOAT effectMix;
@@ -3478,10 +3478,10 @@ class JCRev : public Reverb
   MY_FLOAT tick(MY_FLOAT input);
 
  public: // SWAP formerly protected
-  class Delay *allpassDelays[3];
-  class Delay *combDelays[4];
-  class Delay *outLeftDelay;
-  class Delay *outRightDelay;
+  DelayBase *allpassDelays[3];
+  DelayBase *combDelays[4];
+  DelayBase *outLeftDelay;
+  DelayBase *outRightDelay;
   MY_FLOAT allpassCoefficient;
   MY_FLOAT combCoefficient[4];
 
@@ -4195,8 +4195,8 @@ class NRev : public Reverb
   MY_FLOAT tick(MY_FLOAT input);
 
  public: // SWAP formerly protected
-  class Delay *allpassDelays[8];
-  class Delay *combDelays[6];
+  DelayBase *allpassDelays[8];
+  DelayBase *combDelays[6];
   MY_FLOAT allpassCoefficient;
   MY_FLOAT combCoefficient[6];
     MY_FLOAT lowpassState;
@@ -4245,8 +4245,8 @@ public:
   MY_FLOAT tick(MY_FLOAT input);
 
 public: // SWAP formerly protected
-  class Delay *allpassDelays[2];
-  class Delay *combDelays[2];
+  DelayBase *allpassDelays[2];
+  DelayBase *combDelays[2];
   MY_FLOAT allpassCoefficient;
   MY_FLOAT combCoefficient[2];
 
