@@ -1488,12 +1488,12 @@ static void ckvm_process_watcher( t_CKBOOL add, list<Chuck_VM_Shreds_Watcher> & 
 // name: subscribe_watcher() | 1.5.1.5
 // desc: subscribe shreds watcher callback
 //-----------------------------------------------------------------------------
-void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data )
+void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * userdata )
 {
     // check
     if( !cb ) return;
     // watcher bundle
-    Chuck_VM_Shreds_Watcher w( cb, data );
+    Chuck_VM_Shreds_Watcher w( cb, userdata );
     // check options and subscribe the watcher
     ckvm_process_watcher( options & CKVM_SHREDS_WATCH_SPORK, m_shreds_watchers_spork, w );
     ckvm_process_watcher( options & CKVM_SHREDS_WATCH_REMOVE, m_shreds_watchers_remove, w );
