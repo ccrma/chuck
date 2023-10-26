@@ -839,6 +839,7 @@ struct Chuck_DL_Api
     typedef Chuck_Type * Type;
     typedef Chuck_String * String;
     typedef Chuck_ArrayInt * ArrayInt; // 1.5.0.1 (ge) added
+    typedef Chuck_ArrayFloat * ArrayFloat; // 1.5.1.8 (nshaheed) added
 
 public:
     static Chuck_DL_Api g_api;
@@ -916,6 +917,11 @@ public:
         t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKUINT value );
         t_CKBOOL (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx, t_CKUINT & value );
         t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const std::string & key, t_CKUINT & value );
+        // array_float operations
+        t_CKBOOL (CK_DLL_CALL * const array_float_size)( ArrayFloat array, t_CKINT & value );
+        t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
+        t_CKBOOL (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx, t_CKFLOAT & value );
+        t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const std::string & key, t_CKFLOAT & value );      
     } * const object;
 
     // access to host-side chuck types
