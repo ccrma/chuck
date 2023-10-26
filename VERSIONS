@@ -2,6 +2,13 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.8 (October 2023)
+=======
+- (fixed) an issue with reference count cleanup on recursive functions
+    that return Objects
+- (added) chugins API float array access
+
+
 1.5.1.7 (October 2023)
 =======
 - (added) new type 'vec2' 2D vector type

@@ -3357,7 +3357,7 @@ public:
 //          (verify these auto-add_refs to make the math work out)
 //       2) during emit, if a stmt has any objects to release, one of these
 //          instruction will be emitted to begin a statement, purpose:
-//          make room on reg stack for objects to release at end of stmt\
+//          make room on reg stack for objects to release at end of stmt
 //       3) operations that return Objects (func calls and `new; not variables
 //          since those references are accounted for) should be given the means
 //          to add its return value to the list of objects refs to release
@@ -3369,11 +3369,9 @@ struct Chuck_Instr_Stmt_Start : public Chuck_Instr
 {
 public:
     // constructor
-    Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases )
-    { m_numObjReleases = numObjReleases; m_objectsToRelease = NULL; m_nextOffset = 0; }
+    Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases );
     // destructor
-    virtual ~Chuck_Instr_Stmt_Start()
-    { CK_SAFE_DELETE_ARRAY( m_objectsToRelease ); }
+    virtual ~Chuck_Instr_Stmt_Start();
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     // for printing
@@ -3392,8 +3390,10 @@ public:
     t_CKUINT m_nextOffset;
     // number of objects to release at the end of statement
     t_CKUINT m_numObjReleases;
-    // pointer to beginning of objects section on reg stack
-    t_CKUINT * m_objectsToRelease;
+    // stack of regions in case of recursion
+    std::vector<t_CKUINT *> m_stack;
+    // stack level number (used to cache base stack level to avoid realloc)
+    t_CKUINT m_stackLevel;
 };
 
 

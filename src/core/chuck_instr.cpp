@@ -5579,6 +5579,37 @@ void Chuck_Instr_Func_Return::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_Instr_Stmt_Start()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Instr_Stmt_Start::Chuck_Instr_Stmt_Start( t_CKUINT numObjReleases )
+{
+    m_nextOffset = 0;
+    m_numObjReleases = numObjReleases;
+    m_stackLevel = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Instr_Stmt_Start()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Instr_Stmt_Start::~Chuck_Instr_Stmt_Start()
+{
+    // drain stack
+    while( m_stack.size() )
+    {
+        CK_SAFE_DELETE_ARRAY( m_stack.back() );
+        m_stack.pop_back();
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: params()
 // desc: for instruction dumps
 //-----------------------------------------------------------------------------
@@ -5602,19 +5633,22 @@ void Chuck_Instr_Stmt_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     // if nothing to push, no op
     if( !m_numObjReleases ) return;
 
-    // make room
-    if( !m_objectsToRelease )
-    {
-        // allocate for re-use
-        m_objectsToRelease = new t_CKUINT[m_numObjReleases];
-    }
+    // push level
+    m_stackLevel++;
 
-    // make room for all the object references to release
+    // see if using base cache
+    if( m_stackLevel == 1 && m_stack.size() == 1 ) return;
+
+    // make new region
+    t_CKUINT * region = new t_CKUINT[m_numObjReleases];
+    // zero out region
     for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
     {
         // zero out
-        m_objectsToRelease[i] = 0;
+        region[i] = 0;
     }
+    // push onto stack
+    m_stack.push_back( region );
 }
 
 
@@ -5655,6 +5689,16 @@ t_CKBOOL Chuck_Instr_Stmt_Start::nextOffset( t_CKUINT & offset )
 t_CKBOOL Chuck_Instr_Stmt_Start::setObject( Chuck_VM_Object * object, t_CKUINT offset )
 {
     // check
+    if( m_stackLevel == 0 || m_stack.size() == 0 )
+    {
+        EM_exception(
+            "(internal error) region stack inconsistency in Stmt_Start.setObject(): level=%lu size=%lu",
+            m_stackLevel, (t_CKUINT)m_stack.size() );
+        // return
+        return FALSE;
+    }
+
+    // check
     if( offset >= m_numObjReleases )
     {
         EM_exception(
@@ -5664,8 +5708,10 @@ t_CKBOOL Chuck_Instr_Stmt_Start::setObject( Chuck_VM_Object * object, t_CKUINT o
         return FALSE;
     }
 
+    // region pointer
+    t_CKUINT * region = m_stack.back();
     // pointer arithmetic
-    t_CKUINT * pInt = m_objectsToRelease + offset;
+    t_CKUINT * pInt = region + offset;
 
     // release if not NULL; what was previously there is no-longer accessible
     // NOTE this could happen in the case of a loop:
@@ -5691,19 +5737,18 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
     // if nothing to push, no op
     if( !m_numObjReleases ) return TRUE;
 
-    // if no stack pointer
-    if( !m_objectsToRelease )
+    // check
+    if( m_stackLevel == 0 || m_stack.size() == 0 )
     {
-        // we have a problem
         EM_exception(
-            "(internal error) NULL data region in Stmt_Start.cleanupRef() on shred[id=%lu:%s]",
-            shred->xid, shred->name.c_str() );
-        // bail out
+            "(internal error) region stack inconsistency in Stmt_Start.cleanupRefs(): level=%lu size=%lu on shred[id=%lu:%s]",
+            m_stackLevel, (t_CKUINT)m_stack.size(), shred->xid, shred->name.c_str() );
+        // return
         return FALSE;
     }
 
     // cast pointer to data region as Object pointers
-    t_CKUINT * pInt = m_objectsToRelease;
+    t_CKUINT * pInt = m_stack.back();
 
     // make room for all the object references to release
     for( t_CKUINT i = 0; i < m_numObjReleases; i++ )
@@ -5712,8 +5757,21 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
         Chuck_VM_Object * object = (Chuck_VM_Object *)(*pInt);
         // release (could be NULL)
         CK_SAFE_RELEASE( object );
+        // zero out the region
+        *pInt = 0;
         // advance pointer
         pInt++;
+    }
+
+    // decrement stack level
+    m_stackLevel--;
+    // pop stack unless we are level 1
+    if( m_stack.size() > 1 )
+    {
+        // clean up
+        CK_SAFE_DELETE_ARRAY( m_stack.back() );
+        // pop
+        m_stack.pop_back();
     }
 
     return TRUE;
