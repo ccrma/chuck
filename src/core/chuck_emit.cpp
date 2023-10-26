@@ -1886,15 +1886,15 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
             if( isobj( emit->env, exp->func_call.ret_type ) )
             {
                 // the return needs to be released (later at the end of the stmt that contains this)
-                Chuck_Instr_Stmt_Start * start = emit->stmt_stack.size() ? emit->stmt_stack.back() : NULL;
+                Chuck_Instr_Stmt_Start * onStack = emit->stmt_stack.size() ? emit->stmt_stack.back() : NULL;
                 // check it
-                if( start )
+                if( onStack )
                 {
                     t_CKUINT offset = 0;
                     // acquire next offset
-                    if( !start->nextOffset( offset ) ) return FALSE;
+                    if( !onStack->nextOffset( offset ) ) return FALSE;
                     // append instruction
-                    emit->append( new Chuck_Instr_Stmt_Remember_Object( start, offset ) );
+                    emit->append( new Chuck_Instr_Stmt_Remember_Object( onStack, offset ) );
                 }
             }
             break;

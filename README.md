@@ -27,7 +27,7 @@ navigate to the `chuck/src` directory, and run `make`:
 cd chuck/src
 make mac
 ```
-OR to build a universal binary (intel + apple sillicon):
+OR to build a universal binary (intel + apple silicon):
 ```
 make mac-ub
 ```

@@ -635,7 +635,7 @@ public:
 
 public:
     // subscribe shreds watcher callback | 1.5.1.5
-    void subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * data = NULL );
+    void subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * userdata = NULL );
     // notify watchers | 1.5.1.5
     void notify_watchers( ckvmShredsWatcherFlag which, Chuck_VM_Shred * shred,
                           std::list<Chuck_VM_Shreds_Watcher> & v );
