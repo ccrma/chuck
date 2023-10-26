@@ -1931,6 +1931,80 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, cons
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_float_size()
+// desc: get size of an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_float_size( Chuck_DL_Api::ArrayFloat a, t_CKINT & value )
+{
+    // default value
+    value = 0;
+    // check
+    if( a == NULL ) return FALSE;
+
+    // cast to array_float
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
+
+    value = array->size();
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_push_back()
+// desc: push back an element into an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_float_push_back( Chuck_DL_Api::ArrayFloat a, t_CKFLOAT value )
+{
+    // check
+    if( a == NULL ) return FALSE;
+    // cast to array_float
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
+    // action
+    array->push_back( value );
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_get_idx()
+// desc: get an indexed element from an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_float_get_idx( Chuck_DL_Api::ArrayFloat a, t_CKINT idx, t_CKFLOAT & value )
+{
+    // check
+    if( a == NULL ) return FALSE;
+    // cast to array_float
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
+    // action
+    return array->get( idx, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_get()
+// desc: get a keyed element from an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_float_get_key( Chuck_DL_Api::ArrayFloat a, const std::string& key, t_CKFLOAT & value )
+{
+    // check
+    if( a == NULL ) return FALSE;
+    // cast to array_float
+    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
+    // action
+    return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // constructor for the VMApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::VMApi::VMApi() :
@@ -1970,7 +2044,11 @@ set_string(ck_set_string),
 array_int_size(ck_array_int_size),
 array_int_push_back(ck_array_int_push_back),
 array_int_get_idx(ck_array_int_get_idx),
-array_int_get_key(ck_array_int_get_key)
+array_int_get_key(ck_array_int_get_key),
+array_float_size(ck_array_float_size),
+array_float_push_back(ck_array_float_push_back),
+array_float_get_idx(ck_array_float_get_idx),
+array_float_get_key(ck_array_float_get_key)
 { }
 
 
