@@ -8,6 +8,10 @@ ChucK VERSIONS log
     that return Objects
 - (fixed) an issue with reference count cleanup on 'new' operator,
     e.g., (new Foo).f();
+- (updated) --color:ON and --color now will always output ANSI color 
+    codes, regardless of TTY status; (FYI --color:AUTO is unchanged
+    and is the same as default, i.e., enable color terminal if TTY 
+    detected; disable otherwise
 - (added, developer) chugins API float array access
 
 

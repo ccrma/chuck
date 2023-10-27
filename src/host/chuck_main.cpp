@@ -619,6 +619,8 @@ t_CKBOOL go( int argc, const char ** argv )
     t_CKBOOL suppress_error_quote = FALSE;
     // color terminal output | 1.5.0.5 (ge) added
     t_CKBOOL colorTerminal = TRUE;
+    // always output color terminal, regardless of TTY status | 1.5.1.8
+    t_CKBOOL colorTerminalAlways = FALSE;
     string   filename = "";
     vector<string> args;
     // audio driver | 1.5.0.0
@@ -907,7 +909,12 @@ t_CKBOOL go( int argc, const char ** argv )
                 // get the rest
                 string arg = tolower(argv[i]+sizeof("--color:")-1);
                 if( arg == "off" ) colorTerminal = false;
-                else if( arg == "on" || arg == "auto") colorTerminal = true;
+                else if( arg == "on" || arg == "auto")
+                {
+                    colorTerminal = TRUE;
+                    // if explicitly ON, then always output ANSI color codes | 1.5.1.8
+                    if( arg == "on" ) colorTerminalAlways = TRUE;
+                }
                 else
                 {
                     // error
@@ -917,7 +924,10 @@ t_CKBOOL go( int argc, const char ** argv )
                 }
             }
             else if( tolower(argv[i]) == "--color" )
+            {
                 colorTerminal = TRUE;
+                colorTerminalAlways = TRUE;
+            }
             else if( tolower(argv[i]) == "--no-color" )
                 colorTerminal = FALSE;
             else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
@@ -1004,11 +1014,11 @@ t_CKBOOL go( int argc, const char ** argv )
         }
     }
 
-    // check if we output to TTY (teletype char at a time)
+    // check if we output to TTY (teletype interactive terminal)
     // if not disable color teriminal to avoid outputing
     // ANSI escape codes to the output stream, which would
     // show up in | and >
-    if( !ck_isatty() ) colorTerminal = false;
+    if( !colorTerminalAlways && !ck_isatty() ) colorTerminal = false;
 
     //------------------ CHUCK PRE-INITIALIZATION ---------------------
     // instantiate a ChucK!
