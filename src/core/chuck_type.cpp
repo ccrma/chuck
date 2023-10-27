@@ -3136,6 +3136,13 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 return NULL;
             }
 
+            // check if return type is an Obj | 1.5.1.8
+            if( isobj( env, t ) && env->stmt_stack.size() )
+            {
+                // increment # of objects in this stmt that needs release
+                env->stmt_stack.back()->numObjsToRelease++;
+            }
+
             // return the type
             return t;
         break;

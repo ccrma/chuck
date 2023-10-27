@@ -3574,6 +3574,17 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             // instantiate object, including array
             if( !emit_engine_instantiate_object( emit, t, unary->array, unary->type->ref, is_array_ref ) )
                 return FALSE;
+
+            // the new needs to be addref, and released (later at the end of the stmt that contains this) | 1.5.1.8
+            Chuck_Instr_Stmt_Start * onStack = emit->stmt_stack.size() ? emit->stmt_stack.back() : NULL;
+            // check it
+            assert( onStack != NULL );
+            // offset variable
+            t_CKUINT offset = 0;
+            // acquire next offset
+            if( !onStack->nextOffset( offset ) ) return FALSE;
+            // append instruction, addRef=TRUE
+            emit->append( new Chuck_Instr_Stmt_Remember_Object( onStack, offset, TRUE ) );
         }
         break;
 

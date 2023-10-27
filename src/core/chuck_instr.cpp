@@ -4465,7 +4465,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: instantiate_object()
-// desc: ...
+// desc: instantiate a object, push its pointer on reg stack
 //-----------------------------------------------------------------------------
 inline void instantiate_object( Chuck_VM * vm, Chuck_VM_Shred * shred,
                                 Chuck_Type * type )
@@ -5804,6 +5804,9 @@ void Chuck_Instr_Stmt_Remember_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * 
     // get stack pointer
     t_CKUINT * reg_sp = (t_CKUINT *)shred->reg->sp;
     Chuck_VM_Object * obj = (Chuck_VM_Object *)(*(reg_sp-1));
+
+    // add-ref for certain expressions (e.g., 'new Object;`)
+    if( m_addRef ) CK_SAFE_ADD_REF( obj );
 
     // check
     if( !m_stmtStart )

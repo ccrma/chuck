@@ -3408,8 +3408,8 @@ struct Chuck_Instr_Stmt_Remember_Object : public Chuck_Instr
 {
 public:
     // constructor
-    Chuck_Instr_Stmt_Remember_Object( Chuck_Instr_Stmt_Start * start, t_CKUINT offset )
-    { m_stmtStart = start; m_offset = offset; }
+    Chuck_Instr_Stmt_Remember_Object( Chuck_Instr_Stmt_Start * start, t_CKUINT offset, t_CKUINT addRef = FALSE )
+    { m_stmtStart = start; m_offset = offset; m_addRef = addRef; }
     // execute
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     // for printing
@@ -3420,6 +3420,8 @@ protected:
     Chuck_Instr_Stmt_Start * m_stmtStart;
     // data offset
     t_CKUINT m_offset;
+    // whether to add ref (FYI func calls internal add ref; 'new' would need this additional add-ref)
+    t_CKBOOL m_addRef;
 };
 
 

@@ -566,6 +566,8 @@ string absyn_binary2str( a_Exp_Binary binary )
         case ae_op_gt:
         case ae_op_le:
         case ae_op_ge:
+        case ae_op_and:
+        case ae_op_or:
             paren = false;
             spacing = true;
             break;

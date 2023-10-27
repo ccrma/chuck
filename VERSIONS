@@ -6,7 +6,9 @@ ChucK VERSIONS log
 =======
 - (fixed) an issue with reference count cleanup on recursive functions
     that return Objects
-- (added) chugins API float array access
+- (fixed) an issue with reference count cleanup on 'new' operator,
+    e.g., (new Foo).f();
+- (added, developer) chugins API float array access
 
 
 1.5.1.7 (October 2023)
