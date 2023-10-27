@@ -109,7 +109,7 @@ ChucK was created in the early 2000s at Princeton University by [Ge Wang](https:
 
 ChucK has been extensively documented in published articles and books ([see list](https://ccrma.stanford.edu/~ge/publish/)). For an overview, check out:
 
-“[ChucK: A Strongly-Timed Music Programming Language](https://artful.design/stuff/samples/chuck.pdf)“ comic book excerpt from [_Artful Design: Techonlogy in Search of the Sublime_](https://artful.design/)
+“[ChucK: A Strongly-Timed Music Programming Language](https://artful.design/stuff/samples/chuck.pdf)“ comic book excerpt from [_Artful Design: Technology in Search of the Sublime_](https://artful.design/)
 
 Wang, G., P. R., Cook, and S. Salazar. 2015. "[ChucK: A Strongly Timed Computer Music Language](https://ccrma.stanford.edu/~ge/publish/files/2015-cmj-chuck.pdf)" _Computer Music Journal_ 39:4. doi:10.1162/COMJ_a_00324
 

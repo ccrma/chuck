@@ -17,7 +17,7 @@ ChucK VERSIONS log
     for 2D animation (ChuGL) as well as texture mapping UV or ST 
     coordinates; access fields with .x/.y OR .u/.v OR .s/.t
 - (added) new examples/vector/vec2.ck
-- (reworked) memory managment across function calls that return
+- (reworked) memory management across function calls that return
     Object types; now correctly tracks all instances within a 
     statement and balances reference counts; previously there was
     a chance that object refcount were not correctly released,
@@ -40,7 +40,7 @@ ChucK VERSIONS log
 
 =======
 NOTE: 1.5.1.5 is the alpha-release / soft launch of ChuGL, a unified 
-audiovisual programmming framework built into the ChucK programming 
+audiovisual programming framework built into the ChucK programming
 language. It offers real-time, unified audio synthesis and 3D/2D graphics 
 programming in a single strongly-timed language.
 ------
@@ -63,7 +63,7 @@ https://chuck.stanford.edu/chugl/
     // let's say we define a custom class...
     public class Foo { int num; }
 
-    // PUBLIC operator overloading (trascends contexts and files;
+    // PUBLIC operator overloading (transcends contexts and files;
     // will persist until stop VM or clear VM. NOTE the use of 'public' 
     // instead of 'fun' (fun for all!)
     public Foo @operator =^( Foo lhs, Foo rhs )
@@ -186,7 +186,7 @@ https://chuck.stanford.edu/chugl/
 - (updated) ConsoleInput.prompt( text ) now no longer prints an extra 
     space (" ") after prompt text
 - (updated) chugins headers version incremented to 9.0
-- (added; chugins development) overhauled dyanmic linking API to access
+- (added; chugins development) overhauled dynamic linking API to access
     chuck host-side operations; this greatly expands chugins capabilities
     but will unfortunately require API changes that will break chugin
     builds that uses the existing API.
@@ -248,7 +248,7 @@ https://chuck.stanford.edu/chugl/
     // instantiating and initializing a ChucK object by type, with reference to a parent shred
     // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
     // NOTE set addRef to TRUE if you intend to keep a reference of the newly created object around
-    // NOTE set addRref to FALSE if the created object is to be returned without keeping a reference around
+    // NOTE set addRef to FALSE if the created object is to be returned without keeping a reference around
     Object create( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
     // instantiating and initializing a ChucK object by type, with no reference to a parent shred
     // if addRef == TRUE the newly created object will have a reference count of 1; otherwise 0
@@ -339,7 +339,7 @@ https://chuck.stanford.edu/chugl/
 - (updated) Machine.add( filepath ) no longer introduces a potential
     real-time audio interruption on macOS ** for all filepath that does 
     not contain ~ **; currently, path resolution for ~ or ~[username] in 
-    macOS  consistenly causes audio clicks, likely due to implementation 
+    macOS consistently causes audio clicks, likely due to implementation
     of underlying system function (e.g., wordexp()) to resolve ~ 
     (hypothesis: wordexp() function performs IO-blocking)
 - (added) function to expand platform specific file path
@@ -355,7 +355,7 @@ https://chuck.stanford.edu/chugl/
 - (added) a new (3rd) string.replace() function
 	void replace( string from, string to );
 	    Replace all instances of 'from' in the string with 'to'.
-  (for referencethe existing string.replace() function)
+  (for reference the existing string.replace() function)
 	void replace( int position, string str );
 	    Replace characters from 'position' with contents of 'str'.
 	void replace( int position, int length, string str );
@@ -425,7 +425,7 @@ foo << bar;
     the same OSC address; the crash has bee resolved, and the OSC 
     incoming server message dispatch has been reworked
 - (re-added) 'Chubgraph' has been "re-deprecated", which actually means 
-    older code that use 'Chubraph' instead of 'Chugraph" will now work
+    older code that use 'Chubgraph' instead of 'Chugraph" will now work
     again, with the deprecation warning (previously `Chubgraph` would 
     result in a compiler error):
     `deprecated: 'Chubgraph' --> use: 'Chugraph' instead`
@@ -473,7 +473,7 @@ foo << bar;
 1.5.1.1 (August 2023)
 =======
 (note) this patch release fixes a number of issues related to recently added
-    language features; it also adds some "syntatic sugar" in the form of 
+    language features; it also adds some "syntactic sugar" in the form of
     allowing trailing commas in array initializer lists, as well as a set 
     of range() functions for generating arrays of ranges of value.
 
@@ -625,7 +625,7 @@ fun float foo( int v )
 - (added) IO (cherr, chout, FileIO) for complex, polar, vec3, vec3
     e.g., cherr <= #(1,1) <= IO.nl();
     e.g., chout <= #(1,1)$polar <= IO.nl();
-- (added) overloded Std.getenv() variant (thanks @ynohtna)
+- (added) overloaded Std.getenv() variant (thanks @ynohtna)
         string getenv(string value)
         Get the value of an environment variable, returning the provided 
             default if unset.
@@ -716,11 +716,11 @@ chuck parameters; updated ChucK c++ integration
     examples/array/array_append.ck
     examples/array/array_erase.ck
     examples/array/array_erase2.ck
-- (update) map-only function @array.find(string) has been renmed to
+- (update) map-only function @array.find(string) has been renamed to
     @array.isInMap(string) to avoid confusion with vector
 - (added) error checking for out-of-order dependency issues where
   a function is called (or a class instantiated) that would skip
-  a neede variable initialization; this addresses a long-standing
+  a needed variable initialization; this addresses a long-standing
   issue that has caused much confusion because previously the issue
   failed but silently.
   ---
@@ -841,7 +841,7 @@ troubleshooting recommendation:
      http://chuck.stanford.edu/
   ```
 - (developer, updated) internal streamlining of chuck core, which is
-  now completely decoupled from knowledged of system audio I/O;
+  now completely decoupled from knowledge of system audio I/O;
   this makes chuck core cleaner, more portable, and easier to integrate
   as a component
 - (developer, added) examples hosts code in C++ showing how to embed
