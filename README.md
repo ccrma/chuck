@@ -116,6 +116,9 @@ Wang, G., P. R., Cook, and S. Salazar. 2015. "[ChucK: A Strongly Timed Computer 
 ## ChucK Media
 Non-source code documents (papers, logos, soundbites, comics) have been migrated to the [chuck-media](https://github.com/ccrma/chuck-media) repository.
 
+## License
+This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE](./LICENSE) file for details.
+
 ## ChucK Community
 Join us! [ChucK Community Discord](https://discord.gg/ENr3nurrx8) | [ChucK-users Mailing list](https://lists.cs.princeton.edu/mailman/listinfo/chuck-users)
 
