@@ -955,9 +955,6 @@ struct Chuck_Type : public Chuck_Object
     // origin hint
     te_Origin originHint;
 
-    // reference to environment RE-FACTOR 2017
-    Chuck_Env * env_ref;
-
     // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;
 
@@ -983,12 +980,20 @@ public:
     Chuck_Type * copy( Chuck_Env * env, Chuck_Context * context ) const;
 
 public:
+    // get env reference that contains this type | 1.5.1.8
+    Chuck_Env * env() const;
+    // get VM reference associated with this type (via the env) | 1.5.1.8
+    Chuck_VM * vm() const;
+
+public:
     // to string: the full name of this type, e.g., "UGen" or "int[][]"
     const std::string & name();
     // to c string
     const char * c_name();
 
 protected:
+    // reference to environment RE-FACTOR 2017 | get using env()
+    Chuck_Env * env_ref;
     // this for str() and c_name() use only
     std::string ret;
 

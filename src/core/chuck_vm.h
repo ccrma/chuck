@@ -591,6 +591,9 @@ public: // running the machine
     t_CKBOOL compute();
     // abort current running shred
     t_CKBOOL abort_current_shred();
+    // get currently executing shred | 1.5.1.8 (ge) now in VM, in addition to shreduler
+    // NOTE this can only be non-NULL during a Chuck_VM::compute() cycle
+    Chuck_VM_Shred * get_current_shred() const;
 
 public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );

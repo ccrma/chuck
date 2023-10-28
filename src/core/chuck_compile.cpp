@@ -175,17 +175,6 @@ void Chuck_Compiler::shutdown()
     // push indent
     EM_pushlog();
 
-    // need an actual carrier
-    if( m_carrier != NULL )
-    {
-        // free type engine env
-        type_engine_shutdown( m_carrier );
-        // check the pointer is now NULL
-        assert( m_carrier->env == NULL );
-        // zero out the carrier reference | 1.5.1.1
-        m_carrier = NULL;
-    }
-
     // free emitter (and set emitter to NULL)
     emit_engine_shutdown( emitter );
     // check the pointer is now NULL
@@ -206,8 +195,21 @@ void Chuck_Compiler::shutdown()
     // clear the list
     m_dlls.clear();
 
+    // log | 1.5.1.8
+    EM_log( CK_LOG_SYSTEM, "compiler shutown complete." ) ;
     // pop indent
     EM_poplog();
+
+    // if we have carrier
+    if( m_carrier != NULL )
+    {
+        // free type engine env within carrier
+        type_engine_shutdown( m_carrier );
+        // check the pointer is now NULL
+        assert( m_carrier->env == NULL );
+        // zero out the carrier reference | 1.5.1.1
+        m_carrier = NULL;
+    }
 }
 
 

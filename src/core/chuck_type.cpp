@@ -706,13 +706,17 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 void type_engine_shutdown( Chuck_Carrier * carrier )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "shutting down type checker..." );
+    EM_log( CK_LOG_SEVERE, "shutting down type system..." );
+    // push
+    EM_pushlog();
 
     // shut it down; this is system cleanup -- delete instead of release
     CK_SAFE_DELETE( carrier->env );
 
     // log
-    EM_log( CK_LOG_SEVERE, "type checker shutdown complete." );
+    EM_log( CK_LOG_SEVERE, "type system shutdown complete." );
+    // pop
+    EM_poplog();
 }
 
 
@@ -5457,7 +5461,7 @@ t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
     }
 
     // if lhs is null and rhs is a object | removed 1.5.1.7?
-    if( (lhs == *(lhs.env_ref->ckt_null)) && (rhs <= *(rhs.env_ref->ckt_object)) ) return TRUE;
+    if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
 
     return FALSE;
 }
@@ -9055,6 +9059,33 @@ Chuck_Type * Chuck_Type::copy( Chuck_Env * env, Chuck_Context * context ) const
 
     // return new instance
     return n;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: env() | 1.5.1.8 (ge) added method, avoid direct variable access
+// desc: get env reference that contains this type
+//-----------------------------------------------------------------------------
+Chuck_Env * Chuck_Type::env() const
+{
+    return env_ref;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: vm() | 1.5.1.8 (ge) added method, avoid direct variable access
+// desc: get VM reference associated with this type (via the env)
+//-----------------------------------------------------------------------------
+Chuck_VM * Chuck_Type::vm() const
+{
+    // no env ref, no vm ref
+    if( !env_ref ) return NULL;
+    // return env vm ref
+    return env_ref->vm();
 }
 
 

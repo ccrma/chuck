@@ -389,11 +389,6 @@ t_CKBOOL Chuck_VM::shutdown()
     // removal all | 1.5.0.8 (ge) updated from previously non-functioning code
     this->removeAll();
 
-    // log
-    EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
-    // free the shreduler
-    CK_SAFE_DELETE( m_shreduler );
-
     #ifndef __DISABLE_HID__
     // log
     EM_log( CK_LOG_SYSTEM, "unregistering VM from HID manager..." );
@@ -421,6 +416,11 @@ t_CKBOOL Chuck_VM::shutdown()
     // do it
     this->release_dump();
     EM_poplog();
+
+    // log
+    EM_log( CK_LOG_SYSTEM, "freeing shreduler..." );
+    // free the shreduler; do this later as dumped shreds may refer to shreduler
+    CK_SAFE_DELETE( m_shreduler );
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing special ugens..." );
@@ -1372,6 +1372,22 @@ t_CKBOOL Chuck_VM::abort_current_shred()
     }
 
     return shred != NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: get_current_shred()
+// desc: get currently executing shred
+//       NOTE this can only be non-NULL during a Chuck_VM::compute() cycle
+//-----------------------------------------------------------------------------
+Chuck_VM_Shred * Chuck_VM::get_current_shred() const
+{
+    // no shreduler
+    if( !m_shreduler ) return NULL;
+    // return shreduler's current shred
+    return m_shreduler->get_current_shred();
 }
 
 

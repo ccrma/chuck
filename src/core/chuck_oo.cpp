@@ -265,36 +265,49 @@ Chuck_Object::Chuck_Object()
 
 
 //-----------------------------------------------------------------------------
-// name: Chuck_Object()
-// desc: ...
+// name: ~Chuck_Object()
+// desc: chuck object internal destructor
 //-----------------------------------------------------------------------------
 Chuck_Object::~Chuck_Object()
 {
-    // added 1.3.0.0:
-    // call destructors, from latest descended child to oldest parent
+    // get this object's type
     Chuck_Type * type = this->type_ref;
+
+    // vm ref from origin vm | 1.5.1.8
+    Chuck_VM * vm = origin_vm;
+    // no origin vm? get it from type
+    if( !vm ) vm = type ? type->vm() : NULL;
+
+    // shred ref from origin shred  | 1.5.1.8
+    Chuck_VM_Shred * shred = origin_shred;
+    // if no origin shred, get it from vm | can only be non-NULL during VM compute cycle
+    if( !shred ) shred = vm ? vm->get_current_shred() : NULL;
+
+    // call destructors, from latest descended child to oldest parent | 1.3.0.0
     while( type != NULL )
     {
         // SPENCER TODO: HACK! is there a better way to call the dtor?
         if( type->info && type->has_destructor ) // 1.5.0.0 (ge) added type->info check
         {
-            // sanity check
+            // verify: for now, can only be native func
             assert( type->info->dtor && type->info->dtor->native_func );
-            // REFACTOR-2017: do we know which VM to pass in? (currently NULL)
-            ((f_dtor)(type->info->dtor->native_func))( this, NULL, NULL, Chuck_DL_Api::instance() );
+            // REFACTOR-2017: do we know which VM to pass in? (diff main/sub instance?)
+            // pass in type-associated vm and current shred | 1.5.1.8
+            ((f_dtor)(type->info->dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
         }
-
         // go up the inheritance
         type = type->parent;
     }
 
     // release
     CK_SAFE_RELEASE( origin_shred );
-    CK_SAFE_RELEASE( origin_vm );
+    CK_SAFE_RELEASE( type_ref );
+    // CK_SAFE_RELEASE( origin_vm );
+    // just zero out | 1.5.1.8 (ge)
+    origin_vm = NULL;
 
     // free
     CK_SAFE_DELETE( vtable );
-    CK_SAFE_RELEASE( type_ref );
     CK_SAFE_DELETE_ARRAY( data );
 }
 
@@ -348,12 +361,14 @@ void Chuck_Object::setOriginShred( Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: setOriginVM()
-// desc: set origin shred
+// desc: set origin VM
 //-----------------------------------------------------------------------------
 void Chuck_Object::setOriginVM( Chuck_VM * vm )
 {
-    // assign
-    CK_SAFE_REF_ASSIGN( this->origin_vm, vm );
+    // copy only; avoid refcounting VM on a per-object basis | 1.5.1.8
+    this->origin_vm = vm;
+    // reference count assign
+    // CK_SAFE_REF_ASSIGN( this->origin_vm, vm );
 }
 
 
