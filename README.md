@@ -1,3 +1,5 @@
+<div id="top"></div>
+
 # ChucK [![macOS - Build and Unit Tests](https://github.com/ccrma/chuck/actions/workflows/macos-build-unit-tests.yml/badge.svg)](https://github.com/ccrma/chuck/actions/workflows/macos-build-unit-tests.yml) [![Linux - Build and Unit Tests](https://github.com/ccrma/chuck/actions/workflows/linux-build-unit-tests.yml/badge.svg)](https://github.com/ccrma/chuck/actions/workflows/linux-build-unit-tests.yml)
 
 ## Strongly-timed Music Programming Language  
@@ -120,3 +122,5 @@ Non-source code documents (papers, logos, soundbites, comics) have been migrated
 Join us! [ChucK Community Discord](https://discord.gg/ENr3nurrx8) | [ChucK-users Mailing list](https://lists.cs.princeton.edu/mailman/listinfo/chuck-users)
 
 _Happy ChucKing!_
+
+<p align="right">(<a href="#top">🔼 Back to top</a>)</p>
