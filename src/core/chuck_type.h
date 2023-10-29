@@ -704,8 +704,9 @@ public:
 public:
     // REFACTOR-2017: carrier and accessors
     void set_carrier( Chuck_Carrier * carrier ) { m_carrier = carrier; }
-    Chuck_VM * vm() { return m_carrier ? m_carrier->vm : NULL; }
-    Chuck_Compiler * compiler() { return m_carrier ? m_carrier->compiler : NULL; }
+    Chuck_Carrier * carrier() const { return m_carrier; }
+    Chuck_VM * vm() const { return m_carrier ? m_carrier->vm : NULL; }
+    Chuck_Compiler * compiler() const { return m_carrier ? m_carrier->compiler : NULL; }
 
 protected:
     Chuck_Carrier * m_carrier;

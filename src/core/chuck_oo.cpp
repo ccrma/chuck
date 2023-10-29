@@ -273,15 +273,16 @@ Chuck_Object::~Chuck_Object()
     // get this object's type
     Chuck_Type * type = this->type_ref;
 
-    // vm ref from origin vm | 1.5.1.8
-    Chuck_VM * vm = origin_vm;
-    // no origin vm? get it from type
-    if( !vm ) vm = type ? type->vm() : NULL;
-
-    // shred ref from origin shred  | 1.5.1.8
-    Chuck_VM_Shred * shred = origin_shred;
-    // if no origin shred, get it from vm | can only be non-NULL during VM compute cycle
-    if( !shred ) shred = vm ? vm->get_current_shred() : NULL;
+    // shred
+    Chuck_VM_Shred * shred = NULL;
+    // a way to check if we are in run state or post-run (shutdown) state | 1.5.1.8
+    // NOTE important to look at carrier->vm directly, and not a copy of vm pointer
+    Chuck_VM * vm = type && type->env() && type->env()->carrier() ? type->env()->carrier()->vm : NULL;
+    // if we are in normal run state
+    if( vm ) {
+        // update shred ref from origin shred  | 1.5.1.8
+        shred = origin_shred ? origin_shred : vm->get_current_shred();
+    }
 
     // call destructors, from latest descended child to oldest parent | 1.3.0.0
     while( type != NULL )

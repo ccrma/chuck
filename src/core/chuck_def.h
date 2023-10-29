@@ -171,6 +171,7 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define CK_SAFE_REF_ASSIGN(lhs,rhs) do { Chuck_VM_Object * temp = (lhs); (lhs) = (rhs); CK_SAFE_ADD_REF(lhs); CK_SAFE_RELEASE(temp); } while(0)
 #define CK_SAFE_FREE(x)             do { if(x){ free(x); (x) = NULL; } } while(0)
 #define CK_SAFE_UNLOCK_DELETE(x)    do { if(x){ (x)->unlock(); delete (x); (x) = NULL; } } while(0)
+#define CK_SAFE_UNLOCK_RELEASE(x)   do { if(x){ (x)->unlock(); (x)->release(); (x) = NULL; } } while(0)
 
 // max + min
 #define ck_max(x,y)                 ( (x) >= (y) ? (x) : (y) )

@@ -1036,13 +1036,14 @@ t_CKBOOL ChucK::shutdown()
     // ensure we have a carrier
     if( m_carrier != NULL )
     {
-        // release VM (itself an Object)
-        CK_SAFE_RELEASE( m_carrier->vm );
+        // initiate VM shutdown but don't delete VM yet
+        m_carrier->vm->shutdown();
         // delete compiler, including type system (m_carrier->env)
-        // do this after VM cleanup, as shreds could have objects with type refs
         CK_SAFE_DELETE( m_carrier->compiler );
         // verify the env pointer is NULL
         assert( m_carrier->env == NULL );
+        // release VM (itself an Object)
+        CK_SAFE_RELEASE( m_carrier->vm );
     }
 
     // clear flag
