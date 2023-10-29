@@ -3074,6 +3074,36 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
 
 //-----------------------------------------------------------------------------
+// name: emit_engine_emit_stmt_remember_object() | 1.5.1.8
+// desc: as needed (if type is Object), emit a Stmt_Remember_Object instruction
+//       assuming that the greater Stmt_Start to Stmt_Cleanup mechanism is
+//       handled correctly elsewhere
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_stmt_remember_object( Chuck_Emitter * emit, Chuck_Type * type )
+{
+    // if the function returns an Object
+    if( !isobj( emit->env, type ) )
+        return FALSE;
+
+    // the return needs to be released (later at the end of the stmt that contains this)
+    Chuck_Instr_Stmt_Start * onStack = emit->stmt_stack.size() ? emit->stmt_stack.back() : NULL;
+    // check it
+    if( onStack )
+    {
+        t_CKUINT offset = 0;
+        // acquire next offset
+        if( !onStack->nextOffset( offset ) ) return FALSE;
+        // append instruction
+        emit->append( new Chuck_Instr_Stmt_Remember_Object( onStack, offset ) );
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: emit_engine_emit_op_overload_binary() | 1.5.1.5 (ge) added
 // desc: emit binary operator overload
 //-----------------------------------------------------------------------------
@@ -3083,7 +3113,16 @@ t_CKBOOL emit_engine_emit_op_overload_binary( Chuck_Emitter * emit, a_Exp_Binary
     // push function pointer
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)binary->ck_overload_func ) );
     // emit the function call
-    return emit_engine_emit_exp_func_call( emit, binary->ck_overload_func, binary->self->type, binary->line, binary->where );
+    if( !emit_engine_emit_exp_func_call( emit, binary->ck_overload_func, binary->self->type, binary->line, binary->where ) )
+        return FALSE;
+
+    // return type
+    Chuck_Type * rtype = binary->ck_overload_func->type();
+    // emit remember instr | 1.5.1.8
+    if( isobj( emit->env, rtype ) ) emit_engine_emit_stmt_remember_object( emit, rtype );
+
+    // done
+    return TRUE;
 }
 
 
@@ -3099,7 +3138,16 @@ t_CKBOOL emit_engine_emit_op_overload_unary( Chuck_Emitter * emit, a_Exp_Unary u
     // push function pointer
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)unary->ck_overload_func ) );
     // emit the function call
-    return emit_engine_emit_exp_func_call( emit, unary->ck_overload_func, unary->self->type, unary->line, unary->where );
+    if( !emit_engine_emit_exp_func_call( emit, unary->ck_overload_func, unary->self->type, unary->line, unary->where ) )
+        return FALSE;
+
+    // return type
+    Chuck_Type * rtype = unary->ck_overload_func->type();
+    // emit remember instr | 1.5.1.8
+    if( isobj( emit->env, rtype ) ) emit_engine_emit_stmt_remember_object( emit, rtype );
+
+    // done
+    return TRUE;
 }
 
 
@@ -3115,7 +3163,16 @@ t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postf
     // push function pointer
     emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)postfix->ck_overload_func ) );
     // emit the function call
-    return emit_engine_emit_exp_func_call( emit, postfix->ck_overload_func, postfix->self->type, postfix->line, postfix->where );
+    if( !emit_engine_emit_exp_func_call( emit, postfix->ck_overload_func, postfix->self->type, postfix->line, postfix->where ) )
+        return FALSE;
+
+    // return type
+    Chuck_Type * rtype = postfix->ck_overload_func->type();
+    // emit remember instr | 1.5.1.8
+    if( isobj( emit->env, rtype ) ) emit_engine_emit_stmt_remember_object( emit, rtype );
+
+    // done
+    return TRUE;
 }
 
 

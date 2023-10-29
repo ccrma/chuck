@@ -2471,6 +2471,15 @@ t_CKTYPE type_engine_check_op_overload_binary( Chuck_Env * env, ae_Operator op,
         return NULL;
     }
 
+    // get return type | 1.5.1.8 (ge & andrew) we are back
+    Chuck_Type * rtype  = binary->ck_overload_func->type();
+    // check if return type is an Obj
+    if( rtype && isobj( env, rtype ) && env->stmt_stack.size() )
+    {
+        // increment # of objects in this stmt that needs release
+        env->stmt_stack.back()->numObjsToRelease++;
+    }
+
     // the return type
     return binary->ck_overload_func->type();
 }
@@ -2506,6 +2515,15 @@ t_CKTYPE type_engine_check_op_overload_unary( Chuck_Env * env, ae_Operator op,
         return NULL;
     }
 
+    // get return type | 1.5.1.8 (ge & andrew) we are back
+    Chuck_Type * rtype  = unary->ck_overload_func->type();
+    // check if return type is an Obj
+    if( rtype && isobj( env, rtype ) && env->stmt_stack.size() )
+    {
+        // increment # of objects in this stmt that needs release
+        env->stmt_stack.back()->numObjsToRelease++;
+    }
+
     // the return type
     return unary->ck_overload_func->type();
 }
@@ -2539,6 +2557,15 @@ t_CKTYPE type_engine_check_op_overload_postfix( Chuck_Env * env, Chuck_Type * lh
             op2str( op ), lhs->c_name() );
         // done
         return NULL;
+    }
+
+    // get return type | 1.5.1.8 (ge & andrew) we are back
+    Chuck_Type * rtype  = postfix->ck_overload_func->type();
+    // check if return type is an Obj
+    if( rtype && isobj( env, rtype ) && env->stmt_stack.size() )
+    {
+        // increment # of objects in this stmt that needs release
+        env->stmt_stack.back()->numObjsToRelease++;
     }
 
     // the return type
