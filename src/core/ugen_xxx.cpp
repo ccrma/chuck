@@ -1634,7 +1634,7 @@ CK_DLL_TICK( foogen_tick )
         // set input
         data->input = in;
         // invoke the function | 1.5.1.5 (ge) encapsulated into invoker
-        ret = data->invoker->invoke( SELF, args );
+        ret = data->invoker->invoke( SELF, args, SELF->originShred() );
         // set output
         data->output = ret.v_float;
     }

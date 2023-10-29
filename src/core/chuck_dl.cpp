@@ -1541,7 +1541,7 @@ static Chuck_DL_Api::Object CK_DLL_CALL ck_create_without_shred( Chuck_VM * vm, 
     if( t == NULL )
     {
         // print error message
-        EM_error2( 0, "DL_Api:object:ck_create_no_shred: NULL object reference." );
+        EM_error2( 0, "DL_Api:object:ck_create_without_shred: NULL object reference." );
         // done
         return NULL;
     }
@@ -2114,7 +2114,7 @@ Chuck_DL_Return CK_DLL_CALL ck_invoke_mfun_immediate_mode( Chuck_Object * obj, t
         // iterate over c-style array
         for( t_CKUINT i = 0; i < numArgs; i++ ) args_vector.push_back(args_list[i]);
         // invoke the invoker
-        func->invoker_mfun->invoke( obj, args_vector );
+        func->invoker_mfun->invoke( obj, args_vector, caller_shred );
     }
 
     // return it

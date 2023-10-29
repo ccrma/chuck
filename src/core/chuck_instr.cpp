@@ -4226,7 +4226,7 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 //-----------------------------------------------------------------------------
 // name: instantiate_object()
-// desc: ...
+// desc: instantiate Object including data and virtual table
 //-----------------------------------------------------------------------------
 t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm, t_CKBOOL setShredOrigin )
 {
@@ -4239,20 +4239,8 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
 
     // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
-    // check if origin shred is available | 1.5.1.5 (ge)
-    if( shred )
-    {
-        // set the origin shred only in specific cases...
-        // UGens: needs shred for auto-disconnect when shred is removed
-        // user-defined classes (that refer to global-scope variables):
-        // ...needs shred to access the global-scope variables across sporking
-        // setShredOrigin: if true, this is likely a registered callback_on_instantiate
-        if( type->ugen_info || type->originHint == te_originUserDefined || setShredOrigin )
-        {
-            // set origin shred | 1.5.1.5 (ge) was: ugen->shred = shred;
-            object->setOriginShred( shred );
-        }
-    }
+    // set origin shred for non-ugens | 1.5.1.5 (ge & andrew) moved here from instantiate_...
+    if( !type->ugen_info && setShredOrigin ) object->setOriginShred( shred );
 
     // allocate virtual table
     object->vtable = new Chuck_VTable;
@@ -4281,8 +4269,15 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     {
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
-        // add ugen to shred | 1.5.1.5 (ge & andrew) moved from instantiate_and_initialize_object()
-        if( shred ) shred->add( ugen );
+        // UGens: needs shred for auto-disconnect when shred is removed
+        // 1.5.1.5 (ge & andrew) moved from instantiate_and_initialize_object()
+        if( shred )
+        {
+            // add ugen to shred (ref-counted)
+            shred->add( ugen );
+            // add shred to ugen (ref-counted) | 1.5.1.5 (ge) was: ugen->shred = shred;
+            object->setOriginShred( shred );
+        }
         // set tick
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
         // added 1.3.0.0 -- tickf for multi-channel tick

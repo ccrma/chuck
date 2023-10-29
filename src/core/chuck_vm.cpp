@@ -1936,7 +1936,7 @@ t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
         return FALSE;
 
     // increment reference count (added 1.3.0.0)
-    ugen->add_ref();
+    CK_SAFE_ADD_REF( ugen );
 
     // RUBBISH
     // cerr << "vm add ugen: 0x" << hex << (int)ugen << endl;
@@ -3193,7 +3193,7 @@ void Chuck_VM_Status::clear()
 Chuck_VM_MFunInvoker::Chuck_VM_MFunInvoker()
 {
     // zero
-    shred = NULL;
+    invoker_shred = NULL;
     instr_pushThis = NULL;
     instr_pushReturnVar = NULL;
 }
@@ -3220,7 +3220,7 @@ Chuck_VM_MFunInvoker::~Chuck_VM_MFunInvoker()
 t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset, Chuck_VM * vm, Chuck_VM_Shred * caller )
 {
     // clean up first
-    if( shred ) cleanup();
+    if( invoker_shred ) cleanup();
 
     // a vector of VM instructions
     vector<Chuck_Instr *> instructions;
@@ -3387,15 +3387,15 @@ t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset
     code->need_this = FALSE;
 
     // create dedicated shred
-    shred = new Chuck_VM_Shred;
+    invoker_shred = new Chuck_VM_Shred;
     // set the VM ref (needed by initialize)
-    shred->vm_ref = vm;
+    invoker_shred->vm_ref = vm;
     // initialize with code + allocate stacks
-    shred->initialize( code );
+    invoker_shred->initialize( code );
     // set name
-    shred->name = func->signature(FALSE,TRUE);
+    invoker_shred->name = func->signature(FALSE,TRUE);
     // enter immediate mode (will throw runtime exception on any time/event ops)
-    shred->setImmediateMode( TRUE );
+    invoker_shred->setImmediateMode( TRUE );
 
     // done
     return TRUE;
@@ -3442,7 +3442,7 @@ static Chuck_Instr_Reg_Push_Imm2 * ckvm_next_instr_as_float( vector<Chuck_Instr 
 // name: invoke()
 // desc: invoke the mfun
 //-----------------------------------------------------------------------------
-Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<Chuck_DL_Arg> & args )
+Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<Chuck_DL_Arg> & args, Chuck_VM_Shred * parent_shred )
 {
     // the return value
     Chuck_DL_Return RETURN;
@@ -3452,7 +3452,7 @@ Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<C
     // index
     t_CKUINT index = 0;
     // no shred?
-    if( !shred ) return RETURN;
+    if( !invoker_shred ) return RETURN;
     // verify
     assert( instr_pushThis != NULL );
 
@@ -3518,32 +3518,36 @@ Chuck_DL_Return Chuck_VM_MFunInvoker::invoke( Chuck_Object * obj, const vector<C
     if( instr_pushReturnVar ) instr_pushReturnVar->set( (t_CKUINT)&RETURN );
 
     // reset shred: program counter
-    shred->pc = 0;
+    invoker_shred->pc = 0;
     // next pc
-    shred->next_pc = 1;
+    invoker_shred->next_pc = 1;
+
+    // set parent
+    invoker_shred->parent = parent_shred;
+    // commented out: parent if any should have been set in setup()
+    // invoker_shred->parent = obj->originShred();
 
     // set parent base_ref; in case mfun is part of a non-public class
     // that can access file-global variables outside the class definition
-    shred->parent = obj->originShred();
-    if( shred->parent ) shred->base_ref = shred->parent->base_ref;
-    else shred->base_ref = shred->mem;
+    if( invoker_shred->parent ) invoker_shred->base_ref = invoker_shred->parent->base_ref;
+    else invoker_shred->base_ref = invoker_shred->mem;
 
     // shred in dump (all done)
-    shred->is_dumped = FALSE;
+    invoker_shred->is_dumped = FALSE;
     // shred done
-    shred->is_done = FALSE;
+    invoker_shred->is_done = FALSE;
     // shred running
-    shred->is_running = FALSE;
+    invoker_shred->is_running = FALSE;
     // shred abort
-    shred->is_abort = FALSE;
+    invoker_shred->is_abort = FALSE;
     // set the instr
-    shred->instr = shred->code->instr;
+    invoker_shred->instr = invoker_shred->code->instr;
     // zero out the id (shred is in immediate mode and cannot be shreduled)
-    shred->xid = 0;
+    invoker_shred->xid = 0;
     // inherit now from vm
-    shred->now = shred->vm_ref->now();
+    invoker_shred->now = invoker_shred->vm_ref->now();
     // run shred on VM
-    shred->run( shred->vm_ref );
+    invoker_shred->run( invoker_shred->vm_ref );
 
     // done; by the point, return should have been filled with return value, if func has one
     return RETURN;
@@ -3564,7 +3568,7 @@ void Chuck_VM_MFunInvoker::cleanup()
 {
     // release shred reference
     // NB this should also cleanup the code and VM instruction we created in setup
-    CK_SAFE_RELEASE( shred );
+    CK_SAFE_RELEASE( invoker_shred );
 
     // clear the arg instructions
     instr_args.clear();

@@ -843,13 +843,14 @@ public:
                     Chuck_VM * vm, Chuck_VM_Shred * caller );
     // invoke the member function
     Chuck_DL_Return invoke( Chuck_Object * obj,
-                            const std::vector<Chuck_DL_Arg> & args );
+                            const std::vector<Chuck_DL_Arg> & args,
+                            Chuck_VM_Shred * parent_shred );
     // clean up
     void cleanup();
 
 public:
     // dedicated shred to call the mfun on
-    Chuck_VM_Shred * shred;
+    Chuck_VM_Shred * invoker_shred;
     // instructions for args (to be filled on invoke)
     std::vector<Chuck_Instr *> instr_args;
     // instruction to update on invoke: pushing this pointer
