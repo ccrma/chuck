@@ -2,7 +2,8 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.8 (October 2023) patch release
+
+1.5.1.8 (October 2023) "Halloween Release"
 =======
 - (fixed) an issue with memory management / reference counting across 
     overloaded operations that return Object
@@ -10,8 +11,8 @@ ChucK VERSIONS log
     that return Objects
 - (fixed) an issue with reference count cleanup on 'new' operator,
     e.g., (new Foo).f();
-- (updated) reduced memory management between language-defined objects
-    and their parent shreds
+- (updated) reduced memory management dependency between language-defined 
+    objects and their "parent" shreds
 - (updated) --color:ON and --color now will always output ANSI color 
     codes, regardless of TTY status; (FYI --color:AUTO is unchanged
     and is the same as default, i.e., enable color terminal if TTY 
@@ -19,7 +20,7 @@ ChucK VERSIONS log
 - (added, developer) chugins API float array access
 
 
-1.5.1.7 (October 2023)
+1.5.1.7 (October 2023) "vec2"
 =======
 - (added) new type 'vec2' 2D vector type
     for 2D animation (ChuGL) as well as texture mapping UV or ST 
@@ -54,6 +55,7 @@ programming in a single strongly-timed language.
 ------
 https://chuck.stanford.edu/chugl/
 =======
+
 
 1.5.1.5 (October 2023) "operator overloading + chugins API 9.0"
 =======

@@ -47,10 +47,10 @@
 #ifndef __CHUCK_H__
 #define __CHUCK_H__
 
+#include "chuck_carrier.h"
 #include "chuck_compile.h"
 #include "chuck_dl.h"
 #include "chuck_vm.h"
-#include "chuck_carrier.h"
 #include "util_math.h"
 #include "util_string.h"
 #include <string>

@@ -890,7 +890,7 @@ public:
         // NOTE set addRef to TRUE if you intend to keep a reference of the newly created object around (e.g., in the chugin)
         // NOTE set addRef to FALSE if the created object is to be returned without keeping a reference around
         Object (CK_DLL_CALL * const create)( Chuck_VM_Shred *, Type type, t_CKBOOL addRef );
-        // instantiating and initializing a ChucK object by type, with no reference to a parent shred
+        // instantiating and initializing a ChucK object by type, using a VM instead of a shred
         Object (CK_DLL_CALL * const create_without_shred)( Chuck_VM *, Type type, t_CKBOOL addRef );
         // instantiate and initialize a ChucK string by type (without ref to a parent shred)
         String (CK_DLL_CALL * const create_string)( Chuck_VM *, const char * value, t_CKBOOL addRef );
