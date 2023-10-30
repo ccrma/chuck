@@ -1037,7 +1037,7 @@ t_CKBOOL ChucK::shutdown()
     if( m_carrier != NULL )
     {
         // initiate VM shutdown but don't delete VM yet
-        m_carrier->vm->shutdown();
+        if( m_carrier->vm ) m_carrier->vm->shutdown();
         // delete compiler, including type system (m_carrier->env)
         CK_SAFE_DELETE( m_carrier->compiler );
         // verify the env pointer is NULL

@@ -175,7 +175,7 @@ static void version()
 {
     CK_FPRINTF_STDERR( "\n" );
     CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
-    CK_FPRINTF_STDERR( "chuck version: %s\n", ChucK::version() );
+    CK_FPRINTF_STDERR( "chuck version: %s\n", TC::green(ChucK::version(),true).c_str() );
     
     // platform string
     string platform = "";
