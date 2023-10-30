@@ -34,9 +34,18 @@
 //       |- see src/host-examples/ for sample integration code for ChucK core
 //       |- see chuck, miniAudicle, WebChucK, Chunity etc. for their
 //          respective integration of ChucK core
+//       ------
+//       |- [chugins] "chuck.h" is also a single-header include for
+//          chugins, including ChuGL (ChucK Graphics Library), standard
+//          chugins library, and 3rd-party chugins
+//       |- [chugins] are dynamically loaded and thus should never directly
+//          instantiate objects in chuck core; instead chugins must access
+//          chuck core function through the DL runtime API
+//          (defined in "chuck_dl.h", which is included from this header)
+//       ----------------------------------------------------------------------
 //
 // author: Ge Wang (https://ccrma.stanford.edu/~ge/)
-//   date: fall 2017
+//   date: Fall 2017
 //
 // additional authors:
 //       Jack Atherton (lja@ccrma.stanford.edu)

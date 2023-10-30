@@ -916,7 +916,7 @@ public:
         t_CKBOOL (CK_DLL_CALL * const array_float_size)( ArrayFloat array, t_CKINT & value );
         t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
         t_CKBOOL (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx, t_CKFLOAT & value );
-        t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const std::string & key, t_CKFLOAT & value );      
+        t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const std::string & key, t_CKFLOAT & value );
     } * const object;
 
     // access to host-side chuck types
