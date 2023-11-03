@@ -506,6 +506,8 @@ class ChuckNode extends AudioWorkletProcessor
                 {
                     return function()
                     {
+                        Module["FS_createPath"]("/", "chugins", true, true);
+
                         for( var i = 0; i < filesToPreload.length; i++ )
                         {
                             Module["FS_createPreloadedFile"]( "/", 
@@ -534,12 +536,12 @@ class ChuckNode extends AudioWorkletProcessor
                 self._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
                     self.outChannels, MAX_CHANNEL_COUNT);
 
+                // log
+                setLogLevel( 3 );
+
                 // initialize chuck instance
                 // FYI this invokes `new ChucK()` + instance initialization on the C++ side
                 initChuckInstance( self.myID, self.srate, self.inChannels, self.outChannels );
-
-                // log
-                // setLogLevel( 10 );
 
                 // flag
                 self.haveInit = true;

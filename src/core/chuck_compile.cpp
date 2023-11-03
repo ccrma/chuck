@@ -1077,6 +1077,9 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     // push
     EM_pushlog();
 
+    // tf 2023 webchugins
+    printf("webchugin load: %s, %s\n", directory, extension);
+
     // scan
     t_CKBOOL retval = scan_external_modules_in_directory( directory, extension, recursiveSearch, chugins2load, dirs2search, ckfiles2load );
     if( !retval )

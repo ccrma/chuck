@@ -725,7 +725,8 @@ t_CKBOOL ChucK::initChugins()
         // push indent level
         // EM_pushlog();
         // load external libs | 1.5.0.4 (ge) enabled recursive search
-        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, TRUE ) )
+        // tf 2023: changed this for webchuck
+        if( !compiler()->load_external_modules( ".chug.js", dl_search_path, named_dls, TRUE ) )
         {
             // clean up
             goto error;

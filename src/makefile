@@ -45,12 +45,14 @@ EMSCRIPTENSRCS=host-web/chuck_emscripten.cpp \
     core/util_raw.c core/util_string.cpp core/util_xforms.c \
     core/chuck_yacc.c core/util_sndfile.c
 
+EMSCRIPTEN_POSTJS=host-web/chucknode-postjs.js
+
 # make targets
 .PHONY: emscripten web
 emscripten: host-web/webchuck/js/webchuck.js
 web: host-web/webchuck/js/webchuck.js
 # recipe
-host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
+host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS) $(EMSCRIPTEN_POSTJS)
 	emcc -O3 -s DISABLE_EXCEPTION_CATCHING=0 -Icore \
 	-D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ -D__DISABLE_NETWORK__ \
 	-D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
@@ -61,7 +63,7 @@ host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS)
 	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
 	-s LINKABLE=1 -s MODULARIZE=1 -s 'EXPORT_NAME="ChucK"' \
 	-s ALLOW_MEMORY_GROWTH=1 \
-	-s --extern-post-js host-web/chucknode-postjs.js \
+	-s --extern-post-js $(EMSCRIPTEN_POSTJS) \
 	-s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1
 
 
