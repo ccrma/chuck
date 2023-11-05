@@ -600,6 +600,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the operand stack size hint (in bytes) for shreds sporked from this one.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add parent() | 1.5.1.9 (nshaheed)
+    func = make_new_sfun( "Shred", "parent", shred_parent );
+    func->doc = "get Shred corresponding to current Shred's parent. Returns null if there is no parent Shred.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
@@ -2527,6 +2532,13 @@ CK_DLL_MFUN( shred_cget_hintChildRegSize ) // 1.5.1.5
     RETURN->v_int = SHRED->childGetRegSize();
 }
 
+
+CK_DLL_SFUN( shred_parent ) // added 1.5.1.9 (nshaheed)
+{
+    Chuck_VM_Shred * parent = SHRED->parent;
+
+    RETURN->v_object = parent;
+}
 
 //-----------------------------------------------------------------------------
 // string API
