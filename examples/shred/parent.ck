@@ -1,5 +1,3 @@
-
-
 // If parent.ck is the top-level shred, then me.parent() will be null.
 // Otherwise it will be a parent.
 <<< "The top-level shred's ID is:", me.id() >>>;
