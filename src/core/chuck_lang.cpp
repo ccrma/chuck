@@ -611,6 +611,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "shred/spork2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2-exit.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2-remove.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/parent.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/broadcast.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
