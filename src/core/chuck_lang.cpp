@@ -605,6 +605,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get Shred corresponding to current Shred's parent. Returns null if there is no parent Shred.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add ancestor() | 1.5.1.9 (nshaheed)
+    func = make_new_sfun( "Shred", "ancestor", shred_ancestor );
+    func->doc = "get Shred corresponding to current Shred's ancestor (the top-level shred). Returns null if the current Shred is the top-level shred.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
@@ -612,6 +617,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_add_ex( env, "shred/spork2-exit.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2-remove.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/parent.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/ancestor.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/broadcast.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
@@ -2539,6 +2545,21 @@ CK_DLL_SFUN( shred_parent ) // added 1.5.1.9 (nshaheed)
     Chuck_VM_Shred * parent = SHRED->parent;
 
     RETURN->v_object = parent;
+}
+
+
+CK_DLL_SFUN( shred_ancestor ) // added 1.5.1.9 (nshaheed)
+{
+    Chuck_VM_Shred * curr = SHRED;
+
+    // if there is no ancestor at all, return null
+    if (curr->parent == nullptr) return;
+
+    while (curr->parent != nullptr) {
+      curr = curr->parent;
+    }
+
+    RETURN->v_object = curr;
 }
 
 //-----------------------------------------------------------------------------
