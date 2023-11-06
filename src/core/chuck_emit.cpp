@@ -2568,7 +2568,7 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
             // check size (1.3.1.0: changed to getkindof)
             t_CKUINT kind = getkindof( emit->env, t_left->array_type );
-            // but if array depth > 1, we are actulaly dealing with pointers, hence back to INT
+            // but if array depth > 1, we are actually dealing with pointers, hence back to INT
             if( t_left->array_depth > 1 ) kind = kindof_INT;
             emit->append( instr = new Chuck_Instr_Array_Append( kind ) );
             instr->set_linepos( lhs->line );
