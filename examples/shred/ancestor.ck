@@ -1,21 +1,33 @@
-// If ancestor.ck is the top-level shred, then me.ancestor() will be null.
-// Otherwise it will be a Shred.
-<<< "The top-level shred's ID is:", me.id() >>>;
-<<< "The top-level shred's ancestor is:", me.ancestor(), "\n" >>>;
+// Shred.ancestor() returns the top-level shred that is directly or 
+// indirectly a parent shred of the calling shred; useful for getting
+// information relevant to top-level shreds; related: parent.ck
 
-fun void findTheAncestor(int depth) {
-    if (depth <= 0) return;
+// test me
+<<< "the top-level shred's ID is:", me.id() >>>;
+// my ancestor
+<<< "the top-level shred's ancestor ID is:", me.ancestor().id(), "\n" >>>;
 
-    <<< "The sporked shred's ID is:", me.id() >>>;
+// recursive function to test finding ancestor from different 
+// "generations" of shreds
+fun void findTheAncestor( int generation )
+{
+    // stop recursing
+    if( generation <= 0 ) return;
+
+    // calling shred
+    <<< "the sporked shred's ID is:", me.id() >>>;
     // this will always be the same as the top-level shred id
-    <<< "The sporked shred's ancestor ID is:", me.ancestor().id(), "\n" >>>;
+    <<< "the sporked shred's ancestor ID is:", me.ancestor().id(), "\n" >>>;
 
-    spork~ findTheAncestor(depth-1);
-    samp => now;
+    // spork a child shred
+    spork ~ findTheAncestor( generation-1 );
+    // wait a bit to give child shred a chance to run
+    1::samp => now;
 }
 
-// Recursively spork function this 10 times.
-// me.ancestor() will always point to the top-level shred.
-spork~ findTheAncestor(10);
-samp => now;
+// recursively spork function this 10 times; me.ancestor() should always 
+// point to the top-level shred
+spork ~ findTheAncestor(10);
 
+// wait to give children shreds a chance to run
+1::samp => now;

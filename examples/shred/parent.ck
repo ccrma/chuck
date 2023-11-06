@@ -1,13 +1,19 @@
-// If parent.ck is the top-level shred, then me.parent() will be null.
-// Otherwise it will be a parent.
-<<< "The top-level shred's ID is:", me.id() >>>;
-<<< "The top-level shred's parent is:", me.parent() >>>;
+// return a shred's parent shred (i.e., the shred that sporked it)
+// if the shred is a top-level shred, then me.parent() will return null
+// related: ancestor.ck
 
-fun void findTheParent() {
+<<< "the top-level shred's ID is:", me.id() >>>;
+<<< "the top-level shred's parent is:", me.parent() >>>;
+
+fun void findTheParent()
+{
     // this will be the same as the top-level shred id
-    <<< "The sporked shred's ID is:", me.id() >>>;
-    <<< "The sporked shred's parent ID is:", me.parent().id() >>>;
+    <<< "the sporked shred's ID is:", me.id() >>>;
+    <<< "the sporked shred's parent ID is:", me.parent().id() >>>;
 }
 
-spork~ findTheParent();
-me.yield(); // yield to let validateParent(...) run
+// spork a child shred
+spork ~ findTheParent();
+
+// yield to let validateParent(...) run
+me.yield();
