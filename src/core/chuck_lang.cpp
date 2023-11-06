@@ -600,15 +600,27 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the operand stack size hint (in bytes) for shreds sporked from this one.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add parent() | 1.5.1.9 (nshaheed)
+    func = make_new_sfun( "Shred", "parent", shred_parent );
+    func->doc = "get the calling shred's parent shred (i.e., the shred that sporked the calling shred). Returns null if there is no parent Shred. (Related: see Shred.ancestor())";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add ancestor() | 1.5.1.9 (nshaheed)
+    func = make_new_sfun( "Shred", "ancestor", shred_ancestor );
+    func->doc = "get the calling shred's \"ancestor\" shred (i.e., the top-level shred). Returns itself if the calling shred is the top-level shred. (Related: see Shred.parent())";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
     // add examples
-    if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2-exit.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2-remove.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/broadcast.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "event/signal4.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/parent.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "shred/ancestor.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -2527,6 +2539,33 @@ CK_DLL_MFUN( shred_cget_hintChildRegSize ) // 1.5.1.5
     RETURN->v_int = SHRED->childGetRegSize();
 }
 
+
+CK_DLL_SFUN( shred_parent ) // added 1.5.1.9 (nshaheed)
+{
+    // get the parent
+    Chuck_VM_Shred * parent = SHRED->parent;
+    // set return value
+    RETURN->v_object = parent;
+}
+
+
+CK_DLL_SFUN( shred_ancestor ) // added 1.5.1.9 (nshaheed)
+{
+    // current shred
+    Chuck_VM_Shred * curr = SHRED;
+
+    // iterate up until parent is null; it's possible that
+    // ancestor() returns the calling shred, if called on
+    // the top-level "ancestor" shred
+    while( curr->parent != NULL )
+    {
+        // set curr as parent
+        curr = curr->parent;
+    }
+
+    // set return value
+    RETURN->v_object = curr;
+}
 
 //-----------------------------------------------------------------------------
 // string API
