@@ -4395,6 +4395,48 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             // initialize shred | 1.5.1.5 (ge) added, along with child mem and reg stack size hints
             if( !newShred->initialize( NULL, mems, regs ) ) goto error;
         }
+        else if (isa(type, vm->env()->ckt_array))
+        {
+            // 1.5.1.9 (nshaheed) added
+            // TODO - add reference counting?
+            // TODO - deal with depth
+
+            Chuck_Type* array_type = type->array_type;
+            if (isa(array_type, vm->env()->ckt_int))
+            {
+                object = new Chuck_ArrayInt(false, 0);
+            }
+            else if (isa(array_type, vm->env()->ckt_float)
+                || isa(array_type, vm->env()->ckt_dur)
+                || isa(array_type, vm->env()->ckt_time)
+                || isa(array_type, vm->env()->ckt_dur))
+            {
+                object = new Chuck_ArrayFloat(0);
+            }
+            else if (isa(array_type, vm->env()->ckt_polar)
+                || isa(array_type, vm->env()->ckt_polar)
+                || isa(array_type, vm->env()->ckt_complex))
+            {
+                object = new Chuck_Array16(0);
+            }
+            else if (isa(array_type, vm->env()->ckt_vec3))
+            {
+                object = new Chuck_Array24(0);
+            }
+            else if (isa(array_type, vm->env()->ckt_vec4))
+            {
+                object = new Chuck_Array32(0);
+            }
+            else if (isa(array_type, vm->env()->ckt_object))
+            {
+                object = new Chuck_ArrayInt(true, 0);
+            }
+            else // uh oh...
+            {
+                goto error;
+            }
+
+        }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
         // TODO: is this ok?
