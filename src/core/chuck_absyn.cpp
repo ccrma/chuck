@@ -584,10 +584,10 @@ a_Exp new_exp_from_array_lit( a_Array_Sub exp_list, uint32_t lineNum, uint32_t p
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_array;
     a->primary.array = exp_list;
+    a->primary.array->self = a; // 1.5.1.9 (ge & nshaheed) added
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
-
     return a;
 }
 
