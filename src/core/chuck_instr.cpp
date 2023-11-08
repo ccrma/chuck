@@ -4351,6 +4351,171 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * 
 
 
 
+//-----------------------------------------------------------------------------
+// name: do_alloc_array()
+// desc: 1.3.1.0 -- changed size to kind
+//-----------------------------------------------------------------------------
+Chuck_Object* do_alloc_array(Chuck_VM* vm, // REFACTOR-2017: added
+    Chuck_VM_Shred* shred, // 1.5.1.5 added
+    t_CKINT* capacity, const t_CKINT* top,
+    t_CKUINT kind, t_CKBOOL is_obj,
+    t_CKUINT* objs, t_CKINT& index,
+    Chuck_Type* type)
+{
+    // not top level
+    Chuck_ArrayInt* theBase = NULL;
+    Chuck_Object* next = NULL;
+    Chuck_Type* typeNext = NULL;
+    t_CKINT i = 0;
+
+    // capacity
+    if (*capacity < 0) goto negative_array_size;
+
+    // see if top level
+    if (capacity >= top)
+    {
+        // check size
+        // 1.3.1.0: look at type to use kind instead of size
+        if (kind == kindof_INT) // ISSUE: 64-bit (fixed 1.3.1.0)
+        {
+            Chuck_ArrayInt* baseX = new Chuck_ArrayInt(is_obj, *capacity);
+            if (!baseX) goto out_of_memory;
+
+            // if object
+            if (is_obj && objs)
+            {
+                // loop
+                for (i = 0; i < *capacity; i++)
+                {
+                    // add to array for later allocation
+                    objs[index++] = baseX->addr(i);
+                }
+            }
+
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object(baseX, type, shred, vm);
+            // initialize_object( baseX, vm->env()->ckt_array );
+            return baseX;
+        }
+        else if (kind == kindof_FLOAT) // ISSUE: 64-bit (fixed 1.3.1.0)
+        {
+            Chuck_ArrayFloat* baseX = new Chuck_ArrayFloat(*capacity);
+            if (!baseX) goto out_of_memory;
+
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object(baseX, type, shred, vm);
+            // initialize_object( baseX, vm->env()->ckt_array );
+            return baseX;
+        }
+        else if (kind == kindof_VEC2) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
+        {
+            Chuck_Array16* baseX = new Chuck_Array16(*capacity);
+            if (!baseX) goto out_of_memory;
+
+            // check array type
+            Chuck_Type* array_type = type->array_type;
+            // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
+            if (array_type && isa(array_type, vm->env()->ckt_polar)) baseX->m_isPolarType = TRUE;
+
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object(baseX, type, shred, vm);
+            // initialize_object( baseX, vm->env()->ckt_array );
+            return baseX;
+        }
+        else if (kind == kindof_VEC3) // 1.3.5.3
+        {
+            Chuck_Array24* baseX = new Chuck_Array24(*capacity);
+            if (!baseX) goto out_of_memory;
+
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object(baseX, type, shred, vm);
+            // initialize_object( baseX, vm->env()->ckt_array );
+            return baseX;
+        }
+        else if (kind == kindof_VEC4) // 1.3.5.3
+        {
+            Chuck_Array32* baseX = new Chuck_Array32(*capacity);
+            if (!baseX) goto out_of_memory;
+
+            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+            // for the object->type_ref to contain more specific information
+            initialize_object(baseX, type, shred, vm);
+            // initialize_object( baseX, vm->env()->ckt_array );
+            return baseX;
+        }
+
+        // shouldn't get here
+        assert(FALSE);
+    }
+
+    // not top level
+    theBase = new Chuck_ArrayInt(TRUE, *capacity);
+    if (!theBase) goto out_of_memory;
+
+    // construct type for next array level | 1.5.0.0 (ge) added
+    // TODO: look up in common array type pool before allocating
+    // pass in NULL (context) as typeNext is meant to be temporary and
+    // shouldn't be associated with context; also by this point,
+    // vm->env()->context is likely the global context, and the
+    // originating context (e.g., ck file) is already cleaned up | 1.5.1.1
+    typeNext = type->copy(vm->env(), NULL);
+    // check
+    if (typeNext->array_depth == 0) goto internal_error_array_depth;
+    // minus the depth
+    typeNext->array_depth--;
+    // add ref | 1.5.1.1
+    CK_SAFE_ADD_REF(typeNext);
+
+    // allocate the next level
+    for (i = 0; i < *capacity; i++)
+    {
+        // the next | REFACTOR-2017: added vm
+        next = do_alloc_array(vm, shred, capacity + 1, top, kind, is_obj, objs, index, typeNext);
+        // error if NULL
+        if (!next) goto error;
+        // set that, with ref count
+        theBase->set(i, (t_CKUINT)next);
+    }
+
+    // release | 1.5.1.1
+    CK_SAFE_RELEASE(typeNext);
+
+    // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
+    // for the object->type_ref to contain more specific information
+    initialize_object(theBase, type, shred, vm);
+    // initialize_object( theBase, vm->env()->ckt_array );
+    return theBase;
+
+internal_error_array_depth:
+    // we have a big problem
+    EM_exception(
+        "(internal error) multi-dimensional array depth mismatch while allocating arrays...");
+    goto error;
+
+out_of_memory:
+    // we have a problem
+    EM_exception(
+        "OutOfMemory: while allocating arrays...");
+    goto error;
+
+negative_array_size:
+    // we have a problem
+    EM_exception(
+        "NegativeArraySize: while allocating arrays...");
+    goto error;
+
+error:
+    // base shouldn't have been ref counted
+    CK_SAFE_DELETE(theBase);
+    return NULL;
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: instantiate_and_initialize_object()
@@ -4398,44 +4563,24 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
         else if (isa(type, vm->env()->ckt_array))
         {
             // 1.5.1.9 (nshaheed) added
-            // TODO - add reference counting?
-            // TODO - deal with depth
+            t_CKINT index = 0;
+            bool is_object = isa(type->array_type, vm->env()->ckt_object);
 
-            Chuck_Type* array_type = type->array_type;
-            if (isa(array_type, vm->env()->ckt_int))
-            {
-                object = new Chuck_ArrayInt(false, 0);
-            }
-            else if (isa(array_type, vm->env()->ckt_float)
-                || isa(array_type, vm->env()->ckt_dur)
-                || isa(array_type, vm->env()->ckt_time)
-                || isa(array_type, vm->env()->ckt_dur))
-            {
-                object = new Chuck_ArrayFloat(0);
-            }
-            else if (isa(array_type, vm->env()->ckt_polar)
-                || isa(array_type, vm->env()->ckt_polar)
-                || isa(array_type, vm->env()->ckt_complex))
-            {
-                object = new Chuck_Array16(0);
-            }
-            else if (isa(array_type, vm->env()->ckt_vec3))
-            {
-                object = new Chuck_Array24(0);
-            }
-            else if (isa(array_type, vm->env()->ckt_vec4))
-            {
-                object = new Chuck_Array32(0);
-            }
-            else if (isa(array_type, vm->env()->ckt_object))
-            {
-                object = new Chuck_ArrayInt(true, 0);
-            }
-            else // uh oh...
-            {
-                goto error;
-            }
+            int depth = type->array_depth;
+            t_CKINT* capacity = new t_CKINT[depth]();
 
+            // do_alloc_array expects a stack of intial capacities for 
+            // each dimension of the array. Because this is only expected
+            // to be used through the chuck_dl API, which does not support
+            // setting the capacity explicitly, only empty arrays are 
+            // initialized.
+            for (int i = 0; i < depth; i++) {
+                capacity[i] = 0;
+            }
+            object = do_alloc_array(vm, shred, 
+                &capacity[depth - 1], capacity,
+                getkindof(vm->env(), type->array_type),
+                is_object, nullptr, index, type);
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
@@ -6360,168 +6505,7 @@ Chuck_Instr_Array_Alloc::~Chuck_Instr_Array_Alloc()
 
 
 
-//-----------------------------------------------------------------------------
-// name: do_alloc_array()
-// desc: 1.3.1.0 -- changed size to kind
-//-----------------------------------------------------------------------------
-Chuck_Object * do_alloc_array( Chuck_VM * vm, // REFACTOR-2017: added
-                               Chuck_VM_Shred * shred, // 1.5.1.5 added
-                               t_CKINT * capacity, const t_CKINT * top,
-                               t_CKUINT kind, t_CKBOOL is_obj,
-                               t_CKUINT * objs, t_CKINT & index,
-                               Chuck_Type * type )
-{
-    // not top level
-    Chuck_ArrayInt * theBase = NULL;
-    Chuck_Object * next = NULL;
-    Chuck_Type * typeNext = NULL;
-    t_CKINT i = 0;
 
-    // capacity
-    if( *capacity < 0 ) goto negative_array_size;
-
-    // see if top level
-    if( capacity >= top )
-    {
-        // check size
-        // 1.3.1.0: look at type to use kind instead of size
-        if( kind == kindof_INT ) // ISSUE: 64-bit (fixed 1.3.1.0)
-        {
-            Chuck_ArrayInt * baseX = new Chuck_ArrayInt( is_obj, *capacity );
-            if( !baseX ) goto out_of_memory;
-
-            // if object
-            if( is_obj && objs )
-            {
-                // loop
-                for( i = 0; i < *capacity; i++ )
-                {
-                    // add to array for later allocation
-                    objs[index++] = baseX->addr( i );
-                }
-            }
-
-            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-            // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type, shred, vm );
-            // initialize_object( baseX, vm->env()->ckt_array );
-            return baseX;
-        }
-        else if( kind == kindof_FLOAT ) // ISSUE: 64-bit (fixed 1.3.1.0)
-        {
-            Chuck_ArrayFloat * baseX = new Chuck_ArrayFloat( *capacity );
-            if( !baseX ) goto out_of_memory;
-
-            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-            // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type, shred, vm );
-            // initialize_object( baseX, vm->env()->ckt_array );
-            return baseX;
-        }
-        else if( kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
-        {
-            Chuck_Array16 * baseX = new Chuck_Array16( *capacity );
-            if( !baseX ) goto out_of_memory;
-
-            // check array type
-            Chuck_Type * array_type = type->array_type;
-            // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
-            if( array_type && isa(array_type, vm->env()->ckt_polar) ) baseX->m_isPolarType = TRUE;
-
-            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-            // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type, shred, vm );
-            // initialize_object( baseX, vm->env()->ckt_array );
-            return baseX;
-        }
-        else if( kind == kindof_VEC3 ) // 1.3.5.3
-        {
-            Chuck_Array24 * baseX = new Chuck_Array24( *capacity );
-            if( !baseX ) goto out_of_memory;
-
-            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-            // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type, shred, vm );
-            // initialize_object( baseX, vm->env()->ckt_array );
-            return baseX;
-        }
-        else if( kind == kindof_VEC4 ) // 1.3.5.3
-        {
-            Chuck_Array32 * baseX = new Chuck_Array32( *capacity );
-            if( !baseX ) goto out_of_memory;
-
-            // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-            // for the object->type_ref to contain more specific information
-            initialize_object( baseX, type, shred, vm );
-            // initialize_object( baseX, vm->env()->ckt_array );
-            return baseX;
-        }
-
-        // shouldn't get here
-        assert( FALSE );
-    }
-
-    // not top level
-    theBase = new Chuck_ArrayInt( TRUE, *capacity );
-    if( !theBase) goto out_of_memory;
-
-    // construct type for next array level | 1.5.0.0 (ge) added
-    // TODO: look up in common array type pool before allocating
-    // pass in NULL (context) as typeNext is meant to be temporary and
-    // shouldn't be associated with context; also by this point,
-    // vm->env()->context is likely the global context, and the
-    // originating context (e.g., ck file) is already cleaned up | 1.5.1.1
-    typeNext = type->copy( vm->env(), NULL );
-    // check
-    if( typeNext->array_depth == 0 ) goto internal_error_array_depth;
-    // minus the depth
-    typeNext->array_depth--;
-    // add ref | 1.5.1.1
-    CK_SAFE_ADD_REF( typeNext );
-
-    // allocate the next level
-    for( i = 0; i < *capacity; i++ )
-    {
-        // the next | REFACTOR-2017: added vm
-        next = do_alloc_array( vm, shred, capacity+1, top, kind, is_obj, objs, index, typeNext );
-        // error if NULL
-        if( !next ) goto error;
-        // set that, with ref count
-        theBase->set( i, (t_CKUINT)next );
-    }
-
-    // release | 1.5.1.1
-    CK_SAFE_RELEASE( typeNext );
-
-    // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
-    // for the object->type_ref to contain more specific information
-    initialize_object( theBase, type, shred, vm );
-    // initialize_object( theBase, vm->env()->ckt_array );
-    return theBase;
-
-internal_error_array_depth:
-    // we have a big problem
-    EM_exception(
-        "(internal error) multi-dimensional array depth mismatch while allocating arrays..." );
-    goto error;
-
-out_of_memory:
-    // we have a problem
-    EM_exception(
-        "OutOfMemory: while allocating arrays..." );
-    goto error;
-
-negative_array_size:
-    // we have a problem
-    EM_exception(
-        "NegativeArraySize: while allocating arrays..." );
-    goto error;
-
-error:
-    // base shouldn't have been ref counted
-    CK_SAFE_DELETE( theBase );
-    return NULL;
-}
 
 
 
