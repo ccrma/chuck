@@ -5307,12 +5307,39 @@ Chuck_Type * Chuck_Namespace::lookup_type( const string & theName, t_CKINT climb
 Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
                                            t_CKBOOL stayWithinClassDef )
 {
+    // remove arrays from name
+    int depth = 0;
+    S_Symbol oldName = theName;
+
+    std::string theNameStr = S_name(theName);
+
+    while (theNameStr.size() >= 2 && theNameStr.substr(theNameStr.size() - 2, 2) == "[]") 
+    {
+        depth++;
+        // remove "[]" from the name
+        theNameStr.pop_back();
+        theNameStr.pop_back();
+    }
+
+    // If this is an array, create an S_Symbol with only the base type.
+    // (i.e. "int[]" becomes "int".
+    if (depth) 
+    {
+        theName = insert_symbol(theNameStr.c_str());
+    }
+
     Chuck_Type * t = type.lookup( theName, climb );
     // respect stayWithinClassDef; check if we are in class def using pre_ctor
     t_CKBOOL keepGoing = ( this->pre_ctor && stayWithinClassDef ) == FALSE;
     // climb up to parent namespace
     if( climb > 0 && !t && parent && keepGoing )
-        return parent->lookup_type( theName, climb, stayWithinClassDef );
+        return parent->lookup_type( oldName, climb, stayWithinClassDef );
+
+    // If this is an array, create an array type and return that.
+    if (depth) {
+        Chuck_Type* baseT = t;  
+        t = new_array_type(baseT->env(), baseT->env()->ckt_array, depth, baseT, baseT->env()->curr);
+    }
     return t;
 }
 

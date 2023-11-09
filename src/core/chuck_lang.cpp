@@ -3492,7 +3492,8 @@ CK_DLL_MFUN( type_isObject )
 CK_DLL_MFUN( type_isArray )
 {
     Chuck_Type * type = (Chuck_Type *)SELF;
-    RETURN->v_int = type->array_depth > 0;
+    // test for arrayhood -- either array depth > 0 or type could be "@array" | 1.5.1.9
+    RETURN->v_int = type->array_depth > 0 || isa(type, type->env()->ckt_array);
 }
 
 CK_DLL_MFUN( type_arrayDims )
@@ -3525,7 +3526,13 @@ CK_DLL_SFUN( type_typeOf_obj )
         RETURN->v_object = NULL;
         return;
     }
+
     // get type
+    // NOTE: Chuck_Object->type_ref may have different semantics for typeOf() and Type.of()
+    // [1.0] @=> float array[];
+    // <<< array.typeOf().isArray() >>>;
+    // <<< Type.of(array).isArray() >>>;
+    // TODO: do these need to be unified?
     RETURN->v_object = obj->type_ref;
 }
 
