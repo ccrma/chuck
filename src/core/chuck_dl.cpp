@@ -1498,6 +1498,57 @@ t_CKUINT CK_DLL_CALL ck_refcount( Chuck_DL_Api::Object object )
 }
 
 
+
+
+//-----------------------------------------------------------------------------
+// helper function
+//-----------------------------------------------------------------------------
+Chuck_Object * do_ck_create( Chuck_VM_Shred * shred, Chuck_VM * vm, Chuck_DL_Api::Type t, vector<t_CKINT> & caps, t_CKBOOL addRef )
+{
+    // type
+    Chuck_Type * type = (Chuck_Type *)t;
+    // object
+    Chuck_Object * object = NULL;
+
+    // check if type is some kind of array
+    if( isa(type, vm->env()->ckt_array) )
+    {
+        // 1.5.1.9 (nshaheed) added
+        t_CKINT index = 0;
+        bool is_object = isa(type->array_type, vm->env()->ckt_object);
+        // get array depth
+        t_CKUINT depth = type->array_depth;
+        // create capacity
+        t_CKINT * capacity = new t_CKINT[depth];
+        // make sure
+        assert( depth == caps.size() );
+        // iterate and copy
+        for( t_CKUINT i = 0; i < depth; i++ ) capacity[i] = caps[i];
+        // allocate array
+        object = do_alloc_array( vm, shred,
+                                 &capacity[depth - 1], capacity,
+                                 getkindof(vm->env(), type->array_type),
+                                 is_object, NULL, index, type );
+        // clean up
+        CK_SAFE_DELETE_ARRAY( capacity );
+    }
+    else
+    {
+        // instantiate and initialize
+        if( shred ) object = instantiate_and_initialize_object( type, shred, vm );
+        else object = instantiate_and_initialize_object( type, vm );
+    }
+
+    // if requested to add ref
+    if( object && addRef ) CK_SAFE_ADD_REF(object);
+
+    // done
+    return object;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: ck_create_with_shred()
 // desc: host-side hook implementation for instantiating and initializing
@@ -1520,13 +1571,22 @@ static Chuck_DL_Api::Object CK_DLL_CALL ck_create_with_shred( Chuck_VM_Shred * s
 
     // type
     Chuck_Type * type = (Chuck_Type *)t;
-    // instantiate and initialize
-    Chuck_Object * o = instantiate_and_initialize_object( type, shred, shred->vm_ref );
-    // if requested to add ref
-    if( o && addRef ) CK_SAFE_ADD_REF(o);
-    // done
-    return (Chuck_DL_Api::Object)o;
+    // do_alloc_array() expects a stack of intial capacities for
+    // each dimension of the array. Because this is only expected
+    // to be used through the chuck_dl API, which does not support
+    // setting the capacity explicitly, only empty arrays are
+    // initialized | 1.5.1.9
+    vector<t_CKINT> caps;
+    // check for array type
+    if( type->array_depth )
+        for( t_CKUINT i = 0; i < type->array_depth; i++ )
+            caps.push_back(0);
+
+    // process and return
+    return (Chuck_DL_Api::Object)do_ck_create( shred, shred->vm_ref, t, caps, addRef );
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1548,13 +1608,21 @@ static Chuck_DL_Api::Object CK_DLL_CALL ck_create_without_shred( Chuck_VM * vm, 
 
     // type
     Chuck_Type * type = (Chuck_Type *)t;
-    // instantiate and initialize
-    Chuck_Object * o = instantiate_and_initialize_object( type, vm );
-    // if requested to add ref
-    if( o && addRef ) CK_SAFE_ADD_REF(o);
-    // done
-    return (Chuck_DL_Api::Object)o;
+    // do_alloc_array() expects a stack of intial capacities for
+    // each dimension of the array. Because this is only expected
+    // to be used through the chuck_dl API, which does not support
+    // setting the capacity explicitly, only empty arrays are
+    // initialized | 1.5.1.9
+    vector<t_CKINT> caps;
+    // check for array type
+    if( type->array_depth )
+        for( t_CKUINT i = 0; i < type->array_depth; i++ )
+            caps.push_back(0);
+
+    // process and return
+    return (Chuck_DL_Api::Object)do_ck_create( NULL, vm, t, caps, addRef );
 }
+
 
 
 

@@ -3564,6 +3564,16 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// do alloc array
+//-----------------------------------------------------------------------------
+Chuck_Object * do_alloc_array( Chuck_VM * vm, Chuck_VM_Shred * shred, t_CKINT * capacity,
+                               const t_CKINT * top, t_CKUINT kind, t_CKBOOL is_obj,
+                               t_CKUINT * objs, t_CKINT & index, Chuck_Type * type);
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Array_Access
 // desc: ...
 //-----------------------------------------------------------------------------

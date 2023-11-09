@@ -5310,10 +5310,10 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     // remove arrays from name
     int depth = 0;
     S_Symbol oldName = theName;
-
     std::string theNameStr = S_name(theName);
 
-    while (theNameStr.size() >= 2 && theNameStr.substr(theNameStr.size() - 2, 2) == "[]") 
+    // parse for [] | 1.5.1.9
+    while( theNameStr.size() >= 2 && theNameStr.substr(theNameStr.size() - 2, 2) == "[]" )
     {
         depth++;
         // remove "[]" from the name
@@ -5321,13 +5321,14 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
         theNameStr.pop_back();
     }
 
-    // If this is an array, create an S_Symbol with only the base type.
-    // (i.e. "int[]" becomes "int".
-    if (depth) 
+    // if this is an array, create an S_Symbol with only the base type
+    // (i.e. "int[]" becomes "int" | 1.5.1.9
+    if( depth )
     {
         theName = insert_symbol(theNameStr.c_str());
     }
 
+    // find base type
     Chuck_Type * t = type.lookup( theName, climb );
     // respect stayWithinClassDef; check if we are in class def using pre_ctor
     t_CKBOOL keepGoing = ( this->pre_ctor && stayWithinClassDef ) == FALSE;
@@ -5335,11 +5336,16 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     if( climb > 0 && !t && parent && keepGoing )
         return parent->lookup_type( oldName, climb, stayWithinClassDef );
 
-    // If this is an array, create an array type and return that.
-    if (depth) {
-        Chuck_Type* baseT = t;  
+    // if this is an array, create an array type and return that | 1.5.1.9
+    if( depth )
+    {
+        // base type
+        Chuck_Type * baseT = t;
+        // new array type
         t = new_array_type(baseT->env(), baseT->env()->ckt_array, depth, baseT, baseT->env()->curr);
     }
+
+    // return t
     return t;
 }
 

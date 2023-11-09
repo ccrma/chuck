@@ -48,12 +48,6 @@
 using namespace std;
 
 
-// do alloc array
-Chuck_Object * do_alloc_array( Chuck_VM * vm, Chuck_VM_Shred * shred, t_CKINT * capacity,
-                               const t_CKINT * top, t_CKUINT kind, t_CKBOOL is_obj,
-                               t_CKUINT * objs, t_CKINT & index, Chuck_Type * type);
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -4400,28 +4394,6 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
             t_CKINT regs = shred ? shred->childGetRegSize() : 0;
             // initialize shred | 1.5.1.5 (ge) added, along with child mem and reg stack size hints
             if( !newShred->initialize( NULL, mems, regs ) ) goto error;
-        }
-        else if (isa(type, vm->env()->ckt_array))
-        {
-            // 1.5.1.9 (nshaheed) added
-            t_CKINT index = 0;
-            bool is_object = isa(type->array_type, vm->env()->ckt_object);
-
-            int depth = type->array_depth;
-            t_CKINT* capacity = new t_CKINT[depth]();
-
-            // do_alloc_array expects a stack of intial capacities for 
-            // each dimension of the array. Because this is only expected
-            // to be used through the chuck_dl API, which does not support
-            // setting the capacity explicitly, only empty arrays are 
-            // initialized.
-            for (int i = 0; i < depth; i++) {
-                capacity[i] = 0;
-            }
-            object = do_alloc_array(vm, shred, 
-                &capacity[depth - 1], capacity,
-                getkindof(vm->env(), type->array_type),
-                is_object, nullptr, index, type);
         }
         // 1.5.0.0 (ge) added -- here my feeble brain starts leaking out of my eyeballs
         else if( isa( type, vm->env()->ckt_class ) ) object = new Chuck_Type( vm->env(), te_class, type->base_name, type, type->size );
