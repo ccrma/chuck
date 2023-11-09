@@ -2,6 +2,13 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.1.9 (November 2023)
+=======
+- (added) Shred.parent() and Shred.ancestor()
+- (added) chugins runtime API support for creating arrays from chugins
+- (fixed) Type.of("int[][]").isArray() now correctly returns true
+
+
 1.5.1.8 (October 2023) "Halloween Release"
 =======
 (note) memory management is ghoulishly frightful!
