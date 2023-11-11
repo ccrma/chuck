@@ -394,7 +394,7 @@ a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, uint32_t lineNum, uint32_
 }
 
 a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type,
-                           a_Exp ctor_args, a_Array_Sub array,
+                           int ctor_invoked, a_Exp ctor_args, a_Array_Sub array,
                            uint32_t lineNum, uint32_t posNum )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
@@ -402,6 +402,7 @@ a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type,
     a->s_meta = ae_meta_value;
     a->unary.op = oper;
     a->unary.type = type;
+    a->unary.ctor_invoked = ctor_invoked;
     a->unary.ctor_args = ctor_args;
     a->unary.array = array;
     a->line = lineNum; a->where = posNum;
@@ -523,7 +524,7 @@ a_Exp new_exp_from_id( c_str xid, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Exp new_exp_from_int( long num, uint32_t lineNum, uint32_t posNum )
+a_Exp new_exp_from_int( t_CKINT num, uint32_t lineNum, uint32_t posNum )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
     a->s_type = ae_exp_primary;
@@ -537,7 +538,7 @@ a_Exp new_exp_from_int( long num, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Exp new_exp_from_float( double num, uint32_t lineNum, uint32_t posNum )
+a_Exp new_exp_from_float( t_CKFLOAT num, uint32_t lineNum, uint32_t posNum )
 {
     a_Exp a = (a_Exp)checked_malloc( sizeof( struct a_Exp_ ) );
     a->s_type = ae_exp_primary;
@@ -714,10 +715,11 @@ a_Exp new_exp_from_nil( uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Var_Decl new_var_decl( c_constr xid, a_Exp ctor_args, a_Array_Sub array, uint32_t lineNum, uint32_t posNum )
+a_Var_Decl new_var_decl( c_constr xid, int ctor_invoked, a_Exp ctor_args, a_Array_Sub array, uint32_t lineNum, uint32_t posNum )
 {
     a_Var_Decl a = (a_Var_Decl)checked_malloc( sizeof( struct a_Var_Decl_ ) );
     a->xid = insert_symbol(xid);
+    a->ctor_invoked = ctor_invoked;
     a->ctor_args = ctor_args;
     a->array = array;
     a->line = lineNum; a->where = posNum;

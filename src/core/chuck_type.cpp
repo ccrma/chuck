@@ -6654,7 +6654,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         type_decl->array->depth = array_depth;
     }
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, NULL, 0, 0 ); // 1.5.1.9 (ge) add ctor arglist
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 ); // 1.5.1.9 (ge) add ctor arglist
 
     // added 2013-10-22 - spencer
     // allow array-type mvars
@@ -6727,7 +6727,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // make type decl
     a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0, 0 );
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, NULL, 0, 0 );  // 1.5.1.9 (ge) add ctor arglist
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 );  // 1.5.1.9 (ge) add ctor arglist
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
@@ -7678,7 +7678,7 @@ a_Arg_List partial_deep_copy_args( a_Arg_List list )
 
     // need name but not 'array' on var_decl
     // 1.5.1.9 (ge) added ctor_args=NULL, also not needed from the callee's perspective
-    var_decl = new_var_decl( S_name(list->var_decl->xid), NULL, NULL, list->var_decl->line, list->var_decl->where );
+    var_decl = new_var_decl( S_name(list->var_decl->xid), FALSE, NULL, NULL, list->var_decl->line, list->var_decl->where );
     // need var_decl by not type_decl
     copy = new_arg_list( NULL, var_decl, list->line, list->where );
     // set type and add reference
@@ -7796,7 +7796,7 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
 
         // make var decl
         // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
-        var_decl = new_var_decl( (char *)arg->name.c_str(), NULL, array_sub, 0, 0 );
+        var_decl = new_var_decl( (char *)arg->name.c_str(), FALSE, NULL, array_sub, 0, 0 );
 
         // make new arg
         arg_list = prepend_arg_list( type_decl, var_decl, arg_list, 0, 0 );
@@ -8011,7 +8011,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             a_Type_Decl type_decl = new_type_decl( thePath2, FALSE, 0, 0 );
             // make var decl
             // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
-            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, NULL, 0, 0 );
+            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), FALSE, NULL, NULL, 0, 0 );
             // make var decl list
             a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
             // make exp decl
