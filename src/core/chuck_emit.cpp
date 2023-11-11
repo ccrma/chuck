@@ -4840,7 +4840,7 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
         emit_engine_pre_constructor( emit, type->parent );
 
     // pre constructor
-    if( type->has_constructor )
+    if( type->has_pre_ctor )
     {
         // make sure
         assert( type->info->pre_ctor != NULL );

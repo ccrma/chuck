@@ -947,8 +947,8 @@ struct Chuck_Type : public Chuck_Object
     t_CKBOOL is_copy;
     // defined
     t_CKBOOL is_complete;
-    // has pre constructor
-    t_CKBOOL has_constructor;
+    // has pre-constructor
+    t_CKBOOL has_pre_ctor;
     // has destructor
     t_CKBOOL has_destructor;
     // custom allocator
@@ -1142,6 +1142,14 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
+public: // constructors / destructor | 1.5.1.9
+    // is this a constructor?
+    t_CKBOOL is_ctor;
+    // is this a default constructor?
+    t_CKBOOL is_default_ctor;
+    // is this a destructor?
+    t_CKBOOL is_dtor;
+
 public:
     // pack c-style array of DL_Args into args cache
     t_CKBOOL pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs );
@@ -1186,6 +1194,9 @@ public:
         /*dl_code = NULL;*/
         next = NULL;
         up = NULL;
+        is_ctor = FALSE;
+        is_default_ctor = FALSE;
+        is_dtor = FALSE;
         args_cache = NULL;
         args_cache_size = 0;
         invoker_mfun = NULL;

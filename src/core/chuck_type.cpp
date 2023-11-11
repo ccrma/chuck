@@ -4884,7 +4884,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
         {
         case ae_section_stmt:
             // flag as having a constructor
-            env->class_def->has_constructor |= (body->section->stmt_list->stmt != NULL);
+            env->class_def->has_pre_ctor |= (body->section->stmt_list->stmt != NULL);
             ret = type_engine_check_stmt_list( env, body->section->stmt_list );
             break;
 
@@ -6221,7 +6221,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     if( pre_ctor != 0 )
     {
         // flag it
-        type->has_constructor = TRUE;
+        type->has_pre_ctor = TRUE;
         // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
         // add pre_ctor
@@ -6654,7 +6654,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         type_decl->array->depth = array_depth;
     }
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0, 0 );
+    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, NULL, 0, 0 ); // 1.5.1.9 (ge) add ctor arglist
 
     // added 2013-10-22 - spencer
     // allow array-type mvars
@@ -6727,7 +6727,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // make type decl
     a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0, 0 );
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0, 0 );
+    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, NULL, 0, 0 );  // 1.5.1.9 (ge) add ctor arglist
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
@@ -7677,7 +7677,8 @@ a_Arg_List partial_deep_copy_args( a_Arg_List list )
     a_Var_Decl var_decl = NULL;
 
     // need name but not 'array' on var_decl
-    var_decl = new_var_decl( S_name(list->var_decl->xid), NULL, list->var_decl->line, list->var_decl->where );
+    // 1.5.1.9 (ge) added ctor_args=NULL, also not needed from the callee's perspective
+    var_decl = new_var_decl( S_name(list->var_decl->xid), NULL, NULL, list->var_decl->line, list->var_decl->where );
     // need var_decl by not type_decl
     copy = new_arg_list( NULL, var_decl, list->line, list->where );
     // set type and add reference
@@ -7793,7 +7794,9 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
                 array_sub = prepend_array_sub( array_sub, NULL, 0, 0 );
         }
 
-        var_decl = new_var_decl( (char *)arg->name.c_str(), array_sub, 0, 0 );
+        // make var decl
+        // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+        var_decl = new_var_decl( (char *)arg->name.c_str(), NULL, array_sub, 0, 0 );
 
         // make new arg
         arg_list = prepend_arg_list( type_decl, var_decl, arg_list, 0, 0 );
@@ -8007,7 +8010,8 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             // make type decl
             a_Type_Decl type_decl = new_type_decl( thePath2, FALSE, 0, 0 );
             // make var decl
-            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, 0, 0 );
+            // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, NULL, 0, 0 );
             // make var decl list
             a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
             // make exp decl
@@ -9007,7 +9011,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     is_copy = FALSE;
     ugen_info = NULL;
     is_complete = TRUE;
-    has_constructor = FALSE;
+    has_pre_ctor = FALSE;
     has_destructor = FALSE;
     allocator = NULL;
 

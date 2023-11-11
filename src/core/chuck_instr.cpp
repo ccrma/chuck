@@ -4048,7 +4048,7 @@ void call_all_parent_pre_constructors( Chuck_VM * vm, Chuck_VM_Shred * shred,
         call_all_parent_pre_constructors( vm, shred, type->parent, stack_offset );
     }
     // now, call my ctor
-    if( type->has_constructor )
+    if( type->has_pre_ctor )
     {
         call_pre_constructor( vm, shred, type->info->pre_ctor, stack_offset );
     }

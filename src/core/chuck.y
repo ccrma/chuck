@@ -434,9 +434,11 @@ var_decl_list
         ;
 
 var_decl
-        : ID                                { $$ = new_var_decl( $1, NULL, @1.first_line, @1.first_column ); }
-        | ID array_exp                      { $$ = new_var_decl( $1, $2, @1.first_line, @1.first_column ); }
-        | ID array_empty                    { $$ = new_var_decl( $1, $2, @1.first_line, @1.first_column ); }
+        : ID                                { $$ = new_var_decl( $1, NULL, NULL, @1.first_line, @1.first_column ); }
+        | ID array_exp                      { $$ = new_var_decl( $1, NULL, $2, @1.first_line, @1.first_column ); }
+        | ID array_empty                    { $$ = new_var_decl( $1, NULL, $2, @1.first_line, @1.first_column ); }
+        | ID LPAREN expression RPAREN       { $$ = new_var_decl( $1, $3, NULL, @1.first_line, @1.first_column ); } // 1.5.1.9 (ge) added for constructors
+        | ID LPAREN expression RPAREN array_exp  { $$ = new_var_decl( $1, $3, $5, @1.first_line, @1.first_column ); } // 1.5.1.9 (ge) added for constructors
         ;
 
 complex_exp
@@ -587,9 +589,13 @@ unary_expression
         | SIZEOF unary_expression
             { $$ = new_exp_from_unary( ae_op_sizeof, $2, @1.first_line, @1.first_column ); }
         | NEW type_decl
-            { $$ = new_exp_from_unary2( ae_op_new, $2, NULL, @1.first_line, @1.first_column ); }
+            { $$ = new_exp_from_unary2( ae_op_new, $2, NULL, NULL, @1.first_line, @1.first_column ); }
         | NEW type_decl array_exp
-            { $$ = new_exp_from_unary2( ae_op_new, $2, $3, @1.first_line, @1.first_column ); }
+            { $$ = new_exp_from_unary2( ae_op_new, $2, NULL, $3, @1.first_line, @1.first_column ); }
+        | NEW type_decl LPAREN expression RPAREN // 1.5.1.9 (ge) added for constructors
+            { $$ = new_exp_from_unary2( ae_op_new, $2, $4, NULL, @1.first_line, @1.first_column ); }
+        | NEW type_decl LPAREN expression RPAREN array_exp // 1.5.1.9 (ge) added for constructors
+            { $$ = new_exp_from_unary2( ae_op_new, $2, $4, $6, @1.first_line, @1.first_column ); }
 //		| SPORK TILDA code_segment
 //		    { $$ = new_exp_from_unary3( ae_op_spork, $3, @1.first_line, @1.first_column ); }
         ;
