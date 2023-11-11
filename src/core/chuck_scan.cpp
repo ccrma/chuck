@@ -1200,6 +1200,14 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // count
         decl->num_var_decls++;
 
+        // scan constructor args | 1.5.1.9 (ge) added
+        if( var_decl->ctor_args != NULL )
+        {
+            // type check the exp
+            if( !type_engine_scan1_exp( env, var_decl->ctor_args ) )
+                return FALSE;
+        }
+
         // scan if array
         if( var_decl->array != NULL )
         {
@@ -2251,7 +2259,7 @@ t_CKBOOL type_engine_scan2_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 // name: type_engine_scan2_exp_decl_create() | 1.5.1.1 (ge)
 //       *** adapted from type_engine_scan2_exp_decl() pre-1.5.0.8
 //       *** which became type_engine_check_exp_decl_part1() in 1.5.0.8
-// reason: 'auto' needs more context before it can processed | 1.5.0.8 (ge)
+// reason: 'auto' needs more context before it can be processed | 1.5.0.8 (ge)
 //       however, class variables are meant to be accessible out-of-order
 //       and needs decl created in an earlier pass | 1.5.1.1 (ge)
 // desc: this can now be called either from type_scan if not 'auto' in order
@@ -2357,6 +2365,14 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
                 "'%s' has already been defined in the same scope",
                 S_name(var_decl->xid) );
             return FALSE;
+        }
+
+        // check for constructor args | 1.5.1.9 (ge) added
+        if( var_decl->ctor_args != NULL )
+        {
+            // type check the exp
+            if( !type_engine_scan2_exp( env, var_decl->ctor_args ) )
+                return FALSE;
         }
 
         // check if array

@@ -3115,6 +3115,23 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 env->class_def->depends.add( &t->depends );
             }
 
+            // constructors | 1.5.1.9 (ge) added
+            if( unary->ctor_invoked )
+            {
+                // type check any constructor args
+                if( unary->ctor_args )
+                {
+                    // check the argument list
+                    if( !type_engine_check_exp( env, unary->ctor_args ) )
+                        return NULL;
+                }
+
+                // -- must be an Object (with caveats for primitive types, later)
+                // -- must be able to find a constructor with matching args
+                // -- empty () is okay (will invoke default ctor if there is one)
+                // -- ctors are always incompatible with empty []
+            }
+
             // []
             if( unary->array )
             {
@@ -4100,6 +4117,15 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
                 // dependency tracking: add the callee's dependencies
                 env->class_def->depends.add( &type->depends );
             }
+        }
+
+        // check for constructor args | 1.5.1.9 (ge) added
+        if( var_decl->ctor_args != NULL )
+        {
+            // -- must be an Object (with caveats for primitive types, later)
+            // -- must be able to find a constructor with matching args
+            // -- empty () is okay (will invoke default ctor if there is one)
+            // -- ctors are always incompatible with empty []
         }
 
         // if array, then check to see if empty []
