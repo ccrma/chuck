@@ -130,6 +130,7 @@ typedef struct a_Id_List_ * a_Id_List;
 typedef struct a_Class_Ext_ * a_Class_Ext;
 typedef struct a_Class_Body_ * a_Class_Body;
 typedef struct a_Array_Sub_ * a_Array_Sub;
+typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.1.9 (ge) added
 typedef struct a_Complex_ * a_Complex;
 typedef struct a_Polar_ * a_Polar;
 typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
@@ -295,11 +296,16 @@ void delete_vec( a_Vec v );
 
 
 //------------------------------------------------------------------------------
+// helper structs
+//------------------------------------------------------------------------------
+// 1.5.1.9 (ge) added constructor support
+struct a_Ctor_Call_ { int invoked; a_Exp args; t_CKFUNC func; int primitive; };
+//------------------------------------------------------------------------------
 // abstract syntax tree | structs
 //------------------------------------------------------------------------------
 struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
-struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; int ctor_invoked; a_Exp ctor_args; a_Array_Sub array;
+struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; struct a_Ctor_Call_ ctor; a_Array_Sub array;
                       a_Stmt code; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Dur_ { a_Exp base; a_Exp unit; uint32_t line; uint32_t where; a_Exp self; };
@@ -313,8 +319,8 @@ struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_va
 struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
-struct a_Var_Decl_ { S_Symbol xid; int ctor_invoked; a_Exp ctor_args; a_Array_Sub array;
-                     t_CKVALUE value; void * addr; t_CKTYPE ck_type;
+struct a_Var_Decl_ { S_Symbol xid; struct a_Ctor_Call_ ctor;
+                     a_Array_Sub array; t_CKVALUE value; void * addr; t_CKTYPE ck_type;
                      /* int is_auto; */ int ref; int force_ref;
                      uint32_t line; uint32_t where; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };

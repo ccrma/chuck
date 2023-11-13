@@ -409,9 +409,9 @@ string absyn_stmt2str( a_Stmt stmt )
 // name: absyn2str()
 // desc: convert abstract syntax exp to string
 //-----------------------------------------------------------------------------
-string absyn2str( a_Exp exp )
+string absyn2str( a_Exp exp, t_CKBOOL appendSemicolon )
 {
-    return absyn_exp2str( exp ) + ";";
+    return absyn_exp2str( exp ) + (appendSemicolon ? ";" : "" );
 }
 
 

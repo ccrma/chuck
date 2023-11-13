@@ -4831,7 +4831,7 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_pre_constructor()
-// desc: ...
+// desc: emit instructions for type pre-constructor, for Object instantiation
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
 {
@@ -4857,7 +4857,7 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_pre_constructor_array()
-// desc: ...
+// desc: emit instruction for pre-constructing an array of Objects
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * type )
 {
@@ -4934,7 +4934,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp_decl()
-// desc: ...
+// desc: emit instruction for variable declaration expression
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                                     t_CKBOOL first_exp )

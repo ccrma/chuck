@@ -949,6 +949,8 @@ struct Chuck_Type : public Chuck_Object
     t_CKBOOL is_complete;
     // has pre-constructor
     t_CKBOOL has_pre_ctor;
+    // constructor(s), potentially overloaded | 1.5.1.9 (ge) added
+    Chuck_Func * ctors;
     // has destructor
     t_CKBOOL has_destructor;
     // custom allocator
@@ -1254,6 +1256,9 @@ t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isnull( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
 te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.1.9 (ge) added for constructors
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1335,6 +1340,12 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 // type-check an operator overload func def | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
+// constructors | 1.5.1.9 (ge) added
+Chuck_Func * type_engine_lookup_ctor( Chuck_Env * env, Chuck_Type * type, a_Exp args );
+// destructor | 1.5.1.9 (ge) added
+Chuck_Func * type_engine_lookup_dtor( Chuck_Env * env, Chuck_Type * type );
+
+
 
 
 

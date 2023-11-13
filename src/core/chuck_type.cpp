@@ -99,9 +99,12 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helpers
 Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
+// convert dot member expression to string for printing
 string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member );
-a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
-                            t_CKBOOL is_base_primtive );
+// type check constructor invocation | 1.5.1.9 (ge) added
+Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_Ctor_Call ctor, a_Array_Sub array, uint32_t where );
+// make an chuck dll function into absyn function
+a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static, t_CKBOOL is_base_primtive );
 // make a partial deep copy, to separate type systems from AST
 a_Func_Def partial_deep_copy_fn( a_Func_Def f );
 a_Arg_List partial_deep_copy_args( a_Arg_List args );
@@ -3116,20 +3119,21 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             }
 
             // constructors | 1.5.1.9 (ge) added
-            if( unary->ctor_invoked )
+            if( unary->ctor.invoked )
             {
                 // type check any constructor args
-                if( unary->ctor_args )
+                if( unary->ctor.args )
                 {
                     // check the argument list
-                    if( !type_engine_check_exp( env, unary->ctor_args ) )
+                    if( !type_engine_check_exp( env, unary->ctor.args ) )
                         return NULL;
                 }
 
-                // -- must be an Object (with caveats for primitive types, later)
-                // -- must be able to find a constructor with matching args
-                // -- empty () is okay (will invoke default ctor if there is one)
-                // -- ctors are always incompatible with empty []
+                // type check and get constructor function
+                unary->ctor.func = type_engine_check_ctor_call( env, t, &unary->ctor, unary->array, unary->where );
+                // check for error
+                if( !unary->ctor.func )
+                    return NULL;
             }
 
             // []
@@ -4120,12 +4124,14 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         }
 
         // check for constructor args | 1.5.1.9 (ge) added
-        if( var_decl->ctor_args != NULL )
+        // NOTE empty () is handled elsewhere as default constructor
+        if( var_decl->ctor.args != NULL )
         {
-            // -- must be an Object (with caveats for primitive types, later)
-            // -- must be able to find a constructor with matching args
-            // -- empty () is okay (will invoke default ctor if there is one)
-            // -- ctors are always incompatible with empty []
+            // type check and get constructor function
+            var_decl->ctor.func = type_engine_check_ctor_call( env, type, &var_decl->ctor, var_decl->array, var_decl->where );
+            // check for error
+            if( !var_decl->ctor.func )
+                return NULL;
         }
 
         // if array, then check to see if empty []
@@ -4337,7 +4343,7 @@ moveon:
 
 //-----------------------------------------------------------------------------
 // name: find_func_match()
-// desc: ...
+// desc: match a function by arguments
 //-----------------------------------------------------------------------------
 Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 {
@@ -4367,7 +4373,8 @@ Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_exp_func_call()
-// desc: ...
+// desc: type check function call
+//       (RELATED: type_engine_check_ctor_call())
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp args,
                                           t_CKFUNC & ck_func, int linepos )
@@ -5021,8 +5028,9 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( theOverride )
     {
         // make reference to parent
-        // TODO: ref count
         theFunc->up = theOverride;
+        // ref count | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( theFunc->up );
     }
 
     // make sure return type is not NULL
@@ -5751,6 +5759,133 @@ Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_lookup_ctor() | 1.5.1.9 (ge) added
+// desc: look up constructor by type and argument list
+//-----------------------------------------------------------------------------
+Chuck_Func * type_engine_lookup_ctor( Chuck_Env * env, Chuck_Type * type, a_Exp args )
+{
+    return NULL;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_lookup_dtor() | 1.5.1.9 (ge) added
+// desc: look up destructor by type
+//-----------------------------------------------------------------------------
+Chuck_Func * type_engine_lookup_dtor( Chuck_Env * env, Chuck_Type * type )
+{
+    return NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_ctor_call() | 1.5.1.9 (ge) added
+// desc: type check constructor invocation; also see func_call()
+//       (RELATED: type_engine_check_func_call())
+//
+// -- must be an Object (with caveats for primitive types, later), but not an array
+// -- empty () is okay (will invoke default ctor if there is one)
+// -- ctors are always incompatible with empty []
+// -- must be able to find a constructor with matching args
+//-----------------------------------------------------------------------------
+Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_Ctor_Call ctorInfo,
+                                          a_Array_Sub array, uint32_t where )
+{
+    // is an Object?
+    t_CKBOOL is_obj = isobj( env, type );
+    // is an array
+    t_CKBOOL is_array = isa( type, env->ckt_array );
+
+    // constructors can only be called on Objects
+    // TODO: handle primitive constructors
+    if( !is_obj )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on non-Object type '%s'...", type->c_name() );
+        return NULL;
+    }
+
+    // constructors currently not allowed on array types
+    // (NOTE but array creation with constructors is possible)
+    if( is_array )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on array types..." );
+        return NULL;
+    }
+
+    // check for empty array []
+    if( array && !array->exp_list )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on empty array [] declarations...", type->c_name() );
+        return NULL;
+    }
+
+    // check the arguments
+    if( ctorInfo->args )
+    {
+        if( !type_engine_check_exp( env, ctorInfo->args ) )
+            return NULL;
+    }
+
+    // convert arg list expression to string
+    string args2str = "";
+    // for iterating through args
+    a_Exp a = ctorInfo->args;
+    // construct args type string
+    while( a )
+    {
+        // append
+        args2str += a->type->name();
+        // next
+        a = a->next;
+        // check
+        if( a ) args2str += ",";
+    }
+
+    // locate the constructor by type name
+    Chuck_Func * funcGroup = type->ctors;
+    // verify
+    if( !funcGroup )
+    {
+        // internal error!
+        EM_error2( where, "no constructors defined for '%s'...", type->c_name() );
+        // bail out
+        return NULL;
+    }
+
+    // look for a match
+    Chuck_Func * theCtor = find_func_match( env, funcGroup, ctorInfo->args );
+    // no func
+    if( !theCtor )
+    {
+        // print error
+        EM_error2( where, "no matching constructor found for %s(%s)...", type->c_name(), args2str.c_str() );
+        // bail out
+        return NULL;
+    }
+
+    // verify
+    if( !isa( theCtor->type(), env->ckt_void ) )
+    {
+        // internal error!
+        EM_error2( where, "(internal error) non-void return value for constructor %s(%s)", type->c_name(), args2str.c_str() );
+        // bail out
+        return NULL;
+    }
+
+    // return the function
+    return theCtor;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_check_primitive()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -5793,6 +5928,8 @@ te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
     // done
     return kind;
 }
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+{ return (env->class_def && S_name(func_def->name)==env->class_def->name()); }
 
 
 
@@ -8562,18 +8699,23 @@ Chuck_Func::~Chuck_Func()
     // delete our partial deep copy
     funcdef_cleanup();
 
-    // release reference | 1.5.1.0 (ge) added
+    // release code | 1.5.1.0 (ge) added
     CK_SAFE_RELEASE( this->code );
+    // release value ref
     CK_SAFE_RELEASE( this->value_ref );
 
-    // release args cache | 1.5.1.5
+    // delete args cache | 1.5.1.5
     CK_SAFE_DELETE_ARRAY( this->args_cache );
     this->args_cache_size = 0;
 
     // release invoker(s) | 1.5.1.5
     CK_SAFE_DELETE( this->invoker_mfun );
+    // release next | 1.5.1.9
+    CK_SAFE_RELEASE( this->next );
+    // release up | 1.5.1.9
+    CK_SAFE_RELEASE( this->up );
 
-    // TODO: check if more references to release, e.g., up and next?
+    // TODO: check if more references to release?
 }
 
 
@@ -9038,6 +9180,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     ugen_info = NULL;
     is_complete = TRUE;
     has_pre_ctor = FALSE;
+    ctors = NULL;
     has_destructor = FALSE;
     allocator = NULL;
 
@@ -9084,6 +9227,7 @@ void Chuck_Type::reset()
         // release references
         CK_SAFE_RELEASE( info );
         CK_SAFE_RELEASE( owner );
+        CK_SAFE_RELEASE( ctors ); // 1.5.1.9 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs

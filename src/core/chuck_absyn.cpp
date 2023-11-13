@@ -402,8 +402,8 @@ a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type,
     a->s_meta = ae_meta_value;
     a->unary.op = oper;
     a->unary.type = type;
-    a->unary.ctor_invoked = ctor_invoked;
-    a->unary.ctor_args = ctor_args;
+    a->unary.ctor.invoked = ctor_invoked;
+    a->unary.ctor.args = ctor_args;
     a->unary.array = array;
     a->line = lineNum; a->where = posNum;
     a->unary.line = lineNum; a->unary.where = posNum;
@@ -719,8 +719,8 @@ a_Var_Decl new_var_decl( c_constr xid, int ctor_invoked, a_Exp ctor_args, a_Arra
 {
     a_Var_Decl a = (a_Var_Decl)checked_malloc( sizeof( struct a_Var_Decl_ ) );
     a->xid = insert_symbol(xid);
-    a->ctor_invoked = ctor_invoked;
-    a->ctor_args = ctor_args;
+    a->ctor.invoked = ctor_invoked;
+    a->ctor.args = ctor_args;
     a->array = array;
     a->line = lineNum; a->where = posNum;
 

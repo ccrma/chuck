@@ -1201,10 +1201,10 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         decl->num_var_decls++;
 
         // scan constructor args | 1.5.1.9 (ge) added
-        if( var_decl->ctor_args != NULL )
+        if( var_decl->ctor.args != NULL )
         {
             // type check the exp
-            if( !type_engine_scan1_exp( env, var_decl->ctor_args ) )
+            if( !type_engine_scan1_exp( env, var_decl->ctor.args ) )
                 return FALSE;
         }
 
@@ -1392,12 +1392,13 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_scan1_func_def()
-// desc: ...
+// desc: type check scan pass 1 for function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
+    t_CKBOOL isInCtor = isctor(env,f);
 
     // check if reserved
     if( type_engine_check_reserved( env, f->name, f->where ) )
@@ -1418,6 +1419,18 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     }
     // add reference | 1.5.0.5
     CK_SAFE_ADD_REF( f->ret_type );
+
+    // check if we are in a constructor
+    if( isInCtor )
+    {
+        // check return type (must be void)
+        if( !isa(f->ret_type, env->ckt_void) )
+        {
+            EM_error2( f->where, "constructor for class '%s' must return void",
+                S_name(f->name) );
+            goto error;
+        }
+    }
 
     // check if array
     if( f->type_decl->array != NULL )
@@ -2368,10 +2381,10 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         }
 
         // check for constructor args | 1.5.1.9 (ge) added
-        if( var_decl->ctor_args != NULL )
+        if( var_decl->ctor.args != NULL )
         {
             // type check the exp
-            if( !type_engine_scan2_exp( env, var_decl->ctor_args ) )
+            if( !type_engine_scan2_exp( env, var_decl->ctor.args ) )
                 return FALSE;
         }
 
@@ -2737,6 +2750,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     Chuck_Func * overfunc = NULL;
     // t_CKBOOL has_code = FALSE;  // use this for both user and imported
     t_CKBOOL op_overload = ( f->op2overload != ae_op_none );
+    // is in constructor? | 1.5.1.9
+    t_CKBOOL isInCtor = isctor(env,f);
 
     // see if we are already in a function definition
     if( env->func != NULL )
@@ -2814,6 +2829,19 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         func->code->is_static = func->is_static;
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def()->dl_func_ptr;
+    }
+    // constructor | 1.5.1.9 (ge) added
+    if( isInCtor )
+    {
+        // set constructor flag
+        func->is_ctor = TRUE;
+        // check if default constructor
+        func->is_default_ctor = (f->arg_list == NULL);
+        // set in class as constructor; if not NULL, then a ctor is already set, and this is an overloading
+        if( env->class_def->ctors == NULL )
+        {
+            CK_SAFE_REF_ASSIGN( env->class_def->ctors, func );
+        }
     }
 
     // make a new type for the function
