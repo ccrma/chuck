@@ -764,8 +764,8 @@ t_CKBOOL ChucK::initChugins()
                 compiler()->env()->op_registry.preserve();
                 // get the code
                 code = compiler()->output();
-                // name it - TODO?
-                // code->name = string(argv[i]);
+                // name it | 1.5.1.9 (ge)
+                code->name = string("pre-load ck file: ") + filename;
 
                 // spork it
                 shred = vm()->spork( code, NULL, TRUE );

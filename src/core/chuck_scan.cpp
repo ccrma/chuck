@@ -279,6 +279,8 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // add code
     the_class->info->pre_ctor = new Chuck_VM_Code;
     CK_SAFE_ADD_REF( the_class->info->pre_ctor );
+    // name | 1.5.1.9 (ge) added
+    the_class->info->pre_ctor->name = string("class ") + the_class->base_name;
     // add to env
     env->curr->type.add( the_class->base_name, the_class );  // URGENT: make this global
     // incomplete
@@ -2818,11 +2820,15 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // note whether the function is marked as static (in class)
     func->is_static = (f->static_decl == ae_key_static) &&
                       (env->class_def != NULL);
+
+    // always create the code (will be filled in later on, depending on builtin vs in-language etc.)
+    // 1.5.1.9 (ge) moved up from ae_func_builtin
+    func->code = new Chuck_VM_Code;
+    // add reference
+    CK_SAFE_ADD_REF( func->code );
     // copy the native code, for imported functions
     if( f->s_type == ae_func_builtin )
     {
-        // we can emit code now
-        func->code = new Chuck_VM_Code; func->code->add_ref();
         // whether the function needs 'this'
         func->code->need_this = func->is_member;
         // is static inside
@@ -2830,17 +2836,23 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def()->dl_func_ptr;
     }
+
     // constructor | 1.5.1.9 (ge) added
     if( isInCtor )
     {
         // set constructor flag
         func->is_ctor = TRUE;
-        // check if default constructor
-        func->is_default_ctor = (f->arg_list == NULL);
         // set in class as constructor; if not NULL, then a ctor is already set, and this is an overloading
         if( env->class_def->ctors == NULL )
         {
             CK_SAFE_REF_ASSIGN( env->class_def->ctors, func );
+        }
+        // check if default constructor
+        func->is_default_ctor = (f->arg_list == NULL);
+        // if no arguments, then set as base constructor
+        if( func->is_default_ctor )
+        {
+            CK_SAFE_REF_ASSIGN( env->class_def->ctor_default, func );
         }
     }
 

@@ -951,6 +951,8 @@ struct Chuck_Type : public Chuck_Object
     t_CKBOOL has_pre_ctor;
     // constructor(s), potentially overloaded | 1.5.1.9 (ge) added
     Chuck_Func * ctors;
+    // default constructor (no arguments) | 1.5.1.9 (ge) added
+    Chuck_Func * ctor_default;
     // has destructor
     t_CKBOOL has_destructor;
     // custom allocator

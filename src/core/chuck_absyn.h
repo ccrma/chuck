@@ -299,7 +299,7 @@ void delete_vec( a_Vec v );
 // helper structs
 //------------------------------------------------------------------------------
 // 1.5.1.9 (ge) added constructor support
-struct a_Ctor_Call_ { int invoked; a_Exp args; t_CKFUNC func; int primitive; };
+struct a_Ctor_Call_ { int invoked; a_Exp args; int args_bytes; t_CKFUNC func; int primitive; };
 //------------------------------------------------------------------------------
 // abstract syntax tree | structs
 //------------------------------------------------------------------------------

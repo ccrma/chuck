@@ -3127,13 +3127,13 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                     // check the argument list
                     if( !type_engine_check_exp( env, unary->ctor.args ) )
                         return NULL;
-                }
 
-                // type check and get constructor function
-                unary->ctor.func = type_engine_check_ctor_call( env, t, &unary->ctor, unary->array, unary->where );
-                // check for error
-                if( !unary->ctor.func )
-                    return NULL;
+                    // type check and get constructor function
+                    unary->ctor.func = type_engine_check_ctor_call( env, t, &unary->ctor, unary->array, unary->where );
+                    // check for error
+                    if( !unary->ctor.func )
+                        return NULL;
+                }
             }
 
             // []
@@ -5836,9 +5836,13 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     string args2str = "";
     // for iterating through args
     a_Exp a = ctorInfo->args;
-    // construct args type string
+    // zero out
+    ctorInfo->args_bytes = 0;
+    // count args size + construct args type string
     while( a )
     {
+        // accumulate size
+        ctorInfo->args_bytes += a->type->size;
         // append
         args2str += a->type->name();
         // next
@@ -6395,6 +6399,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->info->pre_ctor->need_this = TRUE;
         // no arguments to preconstructor other than self
         type->info->pre_ctor->stack_depth = sizeof(t_CKUINT);
+        // add name | 1.5.1.9 (ge) added
+        type->info->pre_ctor->name = string("class ") + type->base_name;
     }
 
     // if destructor
@@ -6412,6 +6418,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->info->dtor->need_this = TRUE;
         // no arguments to destructor other than self
         type->info->dtor->stack_depth = sizeof(t_CKUINT);
+        // add name | 1.5.1.9 (ge) added
+        type->info->dtor->name = string("class ") + type->base_name + string(" (destructor)");
     }
 
     // clear the object size
@@ -9181,6 +9189,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     is_complete = TRUE;
     has_pre_ctor = FALSE;
     ctors = NULL;
+    ctor_default = NULL;
     has_destructor = FALSE;
     allocator = NULL;
 
@@ -9228,6 +9237,7 @@ void Chuck_Type::reset()
         CK_SAFE_RELEASE( info );
         CK_SAFE_RELEASE( owner );
         CK_SAFE_RELEASE( ctors ); // 1.5.1.9 (ge) added
+        CK_SAFE_RELEASE( ctor_default ); // 1.5.1.9 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
