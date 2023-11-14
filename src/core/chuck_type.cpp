@@ -5798,30 +5798,32 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     t_CKBOOL is_obj = isobj( env, type );
     // is an array
     t_CKBOOL is_array = isa( type, env->ckt_array );
+    // the array type
+    Chuck_Type * actualType = is_array ? type->array_type : type;
 
     // constructors can only be called on Objects
     // TODO: handle primitive constructors
     if( !is_obj )
     {
         // error message
-        EM_error2( where, "cannot invoke constructor on non-Object type '%s'...", type->c_name() );
+        EM_error2( where, "cannot invoke constructor on non-Object type '%s'...", actualType->c_name() );
         return NULL;
     }
 
     // constructors currently not allowed on array types
     // (NOTE but array creation with constructors is possible)
-    if( is_array )
-    {
-        // error message
-        EM_error2( where, "cannot invoke constructor on array types..." );
-        return NULL;
-    }
+//    if( is_array )
+//    {
+//        // error message
+//        EM_error2( where, "cannot invoke constructor on array types..." );
+//        return NULL;
+//    }
 
     // check for empty array []
     if( array && !array->exp_list )
     {
         // error message
-        EM_error2( where, "cannot invoke constructor on empty array [] declarations...", type->c_name() );
+        EM_error2( where, "cannot invoke constructor on empty array [] declarations...", actualType->c_name() );
         return NULL;
     }
 
@@ -5852,12 +5854,12 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     }
 
     // locate the constructor by type name
-    Chuck_Func * funcGroup = type->ctors;
+    Chuck_Func * funcGroup = actualType->ctors;
     // verify
     if( !funcGroup )
     {
         // internal error!
-        EM_error2( where, "no constructors defined for '%s'...", type->c_name() );
+        EM_error2( where, "no constructors defined for '%s'...", actualType->c_name() );
         // bail out
         return NULL;
     }
@@ -5868,7 +5870,7 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     if( !theCtor )
     {
         // print error
-        EM_error2( where, "no matching constructor found for %s(%s)...", type->c_name(), args2str.c_str() );
+        EM_error2( where, "no matching constructor found for %s(%s)...", actualType->c_name(), args2str.c_str() );
         // bail out
         return NULL;
     }
@@ -5877,7 +5879,7 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     if( !isa( theCtor->type(), env->ckt_void ) )
     {
         // internal error!
-        EM_error2( where, "(internal error) non-void return value for constructor %s(%s)", type->c_name(), args2str.c_str() );
+        EM_error2( where, "(internal error) non-void return value for constructor %s(%s)", actualType->c_name(), args2str.c_str() );
         // bail out
         return NULL;
     }
