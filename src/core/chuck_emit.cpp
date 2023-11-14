@@ -4868,8 +4868,8 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a
         emit_engine_emit_exp( emit, ctor_info->args );
         // push code
         emit->append( new Chuck_Instr_Reg_Push_Code( ctor_info->func->code ) );
-        // push arguments size in bytes + this pointer
-        emit->append( new Chuck_Instr_Reg_Push_Imm( ctor_info->args_bytes + sz_VOIDPTR ) );
+        // push local stack depth corresponding to local variables
+        emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
         // push offset
         emit->append( new Chuck_Instr_Func_Call( CK_FUNC_CALL_THIS_IN_FRONT ) );
     }

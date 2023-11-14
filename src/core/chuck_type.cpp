@@ -5812,12 +5812,12 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
 
     // constructors currently not allowed on array types
     // (NOTE but array creation with constructors is possible)
-//    if( is_array )
-//    {
-//        // error message
-//        EM_error2( where, "cannot invoke constructor on array types..." );
-//        return NULL;
-//    }
+    if( isa(actualType, env->ckt_array) )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on array types '%s'..." , actualType->c_name() );
+        return NULL;
+    }
 
     // check for empty array []
     if( array && !array->exp_list )
@@ -5838,13 +5838,9 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     string args2str = "";
     // for iterating through args
     a_Exp a = ctorInfo->args;
-    // zero out
-    ctorInfo->args_bytes = 0;
-    // count args size + construct args type string
+    // construct args type string
     while( a )
     {
-        // accumulate size
-        ctorInfo->args_bytes += a->type->size;
         // append
         args2str += a->type->name();
         // next
