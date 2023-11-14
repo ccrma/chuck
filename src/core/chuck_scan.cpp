@@ -1205,6 +1205,13 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // scan constructor args | 1.5.1.9 (ge) added
         if( var_decl->ctor.args != NULL )
         {
+            // disallow non-default constructors for 'global' Object decls
+            if( decl->is_global )
+            {
+                // resolve
+                EM_error2( var_decl->where, "'global' variables cannot invoke non-default constructors..." );
+                return FALSE;
+            }
             // type check the exp
             if( !type_engine_scan1_exp( env, var_decl->ctor.args ) )
                 return FALSE;
