@@ -4261,7 +4261,7 @@ void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 const char * Chuck_Instr_Pre_Constructor::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "ctor='%s', offset=%lu", pre_ctor ? pre_ctor->name.c_str() : "[null]", stack_offset );
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "ctor='%s', offset=%lu", pre_ctor ? pre_ctor->name.c_str() : "[null]", (unsigned long)stack_offset );
     return buffer;
 }
 

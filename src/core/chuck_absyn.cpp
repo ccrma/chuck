@@ -795,7 +795,8 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
         sizeof( struct a_Func_Def_ ) );
     a->func_decl = func_decl;
     a->static_decl = static_decl;
-    a->type_decl = type_decl;
+    // substitute if NULL | 1.5.1.9 (ge) for constructors
+    a->type_decl = type_decl ? type_decl : new_type_decl(new_id_list("void",0,0),0,0,0);
     a->name = insert_symbol( name );
     a->arg_list = arg_list;
     a->s_type = ae_func_user;
