@@ -863,6 +863,37 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_VM_DtorInvoker | 1.5.1.9 (ge)
+// desc: construct for calling chuck-defined @destruct from c++,
+//       typically called for Object cleanup
+//-----------------------------------------------------------------------------
+struct Chuck_VM_DtorInvoker
+{
+public:
+    // constructor
+    Chuck_VM_DtorInvoker();
+    // destructor
+    ~Chuck_VM_DtorInvoker();
+
+public:
+    // set up the invoker; needed before invoke()
+    t_CKBOOL setup( Chuck_Func * func, Chuck_VM * vm, Chuck_VM_Shred * caller );
+    // invoke the member function
+    void invoke( Chuck_Object * obj, Chuck_VM_Shred * parent_shred );
+    // clean up
+    void cleanup();
+
+public:
+    // dedicated shred to call the dtor on, since this could be running "outside of chuck time"
+    Chuck_VM_Shred * invoker_shred;
+    // instruction to update on invoke: pushing this pointer
+    Chuck_Instr_Reg_Push_Imm * instr_pushThis;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // VM debug macros | 1.5.0.5 (ge) added
 // these are governed by the presence of __CHUCK_DEBUG__ (e.g., from makefile)
 //-----------------------------------------------------------------------------

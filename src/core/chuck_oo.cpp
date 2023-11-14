@@ -290,11 +290,23 @@ Chuck_Object::~Chuck_Object()
         // SPENCER TODO: HACK! is there a better way to call the dtor?
         if( type->info && type->has_destructor ) // 1.5.0.0 (ge) added type->info check
         {
-            // verify: for now, can only be native func
-            assert( type->info->dtor && type->info->dtor->native_func );
-            // REFACTOR-2017: do we know which VM to pass in? (diff main/sub instance?)
-            // pass in type-associated vm and current shred | 1.5.1.8
-            ((f_dtor)(type->info->dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
+            // verify
+            assert( type->info->dtor );
+            // check origin of dtor
+            if( type->info->dtor->native_func ) // defined in c++
+            {
+                // REFACTOR-2017: do we know which VM to pass in? (diff main/sub instance?)
+                // pass in type-associated vm and current shred | 1.5.1.8
+                ((f_dtor)(type->info->dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
+            }
+            else // defined in chuck
+            {
+                // TODO: invoke dtor, if there is one
+                // should type already have dtorinvoker setup?
+                // pass in owner shred to invoke()? what about refs?
+                // what about UGen and GGen that shreds keep track of (and have refs to)?
+                // or should @destruct disallow accessing context-global variables?
+            }
         }
         // go up the inheritance
         type = type->parent;

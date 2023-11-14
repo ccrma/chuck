@@ -368,6 +368,8 @@ global                  { adjust(); return GLOBAL; }
 "@"                     { adjust(); return AT_SYM; }
 "@@"                    { adjust(); return ATAT_SYM; }
 "@operator"             { adjust(); return AT_OP; }
+"@construct"            { adjust(); return AT_CTOR; }
+"@destruct"             { adjust(); return AT_DTOR; }
 "->"                    { adjust(); return ARROW_RIGHT; }
 "<-"                    { adjust(); return ARROW_LEFT; }
 "-->"                   { adjust(); return GRUCK_RIGHT; }

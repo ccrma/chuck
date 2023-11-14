@@ -1407,6 +1407,38 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
+    // substitute for @construct
+    if( S_name(f->name) == string("@construct") )
+    {
+        // make sure we are in a class
+        if( !env->class_def )
+        {
+            EM_error2( f->where, "@construct() can only be used within class definitions..." );
+            return FALSE;
+        }
+
+        // substitute class name
+        f->name = insert_symbol( env->class_def->base_name.c_str() );
+    }
+    // verify @destruct
+    if( S_name(f->name) == string("@destruct") )
+    {
+        // make sure we are in a class
+        if( !env->class_def )
+        {
+            EM_error2( f->where, "@destruct() can only be used within class definitions..." );
+            return FALSE;
+        }
+        // make sure there are no arguments
+        if( f->arg_list != NULL )
+        {
+            EM_error2( f->where, "@destruct() does not accept arguments..." );
+            return FALSE;
+        }
+        // substitute ~[class name]
+        f->name = insert_symbol( string("~"+env->class_def->base_name).c_str() );
+    }
+    // check if constructor
     t_CKBOOL isInCtor = isctor(env,f);
 
     // check if reserved
