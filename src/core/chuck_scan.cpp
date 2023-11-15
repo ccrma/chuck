@@ -1407,6 +1407,8 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
+    t_CKBOOL is_static = (env->class_def != NULL) && (f->static_decl == ae_key_static);
+
     // substitute for @construct
     if( S_name(f->name) == string("@construct") )
     {
@@ -1466,17 +1468,28 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     // check if we are in a constructor
     if( isInCtor )
     {
+        // check static
+        if( is_static )
+        {
+            EM_error2( f->where, "constructor cannot be declared as 'static'..." );
+            goto error;
+        }
         // check return type (must be void)
         if( !isa(f->ret_type, env->ckt_void) )
         {
-            EM_error2( f->where, "constructor for class '%s' must return void...",
-                S_name(f->name) );
+            EM_error2( f->where, "constructor must return void..." );
             goto error;
         }
     }
 
     if( isInDtor )
     {
+        // check static
+        if( is_static )
+        {
+            EM_error2( f->where, "destructor cannot be declared as 'static'..." );
+            goto error;
+        }
         // check return type (must be void)
         if( !isa(f->ret_type, env->ckt_void) )
         {
