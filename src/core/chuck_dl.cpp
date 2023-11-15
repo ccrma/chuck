@@ -1515,7 +1515,7 @@ Chuck_Object * do_ck_create( Chuck_VM_Shred * shred, Chuck_VM * vm, Chuck_DL_Api
     {
         // 1.5.1.9 (nshaheed) added
         t_CKINT index = 0;
-        bool is_object = isa(type->array_type, vm->env()->ckt_object);
+        t_CKBOOL is_object = isa(type->array_type, vm->env()->ckt_object);
         // get array depth
         t_CKUINT depth = type->array_depth;
         // create capacity
