@@ -267,10 +267,10 @@ function_definition
             { $$ = new_func_def( $1, $2, $3, $4, $6, $8, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN code_segment
             { $$ = new_func_def( $1, $2, $3, $4, NULL, $7, TRUE, @1.first_line, @1.first_column ); }
-//        | function_decl AT_CTOR LPAREN arg_list RPAREN code_segment // 1.5.1.9 (ge) added for constructors
-//            { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", $4, $6, TRUE, @1.first_line, @1.first_column ); }
-//        | function_decl AT_CTOR LPAREN RPAREN code_segment // 1.5.1.9 (ge) added for constructors
-//            { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", NULL, $5, TRUE, @1.first_line, @1.first_column ); }
+        | function_decl AT_CTOR LPAREN arg_list RPAREN code_segment // 1.5.1.9 (ge) added for constructors
+            { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", $4, $6, TRUE, @1.first_line, @1.first_column ); }
+        | function_decl AT_CTOR LPAREN RPAREN code_segment // 1.5.1.9 (ge) added for constructors
+            { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", NULL, $5, TRUE, @1.first_line, @1.first_column ); }
         | function_decl AT_DTOR LPAREN RPAREN code_segment // 1.5.1.9 (ge) added for destructor
             { $$ = new_func_def( $1, ae_key_instance, NULL, "@destruct", NULL, $5, TRUE, @1.first_line, @1.first_column ); }
         | function_decl AT_DTOR LPAREN arg_list RPAREN code_segment // 1.5.1.9 (ge) added for constructors

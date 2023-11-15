@@ -3118,17 +3118,24 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                         }
                     }
 
-                    EM_error2( f->where, "cannot overload functions with identical arguments..." );
+                    EM_error2( f->where, "cannot overload %s with identical arguments...", isInCtor ? "constructor" : "function" );
                     if( env->class_def )
                     {
                         EM_error3( "    |- '%s %s.%s(%s)' already defined elsewhere",
                                    func->def()->ret_type->base_name.c_str(), env->class_def->c_name(),
                                    orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
+                        // if a constructor definition
+                        if( isInCtor )
+                        {
+                            EM_error3( "    |- (hint: possibly as '@construct(%s)' in class '%s')",
+                                       arglist2string(func->def()->arg_list).c_str(), env->class_def->c_name() );
+                        }
                     }
                     else
                     {
                         EM_error3( "    |- '%s %s(%s)' already defined elsewhere",
-                                   func->def()->ret_type->base_name.c_str(), orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
+                                   func->def()->ret_type->base_name.c_str(), orig_name.c_str(),
+                                   arglist2string(func->def()->arg_list).c_str() );
                     }
                     goto error;
                 }

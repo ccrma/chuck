@@ -13,13 +13,16 @@ class Foo
     1 => int num;
 
     // constructor "default"
-    fun void Foo() { 2 => num; }
+    fun @construct() { 2 => num; }
 
     // another constructor
-    fun void Foo( int x ) { x => num; }
+    fun @construct( int x ) { x => num; }
 
     // yet another constructor
-    fun void Foo( int x, int y ) { x*y => num; }
+    fun @construct( int x, int y ) { x*y => num; }
+
+    // alternate way of define a constructor
+    fun void Foo( int x, int y, int z ) { x*y*z => num; }
 
     // destructor
     fun @destruct() { <<< "bye:", this >>>; }
@@ -31,8 +34,10 @@ Foo f1();
 Foo f2(15);
 // yet another constructor
 new Foo(8,9) @=> Foo @ f3;
+// yet another constructor
+new Foo(10,11,12) @=> Foo @ f4;
 // print
-<<< f1.num, f2.num, f3.num >>>;
+<<< f1.num, f2.num, f3.num, f4.num >>>;
 ```
 - (added) examples/class/constructors.ck
 - (added) examples/class/destructor.ck
