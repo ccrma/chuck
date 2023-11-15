@@ -3337,7 +3337,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         v = type_engine_find_value( env, S_name(exp->var), TRUE, FALSE, exp->where );
 
                         // 1.5.0.8 (ge) added this check
-                        // public classes cannot access variables that are:
+                        // public classes cannot access values that are:
                         // file-context-global-scope (v->is_context_global)
                         // AND non-explictly-global !(v->is_global) variables
                         if( v && v->is_context_global && !v->is_global
@@ -3352,7 +3352,27 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             else
                             {
                                 EM_error2( exp->where,
-                                    "cannot use local variable '%s' from within a public class", S_name( exp->var ) );
+                                    "cannot access local variable '%s' from within a public class", S_name( exp->var ) );
+                            }
+                            return NULL;
+                        }
+
+                        // 1.5.1.9 (ge) added this check
+                        // @destruct() cannot access values that are:
+                        // file-context-global-scope (v->is_context_global)
+                        // AND non-explictly-global !(v->is_global) variables
+                        if( v && v->is_context_global && !v->is_global
+                              && env->class_def && env->func && isdtor(env, env->func->def()) )
+                        {
+                            if( v->func_ref )
+                            {
+                                EM_error2( exp->where,
+                                    "cannot call local function '%s' from within @destruct()", S_name( exp->var ) );
+                            }
+                            else
+                            {
+                                EM_error2( exp->where,
+                                    "cannot access local variable '%s' from within @destruct()", S_name( exp->var ) );
                             }
                             return NULL;
                         }
@@ -4970,7 +4990,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_func_def()
-// desc: ...
+// desc: type check function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
 {
@@ -5272,6 +5292,39 @@ error:
     // theFunc->release();
 
     return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Namespace()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Namespace::Chuck_Namespace()
+{
+    pre_ctor = NULL;
+    pre_dtor = NULL;
+    parent = NULL;
+    offset = 0;
+    class_data = NULL;
+    class_data_size = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Namespace()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Namespace::~Chuck_Namespace()
+{
+    // release references
+    CK_SAFE_RELEASE( pre_ctor );
+    CK_SAFE_RELEASE( pre_dtor );
+    // TODO: release ref
+    // CK_SAFE_RELEASE( this->parent );
 }
 
 
@@ -5932,6 +5985,8 @@ te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
 }
 t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
 { return (env->class_def && S_name(func_def->name)==env->class_def->name()); }
+t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+{ return (env->class_def && S_name(func_def->name)==(string("@destruct"))); }
 
 
 
@@ -6389,6 +6444,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->has_pre_ctor = TRUE;
         // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
+        // add ref | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( type->info->pre_ctor );
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;
         // mark type as ctor
@@ -6404,20 +6461,20 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // if destructor
     if( dtor != 0 )
     {
-        // flag it
-        type->has_destructor = TRUE;
         // allocate vm code for dtor
-        type->info->dtor = new Chuck_VM_Code;
+        type->info->pre_dtor = new Chuck_VM_Code;
+        // add ref | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( type->info->pre_dtor );
         // add dtor
-        type->info->dtor->native_func = (t_CKUINT)dtor;
+        type->info->pre_dtor->native_func = (t_CKUINT)dtor;
         // mark type as dtor
-        type->info->dtor->native_func_type = Chuck_VM_Code::NATIVE_DTOR;
+        type->info->pre_dtor->native_func_type = Chuck_VM_Code::NATIVE_DTOR;
         // specify that we need this
-        type->info->dtor->need_this = TRUE;
+        type->info->pre_dtor->need_this = TRUE;
         // no arguments to destructor other than self
-        type->info->dtor->stack_depth = sizeof(t_CKUINT);
+        type->info->pre_dtor->stack_depth = sizeof(t_CKUINT);
         // add name | 1.5.1.9 (ge) added
-        type->info->dtor->name = string("class ") + type->base_name + string(" (destructor)");
+        type->info->pre_dtor->name = string("class ") + type->base_name + string(" (destructor)");
     }
 
     // clear the object size
@@ -8638,7 +8695,7 @@ t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
 string arglist2string( a_Arg_List list )
 {
     // return value
-    string s = "";
+    string s = list ? " " : "";
 
     // go down the list
     while( list )
@@ -8646,7 +8703,9 @@ string arglist2string( a_Arg_List list )
         // concatenate
         s += list->type->base_name;
         // check
-        if( list->next ) s += ", ";
+        if( list->next ) s += ",";
+        // space
+        s += " ";
         // advance
         list = list->next;
     }
@@ -9188,7 +9247,8 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     has_pre_ctor = FALSE;
     ctors = NULL;
     ctor_default = NULL;
-    has_destructor = FALSE;
+    dtor = NULL;
+    dtor_invoker = NULL;
     allocator = NULL;
 
     // default
@@ -9226,7 +9286,6 @@ void Chuck_Type::reset()
     xid = te_void;
     size = array_depth = obj_size = 0;
     is_copy = FALSE;
-    has_destructor = FALSE;
 
     // free only if not locked: to prevent garbage collection after exit
     if( !this->m_locked )
@@ -9236,6 +9295,7 @@ void Chuck_Type::reset()
         CK_SAFE_RELEASE( owner );
         CK_SAFE_RELEASE( ctors ); // 1.5.1.9 (ge) added
         CK_SAFE_RELEASE( ctor_default ); // 1.5.1.9 (ge) added
+        CK_SAFE_RELEASE( dtor ); // 1.5.1.9 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs

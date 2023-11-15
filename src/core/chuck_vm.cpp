@@ -3613,7 +3613,7 @@ Chuck_VM_DtorInvoker::~Chuck_VM_DtorInvoker()
 // name: setup()
 // desc: setup the invoker for use
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM_DtorInvoker::setup( Chuck_Func * dtor, Chuck_VM * vm, Chuck_VM_Shred * caller )
+t_CKBOOL Chuck_VM_DtorInvoker::setup( Chuck_Func * dtor, Chuck_VM * vm )
 {
     // clean up first
     if( invoker_shred ) cleanup();
@@ -3683,13 +3683,13 @@ void Chuck_VM_DtorInvoker::invoke( Chuck_Object * obj, Chuck_VM_Shred * parent_s
     invoker_shred->next_pc = 1;
     // set parent
     invoker_shred->parent = parent_shred;
-    // commented out: parent if any should have been set in setup()
-    // invoker_shred->parent = obj->originShred();
 
     // set parent base_ref; in case mfun is part of a non-public class
     // that can access file-global variables outside the class definition
-    if( invoker_shred->parent ) invoker_shred->base_ref = invoker_shred->parent->base_ref;
-    else invoker_shred->base_ref = invoker_shred->mem;
+    if( invoker_shred->parent )
+    { invoker_shred->base_ref = invoker_shred->parent->base_ref; }
+    else
+    { invoker_shred->base_ref = invoker_shred->mem; }
 
     // shred in dump (all done)
     invoker_shred->is_dumped = FALSE;

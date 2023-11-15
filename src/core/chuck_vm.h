@@ -826,7 +826,7 @@ struct Chuck_Msg
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_MFunInvoker | 1.5.1.5 (ge)
-// desc: construct for calling chuck-defined member functions from c++,
+// desc: aparatus for calling chuck-defined member functions from c++,
 //       either from VM execution or outside the VM execution context
 //-----------------------------------------------------------------------------
 struct Chuck_VM_MFunInvoker
@@ -864,7 +864,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_DtorInvoker | 1.5.1.9 (ge)
-// desc: construct for calling chuck-defined @destruct from c++,
+// desc: aparatus for calling chuck-defined @destruct from c++,
 //       typically called for Object cleanup
 //-----------------------------------------------------------------------------
 struct Chuck_VM_DtorInvoker
@@ -877,9 +877,9 @@ public:
 
 public:
     // set up the invoker; needed before invoke()
-    t_CKBOOL setup( Chuck_Func * func, Chuck_VM * vm, Chuck_VM_Shred * caller );
+    t_CKBOOL setup( Chuck_Func * func, Chuck_VM * vm );
     // invoke the member function
-    void invoke( Chuck_Object * obj, Chuck_VM_Shred * parent_shred );
+    void invoke( Chuck_Object * obj, Chuck_VM_Shred * parent_shred = NULL );
     // clean up
     void cleanup();
 

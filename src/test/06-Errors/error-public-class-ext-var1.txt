@@ -1,4 +1,4 @@
-error-public-class-ext-var1.ck:21:13: error: cannot use local variable 'foo' from within a public class
+error-public-class-ext-var1.ck:21:13: error: cannot access local variable 'foo' from within a public class
 [21]         <<< foo + 5 >>>;
                  ^
 error-public-class-ext-var1.ck: ...in function 'void X.go()'

@@ -288,26 +288,39 @@ Chuck_Object::~Chuck_Object()
     while( type != NULL )
     {
         // SPENCER TODO: HACK! is there a better way to call the dtor?
-        if( type->info && type->has_destructor ) // 1.5.0.0 (ge) added type->info check
+        if( type->info && type->info->pre_dtor ) // 1.5.0.0 (ge) added type->info check
         {
-            // verify
-            assert( type->info->dtor );
             // check origin of dtor
-            if( type->info->dtor->native_func ) // defined in c++
+            if( type->info->pre_dtor->native_func ) // c++-defined deconstructor
             {
                 // REFACTOR-2017: do we know which VM to pass in? (diff main/sub instance?)
                 // pass in type-associated vm and current shred | 1.5.1.8
-                ((f_dtor)(type->info->dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
+                ((f_dtor)(type->info->pre_dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
             }
-            else // defined in chuck
+            else // chuck-defined deconstructor
             {
-                // TODO: invoke dtor, if there is one
-                // should type already have dtorinvoker setup?
-                // pass in owner shred to invoke()? what about refs?
-                // what about UGen and GGen that shreds keep track of (and have refs to)?
-                // or should @destruct disallow accessing context-global variables?
+                // this shouldn't be possible
+                EM_error3( "(internal error) native_func dtor not found in class '%s'...", type->c_name() );
+                // keep going for now...
             }
         }
+
+        // chuck-defined destructor | 1.5.1.9 (ge) added
+        if( type->dtor )
+        {
+            // verify
+            if( !type->dtor_invoker )
+            {
+                EM_error3( "(internal error) dtor invoker not found in class '%s'...", type->c_name() );
+            }
+            else
+            {
+                // invoke the dtor
+                // NOTE @destruct disallows accessing context-global variables/functions
+                type->dtor_invoker->invoke( this, this->originShred() );
+            }
+        }
+
         // go up the inheritance
         type = type->parent;
     }
