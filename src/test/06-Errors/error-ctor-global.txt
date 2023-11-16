@@ -1,0 +1,3 @@
+error-ctor-global.ck:2:12: error: 'global' variables cannot invoke non-default constructors...
+[2] global Foo foo(6);
+               ^

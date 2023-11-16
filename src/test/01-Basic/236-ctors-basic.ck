@@ -31,6 +31,8 @@ class Foo
 }
 
 // declare a Foo, invoke constructor 1
+Foo f0;
+// declare a Foo, invoke constructor 1
 Foo f1();
 // declare a Foo, invoke constructor 2
 Foo f2(15);
@@ -38,4 +40,4 @@ Foo f2(15);
 new Foo(8,9) @=> Foo @ f3;
 
 // print
-<<< f1.num, f2.num, f3.num >>>;
+<<< f0.num, f1.num, f2.num, f3.num >>>;

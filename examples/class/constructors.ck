@@ -31,16 +31,16 @@ class Foo
 }
 
 // declare a Foo, invoke constructor 1
-Foo f1;
+Foo f0;
 // declare a Foo, invoke constructor 1
-Foo f1a();
+Foo f1();
 // declare a Foo, invoke constructor 2
 Foo f2(15);
 // instantiate a Foo, invoke constructor 3
 new Foo(8,9) @=> Foo @ f3;
 
 // print
-<<< f1.num, f1a.num, f2.num, f3.num >>>;
+<<< f0.num, f1.num, f2.num, f3.num >>>;
 
 // can also invoke constructor for each element in array
 Foo array1(2)[3];
