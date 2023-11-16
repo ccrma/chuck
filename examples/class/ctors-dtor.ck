@@ -1,4 +1,4 @@
-// basic constructors + destructor definition
+// example: defining basic class constructors + destructor
 
 // a class
 class Foo

@@ -1347,10 +1347,6 @@ Chuck_Func * type_engine_lookup_ctor( Chuck_Env * env, Chuck_Type * type, a_Exp 
 Chuck_Func * type_engine_lookup_dtor( Chuck_Env * env, Chuck_Type * type );
 
 
-
-
-
-
 //-----------------------------------------------------------------------------
 // spencer: added this into function to provide the same logic path
 // for type_engine_check_exp_decl() and ck_add_mvar() when they determine
@@ -1386,6 +1382,14 @@ t_CKINT str2char( const char * char_lit, int linepos );
 t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs );
 // generate a string from an argument list (types only)
 std::string arglist2string( a_Arg_List list );
+
+
+//-----------------------------------------------------------------------------
+// compare functions | 1.5.1.9 (ge) added
+//-----------------------------------------------------------------------------
+bool ck_comp_func( Chuck_Func * a, Chuck_Func * b );
+bool ck_comp_func_args( Chuck_Func * a, Chuck_Func * b );
+bool ck_comp_value( Chuck_Value * a, Chuck_Value * b );
 
 
 

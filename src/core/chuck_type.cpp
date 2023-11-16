@@ -9517,22 +9517,28 @@ void Chuck_Type::apropos()
 
 
 //-----------------------------------------------------------------------------
-// comparer
+// comparers
 //-----------------------------------------------------------------------------
-static bool comp_func( Chuck_Func * a, Chuck_Func * b )
+bool ck_comp_func( Chuck_Func * a, Chuck_Func * b )
 { return a->name < b->name; }
-
-//-----------------------------------------------------------------------------
-// comparer
-//-----------------------------------------------------------------------------
-static bool comp_value( Chuck_Value * a, Chuck_Value * b )
+bool ck_comp_func_args( Chuck_Func * a, Chuck_Func * b )
 {
-    string lowerA = a->name;;
-    for( std::string::size_type i = 0; i < lowerA.length(); i++)
-        lowerA[i] = tolower(a->name[i]);
-    string lowerB = b->name;;
-    for( std::string::size_type i = 0; i < lowerB.length(); i++)
-        lowerB[i] = tolower(b->name[i]);
+    // if names not same
+    if( a->name != b->name ) return a->name < b->name;
+    // num args
+    t_CKUINT numA = 0, numB = 0;
+    // arguments
+    a_Arg_List argsA = a->def()->arg_list, argsB = b->def()->arg_list;
+    // count
+    while( argsA ) { numA++; argsA = argsA->next; }
+    while( argsB ) { numB++; argsB = argsB->next; }
+    // compare num args
+    return numA < numB;
+}
+bool ck_comp_value( Chuck_Value * a, Chuck_Value * b )
+{
+    string lowerA = tolower( a->name );
+    string lowerB = tolower( b->name );
     // if not the same
     if( lowerA != lowerB ) return lowerA < lowerB;
     // if same, favor lower-case
@@ -9705,10 +9711,14 @@ void Chuck_Type::apropos_funcs( std::string & output,
         // retrieve functions in this type
         this->info->get_funcs(funcs);
 
+        // constructors
+        vector<Chuck_Func *> ctors;
         // member functions
         vector<Chuck_Func *> mfuncs;
         // static functions
         vector<Chuck_Func *> sfuncs;
+        // destructor
+        Chuck_Func * dtor = NULL;
         // counter by name
         map<string, int> func_names;
 
@@ -9736,8 +9746,40 @@ void Chuck_Type::apropos_funcs( std::string & output,
                 // append to static funcs list
                 sfuncs.push_back( theFunc );
             } else {
+                // append to constructors | 1.5.1.9
+                if( theFunc->is_ctor ) ctors.push_back( theFunc );
+                // set as destructor | 1.5.1.9
+                else if( theFunc->is_dtor ) dtor = theFunc;
                 // append to static funcs list
-                mfuncs.push_back( theFunc );
+                else mfuncs.push_back( theFunc );
+            }
+        }
+
+        // have constructors?
+        if( ctors.size() > 0 )
+        {
+            // type name
+            string theName = this->name() + " " + "constructors";
+            // number of '-'
+            t_CKUINT n = theName.length(); t_CKUINT i;
+            // output
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl << theName << endl;
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl;
+        }
+        // sort
+        sort( ctors.begin(), ctors.end(), ck_comp_func_args );
+        // output constructors | 1.5.1.9
+        if( ctors.size() )
+        {
+            // iterate over member functions
+            for( vector<Chuck_Func *>::iterator f = ctors.begin(); f != ctors.end(); f++ )
+            {
+                // pointer to chuck func
+                Chuck_Func * theFunc = *f;
+                // output function content
+                apropos_func( sout, theFunc, PREFIX );
             }
         }
 
@@ -9756,8 +9798,8 @@ void Chuck_Type::apropos_funcs( std::string & output,
         }
 
         // sort
-        sort( mfuncs.begin(), mfuncs.end(), comp_func );
-        sort( sfuncs.begin(), sfuncs.end(), comp_func );
+        sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
+        sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
 
         // one or more member functions?
         if( mfuncs.size() )
@@ -9783,6 +9825,13 @@ void Chuck_Type::apropos_funcs( std::string & output,
                 // output function content
                 apropos_func( sout, theFunc, PREFIX );
             }
+        }
+
+        // has destructor? | 1.5.1.9
+        if( dtor )
+        {
+            // output function content
+            // apropos_func( sout, dtor, PREFIX );
         }
     }
 
@@ -9883,8 +9932,8 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
         }
 
         // sort
-        sort( mvars.begin(), mvars.end(), comp_value );
-        sort( svars.begin(), svars.end(), comp_value );
+        sort( mvars.begin(), mvars.end(), ck_comp_value );
+        sort( svars.begin(), svars.end(), ck_comp_value );
 
         // one or more static vars?
         if( mvars.size() )
