@@ -6461,6 +6461,8 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // if destructor
     if( dtor != 0 )
     {
+        // flag it (needed since info could be shared with array types of this type, but this flag is only this type)
+        type->has_pre_dtor = TRUE;
         // allocate vm code for dtor
         type->info->pre_dtor = new Chuck_VM_Code;
         // add ref | 1.5.1.9 (ge) added
@@ -9245,6 +9247,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     ugen_info = NULL;
     is_complete = TRUE;
     has_pre_ctor = FALSE;
+    has_pre_dtor = FALSE;
     ctors = NULL;
     ctor_default = NULL;
     dtor = NULL;

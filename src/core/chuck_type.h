@@ -945,6 +945,9 @@ struct Chuck_Type : public Chuck_Object
     t_CKBOOL is_complete;
     // has pre-constructor
     t_CKBOOL has_pre_ctor;
+    // has pre-destructor; related to info->pre_dtor, but different since info is shared with arrays
+    // of this type (via new_array_type()), but this flag is this specific type only
+    t_CKBOOL has_pre_dtor;
     // constructor(s), potentially overloaded | 1.5.1.9 (ge) added
     Chuck_Func * ctors;
     // default constructor (no arguments) | 1.5.1.9 (ge) added

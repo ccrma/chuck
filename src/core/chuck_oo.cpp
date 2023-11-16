@@ -288,8 +288,12 @@ Chuck_Object::~Chuck_Object()
     while( type != NULL )
     {
         // SPENCER TODO: HACK! is there a better way to call the dtor?
-        if( type->info && type->info->pre_dtor ) // 1.5.0.0 (ge) added type->info check
+        // has_pre-dtor: related to info->pre_dtor, but different since info is shared with arrays
+        // of this type (via new_array_type()), but this flag pertains to this type only
+        if( type->info && type->has_pre_dtor ) // 1.5.0.0 (ge) added type->info check
         {
+            // make sure
+            assert( type->info->pre_dtor );
             // check origin of dtor
             if( type->info->pre_dtor->native_func ) // c++-defined deconstructor
             {
