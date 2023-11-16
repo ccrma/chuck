@@ -152,7 +152,9 @@
      GRUCK_LEFT = 368,
      UNGRUCK_RIGHT = 369,
      UNGRUCK_LEFT = 370,
-     AT_OP = 371
+     AT_OP = 371,
+     AT_CTOR = 372,
+     AT_DTOR = 373
    };
 #endif
 /* Tokens.  */
@@ -270,6 +272,8 @@
 #define UNGRUCK_RIGHT 369
 #define UNGRUCK_LEFT 370
 #define AT_OP 371
+#define AT_CTOR 372
+#define AT_DTOR 373
 
 
 
@@ -303,7 +307,7 @@ typedef union YYSTYPE
     a_Vec vec_exp; // ge: added 1.3.5.3
 }
 /* Line 1529 of yacc.c.  */
-#line 307 "chuck.tab.h"
+#line 311 "chuck.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
