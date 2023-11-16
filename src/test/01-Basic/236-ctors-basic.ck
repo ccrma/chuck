@@ -9,14 +9,14 @@ class Foo
     1 => int num;
 
     // constructor 1 "default"
-    fun void Foo()
+    fun @construct()
     {
         2 => num;
         <<< "constructor 1:", num >>>;
     }
 
     // constructor 2
-    fun void Foo( int x )
+    fun @construct( int x )
     {
         x => num;
         <<< "constructor 2:", x >>>;
@@ -28,6 +28,13 @@ class Foo
         x*y => num;
         <<< "constructor 3:", x, y >>>;
     }
+
+    // constructor 4 (okay to omit void return type)
+    fun Foo( int x, int y, int z )
+    {
+        x*y*z => num;
+        <<< "constructor 4:", x, y, z >>>;
+    }
 }
 
 // declare a Foo, invoke constructor 1
@@ -38,6 +45,8 @@ Foo f1();
 Foo f2(15);
 // instantiate a Foo, invoke constructor 3
 new Foo(8,9) @=> Foo @ f3;
+// instantiate a Foo, invoke constructor 4
+new Foo(10,11,12) @=> Foo @ f4;
 
 // print
-<<< f0.num, f1.num, f2.num, f3.num >>>;
+<<< f0.num, f1.num, f2.num, f3.num, f4.num >>>;
