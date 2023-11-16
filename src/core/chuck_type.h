@@ -1344,10 +1344,6 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 // type-check an operator overload func def | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
-// constructors | 1.5.1.9 (ge) added
-Chuck_Func * type_engine_lookup_ctor( Chuck_Env * env, Chuck_Type * type, a_Exp args );
-// destructor | 1.5.1.9 (ge) added
-Chuck_Func * type_engine_lookup_dtor( Chuck_Env * env, Chuck_Type * type );
 
 
 //-----------------------------------------------------------------------------

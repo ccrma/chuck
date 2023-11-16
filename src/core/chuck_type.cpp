@@ -5812,29 +5812,6 @@ Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_lookup_ctor() | 1.5.1.9 (ge) added
-// desc: look up constructor by type and argument list
-//-----------------------------------------------------------------------------
-Chuck_Func * type_engine_lookup_ctor( Chuck_Env * env, Chuck_Type * type, a_Exp args )
-{
-    return NULL;
-}
-
-
-
-//-----------------------------------------------------------------------------
-// name: type_engine_lookup_dtor() | 1.5.1.9 (ge) added
-// desc: look up destructor by type
-//-----------------------------------------------------------------------------
-Chuck_Func * type_engine_lookup_dtor( Chuck_Env * env, Chuck_Type * type )
-{
-    return NULL;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: type_engine_check_ctor_call() | 1.5.1.9 (ge) added
 // desc: type check constructor invocation; also see func_call()
 //       (RELATED: type_engine_check_func_call())
