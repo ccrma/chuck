@@ -99,9 +99,12 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helpers
 Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
+// convert dot member expression to string for printing
 string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member );
-a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static,
-                            t_CKBOOL is_base_primtive );
+// type check constructor invocation | 1.5.1.9 (ge) added
+Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_Ctor_Call ctor, a_Array_Sub array, uint32_t where );
+// make an chuck dll function into absyn function
+a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static, t_CKBOOL is_base_primtive );
 // make a partial deep copy, to separate type systems from AST
 a_Func_Def partial_deep_copy_fn( a_Func_Def f );
 a_Arg_List partial_deep_copy_args( a_Arg_List args );
@@ -3115,6 +3118,24 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 env->class_def->depends.add( &t->depends );
             }
 
+            // constructors | 1.5.1.9 (ge) added
+            if( unary->ctor.invoked )
+            {
+                // type check any constructor args
+                if( unary->ctor.args )
+                {
+                    // check the argument list
+                    if( !type_engine_check_exp( env, unary->ctor.args ) )
+                        return NULL;
+
+                    // type check and get constructor function
+                    unary->ctor.func = type_engine_check_ctor_call( env, t, &unary->ctor, unary->array, unary->where );
+                    // check for error
+                    if( !unary->ctor.func )
+                        return NULL;
+                }
+            }
+
             // []
             if( unary->array )
             {
@@ -3316,7 +3337,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         v = type_engine_find_value( env, S_name(exp->var), TRUE, FALSE, exp->where );
 
                         // 1.5.0.8 (ge) added this check
-                        // public classes cannot access variables that are:
+                        // public classes cannot access values that are:
                         // file-context-global-scope (v->is_context_global)
                         // AND non-explictly-global !(v->is_global) variables
                         if( v && v->is_context_global && !v->is_global
@@ -3331,7 +3352,27 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             else
                             {
                                 EM_error2( exp->where,
-                                    "cannot use local variable '%s' from within a public class", S_name( exp->var ) );
+                                    "cannot access local variable '%s' from within a public class", S_name( exp->var ) );
+                            }
+                            return NULL;
+                        }
+
+                        // 1.5.1.9 (ge) added this check
+                        // @destruct() cannot access values that are:
+                        // file-context-global-scope (v->is_context_global)
+                        // AND non-explictly-global !(v->is_global) variables
+                        if( v && v->is_context_global && !v->is_global
+                              && env->class_def && env->func && isdtor(env, env->func->def()) )
+                        {
+                            if( v->func_ref )
+                            {
+                                EM_error2( exp->where,
+                                    "cannot call local function '%s' from within @destruct()", S_name( exp->var ) );
+                            }
+                            else
+                            {
+                                EM_error2( exp->where,
+                                    "cannot access local variable '%s' from within @destruct()", S_name( exp->var ) );
                             }
                             return NULL;
                         }
@@ -4102,6 +4143,17 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             }
         }
 
+        // check for constructor args | 1.5.1.9 (ge) added
+        // NOTE empty () is handled elsewhere as default constructor
+        if( var_decl->ctor.args != NULL )
+        {
+            // type check and get constructor function
+            var_decl->ctor.func = type_engine_check_ctor_call( env, type, &var_decl->ctor, var_decl->array, var_decl->where );
+            // check for error
+            if( !var_decl->ctor.func )
+                return NULL;
+        }
+
         // if array, then check to see if empty []
         if( var_decl->array && var_decl->array->exp_list != NULL )
         {
@@ -4311,7 +4363,7 @@ moveon:
 
 //-----------------------------------------------------------------------------
 // name: find_func_match()
-// desc: ...
+// desc: match a function by arguments
 //-----------------------------------------------------------------------------
 Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 {
@@ -4341,7 +4393,8 @@ Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_exp_func_call()
-// desc: ...
+// desc: type check function call
+//       (RELATED: type_engine_check_ctor_call())
 //-----------------------------------------------------------------------------
 t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp args,
                                           t_CKFUNC & ck_func, int linepos )
@@ -4884,7 +4937,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
         {
         case ae_section_stmt:
             // flag as having a constructor
-            env->class_def->has_constructor |= (body->section->stmt_list->stmt != NULL);
+            env->class_def->has_pre_ctor |= (body->section->stmt_list->stmt != NULL);
             ret = type_engine_check_stmt_list( env, body->section->stmt_list );
             break;
 
@@ -4937,7 +4990,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_func_def()
-// desc: ...
+// desc: type check function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
 {
@@ -4995,8 +5048,9 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( theOverride )
     {
         // make reference to parent
-        // TODO: ref count
         theFunc->up = theOverride;
+        // ref count | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( theFunc->up );
     }
 
     // make sure return type is not NULL
@@ -5238,6 +5292,39 @@ error:
     // theFunc->release();
 
     return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_Namespace()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_Namespace::Chuck_Namespace()
+{
+    pre_ctor = NULL;
+    pre_dtor = NULL;
+    parent = NULL;
+    offset = 0;
+    class_data = NULL;
+    class_data_size = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_Namespace()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_Namespace::~Chuck_Namespace()
+{
+    // release references
+    CK_SAFE_RELEASE( pre_ctor );
+    CK_SAFE_RELEASE( pre_dtor );
+    // TODO: release ref
+    // CK_SAFE_RELEASE( this->parent );
 }
 
 
@@ -5725,6 +5812,112 @@ Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_check_ctor_call() | 1.5.1.9 (ge) added
+// desc: type check constructor invocation; also see func_call()
+//       (RELATED: type_engine_check_func_call())
+//
+// -- must be an Object (with caveats for primitive types, later), but not an array
+// -- empty () is okay (will invoke default ctor if there is one)
+// -- ctors are always incompatible with empty []
+// -- must be able to find a constructor with matching args
+//-----------------------------------------------------------------------------
+Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_Ctor_Call ctorInfo,
+                                          a_Array_Sub array, uint32_t where )
+{
+    // is an Object?
+    t_CKBOOL is_obj = isobj( env, type );
+    // is an array
+    t_CKBOOL is_array = isa( type, env->ckt_array );
+    // the array type
+    Chuck_Type * actualType = is_array ? type->array_type : type;
+
+    // constructors can only be called on Objects
+    // TODO: handle primitive constructors
+    if( !is_obj )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on non-Object type '%s'...", actualType->c_name() );
+        return NULL;
+    }
+
+    // constructors currently not allowed on array types
+    // (NOTE but array creation with constructors is possible)
+    if( isa(actualType, env->ckt_array) )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on array types '%s'..." , actualType->c_name() );
+        return NULL;
+    }
+
+    // check for empty array []
+    if( array && !array->exp_list )
+    {
+        // error message
+        EM_error2( where, "cannot invoke constructor on empty array [] declarations...", actualType->c_name() );
+        return NULL;
+    }
+
+    // check the arguments
+    if( ctorInfo->args )
+    {
+        if( !type_engine_check_exp( env, ctorInfo->args ) )
+            return NULL;
+    }
+
+    // convert arg list expression to string
+    string args2str = "";
+    // for iterating through args
+    a_Exp a = ctorInfo->args;
+    // construct args type string
+    while( a )
+    {
+        // append
+        args2str += a->type->name();
+        // next
+        a = a->next;
+        // check
+        if( a ) args2str += ",";
+    }
+
+    // locate the constructor by type name
+    Chuck_Func * funcGroup = actualType->ctors;
+    // verify
+    if( !funcGroup )
+    {
+        // internal error!
+        EM_error2( where, "no constructors defined for '%s'...", actualType->c_name() );
+        // bail out
+        return NULL;
+    }
+
+    // look for a match
+    Chuck_Func * theCtor = find_func_match( env, funcGroup, ctorInfo->args );
+    // no func
+    if( !theCtor )
+    {
+        // print error
+        EM_error2( where, "no matching constructor found for %s(%s)...", actualType->c_name(), args2str.c_str() );
+        // bail out
+        return NULL;
+    }
+
+    // verify
+    if( !isa( theCtor->type(), env->ckt_void ) )
+    {
+        // internal error!
+        EM_error2( where, "(internal error) non-void return value for constructor %s(%s)", actualType->c_name(), args2str.c_str() );
+        // bail out
+        return NULL;
+    }
+
+    // return the function
+    return theCtor;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_check_primitive()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -5767,6 +5960,10 @@ te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
     // done
     return kind;
 }
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+{ return (env->class_def && S_name(func_def->name)==env->class_def->name()); }
+t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+{ return (env->class_def && S_name(func_def->name)==(string("@destruct"))); }
 
 
 
@@ -6221,9 +6418,11 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     if( pre_ctor != 0 )
     {
         // flag it
-        type->has_constructor = TRUE;
+        type->has_pre_ctor = TRUE;
         // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
+        // add ref | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( type->info->pre_ctor );
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;
         // mark type as ctor
@@ -6232,23 +6431,29 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->info->pre_ctor->need_this = TRUE;
         // no arguments to preconstructor other than self
         type->info->pre_ctor->stack_depth = sizeof(t_CKUINT);
+        // add name | 1.5.1.9 (ge) added
+        type->info->pre_ctor->name = string("class ") + type->base_name;
     }
 
     // if destructor
     if( dtor != 0 )
     {
-        // flag it
-        type->has_destructor = TRUE;
+        // flag it (needed since info could be shared with array types of this type, but this flag is only this type)
+        type->has_pre_dtor = TRUE;
         // allocate vm code for dtor
-        type->info->dtor = new Chuck_VM_Code;
+        type->info->pre_dtor = new Chuck_VM_Code;
+        // add ref | 1.5.1.9 (ge) added
+        CK_SAFE_ADD_REF( type->info->pre_dtor );
         // add dtor
-        type->info->dtor->native_func = (t_CKUINT)dtor;
+        type->info->pre_dtor->native_func = (t_CKUINT)dtor;
         // mark type as dtor
-        type->info->dtor->native_func_type = Chuck_VM_Code::NATIVE_DTOR;
+        type->info->pre_dtor->native_func_type = Chuck_VM_Code::NATIVE_DTOR;
         // specify that we need this
-        type->info->dtor->need_this = TRUE;
+        type->info->pre_dtor->need_this = TRUE;
         // no arguments to destructor other than self
-        type->info->dtor->stack_depth = sizeof(t_CKUINT);
+        type->info->pre_dtor->stack_depth = sizeof(t_CKUINT);
+        // add name | 1.5.1.9 (ge) added
+        type->info->pre_dtor->name = string("class ") + type->base_name + string(" (destructor)");
     }
 
     // clear the object size
@@ -6654,7 +6859,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         type_decl->array->depth = array_depth;
     }
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0, 0 );
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 ); // 1.5.1.9 (ge) add ctor arglist
 
     // added 2013-10-22 - spencer
     // allow array-type mvars
@@ -6727,7 +6932,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // make type decl
     a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0, 0 );
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, NULL, 0, 0 );
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 );  // 1.5.1.9 (ge) add ctor arglist
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
@@ -7677,7 +7882,8 @@ a_Arg_List partial_deep_copy_args( a_Arg_List list )
     a_Var_Decl var_decl = NULL;
 
     // need name but not 'array' on var_decl
-    var_decl = new_var_decl( S_name(list->var_decl->xid), NULL, list->var_decl->line, list->var_decl->where );
+    // 1.5.1.9 (ge) added ctor_args=NULL, also not needed from the callee's perspective
+    var_decl = new_var_decl( S_name(list->var_decl->xid), FALSE, NULL, NULL, list->var_decl->line, list->var_decl->where );
     // need var_decl by not type_decl
     copy = new_arg_list( NULL, var_decl, list->line, list->where );
     // set type and add reference
@@ -7793,7 +7999,9 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
                 array_sub = prepend_array_sub( array_sub, NULL, 0, 0 );
         }
 
-        var_decl = new_var_decl( (char *)arg->name.c_str(), array_sub, 0, 0 );
+        // make var decl
+        // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+        var_decl = new_var_decl( (char *)arg->name.c_str(), FALSE, NULL, array_sub, 0, 0 );
 
         // make new arg
         arg_list = prepend_arg_list( type_decl, var_decl, arg_list, 0, 0 );
@@ -8007,7 +8215,8 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             // make type decl
             a_Type_Decl type_decl = new_type_decl( thePath2, FALSE, 0, 0 );
             // make var decl
-            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), NULL, 0, 0 );
+            // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+            a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), FALSE, NULL, NULL, 0, 0 );
             // make var decl list
             a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
             // make exp decl
@@ -8465,7 +8674,7 @@ t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs )
 string arglist2string( a_Arg_List list )
 {
     // return value
-    string s = "";
+    string s = list ? " " : "";
 
     // go down the list
     while( list )
@@ -8473,7 +8682,9 @@ string arglist2string( a_Arg_List list )
         // concatenate
         s += list->type->base_name;
         // check
-        if( list->next ) s += ", ";
+        if( list->next ) s += ",";
+        // space
+        s += " ";
         // advance
         list = list->next;
     }
@@ -8532,18 +8743,23 @@ Chuck_Func::~Chuck_Func()
     // delete our partial deep copy
     funcdef_cleanup();
 
-    // release reference | 1.5.1.0 (ge) added
+    // release code | 1.5.1.0 (ge) added
     CK_SAFE_RELEASE( this->code );
+    // release value ref
     CK_SAFE_RELEASE( this->value_ref );
 
-    // release args cache | 1.5.1.5
+    // delete args cache | 1.5.1.5
     CK_SAFE_DELETE_ARRAY( this->args_cache );
     this->args_cache_size = 0;
 
     // release invoker(s) | 1.5.1.5
     CK_SAFE_DELETE( this->invoker_mfun );
+    // release next | 1.5.1.9
+    CK_SAFE_RELEASE( this->next );
+    // release up | 1.5.1.9
+    CK_SAFE_RELEASE( this->up );
 
-    // TODO: check if more references to release, e.g., up and next?
+    // TODO: check if more references to release?
 }
 
 
@@ -9007,8 +9223,12 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     is_copy = FALSE;
     ugen_info = NULL;
     is_complete = TRUE;
-    has_constructor = FALSE;
-    has_destructor = FALSE;
+    has_pre_ctor = FALSE;
+    has_pre_dtor = FALSE;
+    ctors = NULL;
+    ctor_default = NULL;
+    dtor = NULL;
+    dtor_invoker = NULL;
     allocator = NULL;
 
     // default
@@ -9046,7 +9266,6 @@ void Chuck_Type::reset()
     xid = te_void;
     size = array_depth = obj_size = 0;
     is_copy = FALSE;
-    has_destructor = FALSE;
 
     // free only if not locked: to prevent garbage collection after exit
     if( !this->m_locked )
@@ -9054,6 +9273,9 @@ void Chuck_Type::reset()
         // release references
         CK_SAFE_RELEASE( info );
         CK_SAFE_RELEASE( owner );
+        CK_SAFE_RELEASE( ctors ); // 1.5.1.9 (ge) added
+        CK_SAFE_RELEASE( ctor_default ); // 1.5.1.9 (ge) added
+        CK_SAFE_RELEASE( dtor ); // 1.5.1.9 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
@@ -9275,22 +9497,28 @@ void Chuck_Type::apropos()
 
 
 //-----------------------------------------------------------------------------
-// comparer
+// comparers
 //-----------------------------------------------------------------------------
-static bool comp_func( Chuck_Func * a, Chuck_Func * b )
+bool ck_comp_func( Chuck_Func * a, Chuck_Func * b )
 { return a->name < b->name; }
-
-//-----------------------------------------------------------------------------
-// comparer
-//-----------------------------------------------------------------------------
-static bool comp_value( Chuck_Value * a, Chuck_Value * b )
+bool ck_comp_func_args( Chuck_Func * a, Chuck_Func * b )
 {
-    string lowerA = a->name;;
-    for( std::string::size_type i = 0; i < lowerA.length(); i++)
-        lowerA[i] = tolower(a->name[i]);
-    string lowerB = b->name;;
-    for( std::string::size_type i = 0; i < lowerB.length(); i++)
-        lowerB[i] = tolower(b->name[i]);
+    // if names not same
+    if( a->name != b->name ) return a->name < b->name;
+    // num args
+    t_CKUINT numA = 0, numB = 0;
+    // arguments
+    a_Arg_List argsA = a->def()->arg_list, argsB = b->def()->arg_list;
+    // count
+    while( argsA ) { numA++; argsA = argsA->next; }
+    while( argsB ) { numB++; argsB = argsB->next; }
+    // compare num args
+    return numA < numB;
+}
+bool ck_comp_value( Chuck_Value * a, Chuck_Value * b )
+{
+    string lowerA = tolower( a->name );
+    string lowerB = tolower( b->name );
     // if not the same
     if( lowerA != lowerB ) return lowerA < lowerB;
     // if same, favor lower-case
@@ -9463,10 +9691,14 @@ void Chuck_Type::apropos_funcs( std::string & output,
         // retrieve functions in this type
         this->info->get_funcs(funcs);
 
+        // constructors
+        vector<Chuck_Func *> ctors;
         // member functions
         vector<Chuck_Func *> mfuncs;
         // static functions
         vector<Chuck_Func *> sfuncs;
+        // destructor
+        Chuck_Func * dtor = NULL;
         // counter by name
         map<string, int> func_names;
 
@@ -9494,8 +9726,40 @@ void Chuck_Type::apropos_funcs( std::string & output,
                 // append to static funcs list
                 sfuncs.push_back( theFunc );
             } else {
+                // append to constructors | 1.5.1.9
+                if( theFunc->is_ctor ) ctors.push_back( theFunc );
+                // set as destructor | 1.5.1.9
+                else if( theFunc->is_dtor ) dtor = theFunc;
                 // append to static funcs list
-                mfuncs.push_back( theFunc );
+                else mfuncs.push_back( theFunc );
+            }
+        }
+
+        // have constructors?
+        if( ctors.size() > 0 )
+        {
+            // type name
+            string theName = this->name() + " " + "constructors";
+            // number of '-'
+            t_CKUINT n = theName.length(); t_CKUINT i;
+            // output
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl << theName << endl;
+            for( i = 0; i < n; i++ ) { sout << "-"; }
+            sout << endl;
+        }
+        // sort
+        sort( ctors.begin(), ctors.end(), ck_comp_func_args );
+        // output constructors | 1.5.1.9
+        if( ctors.size() )
+        {
+            // iterate over member functions
+            for( vector<Chuck_Func *>::iterator f = ctors.begin(); f != ctors.end(); f++ )
+            {
+                // pointer to chuck func
+                Chuck_Func * theFunc = *f;
+                // output function content
+                apropos_func( sout, theFunc, PREFIX );
             }
         }
 
@@ -9514,8 +9778,8 @@ void Chuck_Type::apropos_funcs( std::string & output,
         }
 
         // sort
-        sort( mfuncs.begin(), mfuncs.end(), comp_func );
-        sort( sfuncs.begin(), sfuncs.end(), comp_func );
+        sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
+        sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
 
         // one or more member functions?
         if( mfuncs.size() )
@@ -9541,6 +9805,13 @@ void Chuck_Type::apropos_funcs( std::string & output,
                 // output function content
                 apropos_func( sout, theFunc, PREFIX );
             }
+        }
+
+        // has destructor? | 1.5.1.9
+        if( dtor )
+        {
+            // output function content
+            // apropos_func( sout, dtor, PREFIX );
         }
     }
 
@@ -9641,8 +9912,8 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
         }
 
         // sort
-        sort( mvars.begin(), mvars.end(), comp_value );
-        sort( svars.begin(), svars.end(), comp_value );
+        sort( mvars.begin(), mvars.end(), ck_comp_value );
+        sort( svars.begin(), svars.end(), ck_comp_value );
 
         // one or more static vars?
         if( mvars.size() )

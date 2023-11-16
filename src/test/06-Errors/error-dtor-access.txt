@@ -1,0 +1,4 @@
+error-dtor-access.ck:11:37: error: cannot access local variable 'y' from within @destruct()
+[11]         <<< "destructor called...", y >>>;
+                                         ^
+error-dtor-access.ck: ...in function 'void Foo.@destruct()'

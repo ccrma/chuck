@@ -81,6 +81,7 @@ typedef enum {
     ae_key_private, ae_key_static, ae_key_instance, ae_key_abstract
 } ae_Keyword;
 
+// key
 
 
 
@@ -130,6 +131,7 @@ typedef struct a_Id_List_ * a_Id_List;
 typedef struct a_Class_Ext_ * a_Class_Ext;
 typedef struct a_Class_Body_ * a_Class_Body;
 typedef struct a_Array_Sub_ * a_Array_Sub;
+typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.1.9 (ge) added
 typedef struct a_Complex_ * a_Complex;
 typedef struct a_Polar_ * a_Polar;
 typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
@@ -173,7 +175,7 @@ a_Stmt new_stmt_from_case( a_Exp exp, uint32_t line, uint32_t where );
 a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t line, uint32_t where );
 a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, uint32_t line, uint32_t where );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, uint32_t line, uint32_t where );
-a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, a_Array_Sub array, uint32_t line, uint32_t where );
+a_Exp new_exp_from_unary2( ae_Operator oper, a_Type_Decl type, int ctor_invoked, a_Exp ctor_args, a_Array_Sub array, uint32_t line, uint32_t where );
 a_Exp new_exp_from_unary3( ae_Operator oper, a_Stmt code, uint32_t line, uint32_t where );
 a_Exp new_exp_from_cast( a_Type_Decl type, a_Exp exp, uint32_t line, uint32_t where, uint32_t castPos );
 a_Exp new_exp_from_array( a_Exp base, a_Array_Sub indices, uint32_t line, uint32_t where );
@@ -183,8 +185,8 @@ a_Exp new_exp_from_member_dot( a_Exp base, c_str member, uint32_t line, uint32_t
 a_Exp new_exp_from_postfix( a_Exp base, ae_Operator op, uint32_t line, uint32_t where );
 a_Exp new_exp_from_dur( a_Exp base, a_Exp unit, uint32_t line, uint32_t where );
 a_Exp new_exp_from_id( c_str xid, uint32_t line, uint32_t where );
-a_Exp new_exp_from_int( long num, uint32_t line, uint32_t where );
-a_Exp new_exp_from_float( double num, uint32_t line, uint32_t where );
+a_Exp new_exp_from_int( t_CKINT num, uint32_t line, uint32_t where );
+a_Exp new_exp_from_float( t_CKFLOAT num, uint32_t line, uint32_t where );
 a_Exp new_exp_from_str( c_str str, uint32_t line, uint32_t where );
 a_Exp new_exp_from_char( c_str chr, uint32_t line, uint32_t where );
 a_Exp new_exp_from_if( a_Exp cond, a_Exp lhs, a_Exp rhs, uint32_t line, uint32_t where );
@@ -198,7 +200,7 @@ a_Exp new_exp_from_hack( a_Exp exp, uint32_t line, uint32_t where );
 a_Exp new_exp_from_nil( uint32_t line, uint32_t where );
 a_Var_Decl_List new_var_decl_list( a_Var_Decl var_decl, uint32_t line, uint32_t where );
 a_Var_Decl_List prepend_var_decl_list( a_Var_Decl var_decl, a_Var_Decl_List list, uint32_t line, uint32_t where );
-a_Var_Decl new_var_decl( c_constr xid, a_Array_Sub array, uint32_t line, uint32_t where );
+a_Var_Decl new_var_decl( c_constr xid, int ctor_invoked, a_Exp ctor_args, a_Array_Sub array, uint32_t line, uint32_t where );
 a_Type_Decl new_type_decl( a_Id_List xid, int ref, uint32_t line, uint32_t where );
 a_Type_Decl add_type_decl_array( a_Type_Decl type_decl, a_Array_Sub array, uint32_t line, uint32_t where );
 a_Arg_List new_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, uint32_t line, uint32_t where );
@@ -295,11 +297,16 @@ void delete_vec( a_Vec v );
 
 
 //------------------------------------------------------------------------------
+// helper structs
+//------------------------------------------------------------------------------
+// 1.5.1.9 (ge) added constructor support
+struct a_Ctor_Call_ { int invoked; a_Exp args; t_CKFUNC func; int primitive; };
+//------------------------------------------------------------------------------
 // abstract syntax tree | structs
 //------------------------------------------------------------------------------
 struct a_Exp_Binary_ { a_Exp lhs; ae_Operator op; a_Exp rhs; t_CKFUNC ck_func; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Cast_ { a_Type_Decl type; a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
-struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; a_Array_Sub array;
+struct a_Exp_Unary_ { ae_Operator op; a_Exp exp; a_Type_Decl type; struct a_Ctor_Call_ ctor; a_Array_Sub array;
                       a_Stmt code; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Postfix_ { a_Exp exp; ae_Operator op; t_CKFUNC ck_overload_func; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Exp_Dur_ { a_Exp base; a_Exp unit; uint32_t line; uint32_t where; a_Exp self; };
@@ -313,8 +320,9 @@ struct a_Exp_Decl_ { a_Type_Decl type; a_Var_Decl_List var_decl_list; int num_va
 struct a_Exp_Hack_ { a_Exp exp; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Var_Decl_List_ { a_Var_Decl var_decl; a_Var_Decl_List next; uint32_t line; uint32_t where; a_Exp self; };
 // 1.4.2.0 (ge) added ck_type and ref, to handle multiple array decl (e.g., int x, y[], z[1];)
-struct a_Var_Decl_ { S_Symbol xid; a_Array_Sub array; t_CKVALUE value; void * addr;
-                     t_CKTYPE ck_type; /* int is_auto; */ int ref; int force_ref;
+struct a_Var_Decl_ { S_Symbol xid; struct a_Ctor_Call_ ctor;
+                     a_Array_Sub array; t_CKVALUE value; void * addr; t_CKTYPE ck_type;
+                     /* int is_auto; */ int ref; int force_ref;
                      uint32_t line; uint32_t where; a_Exp self; };
 struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
 struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;

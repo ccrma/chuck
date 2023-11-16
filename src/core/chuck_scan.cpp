@@ -279,6 +279,8 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // add code
     the_class->info->pre_ctor = new Chuck_VM_Code;
     CK_SAFE_ADD_REF( the_class->info->pre_ctor );
+    // name | 1.5.1.9 (ge) added
+    the_class->info->pre_ctor->name = string("class ") + the_class->base_name;
     // add to env
     env->curr->type.add( the_class->base_name, the_class );  // URGENT: make this global
     // incomplete
@@ -1200,6 +1202,21 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // count
         decl->num_var_decls++;
 
+        // scan constructor args | 1.5.1.9 (ge) added
+        if( var_decl->ctor.args != NULL )
+        {
+            // disallow non-default constructors for 'global' Object decls
+            if( decl->is_global )
+            {
+                // resolve
+                EM_error2( var_decl->where, "'global' variables cannot invoke non-default constructors..." );
+                return FALSE;
+            }
+            // type check the exp
+            if( !type_engine_scan1_exp( env, var_decl->ctor.args ) )
+                return FALSE;
+        }
+
         // scan if array
         if( var_decl->array != NULL )
         {
@@ -1384,12 +1401,49 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_scan1_func_def()
-// desc: ...
+// desc: type check scan pass 1 for function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
 {
     a_Arg_List arg_list = NULL;
     t_CKUINT count = 0;
+    t_CKBOOL is_static = (env->class_def != NULL) && (f->static_decl == ae_key_static);
+
+    // substitute for @construct
+    if( S_name(f->name) == string("@construct") )
+    {
+        // make sure we are in a class
+        if( !env->class_def )
+        {
+            EM_error2( f->where, "@construct() can only be used within class definitions..." );
+            return FALSE;
+        }
+
+        // substitute class name
+        f->name = insert_symbol( env->class_def->base_name.c_str() );
+    }
+    // verify @destruct
+    if( S_name(f->name) == string("@destruct") )
+    {
+        // make sure we are in a class
+        if( !env->class_def )
+        {
+            EM_error2( f->where, "@destruct() can only be used within class definitions..." );
+            return FALSE;
+        }
+        // make sure there are no arguments
+        if( f->arg_list != NULL )
+        {
+            EM_error2( f->where, "@destruct() cannot accept arguments..." );
+            return FALSE;
+        }
+        // substitute ~[class name]
+        // f->name = insert_symbol( string("~"+env->class_def->base_name).c_str() );
+    }
+    // check if constructor
+    t_CKBOOL isInCtor = isctor(env,f);
+    // check if destructor
+    t_CKBOOL isInDtor = isdtor(env,f);
 
     // check if reserved
     if( type_engine_check_reserved( env, f->name, f->where ) )
@@ -1410,6 +1464,39 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     }
     // add reference | 1.5.0.5
     CK_SAFE_ADD_REF( f->ret_type );
+
+    // check if we are in a constructor
+    if( isInCtor )
+    {
+        // check static
+        if( is_static )
+        {
+            EM_error2( f->where, "constructor cannot be declared as 'static'..." );
+            goto error;
+        }
+        // check return type (must be void)
+        if( !isa(f->ret_type, env->ckt_void) )
+        {
+            EM_error2( f->where, "constructor must return void..." );
+            goto error;
+        }
+    }
+
+    if( isInDtor )
+    {
+        // check static
+        if( is_static )
+        {
+            EM_error2( f->where, "destructor cannot be declared as 'static'..." );
+            goto error;
+        }
+        // check return type (must be void)
+        if( !isa(f->ret_type, env->ckt_void) )
+        {
+            EM_error2( f->where, "destructor must return void..." );
+            goto error;
+        }
+    }
 
     // check if array
     if( f->type_decl->array != NULL )
@@ -2251,7 +2338,7 @@ t_CKBOOL type_engine_scan2_array_subscripts( Chuck_Env * env, a_Exp exp_list )
 // name: type_engine_scan2_exp_decl_create() | 1.5.1.1 (ge)
 //       *** adapted from type_engine_scan2_exp_decl() pre-1.5.0.8
 //       *** which became type_engine_check_exp_decl_part1() in 1.5.0.8
-// reason: 'auto' needs more context before it can processed | 1.5.0.8 (ge)
+// reason: 'auto' needs more context before it can be processed | 1.5.0.8 (ge)
 //       however, class variables are meant to be accessible out-of-order
 //       and needs decl created in an earlier pass | 1.5.1.1 (ge)
 // desc: this can now be called either from type_scan if not 'auto' in order
@@ -2357,6 +2444,14 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
                 "'%s' has already been defined in the same scope",
                 S_name(var_decl->xid) );
             return FALSE;
+        }
+
+        // check for constructor args | 1.5.1.9 (ge) added
+        if( var_decl->ctor.args != NULL )
+        {
+            // type check the exp
+            if( !type_engine_scan2_exp( env, var_decl->ctor.args ) )
+                return FALSE;
         }
 
         // check if array
@@ -2698,7 +2793,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_scan2_func_def()
-// desc: ...
+// desc: type scan 2 for function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
 {
@@ -2721,6 +2816,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     Chuck_Func * overfunc = NULL;
     // t_CKBOOL has_code = FALSE;  // use this for both user and imported
     t_CKBOOL op_overload = ( f->op2overload != ae_op_none );
+    // is in constructor? | 1.5.1.9
+    t_CKBOOL isInCtor = isctor(env,f);
+    // is in destructor? | 1.5.1.9
+    t_CKBOOL isInDtor = isdtor(env,f);
 
     // see if we are already in a function definition
     if( env->func != NULL )
@@ -2787,11 +2886,15 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // note whether the function is marked as static (in class)
     func->is_static = (f->static_decl == ae_key_static) &&
                       (env->class_def != NULL);
+
+    // always create the code (will be filled in later on, depending on builtin vs in-language etc.)
+    // 1.5.1.9 (ge) moved up from ae_func_builtin
+    func->code = new Chuck_VM_Code;
+    // add reference
+    CK_SAFE_ADD_REF( func->code );
     // copy the native code, for imported functions
     if( f->s_type == ae_func_builtin )
     {
-        // we can emit code now
-        func->code = new Chuck_VM_Code; func->code->add_ref();
         // whether the function needs 'this'
         func->code->need_this = func->is_member;
         // is static inside
@@ -3028,17 +3131,24 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                         }
                     }
 
-                    EM_error2( f->where, "cannot overload functions with identical arguments..." );
+                    EM_error2( f->where, "cannot overload %s with identical arguments...", isInCtor ? "constructor" : "function" );
                     if( env->class_def )
                     {
-                        EM_error3( "    |- '%s %s.%s( %s )' already defined elsewhere",
+                        EM_error3( "    |- '%s %s.%s(%s)' already defined elsewhere",
                                    func->def()->ret_type->base_name.c_str(), env->class_def->c_name(),
                                    orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
+                        // if a constructor definition
+                        if( isInCtor )
+                        {
+                            EM_error3( "    |- (hint: possibly as '@construct(%s)' in class '%s')",
+                                       arglist2string(func->def()->arg_list).c_str(), env->class_def->c_name() );
+                        }
                     }
                     else
                     {
-                        EM_error3( "    |- '%s %s( %s )' already defined elsewhere",
-                                   func->def()->ret_type->base_name.c_str(), orig_name.c_str(), arglist2string(func->def()->arg_list).c_str() );
+                        EM_error3( "    |- '%s %s(%s)' already defined elsewhere",
+                                   func->def()->ret_type->base_name.c_str(), orig_name.c_str(),
+                                   arglist2string(func->def()->arg_list).c_str() );
                     }
                     goto error;
                 }
@@ -3046,6 +3156,44 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             // next overloaded function
             overfunc = overfunc->next;
         }
+    }
+
+    // constructor | 1.5.1.9 (ge) added
+    if( isInCtor )
+    {
+        // set constructor flag
+        func->is_ctor = TRUE;
+        // set in class as constructor; if not NULL, then a ctor is already set, and this is an overloading
+        if( env->class_def->ctors == NULL )
+        {
+            CK_SAFE_REF_ASSIGN( env->class_def->ctors, func );
+        }
+        // check if default constructor
+        func->is_default_ctor = (f->arg_list == NULL);
+        // if no arguments, then set as base constructor
+        if( func->is_default_ctor )
+        {
+            CK_SAFE_REF_ASSIGN( env->class_def->ctor_default, func );
+        }
+    }
+
+    // destructor | 1.5.1.9 (ge) added
+    if( isInDtor )
+    {
+        // verify
+        if( env->class_def->dtor != NULL )
+        {
+            EM_error2( f->where, "(internal error): unexpected destructor found in '%s'...", env->class_def->c_name() );
+            return FALSE;
+        }
+        // set destructor flag
+        func->is_dtor = TRUE;
+        // set in class as destructor
+        CK_SAFE_REF_ASSIGN( env->class_def->dtor, func );
+        // set invoker
+        env->class_def->dtor_invoker = new Chuck_VM_DtorInvoker;
+        // init invoker
+        env->class_def->dtor_invoker->setup( func, env->vm() );
     }
 
     // operator overload | 1.5.1.5 (ge) added

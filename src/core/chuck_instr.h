@@ -2214,6 +2214,29 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Reg_Push_Code | 1.5.1.9 (ge) added
+// desc: push Chuck_VM_Code * onto register stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Reg_Push_Code : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+
+public:
+    // constructor
+    Chuck_Instr_Reg_Push_Code( Chuck_VM_Code * code ) : m_code(code) { }
+    // for printing
+    const char * params() const;
+
+public:
+    // code to push
+    Chuck_VM_Code * m_code;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Zero
 // desc: push immediate value 0 to reg stack with specific width
 //-----------------------------------------------------------------------------
@@ -2949,7 +2972,7 @@ public:
     { pre_ctor = pre; this->stack_offset = offset; }
 
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-    // virtual const char * params() const;
+    virtual const char * params() const;
 
 public:
     Chuck_VM_Code * pre_ctor;
@@ -3263,13 +3286,36 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: enum ck_Func_Call_Arg_Convention | 1.5.1.9
+// desc: where to find this/type pointers in argument block
+//-----------------------------------------------------------------------------
+enum ck_Func_Call_Arg_Convention
+{
+    // 'this' (member) or 'type' (static) found in the back of arguments block
+    CK_FUNC_CALL_THIS_IN_BACK,
+    // 'this' (member) or 'type' (static) found in the back of arguments block
+    CK_FUNC_CALL_THIS_IN_FRONT
+};
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Func_Call
 // desc: user-defined function call
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Func_Call : public Chuck_Instr
 {
 public:
+    // for carrying out instruction
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
+
+public:
+    // constructor
+    Chuck_Instr_Func_Call( ck_Func_Call_Arg_Convention arg_convention = CK_FUNC_CALL_THIS_IN_BACK )
+    : m_arg_convention(arg_convention) { }
+
+    // when applicable, this flag indicates whether this/type is at the
+    // beginning or at the end of the argument block on the reg stack
+    ck_Func_Call_Arg_Convention m_arg_convention;
 };
 
 

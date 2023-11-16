@@ -444,6 +444,16 @@ public:
         m_outputStr += "</div>\n";
     }
 
+    void begin_ctors() // 1.5.1.9
+    {
+        m_outputStr += "<h3 class=\"class_section_header\">constructors</h3>\n<div class=\"members\">\n";
+    }
+
+    void begin_dtor() // 1.5.1.9
+    {
+        m_outputStr += "<h3 class=\"class_section_header\">destructor</h3>\n<div class=\"members\">\n";
+    }
+
     void begin_member_funcs()
     {
         m_outputStr += "<h3 class=\"class_section_header\">member functions</h3>\n<div class=\"members\">\n";
@@ -976,17 +986,6 @@ string CKDoc::genCSS()
 
 
 //-----------------------------------------------------------------------------
-// compare functions
-//-----------------------------------------------------------------------------
-bool comp_func(Chuck_Func *a, Chuck_Func *b)
-{ return a->name < b->name; }
-bool comp_value(Chuck_Value *a, Chuck_Value *b)
-{ return a->name < b->name; }
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: genGroups()
 // desc: generate all added groups, return each in a separate entry
 //-----------------------------------------------------------------------------
@@ -1150,6 +1149,8 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
         map<string, int> func_names;
 
         // member and static functions and values
+        vector<Chuck_Func *> ctors;
+        Chuck_Func * dtor = NULL;
         vector<Chuck_Func *> mfuncs;
         vector<Chuck_Func *> sfuncs;
         vector<Chuck_Value *> mvars;
@@ -1193,42 +1194,64 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             // first one
             func_names[func->name] = 1;
             // static or instance?
-            if(func->def()->static_decl == ae_key_static) sfuncs.push_back(func);
-            else mfuncs.push_back(func);
+            if( func->def()->static_decl == ae_key_static ) sfuncs.push_back(func);
+            else
+            {
+                // constructor?
+                if( func->is_ctor ) ctors.push_back(func);
+                // destructor?
+                else if( func->is_dtor ) dtor = func;
+                // other member function?
+                else mfuncs.push_back(func);
+            }
         }
 
         // sort
-        sort(svars.begin(), svars.end(), comp_value);
-        sort(mvars.begin(), mvars.end(), comp_value);
-        sort(sfuncs.begin(), sfuncs.end(), comp_func);
-        sort(mfuncs.begin(), mfuncs.end(), comp_func);
+        sort( svars.begin(), svars.end(), ck_comp_value );
+        sort( mvars.begin(), mvars.end(), ck_comp_value );
+        sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
+        sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
+        sort( ctors.begin(), ctors.end(), ck_comp_func_args );
 
-        // static functions
-        if( sfuncs.size() )
+        // constructors | 1.5.1.9 (ge) added
+        if( ctors.size() )
         {
-            // begin static functions
-            output->begin_static_member_funcs();
+            // begin member functions
+            output->begin_ctors();
             // iterate
-            for( vector<Chuck_Func *>::iterator f = sfuncs.begin(); f != sfuncs.end(); f++ )
+            for( vector<Chuck_Func *>::iterator f = ctors.begin(); f != ctors.end(); f++ )
             {
                 // the func
                 Chuck_Func * func = *f;
-                // begin output
-                output->begin_static_member_func(func);
+                // begin the func
+                output->begin_member_func(func);
                 // argument list
                 a_Arg_List args = func->def()->arg_list;
                 while(args != NULL)
                 {
                     // output argument
-                    output->func_arg( args );
+                    output->func_arg(args);
                     args = args->next;
                 }
-                // end output
-                output->end_static_member_func();
+                // end the func
+                output->end_member_func();
             }
-            // end static functions
-            output->end_static_member_funcs();
+            // end member functions
+            output->end_member_funcs();
         }
+
+        // destructor | 1.5.1.9 (ge) added
+        // if( dtor )
+        // {
+        //    // begin member functions
+        //    output->begin_dtor();
+        //    // begin the func | no args
+        //    output->begin_member_func(dtor);
+        //    // end the func
+        //    output->end_member_func();
+        //    // end member functions
+        //    output->end_member_funcs();
+        // }
 
         // member functions
         if( mfuncs.size() )
@@ -1257,16 +1280,31 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             output->end_member_funcs();
         }
 
-        // static vars
-        if( svars.size() )
+        // static functions
+        if( sfuncs.size() )
         {
-            // start output
-            output->begin_static_member_vars();
+            // begin static functions
+            output->begin_static_member_funcs();
             // iterate
-            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
-                output->static_member_var(*v);
-            // end output
-            output->end_static_member_vars();
+            for( vector<Chuck_Func *>::iterator f = sfuncs.begin(); f != sfuncs.end(); f++ )
+            {
+                // the func
+                Chuck_Func * func = *f;
+                // begin output
+                output->begin_static_member_func(func);
+                // argument list
+                a_Arg_List args = func->def()->arg_list;
+                while(args != NULL)
+                {
+                    // output argument
+                    output->func_arg( args );
+                    args = args->next;
+                }
+                // end output
+                output->end_static_member_func();
+            }
+            // end static functions
+            output->end_static_member_funcs();
         }
 
         // member vars
@@ -1279,6 +1317,18 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
                 output->member_var(*v);
             // end
             output->end_member_vars();
+        }
+
+        // static vars
+        if( svars.size() )
+        {
+            // start output
+            output->begin_static_member_vars();
+            // iterate
+            for( vector<Chuck_Value *>::iterator v = svars.begin(); v != svars.end(); v++ )
+                output->static_member_var(*v);
+            // end output
+            output->end_static_member_vars();
         }
     }
     // end the type

@@ -95,9 +95,9 @@ t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit, a_Stmt_Code stmt,
                                         t_CKBOOL push = TRUE );
 t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def );
 t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def );
-t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type );
+t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a_Ctor_Call ctor_info );
 t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type,
-                                         a_Array_Sub array, t_CKBOOL is_ref,
+                                         a_Ctor_Call ctor_info, a_Array_Sub array, t_CKBOOL is_ref,
                                          t_CKBOOL is_array_ref );
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from );
@@ -201,7 +201,6 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // keep track of full path (added 1.3.0.0)
     emit->code->filename = emit->context->full_path;
     // name the code
-    // emit->code->name = "(main)";
     emit->code->name = emit->code->filename != "" ? mini(emit->code->filename.c_str()) : "[anonymous]";
     // push global scope (added 1.3.0.0)
     emit->push_scope();
@@ -3629,7 +3628,7 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             // should always be false; can't 'new int[]'...
             t_CKBOOL is_array_ref = FALSE;
             // instantiate object, including array
-            if( !emit_engine_instantiate_object( emit, t, unary->array, unary->type->ref, is_array_ref ) )
+            if( !emit_engine_instantiate_object( emit, t, &unary->ctor, unary->array, unary->type->ref, is_array_ref ) )
                 return FALSE;
 
             // the new needs to be addref, and released (later at the end of the stmt that contains this) | 1.5.1.8
@@ -4264,7 +4263,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
 
     // translate to code
     emit->append( new Chuck_Instr_Func_To_Code );
-    // emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)func->code ) );
+    // emit->append( new Chuck_Instr_Reg_Push_Code( func->code ) );
     // push the local stack depth - local variables
     emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
 
@@ -4566,7 +4565,7 @@ check_func:
     }
     else // normal object
     {
-        // dup the base pointer (as 'this' argument -- special case primitive)
+        // dup the base pointer ('this' pointer as argument -- special case primitive)
         emit->append( new Chuck_Instr_Reg_Dup_Last );
     }
 
@@ -4645,7 +4644,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
-                // dup the base pointer (as 'this' argument)
+                // dup the base pointer ('this' pointer as argument)
                 emit->append( new Chuck_Instr_Reg_Dup_Last );
                 // find the offset for virtual table
                 offset = func->vt_index;
@@ -4831,21 +4830,61 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_pre_constructor()
-// desc: ...
+// desc: emit instructions for type pre-constructor, for Object instantiation
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
+t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a_Ctor_Call ctor_info )
 {
     // parent first pre constructor
     if( type->parent != NULL )
-        emit_engine_pre_constructor( emit, type->parent );
+    {
+        // first emit parent pre and base constructor
+        emit_engine_pre_constructor( emit, type->parent, NULL );
+    }
 
     // pre constructor
-    if( type->has_constructor )
+    if( type->has_pre_ctor )
     {
         // make sure
         assert( type->info->pre_ctor != NULL );
         // append instruction
         emit->append( new Chuck_Instr_Pre_Constructor( type->info->pre_ctor,
+            emit->code->frame->curr_offset ) );
+    }
+
+    // constructors
+    if( ctor_info && ctor_info->func ) // if named
+    {
+        // verify
+        if( !ctor_info->func->code )
+        {
+            EM_error3( "(internal error) missing VM code for constructor '%s'",
+                       ctor_info->func->signature(FALSE,FALSE).c_str() );
+            return FALSE;
+        }
+
+        // dup the base pointer ('this' pointer as argument)
+        emit->append( new Chuck_Instr_Reg_Dup_Last );
+        // emit arguments
+        emit_engine_emit_exp( emit, ctor_info->args );
+        // push code
+        emit->append( new Chuck_Instr_Reg_Push_Code( ctor_info->func->code ) );
+        // push local stack depth corresponding to local variables
+        emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
+        // push offset
+        emit->append( new Chuck_Instr_Func_Call( CK_FUNC_CALL_THIS_IN_FRONT ) );
+    }
+    else if( type->ctor_default ) // emit base constructor, if there is one
+    {
+        // verify
+        if( !type->ctor_default->code )
+        {
+            EM_error3( "(internal error) missing VM code for base constructor '%s'",
+                       type->ctor_default->signature(FALSE,FALSE).c_str() );
+            return FALSE;
+        }
+
+        // emit
+        emit->append( new Chuck_Instr_Pre_Constructor( type->ctor_default->code,
             emit->code->frame->curr_offset ) );
     }
 
@@ -4857,9 +4896,9 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_pre_constructor_array()
-// desc: ...
+// desc: emit instruction for pre-constructing an array of Objects
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * type )
+t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * type, a_Ctor_Call ctor_info )
 {
     // alloc should have put all objects to made in linear list, on stack
     Chuck_Instr_Pre_Ctor_Array_Top * top = NULL;
@@ -4869,7 +4908,7 @@ t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * t
     // append first part of pre ctor
     emit->append( top = new Chuck_Instr_Pre_Ctor_Array_Top( type ) );
     // call pre constructor
-    emit_engine_pre_constructor( emit, type );
+    emit_engine_pre_constructor( emit, type, ctor_info );
     // append second part of the pre ctor
     emit->append( bottom = new Chuck_Instr_Pre_Ctor_Array_Bottom );
     // set the goto of the first one
@@ -4889,7 +4928,7 @@ t_CKBOOL emit_engine_pre_constructor_array( Chuck_Emitter * emit, Chuck_Type * t
 // desc: emit instructions for instantiating object
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type,
-                                         a_Array_Sub array, t_CKBOOL is_ref,
+                                         a_Ctor_Call ctor_info, a_Array_Sub array, t_CKBOOL is_ref,
                                          t_CKBOOL is_array_ref )
 {
     // if array
@@ -4913,7 +4952,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
             if( isobj( emit->env, type->array_type ) && !is_ref )
             {
                 // call pre constructor for objects in array | TODO verify multi-dim array
-                emit_engine_pre_constructor_array( emit, type->array_type );
+                emit_engine_pre_constructor_array( emit, type->array_type, ctor_info );
             }
         }
     }
@@ -4923,7 +4962,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
         emit->append( new Chuck_Instr_Instantiate_Object( type ) );
 
         // call pre constructor
-        emit_engine_pre_constructor( emit, type );
+        emit_engine_pre_constructor( emit, type, ctor_info );
     }
 
     return TRUE;
@@ -4934,7 +4973,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_exp_decl()
-// desc: ...
+// desc: emit instruction for variable declaration expression
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                                     t_CKBOOL first_exp )
@@ -5075,7 +5114,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     // set
                     is_init = TRUE;
                     // instantiate object, including array
-                    if( !emit_engine_instantiate_object( emit, type, var_decl->array, is_ref, is_array_ref ) )
+                    if( !emit_engine_instantiate_object( emit, type, &var_decl->ctor, var_decl->array, is_ref, is_array_ref ) )
                         return FALSE;
                 }
             }
@@ -5115,7 +5154,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
                     // set
                     is_init = TRUE;
                     // instantiate object (not array)
-                    if( !emit_engine_instantiate_object( emit, type, var_decl->array, is_ref, FALSE ) )
+                    if( !emit_engine_instantiate_object( emit, type, &var_decl->ctor, var_decl->array, is_ref, FALSE ) )
                         return FALSE;
                 }
             }
@@ -5387,7 +5426,7 @@ t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit,
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_func_def()
-// desc: ...
+// desc: emit VM instructions for a function definition
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 {
@@ -5410,12 +5449,24 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     //    return FALSE;
     //}
 
-    // make sure the code is empty
-    if( func->code != NULL )
+    // make sure code is good to go | 1.5.1.9
+    // NOTE now func->code is allocated earlier in scan2_func_def(), this allows
+    // the code reference to be available for emission potentially before its
+    // contents are emitted
+    if( func->code == NULL )
     {
         EM_error2( func_def->where,
-            "(emit): function '%s' already emitted...",
-            S_name(func_def->name) );
+            "(emit): internal error: function '%s' missing code shuttle...",
+            func->signature(FALSE,FALSE).c_str() );
+        return FALSE;
+    }
+
+    // make sure the code is empty
+    if( func->code->num_instr ) // updated logic 1.5.1.9 was: if( func->code != NULL )
+    {
+        EM_error2( func_def->where,
+            "(emit): internal error: function '%s' already emitted...",
+            func->signature(FALSE,FALSE).c_str() );
         return FALSE;
     }
 
@@ -5446,7 +5497,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // make a new one
     emit->code = new Chuck_Code;
     // name the code | 1.5.1.5 use signature()
-    emit->code->name += func->signature();
+    emit->code->name += func->signature(FALSE,FALSE);
     // name the code (older code)
     // emit->code->name = emit->env->class_def ? emit->env->class_def->base_name + "." : "";
     // emit->code->name += func->name + "(...)";
@@ -5565,10 +5616,9 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // emit return statement
     emit->append( new Chuck_Instr_Func_Return );
 
-    // vm code
-    func->code = emit_to_code( emit->code, NULL, emit->dump );
-    // add reference
-    CK_SAFE_ADD_REF( func->code );
+    // vm code | 1.5.1.9 (ge) updated to pass in existing func->code
+    if( !emit_to_code( emit->code, func->code, emit->dump ) )
+        return FALSE;
 
     // unset the func
     emit->env->func = NULL;

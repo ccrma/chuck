@@ -70,7 +70,7 @@ void fd2parse_set( FILE * fd, t_CKBOOL autoClose );
 // convert abstract syntax stmt to string
 std::string absyn2str( a_Stmt stmt );
 // convert abstract syntax expression to string
-std::string absyn2str( a_Exp exp );
+std::string absyn2str( a_Exp exp, t_CKBOOL appendSemicolon = TRUE );
 
 // syntax highlighting tools
 #include <vector>

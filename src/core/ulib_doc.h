@@ -107,6 +107,7 @@ public:
     // class functions
     virtual void begin_static_member_funcs() = 0;
     virtual void end_static_member_funcs() = 0;
+    virtual void begin_ctors() = 0;
     virtual void begin_member_funcs() = 0;
     virtual void end_member_funcs() = 0;
 

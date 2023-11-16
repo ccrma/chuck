@@ -2306,6 +2306,35 @@ void Chuck_Instr_Reg_Push_Imm4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
+// desc: push Chuck_VM_Code * onto register stack
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_Code::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+
+    // push val into reg stack
+    push_( reg_sp, (t_CKUINT)m_code );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: params for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Reg_Push_Code::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "'%s'", m_code ? m_code->name.c_str() : "[null]" );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Zero::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
@@ -4033,7 +4062,8 @@ void Chuck_Instr_Alloc_Member_Vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
 
 
 
-inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
+// function prototype
+void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
     Chuck_VM_Code * pre_ctor, t_CKUINT stack_offset );
 //-----------------------------------------------------------------------------
 // name: call_all_parent_pre_constructors()
@@ -4048,7 +4078,7 @@ void call_all_parent_pre_constructors( Chuck_VM * vm, Chuck_VM_Shred * shred,
         call_all_parent_pre_constructors( vm, shred, type->parent, stack_offset );
     }
     // now, call my ctor
-    if( type->has_constructor )
+    if( type->has_pre_ctor )
     {
         call_pre_constructor( vm, shred, type->info->pre_ctor, stack_offset );
     }
@@ -4181,7 +4211,7 @@ static Chuck_Instr_Func_Call g_func_call;
 static Chuck_Instr_Func_Call_Member g_func_call_member( 0, NULL );
 //-----------------------------------------------------------------------------
 // name: call_pre_constructor()
-// desc: ...
+// desc: invoke class pre-constructor code
 //-----------------------------------------------------------------------------
 inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
                                   Chuck_VM_Code * pre_ctor, t_CKUINT stack_offset )
@@ -4219,6 +4249,20 @@ inline void call_pre_constructor( Chuck_VM * vm, Chuck_VM_Shred * shred,
 void Chuck_Instr_Pre_Constructor::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     call_pre_constructor( vm, shred, pre_ctor, stack_offset );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: params for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Pre_Constructor::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "ctor='%s', offset=%lu", pre_ctor ? pre_ctor->name.c_str() : "[null]", (unsigned long)stack_offset );
+    return buffer;
 }
 
 
@@ -5050,6 +5094,19 @@ t_CKBOOL func_release_args( Chuck_VM * vm, a_Arg_List args, t_CKBYTE * mem_sp )
 
 
 //-----------------------------------------------------------------------------
+// for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Func_Call::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "convention='%s'", m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK ? "this:back" : "this:front" );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -5107,16 +5164,30 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // need this
         if( func->need_this )
         {
-            // copy this from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
+            // check convention | 1.5.1.9 (ge) added
+            if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
+            {
+                // copy this from end of arguments to the front
+                *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
+            } else {
+                // copy this from start of arguments
+                *mem_sp2++ = *reg_sp2++;
+            }
             // one less word to copy
             stack_depth_ints--;
         }
         // static inside class | 1.4.1.0 (ge) added
         else if( func->is_static )
         {
-            // copy type from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
+            // check convention | 1.5.1.9 (ge) added
+            if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
+            {
+                // copy type from end of arguments to the front
+                *mem_sp2++ = *(reg_sp2 + stack_depth_ints - 1);
+            } else {
+                // copy type from start of arguments
+                *mem_sp2++ = *reg_sp2++;
+            }
             // one less word to copy
             stack_depth_ints--;
         }

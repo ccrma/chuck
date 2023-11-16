@@ -290,6 +290,7 @@ struct Chuck_Multi;
 struct Chuck_VM;
 struct Chuck_VM_Code;
 struct Chuck_VM_MFunInvoker;
+struct Chuck_VM_DtorInvoker;
 struct Chuck_DLL;
 // operator loading structs | 1.5.1.5
 struct Chuck_Op_Registry;
@@ -319,24 +320,19 @@ struct Chuck_Namespace : public Chuck_VM_Object
 
     // name
     std::string name;
-    // top-level code
+    // pre-constructor (either chuck or c++ defined)
     Chuck_VM_Code * pre_ctor;
-    // destructor
-    Chuck_VM_Code * dtor;
+    // pre-destructor
+    Chuck_VM_Code * pre_dtor;
     // type that contains this
     Chuck_Namespace * parent;
     // address offset
     t_CKUINT offset;
 
     // constructor
-    Chuck_Namespace() { pre_ctor = NULL; dtor = NULL; parent = NULL; offset = 0;
-                        class_data = NULL; class_data_size = 0; }
+    Chuck_Namespace();
     // destructor
-    virtual ~Chuck_Namespace() {
-        /* TODO: CK_SAFE_RELEASE( this->parent ); */
-        /* TODO: CK_SAFE_DELETE( pre_ctor ); */
-        /* TODO: CK_SAFE_DELETE( dtor ); */
-    }
+    virtual ~Chuck_Namespace();
 
     // look up value
     Chuck_Value * lookup_value( const std::string & name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
@@ -947,10 +943,19 @@ struct Chuck_Type : public Chuck_Object
     t_CKBOOL is_copy;
     // defined
     t_CKBOOL is_complete;
-    // has pre constructor
-    t_CKBOOL has_constructor;
-    // has destructor
-    t_CKBOOL has_destructor;
+    // has pre-constructor
+    t_CKBOOL has_pre_ctor;
+    // has pre-destructor; related to info->pre_dtor, but different since info is shared with arrays
+    // of this type (via new_array_type()), but this flag is this specific type only
+    t_CKBOOL has_pre_dtor;
+    // constructor(s), potentially overloaded | 1.5.1.9 (ge) added
+    Chuck_Func * ctors;
+    // default constructor (no arguments) | 1.5.1.9 (ge) added
+    Chuck_Func * ctor_default;
+    // destructor (also see this->info->pre_dtor) | 1.5.1.9 (ge) added
+    Chuck_Func * dtor;
+    // destructor invoker (needed since dtor could run outside of chuck shreduling) | 1.5.1.9
+    Chuck_VM_DtorInvoker * dtor_invoker;
     // custom allocator
     f_alloc allocator;
     // origin hint
@@ -1142,6 +1147,14 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
+public: // constructors / destructor | 1.5.1.9
+    // is this a constructor?
+    t_CKBOOL is_ctor;
+    // is this a default constructor?
+    t_CKBOOL is_default_ctor;
+    // is this a destructor?
+    t_CKBOOL is_dtor;
+
 public:
     // pack c-style array of DL_Args into args cache
     t_CKBOOL pack_cache( Chuck_DL_Arg * dlargs, t_CKUINT numArgs );
@@ -1186,6 +1199,9 @@ public:
         /*dl_code = NULL;*/
         next = NULL;
         up = NULL;
+        is_ctor = FALSE;
+        is_default_ctor = FALSE;
+        is_dtor = FALSE;
         args_cache = NULL;
         args_cache_size = 0;
         invoker_mfun = NULL;
@@ -1243,6 +1259,10 @@ t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isnull( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
 te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.1.9 (ge) added for constructors
+t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.1.9 (ge) added for destructors
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1326,8 +1346,6 @@ t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 
 
-
-
 //-----------------------------------------------------------------------------
 // spencer: added this into function to provide the same logic path
 // for type_engine_check_exp_decl() and ck_add_mvar() when they determine
@@ -1363,6 +1381,14 @@ t_CKINT str2char( const char * char_lit, int linepos );
 t_CKBOOL same_arg_lists( a_Arg_List lhs, a_Arg_List rhs );
 // generate a string from an argument list (types only)
 std::string arglist2string( a_Arg_List list );
+
+
+//-----------------------------------------------------------------------------
+// compare functions | 1.5.1.9 (ge) added
+//-----------------------------------------------------------------------------
+bool ck_comp_func( Chuck_Func * a, Chuck_Func * b );
+bool ck_comp_func_args( Chuck_Func * a, Chuck_Func * b );
+bool ck_comp_value( Chuck_Value * a, Chuck_Value * b );
 
 
 

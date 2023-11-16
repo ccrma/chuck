@@ -826,7 +826,7 @@ struct Chuck_Msg
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_VM_MFunInvoker | 1.5.1.5 (ge)
-// desc: construct for calling chuck-defined member functions from c++,
+// desc: aparatus for calling chuck-defined member functions from c++,
 //       either from VM execution or outside the VM execution context
 //-----------------------------------------------------------------------------
 struct Chuck_VM_MFunInvoker
@@ -857,6 +857,37 @@ public:
     Chuck_Instr_Reg_Push_Imm * instr_pushThis;
     // instruction to update on invoke: pushing the var to receive return
     Chuck_Instr_Reg_Push_Imm * instr_pushReturnVar;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_VM_DtorInvoker | 1.5.1.9 (ge)
+// desc: aparatus for calling chuck-defined @destruct from c++,
+//       typically called for Object cleanup
+//-----------------------------------------------------------------------------
+struct Chuck_VM_DtorInvoker
+{
+public:
+    // constructor
+    Chuck_VM_DtorInvoker();
+    // destructor
+    ~Chuck_VM_DtorInvoker();
+
+public:
+    // set up the invoker; needed before invoke()
+    t_CKBOOL setup( Chuck_Func * func, Chuck_VM * vm );
+    // invoke the member function
+    void invoke( Chuck_Object * obj, Chuck_VM_Shred * parent_shred = NULL );
+    // clean up
+    void cleanup();
+
+public:
+    // dedicated shred to call the dtor on, since this could be running "outside of chuck time"
+    Chuck_VM_Shred * invoker_shred;
+    // instruction to update on invoke: pushing this pointer
+    Chuck_Instr_Reg_Push_Imm * instr_pushThis;
 };
 
 

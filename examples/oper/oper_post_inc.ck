@@ -1,9 +1,10 @@
-// i++ - doesn't fully work yet (1.2.0.1)
+// post increment operator
 
+// starting value
 4 => int i;
+// assign, then increment i
 i++ => int j;
 
-<<<"printing i, then j">>>;
-<<<i>>>;
-<<<j>>>;
-if ( i == 5 && j == 4) <<<"success">>>;
+// print (i should be 1 higher than j)
+<<< i >>>;
+<<< j >>>;

@@ -409,9 +409,9 @@ string absyn_stmt2str( a_Stmt stmt )
 // name: absyn2str()
 // desc: convert abstract syntax exp to string
 //-----------------------------------------------------------------------------
-string absyn2str( a_Exp exp )
+string absyn2str( a_Exp exp, t_CKBOOL appendSemicolon )
 {
-    return absyn_exp2str( exp ) + ";";
+    return absyn_exp2str( exp ) + (appendSemicolon ? ";" : "" );
 }
 
 
@@ -599,6 +599,7 @@ string absyn_unary2str( a_Exp_Unary unary )
     {
         case ae_op_new:
             s = absyn_op2str(unary->op) + " " + unary->self->type->name();
+            if( unary->ctor.invoked ) s += "(" + absyn_exp2str(unary->ctor.args) + ")";
             break;
         default:
             s = absyn_op2str(unary->op) + " " + absyn_exp2str(unary->exp);
@@ -773,6 +774,11 @@ string absyn_decl2str( a_Exp_Decl decl )
     {
         // type
         str += list->var_decl->value->type->base_name + " " + (decl->type->ref ? "@ " : "") + list->var_decl->value->name;
+        // constructor?
+        if( list->var_decl->ctor.invoked )
+        {
+            str += "(" + absyn_exp2str(list->var_decl->ctor.args) + ")";
+        }
         // array?
         if( list->var_decl->array )
         {
