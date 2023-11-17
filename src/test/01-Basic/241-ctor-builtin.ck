@@ -1,4 +1,4 @@
-// constructor
+// constructors
 SinOsc foo(440) => Gain g(.5) => dac;
 
 // test

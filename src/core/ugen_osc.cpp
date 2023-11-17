@@ -81,6 +81,19 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     osc_offset_data = type_engine_import_mvar( env, "int", "@osc_data", FALSE );
     if( osc_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // overload constructor (float freq)
+    func = make_new_mfun( "void", "Osc", osc_ctor_1 );
+    func->add_arg( "float", "freq" );
+    func->doc = "Constructor to initialize a Osc at specified frequency.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // overload constructor (float freq, float phase)
+    func = make_new_mfun( "void", "Osc", osc_ctor_2 );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "phase" );
+    func->doc = "Constructor to initialize a Osc at specified frequency and phase.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add ctrl: freq
     func = make_new_mfun( "float", "freq", osc_ctrl_freq );
     func->add_arg( "float", "hz" );
@@ -402,20 +415,51 @@ CK_DLL_CTOR( osc_ctor )
 
 
 
+
+//-----------------------------------------------------------------------------
+// generic overloaded ctor( float freq )
+// to be used by Osc only
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( osc_ctor_1 )
+{
+    // return (dummy struct since ctors don't return stuff)
+    Chuck_DL_Return r;
+    // call default ctor
+    osc_ctor( SELF, ARGS, VM, SHRED, API );
+    // call common ctor
+    oscx_ctor_1( SELF, ARGS, &r, VM, SHRED, API );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// generic overloaded ctor( float freq, float phase )
+// to be used by Osc only
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( osc_ctor_2 )
+{
+    // return (dummy struct since ctors don't return stuff)
+    Chuck_DL_Return r;
+    // call default ctor
+    osc_ctor( SELF, ARGS, VM, SHRED, API );
+    // call common ctor
+    oscx_ctor_2( SELF, ARGS, &r, VM, SHRED, API );
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // generic overloaded ctor( float freq )
 // to be used by subclasses of Osc
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( oscx_ctor_1 )
 {
-    // get the data
-    Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
+    // return (dummy struct since ctors don't return stuff)
+    Chuck_DL_Return r;
     // set freq
-    d->freq = GET_CK_FLOAT(ARGS);
-    // phase increment
-    d->num = d->freq / d->srate;
-    // bound it
-    if( d->num >= 1.0 ) d->num -= ::floor( d->num );
+    osc_ctrl_freq( SELF, ARGS, &r, VM, SHRED, API );
 }
 
 
@@ -427,19 +471,13 @@ CK_DLL_MFUN( oscx_ctor_1 )
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( oscx_ctor_2 )
 {
-    // get the data
-    Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
+    // return (dummy struct since ctors don't return stuff)
+    Chuck_DL_Return r;
     // set freq
-    d->freq = GET_CK_FLOAT(ARGS);
-    // phase increment
-    d->num = d->freq / d->srate;
-    // bound it
-    if( d->num >= 1.0 ) d->num -= ::floor( d->num );
-
-    // set phase
-    d->phase = GET_CK_FLOAT(ARGS);
-    // bound ( this could be set arbitrarily high or low )
-    if( d->phase >= 1.0 || d->phase < 0.0 ) d->phase -= floor( d->num );}
+    osc_ctrl_freq( SELF, ARGS, &r, VM, SHRED, API );
+    // set freq
+    osc_ctrl_phase( SELF, ARGS, &r, VM, SHRED, API );
+}
 
 
 
