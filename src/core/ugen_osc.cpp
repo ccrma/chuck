@@ -82,13 +82,13 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     if( osc_offset_data == CK_INVALID_OFFSET ) goto error;
 
     // overload constructor (float freq)
-    func = make_new_mfun( "void", "Osc", osc_ctor_1 );
+    func = make_new_mfun( "void", "Osc", oscx_ctor_1 );
     func->add_arg( "float", "freq" );
     func->doc = "Constructor to initialize a Osc at specified frequency.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // overload constructor (float freq, float phase)
-    func = make_new_mfun( "void", "Osc", osc_ctor_2 );
+    func = make_new_mfun( "void", "Osc", oscx_ctor_2 );
     func->add_arg( "float", "freq" );
     func->add_arg( "float", "phase" );
     func->doc = "Constructor to initialize a Osc at specified frequency and phase.";
@@ -411,40 +411,6 @@ CK_DLL_CTOR( osc_ctor )
     // return data to be used later
     OBJ_MEMBER_UINT(SELF, osc_offset_data) = (t_CKUINT)d;
     osc_ctrl_freq( SELF, &(d->freq), &r, VM, SHRED, API );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// generic overloaded ctor( float freq )
-// to be used by Osc only
-//-----------------------------------------------------------------------------
-CK_DLL_MFUN( osc_ctor_1 )
-{
-    // return (dummy struct since ctors don't return stuff)
-    Chuck_DL_Return r;
-    // call default ctor
-    osc_ctor( SELF, ARGS, VM, SHRED, API );
-    // call common ctor
-    oscx_ctor_1( SELF, ARGS, &r, VM, SHRED, API );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// generic overloaded ctor( float freq, float phase )
-// to be used by Osc only
-//-----------------------------------------------------------------------------
-CK_DLL_MFUN( osc_ctor_2 )
-{
-    // return (dummy struct since ctors don't return stuff)
-    Chuck_DL_Return r;
-    // call default ctor
-    osc_ctor( SELF, ARGS, VM, SHRED, API );
-    // call common ctor
-    oscx_ctor_2( SELF, ARGS, &r, VM, SHRED, API );
 }
 
 
