@@ -3328,14 +3328,22 @@ public:
 struct Chuck_Instr_Func_Call_Member : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Func_Call_Member( t_CKUINT ret_size, Chuck_Func * func_ref )
-    { this->set( ret_size ); m_func_ref = func_ref; }
+    Chuck_Instr_Func_Call_Member( t_CKUINT ret_size, Chuck_Func * func_ref,
+                                  ck_Func_Call_Arg_Convention arg_convention = CK_FUNC_CALL_THIS_IN_BACK )
+    { this->set( ret_size ); m_func_ref = func_ref; m_arg_convention = arg_convention; }
 
 public:
+    // for carrying out instruction
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
 
 public:
-    Chuck_Func * m_func_ref; // 1.5.0.0 (ge) | added for arg list cleanup
+    // 1.5.0.0 (ge) | added for arg list cleanup
+    Chuck_Func * m_func_ref;
+    // when applicable, this flag indicates whether this/type is at the
+    // beginning or at the end of the argument block on the reg stack
+    ck_Func_Call_Arg_Convention m_arg_convention;
 };
 
 
@@ -3348,14 +3356,22 @@ public:
 struct Chuck_Instr_Func_Call_Static : public Chuck_Instr_Unary_Op
 {
 public:
-    Chuck_Instr_Func_Call_Static( t_CKUINT ret_size, Chuck_Func * func_ref )
-    { this->set( ret_size ); m_func_ref = func_ref; }
+    Chuck_Instr_Func_Call_Static( t_CKUINT ret_size, Chuck_Func * func_ref,
+                                  ck_Func_Call_Arg_Convention arg_convention = CK_FUNC_CALL_THIS_IN_BACK )
+    { this->set( ret_size ); m_func_ref = func_ref; m_arg_convention = arg_convention; }
 
 public:
+    // for carrying out instruction
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
 
 public:
-    Chuck_Func * m_func_ref; // 1.5.0.0 (ge) | added for arg list cleanup
+    // 1.5.0.0 (ge) | added for arg list cleanup
+    Chuck_Func * m_func_ref;
+    // when applicable, this flag indicates whether this/type is at the
+    // beginning or at the end of the argument block on the reg stack
+    ck_Func_Call_Arg_Convention m_arg_convention;
 };
 
 
@@ -3372,9 +3388,13 @@ public:
     { this->set( ret_size ); m_func_ref = func_ref; }
 
 public:
+    // for carrying out instruction
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    virtual const char * params() const;
 
 public:
+    // 1.5.0.0 (ge) | added for arg list cleanup
     Chuck_Func * m_func_ref;
 };
 

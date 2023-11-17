@@ -96,6 +96,8 @@ unsigned long ck_nextpow2( unsigned long i );
 // ensurepow2
 unsigned long ck_ensurepow2( unsigned long i );
 
+// floating point equals
+t_CKBOOL ck_equals( t_CKFLOAT lhs, t_CKFLOAT rhs );
 // magnitude of complex number
 t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp );
 // phase of complex number

@@ -5208,6 +5208,21 @@ error_overflow:
 
 
 //-----------------------------------------------------------------------------
+// for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Func_Call_Member::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s, %s",
+              m_func_ref ? m_func_ref->signature(FALSE,FALSE).c_str() : "[null]",
+              m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK ? "this:back" : "this:front" );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: imported member function call with return
 //-----------------------------------------------------------------------------
@@ -5255,8 +5270,15 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // need this
         if( func->need_this )
         {
-            // copy this from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            // check convention | 1.5.1.9 (ge) added
+            if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
+            {
+                // copy this from end of arguments to the front
+                *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            } else {
+                // copy this from start of arguments
+                *mem_sp2++ = *reg_sp2++;
+            }
             // one less word to copy
             stack_depth--;
         }
@@ -5355,6 +5377,21 @@ error_overflow:
 
 
 //-----------------------------------------------------------------------------
+// for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Func_Call_Static::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s, %s",
+              m_func_ref ? m_func_ref->signature(FALSE,FALSE).c_str() : "[null]",
+              m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK ? "this:back" : "this:front" );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: execute()
 // desc: imported static function call with return
 //-----------------------------------------------------------------------------
@@ -5402,8 +5439,15 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // need type
         if( func->is_static )
         {
-            // copy this from end of arguments to the front
-            *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            // check convention | 1.5.1.9 (ge) added
+            if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
+            {
+                // copy this from end of arguments to the front
+                *mem_sp2++ = *(reg_sp2 + stack_depth - 1);
+            } else {
+                // copy this from start of arguments
+                *mem_sp2++ = *reg_sp2++;
+            }
             // one less word to copy
             stack_depth--;
         }
@@ -5485,6 +5529,20 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
 error_overflow:
 
     ck_handle_overflow( shred, vm, "too many nested/recursive function calls" );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Func_Call_Global::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s",
+              m_func_ref ? m_func_ref->signature(FALSE,FALSE).c_str() : "[null]" );
+    return buffer;
 }
 
 

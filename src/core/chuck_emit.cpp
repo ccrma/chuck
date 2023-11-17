@@ -4870,8 +4870,19 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a
         emit->append( new Chuck_Instr_Reg_Push_Code( ctor_info->func->code ) );
         // push local stack depth corresponding to local variables
         emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
-        // push offset
-        emit->append( new Chuck_Instr_Func_Call( CK_FUNC_CALL_THIS_IN_FRONT ) );
+
+        // code format (native or in-language)
+        if( ctor_info->func->code->native_func )
+        {
+            // append instruction
+            emit->append( new Chuck_Instr_Func_Call_Member( kindof_VOID, ctor_info->func,
+                                                            CK_FUNC_CALL_THIS_IN_FRONT ) );
+        }
+        else
+        {
+            // push offset
+            emit->append( new Chuck_Instr_Func_Call( CK_FUNC_CALL_THIS_IN_FRONT ) );
+        }
     }
     else if( type->ctor_default ) // emit base constructor, if there is one
     {

@@ -726,26 +726,13 @@ CK_DLL_SFUN( isnan_impl )
 
 // equal( x, y ) -- 1.4.1.1 (added ge)
 // returns whether x and y (floats) are considered equal
-//
-// Knuth, Donald E., /The Art of Computer Programming
-// Volume II: Seminumerical Algorithms/, Addison-Wesley, 1969.
-// based on Knuth section 4.2.2 pages 217-218
-// https://www.cs.technion.ac.il/users/yechiel/c++-faq/floating-point-arith.html
 CK_DLL_SFUN( equal_impl )
 {
-    const t_CKFLOAT epsilon = .00000001; // a small number 1e-8
     // get arguments
     t_CKFLOAT x = GET_CK_FLOAT(ARGS);
     t_CKFLOAT y = *((t_CKFLOAT *)ARGS + 1);
-    // absolute values
-    t_CKFLOAT abs_x = (x >= 0.0 ? x : -x);
-    t_CKFLOAT abs_y = (y >= 0.0 ? y : -y);
-    // smaller of the two absolute values (this step added by ge; ensures symmetry)
-    t_CKFLOAT min = abs_x < abs_y ? abs_x : abs_y;
-    // absolute value of the difference
-    t_CKFLOAT v = x-y; t_CKFLOAT abs_v = (v >= 0.0 ? v : -v);
-    // test whether difference is less/equal to episilon * smaller of two abs values
-    RETURN->v_int = (abs_v <= (epsilon * min));
+    // equal
+    RETURN->v_int = ck_equals(x,y);
 }
 
 // floatMax
