@@ -57,6 +57,11 @@ CK_DLL_CGET( osc_cget_width );
 CK_DLL_CTRL( osc_ctrl_sync );
 CK_DLL_CGET( osc_cget_sync );
 
+// generic overloaded ctor( float freq )
+CK_DLL_MFUN( oscx_ctor_1 );
+// generic overloaded ctor( float freq, float phase )
+CK_DLL_MFUN( oscx_ctor_2 );
+
 // sinosc
 CK_DLL_TICK( sinosc_tick );
 
