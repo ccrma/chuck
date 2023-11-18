@@ -459,7 +459,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "output" );
     func->doc =
         "Manually computes the SFM of the input (an FFT spectrum), and stores the results in the output array (SFM coefficients).";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "ai/features/sfm.ck" ) ) goto error;
@@ -524,7 +524,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float[]", "output" );
     func->doc =
         "Manually computes the Chroma of the input (an FFT spectrum), and stores the results in the output array (Chroma coefficients).";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "ai/features/chroma.ck" ) ) goto error;

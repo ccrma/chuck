@@ -1571,7 +1571,7 @@ Chuck_VM_Code::Chuck_VM_Code()
     need_this = FALSE;
     is_static = FALSE;
     native_func = 0;
-    native_func_type = NATIVE_UNKNOWN;
+    native_func_kind = ae_fp_unknown;
 }
 
 

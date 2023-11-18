@@ -1011,6 +1011,9 @@ a_Vec new_vec( a_Exp e, uint32_t lineNum, uint32_t posNum ) // ge: added 1.3.5.3
 }
 
 
+
+
+// operator strings
 static const char * op_str[] = {
   "[no_op]",
   "+",
@@ -1064,10 +1067,6 @@ static const char * op_str[] = {
   ">--",
   "--<"
 };
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: op2str()
 // desc: operator enumeration to string
@@ -1096,6 +1095,32 @@ ae_Operator str2op( const char * str )
         if( s == op_str[i] ) return (ae_Operator)i;
 
     return ae_op_none;
+}
+
+
+
+
+// function pointer kind names | 1.5.1.9
+static const char * fpkind_str[] = {
+    "[unknown]",
+    "ctor",
+    "dtor",
+    "mfun",
+    "sfun",
+    "gfun",
+    "addr"
+};
+//-----------------------------------------------------------------------------
+// name: fpkind2str() | 1.5.1.9
+// desc: convert fp kind by enum to str
+//-----------------------------------------------------------------------------
+const char * fpkind2str( ae_FuncPointerKind kind )
+{
+    t_CKINT index = (t_CKINT)kind;
+    if( index < 0 || index >= ae_fp_count )
+        return "[non-existent func kind]";
+
+    return fpkind_str[index];
 }
 
 

@@ -600,7 +600,7 @@ void EM_error2b( t_CKINT line, const char * message, ... )
 
 //-----------------------------------------------------------------------------
 // name: EM_error3()
-// desc: prints message, no line number
+// desc: prints message, no prefix, no line number
 //-----------------------------------------------------------------------------
 void EM_error3( const char * message, ... )
 {

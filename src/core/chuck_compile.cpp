@@ -718,11 +718,11 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 
     // load
     EM_log( CK_LOG_SEVERE, "module 'math'" );
-    if( !load_module( compiler, env, libmath_query, "Math", "global" ) ) goto error;
+    if( !load_module( compiler, env, libmath_query, "math", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "module 'osc'" );
     load_module( compiler, env, osc_query, "osc", "global" );
     EM_log( CK_LOG_SEVERE, "module 'ai'" );
-    if( !load_module( compiler, env, libai_query, "AI", "global" ) ) goto error;
+    if( !load_module( compiler, env, libai_query, "ai", "global" ) ) goto error;
     EM_log( CK_LOG_SEVERE, "module 'extract'" );
     load_module( compiler, env, extract_query, "extract", "global" );
     EM_log( CK_LOG_SEVERE, "module 'filter'" );
@@ -734,11 +734,11 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     EM_log( CK_LOG_SEVERE, "module 'xxx'" );
     load_module( compiler, env, xxx_query, "xxx", "global" );
     EM_log( CK_LOG_SEVERE, "module 'std'" );
-    if( !load_module( compiler, env, libstd_query, "Std", "global" ) ) goto error;
+    if( !load_module( compiler, env, libstd_query, "std", "global" ) ) goto error;
 
     // load
     EM_log( CK_LOG_SEVERE, "module 'machine'" );
-    if( !load_module( compiler, env, machine_query, "Machine", "global" ) ) goto error;
+    if( !load_module( compiler, env, machine_query, "machine", "global" ) ) goto error;
 
     #ifndef __DISABLE_NETWORK__
     EM_log( CK_LOG_SEVERE, "module 'opsc'" );
@@ -759,7 +759,7 @@ t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
     #endif
 
     EM_log( CK_LOG_SEVERE, "module 'CKDoc'" );
-    if( !load_module( compiler, env, ckdoc_query, "CKDoc", "global" ) ) goto error;
+    if( !load_module( compiler, env, ckdoc_query, "ckdoc", "global" ) ) goto error;
 
     // clear context
     type_engine_unload_context( env );

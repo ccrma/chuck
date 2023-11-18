@@ -184,9 +184,10 @@ void CK_DLL_CALL ck_add_ctor( Chuck_DL_Query * query, f_ctor ctor )
 
     // allocate
     Chuck_DL_Func * f = new Chuck_DL_Func;
-    f->name = "[ctor]";
+    f->name = "@construct";
     f->type = "void";
     f->ctor = ctor;
+    f->fpKind = ae_fp_ctor; // 1.5.1.9
 
     // add
     query->curr_class->ctors.push_back( f );
@@ -220,9 +221,10 @@ void CK_DLL_CALL ck_add_dtor( Chuck_DL_Query * query, f_dtor dtor )
 
     // allocate
     Chuck_DL_Func * f = new Chuck_DL_Func;
-    f->name = "[dtor]";
+    f->name = "@destruct";
     f->type = "void";
     f->dtor = dtor;
+    f->fpKind = ae_fp_dtor; // 1.5.1.9
 
     // add
     query->curr_class->dtor = f;
@@ -253,6 +255,7 @@ void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr,
     f->name = name;
     f->type = type;
     f->mfun = addr;
+    f->fpKind = ae_fp_mfun; // 1.5.1.9
 
     // add
     query->curr_class->mfuns.push_back( f );
@@ -282,6 +285,7 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
     f->name = name;
     f->type = type;
     f->sfun = addr;
+    f->fpKind = ae_fp_sfun; // 1.5.1.9
 
     // add
     query->curr_class->sfuns.push_back( f );
@@ -314,6 +318,7 @@ void CK_DLL_CALL ck_add_op_overload_binary( Chuck_DL_Query * query, f_gfun addr,
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
+    f->fpKind = ae_fp_gfun; // 1.5.1.9
     f->opOverloadKind = te_op_overload_binary;
     f->op2overload = op;
 
@@ -357,6 +362,7 @@ void CK_DLL_CALL ck_add_op_overload_prefix( Chuck_DL_Query * query, f_gfun addr,
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
+    f->fpKind = ae_fp_gfun; // 1.5.1.9
     f->opOverloadKind = te_op_overload_unary_pre;
     f->op2overload = op;
 
@@ -395,6 +401,7 @@ void CK_DLL_CALL ck_add_op_overload_postfix( Chuck_DL_Query * query, f_gfun addr
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
+    f->fpKind = ae_fp_gfun; // 1.5.1.9
     f->opOverloadKind = te_op_overload_unary_post;
     f->op2overload = op;
 
@@ -809,10 +816,12 @@ t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
 //------------------------------------------------------------------------------
 // alternative functions to make stuff
 //------------------------------------------------------------------------------
+Chuck_DL_Func * CK_DLL_CALL make_new_ctor( f_ctor ctor )
+{   return new Chuck_DL_Func( "void", "@construct", (t_CKUINT)ctor, ae_fp_ctor ); }
 Chuck_DL_Func * CK_DLL_CALL make_new_mfun( const char * t, const char * n, f_mfun mfun )
-{   return new Chuck_DL_Func( t, n, (t_CKUINT)mfun ); }
+{   return new Chuck_DL_Func( t, n, (t_CKUINT)mfun, ae_fp_mfun ); }
 Chuck_DL_Func * CK_DLL_CALL make_new_sfun( const char * t, const char * n, f_sfun sfun )
-{   return new Chuck_DL_Func( t, n, (t_CKUINT)sfun ); }
+{   return new Chuck_DL_Func( t, n, (t_CKUINT)sfun, ae_fp_sfun ); }
 Chuck_DL_Value * CK_DLL_CALL make_new_arg( const char * t, const char * n )
 {   return new Chuck_DL_Value( t, n ); }
 Chuck_DL_Value * CK_DLL_CALL make_new_mvar( const char * t, const char * n, t_CKBOOL c )
@@ -965,7 +974,7 @@ const Chuck_DL_Query * Chuck_DLL::query()
     m_query.clear();
     if( !m_query_func( &m_query ) || m_query.errorEncountered )
     {
-        m_last_error = string("unsuccessful query in dll '") + m_filename
+        m_last_error = string("unsuccessful query in dll/module '") + (m_filename.length() ? m_filename : m_id)
                        + string("'");
         return NULL;
     }

@@ -81,7 +81,23 @@ typedef enum {
     ae_key_private, ae_key_static, ae_key_instance, ae_key_abstract
 } ae_Keyword;
 
-// key
+// enumeration for kinds of function pointers | 1.5.1.9 (ge) added
+typedef enum
+{
+    ae_fp_unknown = 0,
+    ae_fp_ctor,
+    ae_fp_dtor,
+    ae_fp_mfun,
+    ae_fp_sfun,
+    ae_fp_gfun,
+    ae_fp_addr,
+    // keep this last
+    ae_fp_count
+} ae_FuncPointerKind;
+
+// convert fp kind by enum to str | 1.5.1.9 (ge) added
+const char * fpkind2str( ae_FuncPointerKind kind );
+
 
 
 
@@ -498,7 +514,8 @@ struct a_Func_Def_ {
     unsigned int global;
     unsigned int s_type;
     unsigned int stack_depth;
-    void * dl_func_ptr;  // should be not NULL iff s_type == ae_func_builtin
+    void * dl_func_ptr; // should be not NULL iff s_type == ae_func_builtin
+    ae_FuncPointerKind dl_fp_kind; // kind of func_ptr | 1.5.1.9 (ge) added
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
     uint32_t overload_post; // 1.5.1.5 (ge) overload as post? e.g., @operator(args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references

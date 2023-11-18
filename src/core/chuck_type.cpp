@@ -6426,7 +6426,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;
         // mark type as ctor
-        type->info->pre_ctor->native_func_type = Chuck_VM_Code::NATIVE_CTOR;
+        type->info->pre_ctor->native_func_kind = ae_fp_ctor;
         // specify that we need this
         type->info->pre_ctor->need_this = TRUE;
         // no arguments to preconstructor other than self
@@ -6447,7 +6447,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         // add dtor
         type->info->pre_dtor->native_func = (t_CKUINT)dtor;
         // mark type as dtor
-        type->info->pre_dtor->native_func_type = Chuck_VM_Code::NATIVE_DTOR;
+        type->info->pre_dtor->native_func_kind = ae_fp_dtor;
         // specify that we need this
         type->info->pre_dtor->need_this = TRUE;
         // no arguments to destructor other than self
@@ -6743,6 +6743,59 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_import_ctor() | 1.5.1.9 (ge)
+// desc: import constructor (must be between class_begin/end)
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_import_ctor( Chuck_Env * env, Chuck_DL_Func * ctor )
+{
+    a_Func_Def func_def = NULL;
+
+    // make sure we are in class
+    if( !env->class_def )
+    {
+        // error
+        EM_error2( 0, "(import error) import_ctor() '%s' invoked outside begin/end",
+                  env->context ? env->context->filename.c_str() : "[no context]" );
+        return FALSE;
+    }
+
+    // make sure the type matches
+    if( ctor->fpKind != ae_fp_ctor )
+    {
+        // error
+        EM_error2( 0, "(import error) import_ctor() incompatible with (%s) '%s.%s'...",
+                   fpkind2str(ctor->fpKind), env->class_def->base_name.c_str(), ctor->name.c_str() );
+        return FALSE;
+    }
+
+    // set return type to void
+    if( ctor->type == "" ) ctor->type = env->ckt_void->name();
+    // set ctor name to class
+    if( ctor->name == "" || ctor->name == "@construct" ) ctor->name = env->class_def->base_name;
+
+    // make into func_def
+    func_def = make_dll_as_fun( ctor, FALSE, FALSE );
+    if( !func_def )
+        return FALSE;
+
+    // add the function to class
+    if( !type_engine_scan1_func_def( env, func_def ) )
+        return FALSE;
+    if( !type_engine_scan2_func_def( env, func_def ) )
+        return FALSE;
+    if( !type_engine_check_func_def( env, func_def ) )
+        return FALSE;
+
+    if( ctor->doc.size() > 0 )
+        func_def->ck_func->doc = ctor->doc;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_import_mfun()
 // desc: import member function (must be between class_begin/end)
 //-----------------------------------------------------------------------------
@@ -6754,9 +6807,17 @@ t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun )
     if( !env->class_def )
     {
         // error
-        EM_error2( 0,
-            "import error: import_mfun '%s' invoked between begin/end",
-            mfun->name.c_str() );
+        EM_error2( 0, "(import error) import_mfun '%s' invoked outside begin/end",
+                   mfun->name.c_str() );
+        return FALSE;
+    }
+
+    // make sure the type matches
+    if( mfun->fpKind != ae_fp_mfun )
+    {
+        // error
+        EM_error2( 0, "(import error) import_mfun() incompatible with (%s) '%s.%s'...",
+                   fpkind2str(mfun->fpKind), env->class_def->base_name.c_str(), mfun->name.c_str() );
         return FALSE;
     }
 
@@ -6794,9 +6855,17 @@ t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun )
     if( !env->class_def )
     {
         // error
-        EM_error2( 0,
-            "import error: import_sfun '%s' invoked between begin/end",
-            sfun->name.c_str() );
+        EM_error2( 0, "(import error) import_sfun '%s' invoked outside begin/end",
+                   sfun->name.c_str() );
+        return FALSE;
+    }
+
+    // make sure the type matches
+    if( sfun->fpKind != ae_fp_sfun )
+    {
+        // error
+        EM_error2( 0, "(import error) import_sfun() incompatible with (%s) '%s.%s'...",
+                   fpkind2str(sfun->fpKind), env->class_def->base_name.c_str(), sfun->name.c_str() );
         return FALSE;
     }
 
@@ -6833,7 +6902,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
     {
         // error
         EM_error2( 0,
-            "import error: import_mvar '%s' invoked between begin/end",
+            "(import error) import_mvar '%s' invoked outside begin/end",
             name );
         return CK_INVALID_OFFSET;
     }
@@ -6914,7 +6983,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     {
         // error
         EM_error2( 0,
-            "import error: import_svar '%s' invoked between begin/end",
+            "(import error) import_svar '%s' invoked outside begin/end",
             name );
         return FALSE;
     }
@@ -6973,7 +7042,7 @@ t_CKBOOL type_engine_import_add_ex( Chuck_Env * env, const char * ex )
     {
         // error
         EM_error2( 0,
-                   "import error: import_add_ex '%s' invoked between begin/end",
+                   "(import error) import_add_ex '%s' invoked between begin/end",
                    ex );
         return FALSE;
     }
@@ -7015,7 +7084,7 @@ t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * sfun )
     {
         // error
         EM_error2( 0,
-            "import error: import_sfun '%s' invoked between begin/end",
+            "(import error) import_sfun '%s' invoked between begin/end",
             sfun->name.c_str() );
         return FALSE;
     }
@@ -8093,8 +8162,10 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // mark the function as imported (instead of defined in ChucK)
     func_def->s_type = ae_func_builtin;
     // copy the function pointer - the type doesn't matter here
-    // ...since we copying into a void * - so mfun is used
-    func_def->dl_func_ptr = (void *)dl_fun->mfun;
+    // ...since we copying into a void * - so addr is used
+    func_def->dl_func_ptr = (void *)dl_fun->addr;
+    // copy the function pointer kind | 1.5.1.9
+    func_def->dl_fp_kind = dl_fun->fpKind;
     // copy the operator overload info | 1.5.1.5
     func_def->op2overload = dl_fun->op2overload;
     // set if unary postfix overload | 1.5.1.5

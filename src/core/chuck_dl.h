@@ -663,8 +663,10 @@ struct Chuck_DL_Func
     std::string name;
     // the return type
     std::string type;
-    // the pointer
+    // the function pointer
     union { f_ctor ctor; f_dtor dtor; f_mfun mfun; f_sfun sfun; f_gfun gfun; t_CKUINT addr; };
+    // the kind of the function pointer
+    ae_FuncPointerKind fpKind;
     // arguments
     std::vector<Chuck_DL_Value *> args;
     // description
@@ -675,9 +677,9 @@ struct Chuck_DL_Func
     ae_Operator op2overload;
 
     // constructor
-    Chuck_DL_Func() { ctor = NULL; opOverloadKind = te_op_overload_none; op2overload = ae_op_none; }
-    Chuck_DL_Func( const char * t, const char * n, t_CKUINT a )
-    { name = n; type = t; addr = a; opOverloadKind = te_op_overload_none; op2overload = ae_op_none; }
+    Chuck_DL_Func() { ctor = NULL; fpKind = ae_fp_unknown; opOverloadKind = te_op_overload_none; op2overload = ae_op_none; }
+    Chuck_DL_Func( const char * t, const char * n, t_CKUINT a, ae_FuncPointerKind kind )
+    { name = n?n:""; type = t?t:""; addr = a; fpKind = kind; opOverloadKind = te_op_overload_none; op2overload = ae_op_none; }
     // destructor
     ~Chuck_DL_Func();
     // add arg
@@ -712,6 +714,7 @@ struct Chuck_DL_Ctrl
 //------------------------------------------------------------------------------
 // alternative functions to make stuff
 //------------------------------------------------------------------------------
+Chuck_DL_Func * make_new_ctor( f_ctor ctor );
 Chuck_DL_Func * make_new_mfun( const char * t, const char * n, f_mfun mfun );
 Chuck_DL_Func * make_new_sfun( const char * t, const char * n, f_sfun sfun );
 Chuck_DL_Value * make_new_arg( const char * t, const char * n );

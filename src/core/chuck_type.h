@@ -1297,6 +1297,7 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, 
                                             t_CKUINT num_ins_ana = CK_NO_VALUE,
                                             t_CKUINT num_outs_ana = CK_NO_VALUE,
                                             const char * doc = NULL );
+t_CKBOOL type_engine_import_ctor( Chuck_Env * env, Chuck_DL_Func * ctor ); // 1.5.1.9 (ge) added
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );
 t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,

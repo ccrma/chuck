@@ -2901,6 +2901,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         func->code->is_static = func->is_static;
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def()->dl_func_ptr;
+        // set the function pointer kind | 1.5.1.9
+        func->code->native_func_kind = func->def()->dl_fp_kind;
     }
 
     // make a new type for the function

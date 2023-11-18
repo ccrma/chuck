@@ -143,14 +143,11 @@ public:
     t_CKBOOL is_static; // 1.4.1.0
     // native
     t_CKUINT native_func;
-    // is ctor?
-    t_CKUINT native_func_type;
+    // what kind of native func?
+    ae_FuncPointerKind native_func_kind;
 
     // filename this code came from (added 1.3.0.0)
     std::string filename;
-
-    // native func types
-    enum { NATIVE_UNKNOWN, NATIVE_CTOR, NATIVE_DTOR, NATIVE_MFUN, NATIVE_SFUN };
 };
 
 

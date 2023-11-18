@@ -5236,8 +5236,6 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     pop_( reg_sp, 2 );
     // get the function to be called as code
     Chuck_VM_Code * func = (Chuck_VM_Code *)*reg_sp;
-    // get the function to be called
-    // MOVED TO BELOW: f_mfun f = (f_mfun)func->native_func;
     // get the local stack depth - caller local variables
     t_CKUINT local_depth = *(reg_sp+1);
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
@@ -5287,16 +5285,18 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             *mem_sp2++ = *reg_sp2++;
     }
 
-    // check the type
-    if( func->native_func_type == Chuck_VM_Code::NATIVE_CTOR )
+    // check the function pointer kind: ctor or mfun?
+    if( func->native_func_kind == ae_fp_ctor ) // ctor
     {
         // cast to right type
         f_ctor f = (f_ctor)func->native_func;
         // call (added 1.3.0.0 -- Chuck_DL_Api::instance())
         f( (Chuck_Object *)(*mem_sp), mem_sp + 1, vm, shred, Chuck_DL_Api::instance() );
     }
-    else
+    else // mfun
     {
+        // make sure is mfun
+        assert( func->native_func_kind == ae_fp_mfun );
         // cast to right type
         f_mfun f = (f_mfun)func->native_func;
         // call the function (added 1.3.0.0 -- Chuck_DL_Api::instance())
@@ -5407,6 +5407,8 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
     // get the function to be called
     f_sfun f = (f_sfun)func->native_func;
+    // verify | 1.5.1.9
+    assert( func->native_func_kind == ae_fp_sfun );
     // get the local stack depth - caller local variables
     t_CKUINT local_depth = *(reg_sp+1);
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
@@ -5564,6 +5566,8 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
     // get the function to be called
     f_gfun f = (f_gfun)func->native_func;
+    // verify | 1.5.1.9
+    assert( func->native_func_kind == ae_fp_gfun );
     // get the local stack depth - caller local variables
     t_CKUINT local_depth = *(reg_sp+1);
     // convert to number of int's (was: 4-byte words), extra partial word counts as additional word
