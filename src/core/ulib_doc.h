@@ -120,6 +120,8 @@ public:
     virtual void end_static_member_func() = 0;
     virtual void begin_member_func(Chuck_Func * func) = 0;
     virtual void end_member_func() = 0;
+    virtual void begin_ctor( Chuck_Func * func ) = 0;
+    virtual void end_ctor() = 0;
 
     // func arguments
     virtual void func_arg( a_Arg_List arg ) = 0;

@@ -8429,75 +8429,92 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
         return FALSE;
     }
 
+    // sort constructors
+    sort( c->ctors.begin(), c->ctors.end(), ck_comp_dl_func_args );
+
     // check constructor(s)
-    if(c->ctors.size() > 0)
-        ctor = c->ctors[0]; // TODO: uh, is more than one possible?
+    for( t_CKUINT i = 0; i < c->ctors.size(); i++ )
+    {
+        // find default constructor
+        if( c->ctors[i]->args.size() == 0 )
+        {
+            // remember it
+            ctor = c->ctors[i];
+            // should be only one
+            break;
+        }
+    }
 
     // check whether to import as UGen or other
     if( (c->ugen_tick || c->ugen_tickf) && c->ugen_num_out )
     {
         // begin import as ugen
-        if(!type_engine_import_ugen_begin(env, c->name.c_str(),
-                                          c->parent.c_str(), env->global(),
-                                          ctor ? (f_ctor) ctor->addr : NULL,
-                                          dtor ? (f_dtor) dtor->addr : NULL,
-                                          c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
-                                          c->ugen_num_in, c->ugen_num_out,
-                                          c->doc.length() > 0 ? c->doc.c_str() : NULL ))
+        if( !type_engine_import_ugen_begin( env, c->name.c_str(),
+                                            c->parent.c_str(), env->global(),
+                                            ctor ? ctor->ctor : NULL,
+                                            dtor ? dtor->dtor : NULL,
+                                            c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
+                                            c->ugen_num_in, c->ugen_num_out,
+                                            c->doc.length() > 0 ? c->doc.c_str() : NULL ) )
             goto error;
     }
     else
     {
         // begin import as normal class (non-ugen)
-        if(!type_engine_import_class_begin(env, c->name.c_str(),
-                                           c->parent.c_str(), env->global(),
-                                           ctor ? (f_ctor) ctor->addr : NULL,
-                                           dtor ? (f_dtor) dtor->addr : NULL,
-                                           c->doc.length() > 0 ? c->doc.c_str() : NULL))
+        if( !type_engine_import_class_begin( env, c->name.c_str(),
+                                             c->parent.c_str(), env->global(),
+                                             ctor ? ctor->ctor : NULL,
+                                             dtor ? dtor->dtor : NULL,
+                                             c->doc.length() > 0 ? c->doc.c_str() : NULL ) )
             goto error;
     }
 
     int j;
 
     // import member variables
-    for(j = 0; j < c->mvars.size(); j++)
+    for( j = 0; j < c->mvars.size(); j++ )
     {
         Chuck_DL_Value * mvar = c->mvars[j];
-        if(type_engine_import_mvar(env, mvar->type.c_str(),
-                                   mvar->name.c_str(), mvar->is_const,
-                                   mvar->doc.size() ? mvar->doc.c_str() : NULL)
-           == CK_INVALID_OFFSET)
+        if( type_engine_import_mvar( env, mvar->type.c_str(), mvar->name.c_str(), mvar->is_const,
+                                     mvar->doc.size() ? mvar->doc.c_str() : NULL ) == CK_INVALID_OFFSET )
             goto error;
     }
 
     // import static variables
-    for(j = 0; j < c->svars.size(); j++)
+    for( j = 0; j < c->svars.size(); j++ )
     {
         Chuck_DL_Value * svar = c->svars[j];
-        if(!type_engine_import_svar(env, svar->type.c_str(), svar->name.c_str(),
-                                    svar->is_const, (t_CKUINT) svar->static_addr,
-                                    svar->doc.size() ? svar->doc.c_str() : NULL))
+        if( !type_engine_import_svar( env, svar->type.c_str(), svar->name.c_str(),
+                                      svar->is_const, (t_CKUINT)svar->static_addr,
+                                      svar->doc.size() ? svar->doc.c_str() : NULL ) )
             goto error;
     }
 
+    // import constructors
+    for( j = 0; j < c->ctors.size(); j++ )
+    {
+        Chuck_DL_Func * theFunc = c->ctors[j];
+        if( !type_engine_import_ctor( env, theFunc ) ) goto error;
+    }
+
     // import member functions
-    for(j = 0; j < c->mfuns.size(); j++)
+    for( j = 0; j < c->mfuns.size(); j++ )
     {
         Chuck_DL_Func * theFunc = c->mfuns[j];
-        if(!type_engine_import_mfun(env, theFunc)) goto error;
+        if( !type_engine_import_mfun( env, theFunc ) ) goto error;
     }
 
     // import static functions
-    for(j = 0; j < c->sfuns.size(); j++)
+    for( j = 0; j < c->sfuns.size(); j++ )
     {
         Chuck_DL_Func * theFunc = c->sfuns[j];
-        if(!type_engine_import_sfun(env, theFunc)) goto error;
+        if( !type_engine_import_sfun( env, theFunc ) ) goto error;
     }
 
     // import examples (if any)
-    for(j = 0; j < c->examples.size(); j++)
+    for( j = 0; j < c->examples.size(); j++ )
     {
-        if(!type_engine_import_add_ex(env, c->examples[j].c_str())) goto error;
+        if( !type_engine_import_add_ex( env, c->examples[j].c_str() ) ) goto error;
     }
 
     // end class import
@@ -9594,6 +9611,15 @@ bool ck_comp_value( Chuck_Value * a, Chuck_Value * b )
     if( lowerA != lowerB ) return lowerA < lowerB;
     // if same, favor lower-case
     else return a->name > b->name;
+}
+bool ck_comp_dl_func_args(Chuck_DL_Func* a, Chuck_DL_Func* b)
+{
+    // if names not same
+    if(a->name != b->name) return a->name < b->name;
+    // num args
+    t_CKUINT numA = a->args.size(), numB = b->args.size();
+    // compare num args
+    return numA < numB;
 }
 
 
