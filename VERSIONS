@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.1.9 (November 2023) "Better Late Than Never...constructors"
+1.5.2.0 (November 2023) "Better Late Than Never...constructors"
 =======
 - (added) language-level, overloadable class constructors
 - (added) language-level class destructor
@@ -41,9 +41,12 @@ new Foo(10,11,12) @=> Foo @ f4;
 ```
 - (added) examples/class/constructors.ck
 - (added) examples/class/destructor.ck
+- (added) CKDoc and .help() support for constructors
 - (added) Shred.parent() and Shred.ancestor()
+- (added) chugins support for overloading constructors
 - (added) chugins runtime API support for creating arrays from chugins
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
+- (updated) ChucK API doucmentation for constructors
 
 
 1.5.1.8 (October 2023) "Halloween Release"
