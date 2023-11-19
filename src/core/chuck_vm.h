@@ -860,7 +860,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_VM_DtorInvoker | 1.5.1.9 (ge)
+// name: struct Chuck_VM_DtorInvoker | 1.5.2.0 (ge)
 // desc: aparatus for calling chuck-defined @destruct from c++,
 //       typically called for Object cleanup
 //-----------------------------------------------------------------------------

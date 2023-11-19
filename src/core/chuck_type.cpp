@@ -101,7 +101,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
 // convert dot member expression to string for printing
 string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member );
-// type check constructor invocation | 1.5.1.9 (ge) added
+// type check constructor invocation | 1.5.2.0 (ge) added
 Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_Ctor_Call ctor, a_Array_Sub array, uint32_t where );
 // make an chuck dll function into absyn function
 a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static, t_CKBOOL is_base_primtive );
@@ -3118,7 +3118,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 env->class_def->depends.add( &t->depends );
             }
 
-            // constructors | 1.5.1.9 (ge) added
+            // constructors | 1.5.2.0 (ge) added
             if( unary->ctor.invoked )
             {
                 // type check any constructor args
@@ -3357,7 +3357,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             return NULL;
                         }
 
-                        // 1.5.1.9 (ge) added this check
+                        // 1.5.2.0 (ge) added this check
                         // @destruct() cannot access values that are:
                         // file-context-global-scope (v->is_context_global)
                         // AND non-explictly-global !(v->is_global) variables
@@ -4143,7 +4143,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             }
         }
 
-        // check for constructor args | 1.5.1.9 (ge) added
+        // check for constructor args | 1.5.2.0 (ge) added
         // NOTE empty () is handled elsewhere as default constructor
         if( var_decl->ctor.args != NULL )
         {
@@ -5049,7 +5049,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     {
         // make reference to parent
         theFunc->up = theOverride;
-        // ref count | 1.5.1.9 (ge) added
+        // ref count | 1.5.2.0 (ge) added
         CK_SAFE_ADD_REF( theFunc->up );
     }
 
@@ -5399,7 +5399,7 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     S_Symbol oldName = theName;
     std::string theNameStr = S_name(theName);
 
-    // parse for [] | 1.5.1.9
+    // parse for [] | 1.5.2.0
     while( theNameStr.size() >= 2 && theNameStr.substr(theNameStr.size() - 2, 2) == "[]" )
     {
         depth++;
@@ -5409,7 +5409,7 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     }
 
     // if this is an array, create an S_Symbol with only the base type
-    // (i.e. "int[]" becomes "int" | 1.5.1.9
+    // (i.e. "int[]" becomes "int" | 1.5.2.0
     if( depth )
     {
         theName = insert_symbol(theNameStr.c_str());
@@ -5423,7 +5423,7 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     if( climb > 0 && !t && parent && keepGoing )
         return parent->lookup_type( oldName, climb, stayWithinClassDef );
 
-    // if this is an array, create an array type and return that | 1.5.1.9
+    // if this is an array, create an array type and return that | 1.5.2.0
     if( depth )
     {
         // base type
@@ -5812,7 +5812,7 @@ Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_check_ctor_call() | 1.5.1.9 (ge) added
+// name: type_engine_check_ctor_call() | 1.5.2.0 (ge) added
 // desc: type check constructor invocation; also see func_call()
 //       (RELATED: type_engine_check_func_call())
 //
@@ -5960,9 +5960,9 @@ te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ) // added 1.3.1.0
     // done
     return kind;
 }
-t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.2.0 (ge) added for constructors
 { return (env->class_def && S_name(func_def->name)==env->class_def->name()); }
-t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.1.9 (ge) added for constructors
+t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ) // 1.5.2.0 (ge) added for constructors
 { return (env->class_def && S_name(func_def->name)==(string("@destruct"))); }
 
 
@@ -6421,7 +6421,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->has_pre_ctor = TRUE;
         // allocate vm code for (imported) pre_ctor
         type->info->pre_ctor = new Chuck_VM_Code;
-        // add ref | 1.5.1.9 (ge) added
+        // add ref | 1.5.2.0 (ge) added
         CK_SAFE_ADD_REF( type->info->pre_ctor );
         // add pre_ctor
         type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;
@@ -6431,7 +6431,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->info->pre_ctor->need_this = TRUE;
         // no arguments to preconstructor other than self
         type->info->pre_ctor->stack_depth = sizeof(t_CKUINT);
-        // add name | 1.5.1.9 (ge) added
+        // add name | 1.5.2.0 (ge) added
         type->info->pre_ctor->name = string("class ") + type->base_name;
     }
 
@@ -6442,7 +6442,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->has_pre_dtor = TRUE;
         // allocate vm code for dtor
         type->info->pre_dtor = new Chuck_VM_Code;
-        // add ref | 1.5.1.9 (ge) added
+        // add ref | 1.5.2.0 (ge) added
         CK_SAFE_ADD_REF( type->info->pre_dtor );
         // add dtor
         type->info->pre_dtor->native_func = (t_CKUINT)dtor;
@@ -6452,7 +6452,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         type->info->pre_dtor->need_this = TRUE;
         // no arguments to destructor other than self
         type->info->pre_dtor->stack_depth = sizeof(t_CKUINT);
-        // add name | 1.5.1.9 (ge) added
+        // add name | 1.5.2.0 (ge) added
         type->info->pre_dtor->name = string("class ") + type->base_name + string(" (destructor)");
     }
 
@@ -6743,7 +6743,7 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_import_ctor() | 1.5.1.9 (ge)
+// name: type_engine_import_ctor() | 1.5.2.0 (ge)
 // desc: import constructor (must be between class_begin/end)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_import_ctor( Chuck_Env * env, Chuck_DL_Func * ctor )
@@ -6928,7 +6928,7 @@ t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
         type_decl->array->depth = array_depth;
     }
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 ); // 1.5.1.9 (ge) add ctor arglist
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 ); // 1.5.2.0 (ge) add ctor arglist
 
     // added 2013-10-22 - spencer
     // allow array-type mvars
@@ -7001,7 +7001,7 @@ t_CKBOOL type_engine_import_svar( Chuck_Env * env, const char * type,
     // make type decl
     a_Type_Decl type_decl = new_type_decl( thePath, FALSE, 0, 0 );
     // make var decl
-    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 );  // 1.5.1.9 (ge) add ctor arglist
+    a_Var_Decl var_decl = new_var_decl( (char *)name, FALSE, NULL, NULL, 0, 0 );  // 1.5.2.0 (ge) add ctor arglist
     // make var decl list
     a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
     // make exp decl
@@ -7951,7 +7951,7 @@ a_Arg_List partial_deep_copy_args( a_Arg_List list )
     a_Var_Decl var_decl = NULL;
 
     // need name but not 'array' on var_decl
-    // 1.5.1.9 (ge) added ctor_args=NULL, also not needed from the callee's perspective
+    // 1.5.2.0 (ge) added ctor_args=NULL, also not needed from the callee's perspective
     var_decl = new_var_decl( S_name(list->var_decl->xid), FALSE, NULL, NULL, list->var_decl->line, list->var_decl->where );
     // need var_decl by not type_decl
     copy = new_arg_list( NULL, var_decl, list->line, list->where );
@@ -8069,7 +8069,7 @@ a_Arg_List make_dll_arg_list( Chuck_DL_Func * dl_fun )
         }
 
         // make var decl
-        // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+        // 1.5.2.0 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
         var_decl = new_var_decl( (char *)arg->name.c_str(), FALSE, NULL, array_sub, 0, 0 );
 
         // make new arg
@@ -8164,7 +8164,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // copy the function pointer - the type doesn't matter here
     // ...since we copying into a void * - so addr is used
     func_def->dl_func_ptr = (void *)dl_fun->addr;
-    // copy the function pointer kind | 1.5.1.9
+    // copy the function pointer kind | 1.5.2.0
     func_def->dl_fp_kind = dl_fun->fpKind;
     // copy the operator overload info | 1.5.1.5
     func_def->op2overload = dl_fun->op2overload;
@@ -8286,7 +8286,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
             // make type decl
             a_Type_Decl type_decl = new_type_decl( thePath2, FALSE, 0, 0 );
             // make var decl
-            // 1.5.1.9 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
+            // 1.5.2.0 (ge) add ctor arglist (NULL); consider enable+refactor to support ctor
             a_Var_Decl var_decl = new_var_decl( cl->svars[j]->name.c_str(), FALSE, NULL, NULL, 0, 0 );
             // make var decl list
             a_Var_Decl_List var_decl_list = new_var_decl_list( var_decl, 0, 0 );
@@ -8842,9 +8842,9 @@ Chuck_Func::~Chuck_Func()
 
     // release invoker(s) | 1.5.1.5
     CK_SAFE_DELETE( this->invoker_mfun );
-    // release next | 1.5.1.9
+    // release next | 1.5.2.0
     CK_SAFE_RELEASE( this->next );
-    // release up | 1.5.1.9
+    // release up | 1.5.2.0
     CK_SAFE_RELEASE( this->up );
 
     // TODO: check if more references to release?
@@ -9361,9 +9361,9 @@ void Chuck_Type::reset()
         // release references
         CK_SAFE_RELEASE( info );
         CK_SAFE_RELEASE( owner );
-        CK_SAFE_RELEASE( ctors ); // 1.5.1.9 (ge) added
-        CK_SAFE_RELEASE( ctor_default ); // 1.5.1.9 (ge) added
-        CK_SAFE_RELEASE( dtor ); // 1.5.1.9 (ge) added
+        CK_SAFE_RELEASE( ctors ); // 1.5.2.0 (ge) added
+        CK_SAFE_RELEASE( ctor_default ); // 1.5.2.0 (ge) added
+        CK_SAFE_RELEASE( dtor ); // 1.5.2.0 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
@@ -9492,7 +9492,7 @@ const char * Chuck_Type::c_name()
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_has_implicit_def_ctor() | 1.5.1.9
+// name: type_engine_has_implicit_def_ctor() | 1.5.2.0
 // desc: determine whether type has implicit default constructor; helpful for ckdoc
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type )
@@ -9910,9 +9910,9 @@ void Chuck_Type::apropos_funcs( std::string & output,
                 // append to static funcs list
                 sfuncs.push_back( theFunc );
             } else {
-                // append to constructors | 1.5.1.9
+                // append to constructors | 1.5.2.0
                 if( theFunc->is_ctor ) ctors.push_back( theFunc );
-                // set as destructor | 1.5.1.9
+                // set as destructor | 1.5.2.0
                 else if( theFunc->is_dtor ) dtor = theFunc;
                 // append to static funcs list
                 else mfuncs.push_back( theFunc );
@@ -10004,7 +10004,7 @@ void Chuck_Type::apropos_funcs( std::string & output,
             }
         }
 
-        // has destructor? | 1.5.1.9
+        // has destructor? | 1.5.2.0
         if( dtor )
         {
             // output function content

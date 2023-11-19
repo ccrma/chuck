@@ -587,7 +587,7 @@ a_Exp new_exp_from_array_lit( a_Array_Sub exp_list, uint32_t lineNum, uint32_t p
     a->s_meta = ae_meta_value;
     a->primary.s_type = ae_primary_array;
     a->primary.array = exp_list;
-    a->primary.array->self = a; // 1.5.1.9 (ge & nshaheed) added
+    a->primary.array->self = a; // 1.5.2.0 (ge & nshaheed) added
     a->line = lineNum; a->where = posNum;
     a->primary.line = lineNum; a->primary.where = posNum;
     a->primary.self = a;
@@ -795,7 +795,7 @@ a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
         sizeof( struct a_Func_Def_ ) );
     a->func_decl = func_decl;
     a->static_decl = static_decl;
-    // substitute if NULL | 1.5.1.9 (ge) for constructors
+    // substitute if NULL | 1.5.2.0 (ge) for constructors
     a->type_decl = type_decl ? type_decl : new_type_decl(new_id_list("void",0,0),0,0,0);
     a->name = insert_symbol( name );
     a->arg_list = arg_list;
@@ -1100,7 +1100,7 @@ ae_Operator str2op( const char * str )
 
 
 
-// function pointer kind names | 1.5.1.9
+// function pointer kind names | 1.5.2.0
 static const char * fpkind_str[] = {
     "[unknown]",
     "ctor",
@@ -1111,7 +1111,7 @@ static const char * fpkind_str[] = {
     "addr"
 };
 //-----------------------------------------------------------------------------
-// name: fpkind2str() | 1.5.1.9
+// name: fpkind2str() | 1.5.2.0
 // desc: convert fp kind by enum to str
 //-----------------------------------------------------------------------------
 const char * fpkind2str( ae_FuncPointerKind kind )

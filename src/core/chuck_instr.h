@@ -2214,7 +2214,7 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Push_Code | 1.5.1.9 (ge) added
+// name: struct Chuck_Instr_Reg_Push_Code | 1.5.2.0 (ge) added
 // desc: push Chuck_VM_Code * onto register stack
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Reg_Push_Code : public Chuck_Instr
@@ -3286,7 +3286,7 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: enum ck_Func_Call_Arg_Convention | 1.5.1.9
+// name: enum ck_Func_Call_Arg_Convention | 1.5.2.0
 // desc: where to find this/type pointers in argument block
 //-----------------------------------------------------------------------------
 enum ck_Func_Call_Arg_Convention

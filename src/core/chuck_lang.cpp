@@ -600,12 +600,12 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the operand stack size hint (in bytes) for shreds sporked from this one.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add parent() | 1.5.1.9 (nshaheed)
+    // add parent() | 1.5.2.0 (nshaheed)
     func = make_new_sfun( "Shred", "parent", shred_parent );
     func->doc = "get the calling shred's parent shred (i.e., the shred that sporked the calling shred). Returns null if there is no parent Shred. (Related: see Shred.ancestor())";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // add ancestor() | 1.5.1.9 (nshaheed)
+    // add ancestor() | 1.5.2.0 (nshaheed)
     func = make_new_sfun( "Shred", "ancestor", shred_ancestor );
     func->doc = "get the calling shred's \"ancestor\" shred (i.e., the top-level shred). Returns itself if the calling shred is the top-level shred. (Related: see Shred.parent())";
     if( !type_engine_import_sfun( env, func ) ) goto error;
@@ -2540,7 +2540,7 @@ CK_DLL_MFUN( shred_cget_hintChildRegSize ) // 1.5.1.5
 }
 
 
-CK_DLL_SFUN( shred_parent ) // added 1.5.1.9 (nshaheed)
+CK_DLL_SFUN( shred_parent ) // added 1.5.2.0 (nshaheed)
 {
     // get the parent
     Chuck_VM_Shred * parent = SHRED->parent;
@@ -2549,7 +2549,7 @@ CK_DLL_SFUN( shred_parent ) // added 1.5.1.9 (nshaheed)
 }
 
 
-CK_DLL_SFUN( shred_ancestor ) // added 1.5.1.9 (nshaheed)
+CK_DLL_SFUN( shred_ancestor ) // added 1.5.2.0 (nshaheed)
 {
     // current shred
     Chuck_VM_Shred * curr = SHRED;
@@ -3492,7 +3492,7 @@ CK_DLL_MFUN( type_isObject )
 CK_DLL_MFUN( type_isArray )
 {
     Chuck_Type * type = (Chuck_Type *)SELF;
-    // test for arrayhood -- either array depth > 0 or type could be "@array" | 1.5.1.9
+    // test for arrayhood -- either array depth > 0 or type could be "@array" | 1.5.2.0
     RETURN->v_int = type->array_depth > 0 || isa(type, type->env()->ckt_array);
 }
 

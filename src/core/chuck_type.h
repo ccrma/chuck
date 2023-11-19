@@ -948,13 +948,13 @@ struct Chuck_Type : public Chuck_Object
     // has pre-destructor; related to info->pre_dtor, but different since info is shared with arrays
     // of this type (via new_array_type()), but this flag is this specific type only
     t_CKBOOL has_pre_dtor;
-    // constructor(s), potentially overloaded | 1.5.1.9 (ge) added
+    // constructor(s), potentially overloaded | 1.5.2.0 (ge) added
     Chuck_Func * ctors;
-    // default constructor (no arguments) | 1.5.1.9 (ge) added
+    // default constructor (no arguments) | 1.5.2.0 (ge) added
     Chuck_Func * ctor_default;
-    // destructor (also see this->info->pre_dtor) | 1.5.1.9 (ge) added
+    // destructor (also see this->info->pre_dtor) | 1.5.2.0 (ge) added
     Chuck_Func * dtor;
-    // destructor invoker (needed since dtor could run outside of chuck shreduling) | 1.5.1.9
+    // destructor invoker (needed since dtor could run outside of chuck shreduling) | 1.5.2.0
     Chuck_VM_DtorInvoker * dtor_invoker;
     // custom allocator
     f_alloc allocator;
@@ -1147,7 +1147,7 @@ struct Chuck_Func : public Chuck_VM_Object
     // documentation
     std::string doc;
 
-public: // constructors / destructor | 1.5.1.9
+public: // constructors / destructor | 1.5.2.0
     // is this a constructor?
     t_CKBOOL is_ctor;
     // is this a default constructor?
@@ -1259,8 +1259,8 @@ t_CKBOOL isvoid( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL isnull( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL iskindofint( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: this includes int + pointers
 te_KindOf getkindof( Chuck_Env * env, Chuck_Type * type ); // added 1.3.1.0: to get the kindof a type
-t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.1.9 (ge) added for constructors
-t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.1.9 (ge) added for destructors
+t_CKBOOL isctor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.2.0 (ge) added for constructors
+t_CKBOOL isdtor( Chuck_Env * env, a_Func_Def func_def ); // 1.5.2.0 (ge) added for destructors
 
 
 
@@ -1297,7 +1297,7 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name, 
                                             t_CKUINT num_ins_ana = CK_NO_VALUE,
                                             t_CKUINT num_outs_ana = CK_NO_VALUE,
                                             const char * doc = NULL );
-t_CKBOOL type_engine_import_ctor( Chuck_Env * env, Chuck_DL_Func * ctor ); // 1.5.1.9 (ge) added
+t_CKBOOL type_engine_import_ctor( Chuck_Env * env, Chuck_DL_Func * ctor ); // 1.5.2.0 (ge) added
 t_CKBOOL type_engine_import_mfun( Chuck_Env * env, Chuck_DL_Func * mfun );
 t_CKBOOL type_engine_import_sfun( Chuck_Env * env, Chuck_DL_Func * sfun );
 t_CKUINT type_engine_import_mvar( Chuck_Env * env, const char * type,
@@ -1345,7 +1345,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 // type-check an operator overload func def | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
-// determine whether type has implicit default constructor; helpful for ckdoc | 1.5.1.9
+// determine whether type has implicit default constructor; helpful for ckdoc | 1.5.2.0
 t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type );
 
 
@@ -1387,7 +1387,7 @@ std::string arglist2string( a_Arg_List list );
 
 
 //-----------------------------------------------------------------------------
-// compare functions | 1.5.1.9 (ge) added
+// compare functions | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
 bool ck_comp_func( Chuck_Func * a, Chuck_Func * b );
 bool ck_comp_func_args( Chuck_Func * a, Chuck_Func * b );

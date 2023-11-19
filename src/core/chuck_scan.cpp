@@ -279,7 +279,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // add code
     the_class->info->pre_ctor = new Chuck_VM_Code;
     CK_SAFE_ADD_REF( the_class->info->pre_ctor );
-    // name | 1.5.1.9 (ge) added
+    // name | 1.5.2.0 (ge) added
     the_class->info->pre_ctor->name = string("class ") + the_class->base_name;
     // add to env
     env->curr->type.add( the_class->base_name, the_class );  // URGENT: make this global
@@ -1202,7 +1202,7 @@ t_CKBOOL type_engine_scan1_exp_decl( Chuck_Env * env, a_Exp_Decl decl )
         // count
         decl->num_var_decls++;
 
-        // scan constructor args | 1.5.1.9 (ge) added
+        // scan constructor args | 1.5.2.0 (ge) added
         if( var_decl->ctor.args != NULL )
         {
             // disallow non-default constructors for 'global' Object decls
@@ -2446,7 +2446,7 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
             return FALSE;
         }
 
-        // check for constructor args | 1.5.1.9 (ge) added
+        // check for constructor args | 1.5.2.0 (ge) added
         if( var_decl->ctor.args != NULL )
         {
             // type check the exp
@@ -2816,9 +2816,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     Chuck_Func * overfunc = NULL;
     // t_CKBOOL has_code = FALSE;  // use this for both user and imported
     t_CKBOOL op_overload = ( f->op2overload != ae_op_none );
-    // is in constructor? | 1.5.1.9
+    // is in constructor? | 1.5.2.0
     t_CKBOOL isInCtor = isctor(env,f);
-    // is in destructor? | 1.5.1.9
+    // is in destructor? | 1.5.2.0
     t_CKBOOL isInDtor = isdtor(env,f);
 
     // see if we are already in a function definition
@@ -2888,7 +2888,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                       (env->class_def != NULL);
 
     // always create the code (will be filled in later on, depending on builtin vs in-language etc.)
-    // 1.5.1.9 (ge) moved up from ae_func_builtin
+    // 1.5.2.0 (ge) moved up from ae_func_builtin
     func->code = new Chuck_VM_Code;
     // add reference
     CK_SAFE_ADD_REF( func->code );
@@ -2901,7 +2901,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         func->code->is_static = func->is_static;
         // set the function pointer
         func->code->native_func = (t_CKUINT)func->def()->dl_func_ptr;
-        // set the function pointer kind | 1.5.1.9
+        // set the function pointer kind | 1.5.2.0
         func->code->native_func_kind = func->def()->dl_fp_kind;
     }
 
@@ -3160,7 +3160,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         }
     }
 
-    // constructor | 1.5.1.9 (ge) added
+    // constructor | 1.5.2.0 (ge) added
     if( isInCtor )
     {
         // set constructor flag
@@ -3179,7 +3179,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         }
     }
 
-    // destructor | 1.5.1.9 (ge) added
+    // destructor | 1.5.2.0 (ge) added
     if( isInDtor )
     {
         // verify

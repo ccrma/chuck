@@ -444,12 +444,12 @@ public:
         m_outputStr += "</div>\n";
     }
 
-    void begin_ctors() // 1.5.1.9
+    void begin_ctors() // 1.5.2.0
     {
         m_outputStr += "<h3 class=\"class_section_header\">constructors</h3>\n<div class=\"members\">\n";
     }
 
-    void begin_dtor() // 1.5.1.9
+    void begin_dtor() // 1.5.2.0
     {
         m_outputStr += "<h3 class=\"class_section_header\">destructor</h3>\n<div class=\"members\">\n";
     }
@@ -1260,10 +1260,10 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
         sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
         sort( ctors.begin(), ctors.end(), ck_comp_func_args );
 
-        // whether to potentially insert a default constructor | 1.5.1.9
+        // whether to potentially insert a default constructor | 1.5.2.0
         t_CKBOOL insertDefaultCtor = type_engine_has_implicit_def_ctor( type );
 
-        // constructors | 1.5.1.9 (ge) added
+        // constructors | 1.5.2.0 (ge) added
         if( ctors.size() || insertDefaultCtor )
         {
             // begin member functions
@@ -1304,7 +1304,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             output->end_member_funcs();
         }
 
-        // destructor | 1.5.1.9 (ge) added but not added
+        // destructor | 1.5.2.0 (ge) added but not added
         // if( dtor )
         // {
         //    // begin member functions

@@ -187,7 +187,7 @@ void CK_DLL_CALL ck_add_ctor( Chuck_DL_Query * query, f_ctor ctor )
     f->name = "@construct";
     f->type = "void";
     f->ctor = ctor;
-    f->fpKind = ae_fp_ctor; // 1.5.1.9
+    f->fpKind = ae_fp_ctor; // 1.5.2.0
 
     // add
     query->curr_class->ctors.push_back( f );
@@ -224,7 +224,7 @@ void CK_DLL_CALL ck_add_dtor( Chuck_DL_Query * query, f_dtor dtor )
     f->name = "@destruct";
     f->type = "void";
     f->dtor = dtor;
-    f->fpKind = ae_fp_dtor; // 1.5.1.9
+    f->fpKind = ae_fp_dtor; // 1.5.2.0
 
     // add
     query->curr_class->dtor = f;
@@ -255,7 +255,7 @@ void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr,
     f->name = name;
     f->type = type;
     f->mfun = addr;
-    f->fpKind = ae_fp_mfun; // 1.5.1.9
+    f->fpKind = ae_fp_mfun; // 1.5.2.0
 
     // add
     query->curr_class->mfuns.push_back( f );
@@ -285,7 +285,7 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
     f->name = name;
     f->type = type;
     f->sfun = addr;
-    f->fpKind = ae_fp_sfun; // 1.5.1.9
+    f->fpKind = ae_fp_sfun; // 1.5.2.0
 
     // add
     query->curr_class->sfuns.push_back( f );
@@ -318,7 +318,7 @@ void CK_DLL_CALL ck_add_op_overload_binary( Chuck_DL_Query * query, f_gfun addr,
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
-    f->fpKind = ae_fp_gfun; // 1.5.1.9
+    f->fpKind = ae_fp_gfun; // 1.5.2.0
     f->opOverloadKind = te_op_overload_binary;
     f->op2overload = op;
 
@@ -362,7 +362,7 @@ void CK_DLL_CALL ck_add_op_overload_prefix( Chuck_DL_Query * query, f_gfun addr,
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
-    f->fpKind = ae_fp_gfun; // 1.5.1.9
+    f->fpKind = ae_fp_gfun; // 1.5.2.0
     f->opOverloadKind = te_op_overload_unary_pre;
     f->op2overload = op;
 
@@ -401,7 +401,7 @@ void CK_DLL_CALL ck_add_op_overload_postfix( Chuck_DL_Query * query, f_gfun addr
     f->name = string("@operator") + opName;
     f->type = type;
     f->gfun = addr;
-    f->fpKind = ae_fp_gfun; // 1.5.1.9
+    f->fpKind = ae_fp_gfun; // 1.5.2.0
     f->opOverloadKind = te_op_overload_unary_post;
     f->op2overload = op;
 
@@ -1522,7 +1522,7 @@ Chuck_Object * do_ck_create( Chuck_VM_Shred * shred, Chuck_VM * vm, Chuck_DL_Api
     // check if type is some kind of array
     if( isa(type, vm->env()->ckt_array) )
     {
-        // 1.5.1.9 (nshaheed) added
+        // 1.5.2.0 (nshaheed) added
         t_CKINT index = 0;
         t_CKBOOL is_object = isa(type->array_type, vm->env()->ckt_object);
         // get array depth
@@ -1584,7 +1584,7 @@ static Chuck_DL_Api::Object CK_DLL_CALL ck_create_with_shred( Chuck_VM_Shred * s
     // each dimension of the array. Because this is only expected
     // to be used through the chuck_dl API, which does not support
     // setting the capacity explicitly, only empty arrays are
-    // initialized | 1.5.1.9
+    // initialized | 1.5.2.0
     vector<t_CKINT> caps;
     // check for array type
     if( type->array_depth )
@@ -1621,7 +1621,7 @@ static Chuck_DL_Api::Object CK_DLL_CALL ck_create_without_shred( Chuck_VM * vm, 
     // each dimension of the array. Because this is only expected
     // to be used through the chuck_dl API, which does not support
     // setting the capacity explicitly, only empty arrays are
-    // initialized | 1.5.1.9
+    // initialized | 1.5.2.0
     vector<t_CKINT> caps;
     // check for array type
     if( type->array_depth )

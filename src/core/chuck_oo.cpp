@@ -309,7 +309,7 @@ Chuck_Object::~Chuck_Object()
             }
         }
 
-        // chuck-defined destructor | 1.5.1.9 (ge) added
+        // chuck-defined destructor | 1.5.2.0 (ge) added
         if( type->dtor )
         {
             // verify

@@ -81,7 +81,7 @@ typedef enum {
     ae_key_private, ae_key_static, ae_key_instance, ae_key_abstract
 } ae_Keyword;
 
-// enumeration for kinds of function pointers | 1.5.1.9 (ge) added
+// enumeration for kinds of function pointers | 1.5.2.0 (ge) added
 typedef enum
 {
     ae_fp_unknown = 0,
@@ -95,7 +95,7 @@ typedef enum
     ae_fp_count
 } ae_FuncPointerKind;
 
-// convert fp kind by enum to str | 1.5.1.9 (ge) added
+// convert fp kind by enum to str | 1.5.2.0 (ge) added
 const char * fpkind2str( ae_FuncPointerKind kind );
 
 
@@ -147,7 +147,7 @@ typedef struct a_Id_List_ * a_Id_List;
 typedef struct a_Class_Ext_ * a_Class_Ext;
 typedef struct a_Class_Body_ * a_Class_Body;
 typedef struct a_Array_Sub_ * a_Array_Sub;
-typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.1.9 (ge) added
+typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.2.0 (ge) added
 typedef struct a_Complex_ * a_Complex;
 typedef struct a_Polar_ * a_Polar;
 typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
@@ -315,7 +315,7 @@ void delete_vec( a_Vec v );
 //------------------------------------------------------------------------------
 // helper structs
 //------------------------------------------------------------------------------
-// 1.5.1.9 (ge) added constructor support
+// 1.5.2.0 (ge) added constructor support
 struct a_Ctor_Call_ { int invoked; a_Exp args; t_CKFUNC func; int primitive; };
 //------------------------------------------------------------------------------
 // abstract syntax tree | structs
@@ -515,7 +515,7 @@ struct a_Func_Def_ {
     unsigned int s_type;
     unsigned int stack_depth;
     void * dl_func_ptr; // should be not NULL iff s_type == ae_func_builtin
-    ae_FuncPointerKind dl_fp_kind; // kind of func_ptr | 1.5.1.9 (ge) added
+    ae_FuncPointerKind dl_fp_kind; // kind of func_ptr | 1.5.2.0 (ge) added
     uint32_t ast_owned; // 1.5.0.5 (ge) maintained by AST?
     uint32_t overload_post; // 1.5.1.5 (ge) overload as post? e.g., @operator(args) ++ (unary only)
     uint32_t vm_refs; // 1.5.0.5 (ge) # of VM references

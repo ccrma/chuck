@@ -5460,7 +5460,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     //    return FALSE;
     //}
 
-    // make sure code is good to go | 1.5.1.9
+    // make sure code is good to go | 1.5.2.0
     // NOTE now func->code is allocated earlier in scan2_func_def(), this allows
     // the code reference to be available for emission potentially before its
     // contents are emitted
@@ -5473,7 +5473,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     }
 
     // make sure the code is empty
-    if( func->code->num_instr ) // updated logic 1.5.1.9 was: if( func->code != NULL )
+    if( func->code->num_instr ) // updated logic 1.5.2.0 was: if( func->code != NULL )
     {
         EM_error2( func_def->where,
             "(emit): internal error: function '%s' already emitted...",
@@ -5627,7 +5627,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // emit return statement
     emit->append( new Chuck_Instr_Func_Return );
 
-    // vm code | 1.5.1.9 (ge) updated to pass in existing func->code
+    // vm code | 1.5.2.0 (ge) updated to pass in existing func->code
     if( !emit_to_code( emit->code, func->code, emit->dump ) )
         return FALSE;
 

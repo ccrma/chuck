@@ -5164,7 +5164,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // need this
         if( func->need_this )
         {
-            // check convention | 1.5.1.9 (ge) added
+            // check convention | 1.5.2.0 (ge) added
             if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
             {
                 // copy this from end of arguments to the front
@@ -5179,7 +5179,7 @@ void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
         // static inside class | 1.4.1.0 (ge) added
         else if( func->is_static )
         {
-            // check convention | 1.5.1.9 (ge) added
+            // check convention | 1.5.2.0 (ge) added
             if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
             {
                 // copy type from end of arguments to the front
@@ -5268,7 +5268,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // need this
         if( func->need_this )
         {
-            // check convention | 1.5.1.9 (ge) added
+            // check convention | 1.5.2.0 (ge) added
             if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
             {
                 // copy this from end of arguments to the front
@@ -5407,7 +5407,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
     // get the function to be called
     f_sfun f = (f_sfun)func->native_func;
-    // verify | 1.5.1.9
+    // verify | 1.5.2.0
     assert( func->native_func_kind == ae_fp_sfun );
     // get the local stack depth - caller local variables
     t_CKUINT local_depth = *(reg_sp+1);
@@ -5441,7 +5441,7 @@ void Chuck_Instr_Func_Call_Static::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         // need type
         if( func->is_static )
         {
-            // check convention | 1.5.1.9 (ge) added
+            // check convention | 1.5.2.0 (ge) added
             if( m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK )
             {
                 // copy this from end of arguments to the front
@@ -5566,7 +5566,7 @@ void Chuck_Instr_Func_Call_Global::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     Chuck_VM_Code * func = (Chuck_VM_Code *)*(reg_sp);
     // get the function to be called
     f_gfun f = (f_gfun)func->native_func;
-    // verify | 1.5.1.9
+    // verify | 1.5.2.0
     assert( func->native_func_kind == ae_fp_gfun );
     // get the local stack depth - caller local variables
     t_CKUINT local_depth = *(reg_sp+1);
