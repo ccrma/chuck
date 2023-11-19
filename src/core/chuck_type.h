@@ -1345,6 +1345,8 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
 // type-check an operator overload func def | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_check_func_op_overload( Chuck_Env * env, a_Func_Def func_def );
+// determine whether type has implicit default constructor; helpful for ckdoc | 1.5.1.9
+t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type );
 
 
 //-----------------------------------------------------------------------------

@@ -9492,6 +9492,83 @@ const char * Chuck_Type::c_name()
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_has_implicit_def_ctor() | 1.5.1.9
+// desc: determine whether type has implicit default constructor; helpful for ckdoc
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type )
+{
+    t_CKBOOL implicitDefaultCtor = FALSE;
+
+    // no for arrays
+    if( isa( type, type->env()->ckt_array ) )
+        return FALSE;
+
+    // type pointer
+    Chuck_Type * t = type;
+    // check up the chain (don't include top-level Object in this check)
+    do { // at least once if type is Object itself
+        // check pre_ctor
+        if( t->has_pre_ctor )
+        {
+            implicitDefaultCtor = TRUE;
+            break;
+        }
+
+        // check
+        if( type->info )
+        {
+            // check for mfuns and mvars (if we get here, type->info cannot be NULL)
+            vector<Chuck_Func *> fs;
+            type->info->get_funcs( fs );
+            vector<Chuck_Value *> vs;
+            type->info->get_values( vs );
+
+            // iterate over functions
+            for( vector<Chuck_Func *>::iterator f = fs.begin(); f != fs.end(); f++ )
+            {
+                // the function
+                Chuck_Func * func = *f;
+                if( func == NULL ) continue;
+                // static or instance?
+                if( !func->is_static )
+                {
+                    implicitDefaultCtor = TRUE;
+                    break;
+                }
+            }
+            // iterate over values
+            for( vector<Chuck_Value *>::iterator v = vs.begin(); v != vs.end(); v++ )
+            {
+                // the function
+                Chuck_Value * value = *v;
+                if( value == NULL ) continue;
+                // special internal values
+                if( value->name.size() && value->name[0] == '@' )
+                    continue;
+                // value is a function
+                if( isa( value->type, type->env()->ckt_function ) )
+                    continue;
+
+                // static or instance?
+                if( !value->is_static )
+                {
+                    implicitDefaultCtor = TRUE;
+                    break;
+                }
+            }
+        }
+
+        // up to parent type
+        t = t->parent;
+    } while( t && t != t->env()->ckt_object );
+
+    return implicitDefaultCtor;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: apropos()
 // desc: generate info; output to console | added 1.4.1.0 (ge)
 //       portions of this adapted from ckdoc -- thanks be to Spencer Salazar
@@ -9736,35 +9813,45 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
     // print line prefix, if any
     sout << PREFIX;
     // print static
-    sout << (theFunc->def()->static_decl == ae_key_static ? "static " : "");
-    // output return type
-    sout << theFunc->def()->ret_type->name();
-    // space
-    sout << " ";
+    sout << (theFunc->is_static ? "static " : "");
+    // check if need to print return type
+    if( !theFunc->is_ctor && !theFunc->is_dtor && theFunc->def() )
+    {
+        // print return type
+        sout << theFunc->def()->ret_type->name();
+        // space
+        sout << " ";
+    }
     // output function name
-    sout << S_name(theFunc->def()->name);
+    sout << theFunc->base_name;
     // open paren
     sout << "(";
-    // extra space, if we have args
-    if( theFunc->def()->arg_list != NULL ) sout << " ";
-
-    // argument list
-    a_Arg_List args = theFunc->def()->arg_list;
-    while( args != NULL )
+    // if we have args
+    if( theFunc->def() && theFunc->def()->arg_list )
     {
-        // output arg
-        apropos_func_arg( sout, args );
-        // move to next
-        args = args->next;
-    }
+        // extra space
+        sout << " ";
 
-    // extra space, if we are args
-    if( theFunc->def()->arg_list != NULL ) sout << " ";
+        // argument list
+        a_Arg_List args = theFunc->def()->arg_list;
+        while( args != NULL )
+        {
+            // output arg
+            apropos_func_arg( sout, args );
+            // move to next
+            args = args->next;
+        }
+        // extra space, if we are args
+        if( theFunc->def()->arg_list ) sout << " ";
+    }
 
     // close paren
     sout << ");" << endl;
     // output doc
-    if( theFunc->doc != "" ) sout << PREFIX << "    " << capitalize_and_periodize(theFunc->doc) << endl;
+    if( theFunc->doc != "" )
+        sout << PREFIX << "    " << capitalize_and_periodize(theFunc->doc) << endl;
+    else if( !theFunc->def() || !theFunc->def()->arg_list ) // default ctor?
+        sout << PREFIX << "    " << capitalize_and_periodize( "Default constructor for " + theFunc->base_name ) << endl;
 }
 
 
@@ -9832,31 +9919,44 @@ void Chuck_Type::apropos_funcs( std::string & output,
             }
         }
 
-        // have constructors?
-        if( ctors.size() > 0 )
+        // if not inherited
+        if( !inherited )
         {
-            // type name
-            string theName = this->name() + " " + "constructors";
-            // number of '-'
-            t_CKUINT n = theName.length(); t_CKUINT i;
-            // output
-            for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl << theName << endl;
-            for( i = 0; i < n; i++ ) { sout << "-"; }
-            sout << endl;
-        }
-        // sort
-        sort( ctors.begin(), ctors.end(), ck_comp_func_args );
-        // output constructors | 1.5.1.9
-        if( ctors.size() )
-        {
-            // iterate over member functions
-            for( vector<Chuck_Func *>::iterator f = ctors.begin(); f != ctors.end(); f++ )
+            // sort
+            sort( ctors.begin(), ctors.end(), ck_comp_func_args );
+            // check if potentially insert default ctor
+            t_CKBOOL insertDefaultCtor = type_engine_has_implicit_def_ctor( this );
+            // have constructors?
+            if( ctors.size() || insertDefaultCtor )
             {
-                // pointer to chuck func
-                Chuck_Func * theFunc = *f;
-                // output function content
-                apropos_func( sout, theFunc, PREFIX );
+                // type name
+                string theName = this->name() + " " + "constructors";
+                // number of '-'
+                t_CKUINT n = theName.length(); t_CKUINT i;
+                // output
+                for( i = 0; i < n; i++ ) { sout << "-"; }
+                sout << endl << theName << endl;
+                for( i = 0; i < n; i++ ) { sout << "-"; }
+                sout << endl;
+
+                // add default constructor, if non-explicitly specified
+                if( ((ctors.size() == 0 || (ctors.size() && ctors[0]->def()->arg_list))) && insertDefaultCtor )
+                {
+                    Chuck_Func ftemp;
+                    ftemp.base_name = this->base_name;
+                    ftemp.doc = "default constructor for " + this->base_name;
+                    // output function content
+                    apropos_func( sout, &ftemp, PREFIX );
+                }
+
+                // iterate over member functions
+                for( vector<Chuck_Func *>::iterator f = ctors.begin(); f != ctors.end(); f++ )
+                {
+                    // pointer to chuck func
+                    Chuck_Func * theFunc = *f;
+                    // output function content
+                    apropos_func( sout, theFunc, PREFIX );
+                }
             }
         }
 

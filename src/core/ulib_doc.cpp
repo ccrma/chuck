@@ -1216,10 +1216,10 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             if( value->name.length() == 0 )
                 continue;
             // special internal values
-            if(value->name[0] == '@')
+            if( value->name.size() && value->name[0] == '@' )
                 continue;
             // value is a function
-            if( value->type->base_name == "[function]" )
+            if( isa( value->type, value->type->env()->ckt_function ) )
                 continue;
 
             // static or instance?
@@ -1260,61 +1260,8 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
         sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
         sort( ctors.begin(), ctors.end(), ck_comp_func_args );
 
-        // whether to potentially insert a default constructor
-        t_CKBOOL insertDefaultCtor = FALSE;
-        // if not array, check various conditions under which to insert def ctor
-        if( !isa( type, type->env()->ckt_array ) )
-        {
-            // if has pre_ctor
-            if( type->has_pre_ctor ) insertDefaultCtor = TRUE;
-            // if has any mfun or mvars
-            else if( mfuncs.size() || mvars.size() ) insertDefaultCtor = TRUE;
-            // check parent pre_ctor
-            Chuck_Type * t = type->parent;
-            // check up the chain
-            while( t && t != t->env()->ckt_object ) // don't include Object itself in this check
-            {
-                // check pre_ctor
-                if( t->has_pre_ctor ) {
-                    insertDefaultCtor = TRUE; break;
-                }
-                // check for mfuns and mvars (if we get here, type->info cannot be NULL)
-                vector<Chuck_Func *> fs;
-                type->info->get_funcs( fs );
-                vector<Chuck_Value *> vs;
-                type->info->get_values( vs );
-
-                // iterate over functions
-                for( vector<Chuck_Func *>::iterator f = fs.begin(); f != fs.end(); f++ )
-                {
-                    // the function
-                    Chuck_Func * func = *f;
-                    if( func == NULL ) continue;
-                    // static or instance?
-                    if( !func->is_static )
-                    {
-                        insertDefaultCtor = TRUE;
-                        break;
-                    }
-                }
-                // iterate over functions
-                for( vector<Chuck_Value *>::iterator v = vs.begin(); v != vs.end(); v++ )
-                {
-                    // the function
-                    Chuck_Value * value = *v;
-                    if( value == NULL ) continue;
-                    // static or instance?
-                    if( !value->is_static )
-                    {
-                        insertDefaultCtor = TRUE;
-                        break;
-                    }
-                }
-
-                // up to parent type
-                t = t->parent;
-            }
-        }
+        // whether to potentially insert a default constructor | 1.5.1.9
+        t_CKBOOL insertDefaultCtor = type_engine_has_implicit_def_ctor( type );
 
         // constructors | 1.5.1.9 (ge) added
         if( ctors.size() || insertDefaultCtor )
@@ -1357,7 +1304,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             output->end_member_funcs();
         }
 
-        // destructor | 1.5.1.9 (ge) added
+        // destructor | 1.5.1.9 (ge) added but not added
         // if( dtor )
         // {
         //    // begin member functions
