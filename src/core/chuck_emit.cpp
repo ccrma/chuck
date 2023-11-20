@@ -4865,7 +4865,7 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a
         // dup the base pointer ('this' pointer as argument)
         emit->append( new Chuck_Instr_Reg_Dup_Last );
         // emit arguments
-        emit_engine_emit_exp( emit, ctor_info->args );
+        emit_engine_emit_exp( emit, ctor_info->args, TRUE );
         // push code
         emit->append( new Chuck_Instr_Reg_Push_Code( ctor_info->func->code ) );
         // push local stack depth corresponding to local variables

@@ -592,6 +592,9 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 {
+    // cerr << "remove(): this=(" << (void *)this << " " << m_ref_count << " " << type_ref->name() << ")"
+    // << " src=(" << (void *)src << " " << src->m_ref_count << " " << src->type_ref->name() << ")" << endl;
+
     // spencer 2012: chubgraph handling (added 1.3.0.0)
     if( m_is_subgraph )
     {
@@ -684,6 +687,9 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 //-----------------------------------------------------------------------------
 void Chuck_UGen::remove_by( Chuck_UGen * dest )
 {
+    // cerr << "remove_by(): this=(" << (void *)this << " " << m_ref_count << " " << type_ref->name() << ")"
+    // << " dest=(" << (void *)dest << " " << dest->m_ref_count << " " << dest->type_ref->name() << ")" << endl;
+
     // spencer 2012: chubgraph handling (added 1.3.0.0)
     if( m_is_subgraph )
     {
@@ -776,6 +782,8 @@ void Chuck_UGen::remove_all( )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 {
+    // cerr << "disconnect(): this=(" << (void *)this << " " << m_ref_count << " " << type_ref->name() << ")" << endl;
+
     // spencer 2012: chubgraph handling (added 1.3.0.0)
     if( m_is_subgraph )
     {

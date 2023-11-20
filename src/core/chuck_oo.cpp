@@ -163,6 +163,7 @@ void Chuck_VM_Object::release()
         // track | 1.5.0.5 (ge)
         CK_VM_DEBUGGER( destruct( this ) );
 
+        // cerr << "DELETE THIS: " << (void *)this << endl;
         // trigger this object's deletion / destructors
         // should be valid as long as no members are used beyond this point
         delete this; // REFACTOR-2017

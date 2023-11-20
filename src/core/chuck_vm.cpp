@@ -1831,12 +1831,12 @@ void Chuck_VM_Shred::detach_ugens()
             // NOTE no need to bump reference since now ugen_map ref counts
             release_v.push_back(ugen);
 
-            // disconnect
-            ugen->disconnect( TRUE );
             // make sure if ugen has an origin shred, it is this one | 1.5.1.5
             assert( !ugen->originShred() || ugen->originShred() == this );
             // also clear reference to this shred | 1.5.1.5
             ugen->setOriginShred( NULL );
+            // disconnect
+            ugen->disconnect( TRUE );
 
             // advance the iterator
             iter++;
@@ -1848,6 +1848,7 @@ void Chuck_VM_Shred::detach_ugens()
         for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
              rvi != release_v.end(); rvi++ )
         {
+            // cerr << "RELEASE: " << (void *) *rvi<< endl;
             // release it
             CK_SAFE_RELEASE( *rvi );
         }
@@ -1957,14 +1958,12 @@ t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
     if( !ugen || !m_ugen_map[ugen] )
         return FALSE;
 
+    // remove it
+    m_ugen_map.erase( ugen );
+
     // decrement reference count (added 1.3.0.0)
     ugen->release();
 
-    // RUBBISH
-    // cerr << "vm remove ugen: 0x" << hex << (int)ugen << endl;
-
-    // remove it
-    m_ugen_map.erase( ugen );
     return TRUE;
 }
 
