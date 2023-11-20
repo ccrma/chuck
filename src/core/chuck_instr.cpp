@@ -8060,9 +8060,10 @@ void Chuck_Instr_Cast_vec4tovec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: "cast" Object to a string, using the Object's method .toString()
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -8079,6 +8080,60 @@ void Chuck_Instr_Cast_object2string::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     Chuck_String * str = RETURN.v_string;
     // set it
     push_( sp, (t_CKUINT)str );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: params for printing
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Cast_Runtime_Verify::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s $ %s", m_from->c_name(), m_to->c_name() );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: type cast runtime verification
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Cast_Runtime_Verify::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKUINT * sp = (t_CKUINT *)shred->reg->sp;
+    // cast to object
+    Chuck_Object * obj = (Chuck_Object *)(*(sp-1));
+
+    // NULL is ok
+    if( !obj ) return;
+
+    // actual type of object
+    Chuck_Type * actualType = obj->type_ref;
+    // check against to type to cast to
+    if( !isa(actualType,m_to) ) goto invalid_cast;
+
+    // got here? ok
+    return;
+
+invalid_cast:
+    // we have a problem
+    EM_exception( "RuntimeCastIncompatible: in shred[id=%lu:%s]...",
+                  shred->xid, shred->name.c_str()  );
+    // print code context
+    if( m_codeWithFormat != "" ) CK_FPRINTF_STDERR( m_codeWithFormat.c_str(), TC::orange(actualType->c_name(),true).c_str(), TC::orange(m_to->c_name(),true).c_str() );
+    // done
+    goto done;
+
+done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 

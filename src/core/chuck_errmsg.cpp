@@ -67,6 +67,10 @@ static ChucK * the_chuck = NULL;
 static char g_buffer[CK_ERR_BUF_LENGTH] = "";
 // last error
 static std::string g_lasterror = "";
+// for code snippet output | 1.5.2.0
+static std::string g_codestr = "";
+// for output error to str | 1.5.2.0
+static std::string g_error2str = "";
 
 // log globals
 t_CKINT g_loglevel = CK_LOG_CORE;
@@ -230,13 +234,16 @@ t_CKBOOL EM_highlight_on_error()
 
 
 //-----------------------------------------------------------------------------
-// name: EM_printLineInCode() | 1.5.0.5 (ge) added
+// name: EM_outputLineInCode() | 1.5.0.5 (ge) added
 // desc: output a particular line of code, with optional char pos for caret ^
 //-----------------------------------------------------------------------------
-void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
+const char * EM_outputLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
 {
+    // clear
+    g_codestr = "";
+
     // check
-    if( !EM_highlight_on_error() || lineNumber <= 0 ) return;
+    if( !EM_highlight_on_error() || lineNumber <= 0 ) return "";
 
     // get error line
     std::string line = g_currentFile.getLine(lineNumber);
@@ -244,8 +251,7 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
     // detect empty file
     if( lineNumber == 1 && trim(line) == "" )
     {
-        CK_FPRINTF_STDERR( "(empty file)\n" );
-        return;
+        return "(empty file)\n";
     }
 
     // spaces before caret
@@ -309,22 +315,36 @@ void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
         spaces += posLineIndent;
 
         // print the line with indentation e.g., [5]
-        CK_FPRINTF_STDERR( "[%s] %s\n", TC::blue(posLine,TRUE).c_str(), line.c_str() );
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "[%s] %s\n", TC::blue(posLine,TRUE).c_str(), line.c_str() );
+        g_codestr += g_buffer;
 
         // if valid char position to print caret
         if( spaces >= 0 )
         {
             // print spaces
-            for( t_CKINT i = 0; i < spaces; i++ ) CK_FPRINTF_STDERR( " " );
+            for( t_CKINT i = 0; i < spaces; i++ ) g_codestr += " ";
             // print caret
-            CK_FPRINTF_STDERR( "%s", TC::green("^",TRUE).c_str() );
+            g_codestr += TC::green("^",TRUE);
         }
 
         // more space
-        CK_FPRINTF_STDERR( "\n" );
+        g_codestr += "\n";
     }
+
+    return g_codestr.c_str();
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: EM_printLineInCode() | 1.5.0.5 (ge) added
+// desc: output a particular line of code, with optional char pos for caret ^
+//-----------------------------------------------------------------------------
+void EM_printLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
+{
+    CK_FPRINTF_STDERR( "%s", EM_outputLineInCode(lineNumber, charNumber) );
+}
 
 
 
@@ -482,19 +502,14 @@ void EM_error2( t_CKINT pos, const char * message, ... )
     // do if pos is positive
     if( pos > 0 )
     {
+        // search for line containing pos
         while( lines && lines->i >= pos )
         {
             lines = lines->rest;
             line--;
         }
-
-        if( lines )
-        {
-            actualPos = pos - lines->i;
-
-            // debug print
-            // std::cerr << "lineNum: " << line << " lines->i: " << lines->i << " pos: " << pos << std::endl;
-        }
+        // calculate actual pos on line
+        if( lines ) actualPos = pos - lines->i;
     }
 
     // save
@@ -593,6 +608,62 @@ void EM_error2b( t_CKINT line, const char * message, ... )
 
     // print
     if( line > 0 ) EM_printLineInCode( line );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: EM_error2str() | 1.5.2.0
+// desc: generate error output to string (with terminal colors if enabled)
+//-----------------------------------------------------------------------------
+const char * EM_error2str( t_CKINT pos, t_CKBOOL outputPrefix, const char * message, ... )
+{
+    va_list ap;
+    IntList lines = the_linePos;
+    t_CKINT line = the_lineNum;
+    t_CKINT actualPos = -1;
+    t_CKBOOL bold = TRUE;
+    // declare each time to pick up any TC state
+    string COLON = TC::orange(":",bold);
+    // reset
+    g_error2str = "";
+
+    // do if pos is positive
+    if( pos > 0 )
+    {
+        // search for line containing pos
+        while( lines && lines->i >= pos )
+        {
+            lines = lines->rest;
+            line--;
+        }
+        // calculate actual pos on line
+        if( lines ) actualPos = pos - lines->i;
+    }
+
+    // begin prefix, e.g, "FILE.ck" or "[chuck"
+    t_CKBOOL hasFilename = (*the_filename) != '\0';
+    if( outputPrefix ) g_error2str += hasFilename ? mini(the_filename) : "[chuck";
+    // if given a valid line number
+    if( pos )
+    {
+        snprintf( g_buffer, CK_ERR_BUF_LENGTH, "%s%s%s%s", COLON.c_str(), TC::blue(ck_itoa(line),bold).c_str(), COLON.c_str(), TC::green(ck_itoa(actualPos),bold).c_str() );
+        g_error2str += g_buffer;
+    }
+    // end prefix, e.g, ": " or "]: "
+    if( outputPrefix ) g_error2str += hasFilename ? TC::orange(": ",bold).c_str() : "]: ";
+
+    va_start( ap, message );
+    vsnprintf( g_buffer, CK_ERR_BUF_LENGTH, message, ap );
+    va_end( ap );
+    g_error2str += g_buffer + string("\n");
+
+    // print code on error
+    if( pos > 0 ) g_error2str += EM_outputLineInCode( line, actualPos );
+
+    // return
+    return g_error2str.c_str();
 }
 
 

@@ -97,6 +97,8 @@ void EM_error2b( t_CKINT, c_constr, ... );
 void EM_error3( c_constr, ... );
 // prints exception message
 void EM_exception( c_constr, ... );
+// generate and return error string | 1.5.2.0 (ge)
+c_constr EM_error2str( t_CKINT, t_CKBOOL, c_constr, ... );
 
 // like EM_error2() minus line arg and error
 void EM_print2vanilla( c_constr, ... );

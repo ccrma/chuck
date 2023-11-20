@@ -100,7 +100,7 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
                                          a_Ctor_Call ctor_info, a_Array_Sub array, t_CKBOOL is_ref,
                                          t_CKBOOL is_array_ref );
 t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
-t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from );
+t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from, uint32_t where );
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
                                   t_CKUINT line, t_CKUINT where );
@@ -1927,7 +1927,7 @@ t_CKBOOL emit_engine_emit_exp( Chuck_Emitter * emit, a_Exp exp, t_CKBOOL doAddRe
 
         // implicit cast
         if( exp->cast_to != NULL )
-            if( !emit_engine_emit_cast( emit, exp->cast_to, exp->type ) )
+            if( !emit_engine_emit_cast( emit, exp->cast_to, exp->type, exp->where ) )
                 return FALSE;
 
         // check if we need to handle ref (added 1.3.0.0)
@@ -3958,7 +3958,7 @@ t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast )
         return FALSE;
 
     // the actual work to be done
-    return emit_engine_emit_cast( emit, to, from );
+    return emit_engine_emit_cast( emit, to, from, cast->where );
 }
 
 
@@ -3966,10 +3966,11 @@ t_CKBOOL emit_engine_emit_exp_cast( Chuck_Emitter * emit, a_Exp_Cast cast )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_cast()
-// desc: ...
+// desc: emit type cast instructions
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
-                                Chuck_Type * to, Chuck_Type * from )
+                                Chuck_Type * to, Chuck_Type * from,
+                                uint32_t where )
 {
     // if type is already the same
     if( equals( to, from ) )
@@ -4007,6 +4008,15 @@ t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit,
         emit->append( new Chuck_Instr_Cast_vec3tovec4 );
     else if( equals( to, emit->env->ckt_string ) && isa( from, emit->env->ckt_object ) && !isa( from, emit->env->ckt_string ) )
         emit->append( new Chuck_Instr_Cast_object2string );
+    // verify runtime dynamic cast | 1.5.2.0 (ge) added
+    else if( isobj(emit->env,to) && isa(to, from) )
+    {
+        // append instruction
+        Chuck_Instr_Cast_Runtime_Verify * instr = NULL;
+        emit->append( instr = new Chuck_Instr_Cast_Runtime_Verify(from,to) );
+        // create format string %%s for output in case of exception
+        instr->set_codeformat4exception( EM_error2str(where, TRUE, "cannot cast dynamic type '%%s' to '%%s'..." ) );
+    }
     // up cast - do nothing
     else if( !isa( to, from ) && !isa( from, to ) )
     {

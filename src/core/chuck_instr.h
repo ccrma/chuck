@@ -2220,13 +2220,14 @@ protected:
 struct Chuck_Instr_Reg_Push_Code : public Chuck_Instr
 {
 public:
+    // for carrying out instruction
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    const char * params() const;
 
 public:
     // constructor
     Chuck_Instr_Reg_Push_Code( Chuck_VM_Code * code ) : m_code(code) { }
-    // for printing
-    const char * params() const;
 
 public:
     // code to push
@@ -4346,12 +4347,43 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Cast_object2string
-// desc: ...
+// desc: "cast" Object to a string, using the Object's method .toString()
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Cast_object2string : public Chuck_Instr
 {
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Cast_Runtime_Verify
+// desc: type cast runtime verification  1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Cast_Runtime_Verify : public Chuck_Instr
+{
+public:
+    // execute
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    // for printing
+    const char * params() const;
+    // set code snippet (with printf-format style) in case of exception
+    void set_codeformat4exception( const std::string & codeWithFormat )
+    { m_codeWithFormat = codeWithFormat; }
+
+public:
+    Chuck_Instr_Cast_Runtime_Verify( Chuck_Type * from, Chuck_Type * to )
+    {
+        m_from = from;
+        m_to = to;
+    }
+
+protected:
+    Chuck_Type * m_from;
+    Chuck_Type * m_to;
+    std::string m_codeWithFormat;
 };
 
 
