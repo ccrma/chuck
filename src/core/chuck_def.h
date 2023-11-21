@@ -37,6 +37,24 @@
 #include <memory.h>
 #include <assert.h>
 
+
+
+
+//-----------------------------------------------------------------------------
+// ChucK version string
+//-----------------------------------------------------------------------------
+// from host (non-chugin) -- can retrieve using ChucK::version()
+// from chugin -- can access directly as CHUCK_VERSION_STRING
+// 1.5.0.0 (ge) | moved to chuck.h for at-a-glance visibility
+// 1.5.2.0 (ge) | moved to chuck_def.h for chugins headers streamlining
+//-----------------------------------------------------------------------------
+#define CHUCK_VERSION_STRING        "1.5.2.0-dev (chai)"
+//-----------------------------------------------------------------------------
+
+
+
+
+//-------------------------------------------
 // chuck types
 //-------------------------------------------
 #ifndef __EMSCRIPTEN__

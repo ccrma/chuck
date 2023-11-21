@@ -31,10 +31,13 @@
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #include "chuck_symbol.h"
-#include "chuck_utils.h"
+#include "chuck_errmsg.h"
 #include "chuck_table.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+
 
 
 // S_Symbol
@@ -142,3 +145,35 @@ void S_dump( S_table t, void (*show)(S_Symbol sym, void *binding) )
 }
 
 /* the str->whatever table */
+
+void * checked_malloc( t_CKINT len )
+{
+    if( !len ) return NULL;
+
+    void *p = calloc( len, 1 );
+    if( !p )
+    {
+        EM_error2( 0, "out of memory!\n" );
+        exit( 1 );
+    }
+
+    return p;
+}
+
+c_str cc_str( char * s )
+{
+    t_CKINT len = strlen(s) + 1;
+    c_str p = (c_str)checked_malloc( len );
+    strcpy( p, s );
+
+    return p;
+}
+
+U_boolList U_BoolList( t_CKBOOL head, U_boolList tail )
+{
+    U_boolList list = (U_boolList)checked_malloc( sizeof(*list) );
+    list->head = head;
+    list->tail = tail;
+
+    return list;
+}

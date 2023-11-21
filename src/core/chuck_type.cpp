@@ -7585,7 +7585,7 @@ t_CKBOOL type_engine_scan_func_op_overload( Chuck_Env * env, a_Func_Def f )
     }
 
     // get origin hint
-    te_Origin originHint = te_originUnknown;
+    ckte_Origin originHint = ckte_origin_UNKNOWN;
     // get compiler
     Chuck_Compiler * compiler = env->compiler();
     if( compiler != NULL ) originHint = compiler->m_originHint;
@@ -9320,7 +9320,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     allocator = NULL;
 
     // default
-    originHint = te_originUnknown;
+    originHint = ckte_origin_UNKNOWN;
     // set origin hint, if possible | 1.5.0.0 (ge) added
     Chuck_Compiler * compiler = env->compiler();
     if( compiler != NULL ) originHint = compiler->m_originHint;
@@ -10487,7 +10487,7 @@ void Chuck_Op_Registry::reserve( Chuck_Type * lhs, ae_Operator op, Chuck_Type * 
     // create new overload
     overload = new Chuck_Op_Overload( lhs, op, rhs, NULL );
     // set origin
-    overload->updateOrigin( te_originBuiltin, "type system", 0 );
+    overload->updateOrigin( ckte_origin_BUILTIN, "type system", 0 );
     // set reserved flag
     overload->updateReserved( TRUE );
     // set stack level ID
@@ -10529,7 +10529,7 @@ void Chuck_Op_Registry::reserve( Chuck_Type * type, ae_Operator op )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Op_Registry::add_overload(
     Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
-    te_Origin origin, const std::string & originName, t_CKINT originWhere,
+    ckte_Origin origin, const std::string & originName, t_CKINT originWhere,
     t_CKBOOL isPublic )
 {
     // get semantics
@@ -10580,7 +10580,7 @@ t_CKBOOL Chuck_Op_Registry::add_overload(
 // desc: add prefix unary operator overload: OP rhs
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
-                       te_Origin origin, const std::string & originName, t_CKINT originWhere,
+                       ckte_Origin origin, const std::string & originName, t_CKINT originWhere,
                        t_CKBOOL isPublic )
 {
     return this->add_overload( NULL, op, rhs, func, origin, originName, originWhere, isPublic );
@@ -10594,7 +10594,7 @@ t_CKBOOL Chuck_Op_Registry::add_overload( ae_Operator op, Chuck_Type * rhs, Chuc
 // desc: add postfix unary operator overload: lhs OP
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Op_Registry::add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Func * func,
-                       te_Origin origin, const std::string & originName, t_CKINT originWhere,
+                       ckte_Origin origin, const std::string & originName, t_CKINT originWhere,
                        t_CKBOOL isPublic )
 {
     return this->add_overload( lhs, op, NULL, func, origin, originName, originWhere, isPublic );
@@ -11005,7 +11005,7 @@ Chuck_Op_Overload::~Chuck_Op_Overload()
 // name: updateOrigin()
 // desc: update origin info
 //-----------------------------------------------------------------------------
-void Chuck_Op_Overload::updateOrigin( te_Origin origin, const string & name, t_CKINT where )
+void Chuck_Op_Overload::updateOrigin( ckte_Origin origin, const string & name, t_CKINT where )
 {
     m_origin = origin;
     m_originName = name;
@@ -11034,7 +11034,7 @@ void Chuck_Op_Overload::mark( t_CKUINT pushID )
 t_CKBOOL Chuck_Op_Overload::isNative() const
 {
     // check originated
-    return m_origin == te_originBuiltin;
+    return m_origin == ckte_origin_BUILTIN;
 }
 
 
@@ -11049,7 +11049,7 @@ void Chuck_Op_Overload::zero()
     m_op = ae_op_none;
     m_kind = te_op_overload_none;
     m_func = NULL;
-    m_origin = te_originUnknown;
+    m_origin = ckte_origin_UNKNOWN;
     m_originWhere = 0;
     m_lhs = NULL;
     m_rhs = NULL;

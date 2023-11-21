@@ -30,7 +30,6 @@
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #include "chuck_absyn.h"
-#include "chuck_utils.h"
 #include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <stdio.h>

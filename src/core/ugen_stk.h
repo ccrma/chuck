@@ -39,6 +39,7 @@
 #define __UGEN_STK_H__
 
 #include "chuck_dl.h"
+#include "chuck_carrier.h"
 
 // forward reference; REFACTOR-2017
 struct Chuck_Carrier;

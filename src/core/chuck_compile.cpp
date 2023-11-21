@@ -98,7 +98,7 @@ Chuck_Compiler::Chuck_Compiler()
     m_auto_depend = FALSE;
 
     // origin hint | 1.5.0.0 (ge) added
-    m_originHint = te_originUnknown;
+    m_originHint = ckte_origin_UNKNOWN;
 }
 
 
@@ -127,7 +127,7 @@ t_CKBOOL Chuck_Compiler::initialize()
     assert( m_carrier != NULL );
 
     // set origin hint
-    m_originHint = te_originBuiltin;
+    m_originHint = ckte_origin_BUILTIN;
 
     // allocate the type checker
     if( !type_engine_init( m_carrier ) )
@@ -147,7 +147,7 @@ t_CKBOOL Chuck_Compiler::initialize()
         goto error;
 
     // unset origin hint
-    m_originHint = te_originUnknown;
+    m_originHint = ckte_origin_UNKNOWN;
 
     return TRUE;
 

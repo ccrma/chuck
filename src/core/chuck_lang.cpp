@@ -3288,17 +3288,17 @@ static void typeGetTypes(
         // if not requesting special types
         if( !isSpecial && (special == TRUE) ) continue;
         // check origin
-        te_Origin origin = types[i]->originHint;
+        ckte_Origin origin = types[i]->originHint;
 
         // filter level 1
         if( (isObj && isobj(vm->env(), types[i])) ||
             (isPrim && isprim(vm->env(), types[i])) )
         {
             // filter level 2
-            if( (isBuiltin && (origin == te_originBuiltin)) ||
-                (isChug && (origin == te_originChugin)) ||
-                (isImport && (origin == te_originImport)) ||
-                (isUser && (origin == te_originUserDefined)) )
+            if( (isBuiltin && (origin == ckte_origin_BUILTIN)) ||
+                (isChug && (origin == ckte_origin_CHUGIN)) ||
+                (isImport && (origin == ckte_origin_IMPORT)) ||
+                (isUser && (origin == ckte_origin_USERDEFINED)) )
             {
                 // copy
                 ret->m_vector.push_back( (t_CKINT)types[i] );
@@ -3449,23 +3449,23 @@ CK_DLL_MFUN( type_origin )
     // check origin hint
     switch( type->originHint )
     {
-    case te_originBuiltin:
+    case ckte_origin_BUILTIN:
         s = "builtin";
         break;
-    case te_originChugin:
+    case ckte_origin_CHUGIN:
         s = "chugin";
         break;
-    case te_originImport:
+    case ckte_origin_IMPORT:
         s = "cklib";
         break;
-    case te_originUserDefined:
+    case ckte_origin_USERDEFINED:
         s = "user";
         break;
-    case te_originGenerated:
+    case ckte_origin_GENERATED:
         s = "generated";
         break;
 
-    case te_originUnknown:
+    case ckte_origin_UNKNOWN:
     default:
         s = "[unknown origin]";
         break;

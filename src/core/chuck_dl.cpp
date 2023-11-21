@@ -71,8 +71,11 @@ Chuck_DL_Api::Type CK_DLL_CALL ck_type_lookup( Chuck_VM * vm, const char * name 
 t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
 void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback, Chuck_Type * base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
+ckte_Origin ck_origin_hint( Chuck_Type * type );
 Chuck_VM_Shred * CK_DLL_CALL ck_get_origin_shred( Chuck_Object * object );
 void CK_DLL_CALL ck_set_origin_shred( Chuck_Object * object, Chuck_VM_Shred * shred );
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -828,6 +831,18 @@ Chuck_DL_Value * CK_DLL_CALL make_new_mvar( const char * t, const char * n, t_CK
 {   return new Chuck_DL_Value( t, n, c ); }
 Chuck_DL_Value * CK_DLL_CALL make_new_svar( const char * t, const char * n, t_CKBOOL c, void * a )
 {   return new Chuck_DL_Value( t, n, c, a ); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// Chuck_DL_Query functions
+//-----------------------------------------------------------------------------
+Chuck_Compiler * Chuck_DL_Query::compiler() const { return m_carrier->compiler; }
+Chuck_VM * Chuck_DL_Query::vm() const { return m_carrier->vm; }
+Chuck_Env * Chuck_DL_Query::env() const { return m_carrier->env; }
+Chuck_Carrier * Chuck_DL_Query::carrier() const { return m_carrier; }
+CK_DL_API Chuck_DL_Query::api() const { return m_api; } // 1.5.1.5
 
 
 
@@ -2139,7 +2154,8 @@ lookup(ck_type_lookup),
 get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
 isa(ck_type_isa),
-callback_on_instantiate(ck_callback_on_instantiate)
+callback_on_instantiate(ck_callback_on_instantiate),
+originHint(ck_origin_hint)
 { }
 
 
@@ -2313,6 +2329,21 @@ void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback,
 {
     // register the callback with chuck type
     base_type->add_instantiate_cb( callback, shouldSetShredOrigin );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_callback_on_instantiate()
+// desc: where did the type originate? e.g., chugin, builtin, user-defined, etc.
+//-----------------------------------------------------------------------------
+ckte_Origin CK_DLL_CALL ck_origin_hint( Chuck_Type * type )
+{
+    // null
+    if( !type ) return ckte_origin_UNKNOWN;
+    // return origin hint
+    return type->originHint;
 }
 
 

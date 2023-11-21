@@ -1228,7 +1228,7 @@ Chuck_VM_Shred * Chuck_VM::spork( Chuck_VM_Shred * shred )
     m_num_shreds++;
 
     // notify watcher | 1.5.1.5
-    notify_watchers( CKVM_SHREDS_WATCH_SPORK, shred, m_shreds_watchers_spork );
+    notify_watchers( ckvm_shreds_watch_SPORK, shred, m_shreds_watchers_spork );
 
     return shred;
 }
@@ -1397,7 +1397,7 @@ Chuck_VM_Shred * Chuck_VM::get_current_shred() const
 // name: notify_watchers()
 // desc: notify watchers for a particular subscription | 1.5.1.5
 //-----------------------------------------------------------------------------
-void Chuck_VM::notify_watchers( ckvmShredsWatcherFlag which,
+void Chuck_VM::notify_watchers( ckvm_ShredsWatcherFlag which,
                                 Chuck_VM_Shred * shred,
                                 list<Chuck_VM_Shreds_Watcher> & v )
 {
@@ -1435,7 +1435,7 @@ void Chuck_VM::dump_shred( Chuck_VM_Shred * shred )
     shred->is_dumped = TRUE;
 
     // before we reset the shred ID, notify watchers
-    notify_watchers( CKVM_SHREDS_WATCH_REMOVE, shred, m_shreds_watchers_remove );
+    notify_watchers( ckvm_shreds_watch_REMOVE, shred, m_shreds_watchers_remove );
 
     // TODO: cool?
     shred->xid = 0;
@@ -1511,10 +1511,10 @@ void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * 
     // watcher bundle
     Chuck_VM_Shreds_Watcher w( cb, userdata );
     // check options and subscribe the watcher
-    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_SPORK, m_shreds_watchers_spork, w );
-    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_REMOVE, m_shreds_watchers_remove, w );
-    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_SUSPEND, m_shreds_watchers_suspend, w );
-    ckvm_process_watcher( options & CKVM_SHREDS_WATCH_ACTIVATE, m_shreds_watchers_activate, w );
+    ckvm_process_watcher( options & ckvm_shreds_watch_SPORK, m_shreds_watchers_spork, w );
+    ckvm_process_watcher( options & ckvm_shreds_watch_REMOVE, m_shreds_watchers_remove, w );
+    ckvm_process_watcher( options & ckvm_shreds_watch_SUSPEND, m_shreds_watchers_suspend, w );
+    ckvm_process_watcher( options & ckvm_shreds_watch_ACTIVATE, m_shreds_watchers_activate, w );
 }
 
 
@@ -1526,7 +1526,7 @@ void Chuck_VM::subscribe_watcher( f_shreds_watcher cb, t_CKUINT options, void * 
 //-----------------------------------------------------------------------------
 void Chuck_VM::remove_watcher( f_shreds_watcher cb )
 {
-    subscribe_watcher( cb, CKVM_SHREDS_WATCH_NONE );
+    subscribe_watcher( cb, ckvm_shreds_watch_NONE );
 }
 
 

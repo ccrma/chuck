@@ -36,8 +36,8 @@ EMSCRIPTENSRCS=host-web/chuck_emscripten.cpp \
     core/chuck_instr.cpp core/chuck_io.cpp core/chuck_lang.cpp \
     core/chuck_oo.cpp core/chuck_parse.cpp core/chuck_scan.cpp \
     core/chuck_stats.cpp core/chuck_symbol.cpp core/chuck_table.cpp \
-    core/chuck_type.cpp core/chuck_ugen.cpp core/chuck_utils.cpp \
-    core/chuck_vm.cpp core/uana_extract.cpp core/uana_xform.cpp \
+    core/chuck_type.cpp core/chuck_ugen.cpp core/chuck_vm.cpp \
+    core/uana_extract.cpp core/uana_xform.cpp \
     core/ugen_filter.cpp core/ugen_osc.cpp core/ugen_stk.cpp \
     core/ugen_xxx.cpp core/ulib_ai.cpp core/ulib_doc.cpp \
     core/ulib_machine.cpp core/ulib_math.cpp core/ulib_std.cpp \
@@ -159,7 +159,7 @@ endif
 
 ########################## CHUCK CORE LIB TARGETS #############################
 CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
-	chuck_frame.o chuck_symbol.o chuck_table.o chuck_utils.o \
+	chuck_frame.o chuck_symbol.o chuck_table.o \
 	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
 	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
 	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \

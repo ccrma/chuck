@@ -32,8 +32,8 @@
 // date: Summer 2002
 //-----------------------------------------------------------------------------
 #include "chuck_errmsg.h"
-#include "chuck_utils.h"
-#include "chuck.h"
+#include "chuck_symbol.h" // for checked_malloc()
+#include "chuck.h" // for access to ChucK container object
 #include "util_platforms.h"
 #include "util_string.h"
 

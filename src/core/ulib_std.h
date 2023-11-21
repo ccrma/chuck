@@ -33,6 +33,7 @@
 #define __ULIB_STD_H__
 
 #include "chuck_dl.h"
+#include "chuck_oo.h"
 
 // query
 DLL_QUERY libstd_query( Chuck_DL_Query * QUERY );

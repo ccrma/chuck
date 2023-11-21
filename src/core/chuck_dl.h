@@ -29,7 +29,7 @@
 // authors: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 //          Ari Lazier (alazier@cs.princeton.edu)
 //          Spencer Salazar (spencer@ccrma.stanford.edu)
-// mac os code based on apple's open source
+// macOS code based on apple's open source
 //
 // date: spring 2004 - 1.1
 //       spring 2005 - 1.2
@@ -39,8 +39,6 @@
 
 #include "chuck_def.h"
 #include "chuck_absyn.h"
-#include "chuck_carrier.h"
-#include "chuck_oo.h"
 #include <string>
 #include <vector>
 
@@ -75,9 +73,21 @@ struct Chuck_DL_Api;
 // namespace Chuck_DL_Api { struct Api; }
 
 // object forward references
+struct Chuck_VM;
+struct Chuck_VM_Object;
+struct Chuck_VM_Shred;
+struct Chuck_Env;
+struct Chuck_Compiler;
+struct Chuck_Carrier;
+struct Chuck_Object;
+struct Chuck_Event;
+struct Chuck_String;
+struct Chuck_ArrayInt;
+struct Chuck_ArrayFloat;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
+struct CBufferSimple;
 
 
 // param conversion - to extract values from ARGS to functions
@@ -175,69 +185,8 @@ struct Chuck_UAnaBlobProxy;
   #define CK_DLL_CALL
 #endif
 
+// DL api pointer
 typedef const Chuck_DL_Api * CK_DL_API;
-
-
-
-
-//------------------------------------------------------------------------------
-// name: union Chuck_DL_Return
-// desc: dynamic link return function return struct
-//------------------------------------------------------------------------------
-union Chuck_DL_Return
-{
-    t_CKINT v_int;
-    t_CKUINT v_uint;
-    t_CKFLOAT v_float;
-    t_CKDUR v_dur;
-    t_CKTIME v_time;
-    t_CKCOMPLEX v_complex;
-    t_CKPOLAR v_polar;
-    t_CKVEC2 v_vec2; // ge: added 1.5.1.7
-    t_CKVEC3 v_vec3; // ge: added 1.3.5.3
-    t_CKVEC4 v_vec4; // ge: added 1.3.5.3
-    Chuck_Object * v_object;
-    Chuck_String * v_string;
-
-    Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
-};
-
-
-
-
-//------------------------------------------------------------------------------
-// name: struct Chuck_DL_Arg
-// desc: import / dynamic link function argument | 1.5.1.5
-//------------------------------------------------------------------------------
-struct Chuck_DL_Arg
-{
-    // which kind of data (e.g., int and object * are both kinds of ints)
-    te_KindOf kind;
-    // the data in a union; re-using DL_Return for this
-    Chuck_DL_Return value;
-
-    // constructor
-    Chuck_DL_Arg() { kind = kindof_VOID; }
-    // size in bytes
-    t_CKUINT sizeInBytes()
-    {
-        // check data kind
-        switch( kind )
-        {
-            case kindof_INT: return sz_INT;
-            case kindof_FLOAT: return sz_FLOAT;
-            case kindof_VEC2: return sz_VEC2;
-            case kindof_VEC3: return sz_VEC3;
-            case kindof_VEC4: return sz_VEC4;
-            case kindof_VOID: return sz_VOID;
-        }
-        // unhandled
-        return 0;
-    }
-};
-
-
-
 
 // macro for defining ChucK DLL export functions
 // example: CK_DLL_EXPORT(int) foo() { return 1; }
@@ -418,19 +367,33 @@ typedef t_CKBOOL (CK_DLL_CALL * f_doc_func)( Chuck_DL_Query * query, const char 
 // set last mvar documentation
 typedef t_CKBOOL (CK_DLL_CALL * f_doc_var)( Chuck_DL_Query * query, const char * doc );
 
+//-----------------------------------------------------------------------------
 // shreds watcher flags; meant to bitwise-OR together in options
 // these will also be passed back to the callback...
+//-----------------------------------------------------------------------------
 typedef enum {
-    CKVM_SHREDS_WATCH_NONE = 0,
-    CKVM_SHREDS_WATCH_SPORK = 1,
-    CKVM_SHREDS_WATCH_REMOVE = 2,
-    CKVM_SHREDS_WATCH_SUSPEND = 4,
-    CKVM_SHREDS_WATCH_ACTIVATE = 8,
-    CKVM_SHREDS_WATCH_ALL = 0x7fffffff
-} ckvmShredsWatcherFlag;
+    ckvm_shreds_watch_NONE = 0,
+    ckvm_shreds_watch_SPORK = 1,
+    ckvm_shreds_watch_REMOVE = 2,
+    ckvm_shreds_watch_SUSPEND = 4,
+    ckvm_shreds_watch_ACTIVATE = 8,
+    ckvm_shreds_watch_ALL = 0x7fffffff
+} ckvm_ShredsWatcherFlag;
+
+//-----------------------------------------------------------------------------
+// name: enum ckte_Origin | 1.5.0.0 (ge) added
+// desc: where something (e.g., a Type) originates
+//-----------------------------------------------------------------------------
+typedef enum {
+    ckte_origin_UNKNOWN = 0,
+    ckte_origin_BUILTIN,     // in core
+    ckte_origin_CHUGIN,      // in imported chugin
+    ckte_origin_IMPORT,      // library CK code
+    ckte_origin_USERDEFINED, // in user chuck code
+    ckte_origin_GENERATED    // generated (e.g., array types like int[][][][])
+} ckte_Origin;
 
 } // end extern "C"
-
 
 
 
@@ -447,11 +410,11 @@ protected:
 
 public:
     // REFACTOR-2017: get associated compiler, vm, env
-    Chuck_Compiler * compiler() const { return m_carrier->compiler; }
-    Chuck_VM * vm() const { return m_carrier->vm; }
-    Chuck_Env * env() const { return m_carrier->env; }
-    Chuck_Carrier * carrier() const { return m_carrier; }
-    CK_DL_API api() const { return m_api; } // 1.5.1.5
+    Chuck_Compiler * compiler() const;
+    Chuck_VM * vm() const;
+    Chuck_Env * env() const;
+    Chuck_Carrier * carrier() const;
+    CK_DL_API api() const;
 
 public:
     // function pointers - to be called from client module
@@ -712,6 +675,65 @@ struct Chuck_DL_Ctrl
 
 
 //------------------------------------------------------------------------------
+// name: union Chuck_DL_Return
+// desc: dynamic link return function return struct
+//------------------------------------------------------------------------------
+union Chuck_DL_Return
+{
+    t_CKINT v_int;
+    t_CKUINT v_uint;
+    t_CKFLOAT v_float;
+    t_CKDUR v_dur;
+    t_CKTIME v_time;
+    t_CKCOMPLEX v_complex;
+    t_CKPOLAR v_polar;
+    t_CKVEC2 v_vec2; // ge: added 1.5.1.7
+    t_CKVEC3 v_vec3; // ge: added 1.3.5.3
+    t_CKVEC4 v_vec4; // ge: added 1.3.5.3
+    Chuck_Object * v_object;
+    Chuck_String * v_string;
+
+    Chuck_DL_Return() { v_vec4.x = v_vec4.y = v_vec4.z = v_vec4.w = 0; }
+};
+
+
+
+
+//------------------------------------------------------------------------------
+// name: struct Chuck_DL_Arg
+// desc: import / dynamic link function argument | 1.5.1.5
+//------------------------------------------------------------------------------
+struct Chuck_DL_Arg
+{
+    // which kind of data (e.g., int and object * are both kinds of ints)
+    te_KindOf kind;
+    // the data in a union; re-using DL_Return for this
+    Chuck_DL_Return value;
+
+    // constructor
+    Chuck_DL_Arg() { kind = kindof_VOID; }
+    // size in bytes
+    t_CKUINT sizeInBytes()
+    {
+        // check data kind
+        switch( kind )
+        {
+            case kindof_INT: return sz_INT;
+            case kindof_FLOAT: return sz_FLOAT;
+            case kindof_VEC2: return sz_VEC2;
+            case kindof_VEC3: return sz_VEC3;
+            case kindof_VEC4: return sz_VEC4;
+            case kindof_VOID: return sz_VOID;
+        }
+        // unhandled
+        return 0;
+    }
+};
+
+
+
+
+//------------------------------------------------------------------------------
 // alternative functions to make stuff
 //------------------------------------------------------------------------------
 Chuck_DL_Func * make_new_ctor( f_ctor ctor );
@@ -724,77 +746,10 @@ Chuck_DL_Value * make_new_svar( const char * t, const char * n, t_CKBOOL c, void
 
 
 
-//-----------------------------------------------------------------------------
-// name: struct Chuck_DLL
-// desc: dynamic link library
-//-----------------------------------------------------------------------------
-struct Chuck_DLL : public Chuck_VM_Object
-{
-public:
-    // load dynamic ckx/dll from filename
-    t_CKBOOL load( const char * filename,
-                   const char * func = CK_QUERY_FUNC,
-                   t_CKBOOL lazy = FALSE );
-    t_CKBOOL load( f_ck_query query_func, t_CKBOOL lazy = FALSE );
-    // get address in loaded ckx
-    void * get_addr( const char * symbol );
-    // get last error
-    const char * last_error() const;
-    // unload the ckx
-    t_CKBOOL unload();
-    // query the content of the dll
-    const Chuck_DL_Query * query();
-    // probe information about dll without fully loading it
-    t_CKBOOL probe();
-    // is good
-    t_CKBOOL good() const;
-    // name
-    const char * name() const;
-    // full path
-    const char * filepath() const;
-    // get version major
-    t_CKUINT versionMajor();
-    // get version minor
-    t_CKUINT versionMinor();
-    // is version compatible between dll and host
-    // major version must be same between chugin and host
-    // chugin minor version must less than or equal host minor version
-    t_CKBOOL compatible();
-
-public:
-    // constructor
-    Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
-        : m_handle(NULL), m_id(xid ? xid : ""),
-        m_done_query(FALSE), m_api_version_func(NULL), m_info_func(NULL), m_query_func(NULL),
-        m_query( carrier, this ), m_apiVersionMajor(0), m_apiVersionMinor(0)
-    { }
-    // destructor
-    ~Chuck_DLL() { this->unload(); }
-
-protected:
-    // data
-    void * m_handle;
-    std::string m_last_error;
-    std::string m_filename;
-    std::string m_id;
-    std::string m_func;
-    t_CKBOOL m_done_query;
-
-    // host/client api version
-    f_ck_declversion m_api_version_func;
-    // chugin info func
-    f_ck_info m_info_func;
-    // the query func
-    f_ck_query m_query_func;
-    // the query shuttle object
-    Chuck_DL_Query m_query;
-
-protected: // addition info 1.5.0.4 (ge) added
-    t_CKUINT m_apiVersionMajor;
-    t_CKUINT m_apiVersionMinor;
-};
-
-
+//------------------------------------------------------------------------------
+// name: struct Chuck_DL_MainThreadHook
+// desc: mechanism for chugins to provide a hook to run code on host main thread
+//------------------------------------------------------------------------------
 struct Chuck_DL_MainThreadHook
 {
 public:
@@ -803,6 +758,7 @@ public:
     t_CKBOOL (CK_DLL_CALL * const activate)(Chuck_DL_MainThreadHook *);
     t_CKBOOL (CK_DLL_CALL * const deactivate)(Chuck_DL_MainThreadHook *);
 
+public:
     Chuck_Carrier * const m_carrier;
     f_mainthreadhook const m_hook;
     f_mainthreadquit const m_quit;
@@ -813,7 +769,9 @@ public:
 
 
 
+//-----------------------------------------------------------------------------
 // instantiating a chuck string
+//-----------------------------------------------------------------------------
 Chuck_String * CK_DLL_CALL ck_create_string( Chuck_VM * vm, const char * cstr, t_CKBOOL addRef );
 //-----------------------------------------------------------------------------
 // invoking chuck functions from c++
@@ -936,6 +894,8 @@ public:
         t_CKBOOL (CK_DLL_CALL * const isa)(Type lhs, Type rhs);
         // register a callback to be invoked whenever a base-type (or its subclass) is instantiated, with option for type system to auto-set shred origin if available
         void (CK_DLL_CALL * const callback_on_instantiate)( f_callback_on_instantiate callback, Type base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
+        // get origin hint (where did this type originate?)
+        ckte_Origin (CK_DLL_CALL * const originHint)(Type type);
     } * const type;
 
     // constructor
@@ -954,6 +914,79 @@ private:
     { assert(0); };
     // make this object un-copy-able, part 2
     Chuck_DL_Api & operator=( Chuck_DL_Api & a ) { assert(0); return a; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_DLL
+// desc: dynamic link library
+//-----------------------------------------------------------------------------
+struct Chuck_DLL /* : public Chuck_VM_Object */
+{
+public:
+    // load dynamic ckx/dll from filename
+    t_CKBOOL load( const char * filename,
+                   const char * func = CK_QUERY_FUNC,
+                   t_CKBOOL lazy = FALSE );
+    t_CKBOOL load( f_ck_query query_func, t_CKBOOL lazy = FALSE );
+    // get address in loaded ckx
+    void * get_addr( const char * symbol );
+    // get last error
+    const char * last_error() const;
+    // unload the ckx
+    t_CKBOOL unload();
+    // query the content of the dll
+    const Chuck_DL_Query * query();
+    // probe information about dll without fully loading it
+    t_CKBOOL probe();
+    // is good
+    t_CKBOOL good() const;
+    // name
+    const char * name() const;
+    // full path
+    const char * filepath() const;
+    // get version major
+    t_CKUINT versionMajor();
+    // get version minor
+    t_CKUINT versionMinor();
+    // is version compatible between dll and host
+    // major version must be same between chugin and host
+    // chugin minor version must less than or equal host minor version
+    t_CKBOOL compatible();
+
+public:
+    // constructor
+    Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
+        : m_handle(NULL), m_id(xid ? xid : ""),
+        m_done_query(FALSE), m_api_version_func(NULL), m_info_func(NULL), m_query_func(NULL),
+        m_query( carrier, this ), m_apiVersionMajor(0), m_apiVersionMinor(0)
+    { }
+    // destructor
+    ~Chuck_DLL() { this->unload(); }
+
+protected:
+    // data
+    void * m_handle;
+    std::string m_last_error;
+    std::string m_filename;
+    std::string m_id;
+    std::string m_func;
+    t_CKBOOL m_done_query;
+
+    // host/client api version
+    f_ck_declversion m_api_version_func;
+    // chugin info func
+    f_ck_info m_info_func;
+    // the query func
+    f_ck_query m_query_func;
+    // the query shuttle object
+    Chuck_DL_Query m_query;
+
+protected: // addition info 1.5.0.4 (ge) added
+    t_CKUINT m_apiVersionMajor;
+    t_CKUINT m_apiVersionMinor;
 };
 
 

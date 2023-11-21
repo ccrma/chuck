@@ -36,7 +36,6 @@
 		091677201F7CAD1100248F78 /* chuck_type.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B2D0A9A54DA007604EA /* chuck_type.cpp */; };
 		091677221F7CAD1100248F78 /* chuck_ugen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B2F0A9A54DA007604EA /* chuck_ugen.cpp */; };
 		091677231F7CAD1100248F78 /* timetag.c in Sources */ = {isa = PBXBuildFile; fileRef = 09922D5E181601F700806471 /* timetag.c */; settings = {COMPILER_FLAGS = "-DHAVE_CONFIG_H -I../src/core"; }; };
-		091677241F7CAD1100248F78 /* chuck_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B310A9A54DA007604EA /* chuck_utils.cpp */; };
 		091677251F7CAD1100248F78 /* chuck_vm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B330A9A54DA007604EA /* chuck_vm.cpp */; };
 		091677261F7CAD1100248F78 /* hidio_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B390A9A54DA007604EA /* hidio_sdl.cpp */; };
 		091677271F7CAD1100248F78 /* midiio_rtmidi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 09A40B3B0A9A54DA007604EA /* midiio_rtmidi.cpp */; };
@@ -371,8 +370,6 @@
 		09A40B2E0A9A54DA007604EA /* chuck_type.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = chuck_type.h; path = ../core/chuck_type.h; sourceTree = SOURCE_ROOT; };
 		09A40B2F0A9A54DA007604EA /* chuck_ugen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_ugen.cpp; path = ../core/chuck_ugen.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B300A9A54DA007604EA /* chuck_ugen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = chuck_ugen.h; path = ../core/chuck_ugen.h; sourceTree = SOURCE_ROOT; };
-		09A40B310A9A54DA007604EA /* chuck_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_utils.cpp; path = ../core/chuck_utils.cpp; sourceTree = SOURCE_ROOT; };
-		09A40B320A9A54DA007604EA /* chuck_utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = chuck_utils.h; path = ../core/chuck_utils.h; sourceTree = SOURCE_ROOT; };
 		09A40B330A9A54DA007604EA /* chuck_vm.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = chuck_vm.cpp; path = ../core/chuck_vm.cpp; sourceTree = SOURCE_ROOT; };
 		09A40B340A9A54DA007604EA /* chuck_vm.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = chuck_vm.h; path = ../core/chuck_vm.h; sourceTree = SOURCE_ROOT; };
 		09A40B350A9A54DA007604EA /* chuck.lex */ = {isa = PBXFileReference; explicitFileType = sourcecode.lex; fileEncoding = 30; languageSpecificationIdentifier = c; name = chuck.lex; path = ../core/chuck.lex; sourceTree = SOURCE_ROOT; };
@@ -896,8 +893,6 @@
 				09A40B2E0A9A54DA007604EA /* chuck_type.h */,
 				09A40B2F0A9A54DA007604EA /* chuck_ugen.cpp */,
 				09A40B300A9A54DA007604EA /* chuck_ugen.h */,
-				09A40B310A9A54DA007604EA /* chuck_utils.cpp */,
-				09A40B320A9A54DA007604EA /* chuck_utils.h */,
 				09A40B330A9A54DA007604EA /* chuck_vm.cpp */,
 				09A40B340A9A54DA007604EA /* chuck_vm.h */,
 				09A40B360A9A54DA007604EA /* chuck.y */,
@@ -1135,7 +1130,6 @@
 				091677201F7CAD1100248F78 /* chuck_type.cpp in Sources */,
 				091677221F7CAD1100248F78 /* chuck_ugen.cpp in Sources */,
 				091677231F7CAD1100248F78 /* timetag.c in Sources */,
-				091677241F7CAD1100248F78 /* chuck_utils.cpp in Sources */,
 				091677251F7CAD1100248F78 /* chuck_vm.cpp in Sources */,
 				091677261F7CAD1100248F78 /* hidio_sdl.cpp in Sources */,
 				091677271F7CAD1100248F78 /* midiio_rtmidi.cpp in Sources */,

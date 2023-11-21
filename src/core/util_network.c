@@ -35,7 +35,7 @@
 // date: Winter 2003
 //-----------------------------------------------------------------------------
 #include "util_network.h"
-#include "chuck_utils.h"
+#include "chuck_symbol.h"
 #include "chuck_errmsg.h"
 #include <stdio.h>
 

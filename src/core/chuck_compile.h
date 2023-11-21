@@ -83,9 +83,9 @@ public: // data
     // libraries (ck code) to import
     std::list<std::string> m_cklibs_to_preload;
 
-    // origin hint; this flag is set to different te_Origin values
+    // origin hint; this flag is set to different ckte_Origin values
     // to denote where new entities originate | 1.5.0.0 (ge) added
-    te_Origin m_originHint;
+    ckte_Origin m_originHint;
 
 public: // to all
     // contructor

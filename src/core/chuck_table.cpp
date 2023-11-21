@@ -38,7 +38,7 @@
 // date: Autumn 2002
 //-----------------------------------------------------------------------------
 #include "chuck_table.h"
-#include "chuck_utils.h"
+#include "chuck_symbol.h"
 #include <stdio.h>
 #include <string.h>
 

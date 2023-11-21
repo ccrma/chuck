@@ -85,22 +85,6 @@ typedef enum {
 
 
 //-----------------------------------------------------------------------------
-// name: enum te_Origin | 1.5.0.0 (ge) added
-// desc: where something (e.g., a Type) originates
-//-----------------------------------------------------------------------------
-typedef enum {
-    te_originUnknown = 0,
-    te_originBuiltin, // in core
-    te_originChugin, // in imported chugin
-    te_originImport, // library CK code
-    te_originUserDefined, // in user chuck code
-    te_originGenerated // generated (e.g., array types like int[][][][])
-} te_Origin;
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: struct Chuck_Scope
 // desc: scoping structure
 //-----------------------------------------------------------------------------
@@ -477,13 +461,13 @@ public:
 
     // add binary operator overload: lhs OP rhs
     t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs, Chuck_Func * func, 
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
+                           ckte_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
     // add prefix unary operator overload: OP rhs
     t_CKBOOL add_overload( ae_Operator op, Chuck_Type * rhs, Chuck_Func * func,
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
+                           ckte_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
     // add postfix unary operator overload: lhs OP
     t_CKBOOL add_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Func * func,
-                           te_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
+                           ckte_Origin origin, const std::string & originName = "", t_CKINT originWhere = 0, t_CKBOOL isPublic = FALSE );
 
     // look up binary operator overload: lhs OP rhs
     Chuck_Op_Overload * lookup_overload( Chuck_Type * lhs, ae_Operator op, Chuck_Type * rhs );
@@ -588,7 +572,7 @@ public:
 struct Chuck_Op_Overload
 {
     // where this overload was defined
-    te_Origin m_origin;
+    ckte_Origin m_origin;
     // origin name
     std::string m_originName;
     // origin parse position (if applicable)
@@ -632,7 +616,7 @@ public:
     bool operator <( const Chuck_Op_Overload & other ) const;
 
     // update origin info
-    void updateOrigin( te_Origin origin, const std::string & name = "", t_CKINT where = 0 );
+    void updateOrigin( ckte_Origin origin, const std::string & name = "", t_CKINT where = 0 );
     // update overload stack push ID
     void mark( t_CKUINT pushID );
     // set as reserved
@@ -654,7 +638,7 @@ public:
     // get overload stack push ID
     t_CKUINT pushID() const { return m_pushID; }
     // has origin been set?
-    t_CKBOOL hasOrigin() const { return m_origin != te_originUnknown; }
+    t_CKBOOL hasOrigin() const { return m_origin != ckte_origin_UNKNOWN; }
     // overloading natively handled? (e.g., in chuck_type)
     t_CKBOOL isNative() const;
 };
@@ -959,7 +943,7 @@ struct Chuck_Type : public Chuck_Object
     // custom allocator
     f_alloc allocator;
     // origin hint
-    te_Origin originHint;
+    ckte_Origin originHint;
 
     // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;

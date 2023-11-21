@@ -718,7 +718,7 @@ t_CKBOOL ChucK::initChugins()
 
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
-        m_carrier->compiler->m_originHint = te_originChugin;
+        m_carrier->compiler->m_originHint = ckte_origin_CHUGIN;
         //---------------------------------------------------------------------
         // log
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
@@ -735,7 +735,7 @@ t_CKBOOL ChucK::initChugins()
 
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
-        m_carrier->compiler->m_originHint = te_originImport;
+        m_carrier->compiler->m_originHint = ckte_origin_IMPORT;
         //---------------------------------------------------------------------
         // log
         EM_log( CK_LOG_SYSTEM, "loading chuck extensions..." );
@@ -765,7 +765,7 @@ t_CKBOOL ChucK::initChugins()
                 // get the code
                 code = compiler()->output();
                 // name it | 1.5.2.0 (ge)
-                code->name = string("pre-load ck file: ") + filename;
+                code->name = std::string("pre-load ck file: ") + filename;
 
                 // spork it
                 shred = vm()->spork( code, NULL, TRUE );
@@ -798,14 +798,14 @@ t_CKBOOL ChucK::initChugins()
     m_carrier->env->load_user_namespace();
 
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return true;
 
 error: // 1.4.1.0 (ge) added
 
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return false;
 }
@@ -1102,7 +1102,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUserDefined;
+    m_carrier->compiler->m_originHint = ckte_origin_USERDEFINED;
     //-------------------------------------------------------------------------
 
     // log
@@ -1181,7 +1181,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     // pop indent
     EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return TRUE;
 
@@ -1190,7 +1190,7 @@ error: // 1.5.0.0 (ge) added
     // pop indent
     EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return FALSE;
 }
@@ -1234,7 +1234,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
 
     //-------------------------------------------------------------------------
     // set origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUserDefined;
+    m_carrier->compiler->m_originHint = ckte_origin_USERDEFINED;
     //-------------------------------------------------------------------------
 
     // log
@@ -1295,7 +1295,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     // pop indent
     EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return TRUE;
 
@@ -1304,7 +1304,7 @@ error: // 1.5.0.0 (ge) added
     // pop indent
     EM_poplog();
     // unset origin hint | 1.5.0.0 (ge) added
-    m_carrier->compiler->m_originHint = te_originUnknown;
+    m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;
 
     return FALSE;
 }
