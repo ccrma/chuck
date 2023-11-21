@@ -26,13 +26,25 @@
 // name: chuck_dl.h
 // desc: chuck dynamic linking header
 //
+// NOTE: this file is shared by two perspectives: 1) chuck hosts, as well
+//       as 2) chugins -- determined by the __CHUCK_CHUGIN__ macro:
+//       __CHUCK_CHUGIN__ is NOT defined: assume chuck host perspective
+//       __CHUCK_CHUGIN__ is defined: assume chugin perspective
+//
+//       (ALL chugins must define __CHUCK_CHUGIN__
+//        conversely, NO host should define __CHUCK_CHUGIN__)
+//
 // authors: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
 //          Ari Lazier (alazier@cs.princeton.edu)
 //          Spencer Salazar (spencer@ccrma.stanford.edu)
+//
 // macOS code based on apple's open source
 //
 // date: spring 2004 - 1.1
 //       spring 2005 - 1.2
+//       ...
+//       summer 2023 - chugins DL api v9
+//         fall 2023 - chugins DL api v10
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_DL_H__
 #define __CHUCK_DL_H__
@@ -156,8 +168,25 @@ class CBufferSimple;
 #define SET_NEXT_VECTOR(ptr,v)   (*((t_CKVECTOR *&)ptr)++=v)
 #define SET_NEXT_STRING(ptr,v)   (*((Chuck_String **&)ptr)++=v)
 
-// param conversion - to extract values from object's data segment
+// param conversion - to access values from an Object's data segment
+//-----------------------------------------------------------------------------
+// take action depending on where the macro is used, and as determined by the
+// presence or absence of the __CHUCK_CHUGIN__ preprocessor macro:
+// -- 1) macro NOT present: assume macro is used from within a chuck host
+// (CLI chuck, miniAudicle, or any c++ system that integrates the ChucK system
+// (compiler, VM, synthesis engine), then directly access obj->data
+// -- 2) macro is present: assume macro is used from within a chugin;
+// access Object data using the chugin runtime DL API
+//-----------------------------------------------------------------------------
+#ifndef __CHUCK_CHUGIN__ // CHUGIN flag NOT present
+// assume macro used from chuck host
 #define OBJ_MEMBER_DATA(obj,offset)     (obj->data + offset)
+#else // CHUGIN flag is present
+// assume macro used from chugin
+#define OBJ_MEMBER_DATA(obj,offset)     (API->object->data(obj,offset))
+#endif // #ifndef __CHUCK_CHUGIN__
+//-----------------------------------------------------------------------------
+// param conversion - to extract values from object's data segment
 #define OBJ_MEMBER_FLOAT(obj,offset)    (*(t_CKFLOAT *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_SINGLE(obj,offset)   (*(float *)OBJ_MEMBER_DATA(obj,offset))
 #define OBJ_MEMBER_DOUBLE(obj,offset)   (*(double *)OBJ_MEMBER_DATA(obj,offset))
@@ -200,8 +229,7 @@ typedef const Chuck_DL_Api * CK_DL_API;
 #define CK_DLL_QUERY_STATIC_NAME(name) ck_##name##_query
 // macro for defining ChucK DLL export query-functions (static version)
 #define CK_DLL_QUERY_STATIC(name) CK_DLL_EXPORT(t_CKBOOL) CK_DLL_QUERY_STATIC_NAME(name)( Chuck_DL_Query * QUERY )
-// macro for defining ChucK DLL export query-functions
-// example: CK_DLL_QUERY
+// macro for defining ChucK DLL export query-functions | example: CK_DLL_QUERY(Foo) { ... }
 #ifndef __CK_DLL_STATIC__
 #define CK_DLL_QUERY(name) CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKBOOL) ck_query( Chuck_DL_Query * QUERY )
 #else
@@ -857,6 +885,8 @@ public:
         Object (CK_DLL_CALL * const create_without_shred)( Chuck_VM *, Type type, t_CKBOOL addRef );
         // instantiate and initialize a ChucK string by type (without ref to a parent shred)
         String (CK_DLL_CALL * const create_string)( Chuck_VM *, const char * value, t_CKBOOL addRef );
+        // compute pointer to data segment + offset; use for member variable access | 1.5.2.0
+        void * (CK_DLL_CALL * const data)( Object object, t_CKUINT byteOffset );
         // get the origin shred
         Chuck_VM_Shred * (CK_DLL_CALL * const get_origin_shred)( Object object );
         // set the origin shred; this should only be invoked by system-level chugins; use with care

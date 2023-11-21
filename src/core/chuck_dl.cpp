@@ -1674,6 +1674,21 @@ Chuck_String * CK_DLL_CALL ck_create_string( Chuck_VM * vm, const char * cstr, t
 
 
 //-----------------------------------------------------------------------------
+// name: ck_obj_data() | 1.5.2.0 (ge) added
+// desc: compute pointer to data segment + offset; use for member variable access
+//-----------------------------------------------------------------------------
+void * CK_DLL_CALL ck_obj_data( Chuck_Object * object, t_CKUINT byteOffset )
+{
+    // chuck for NULL
+    if( !object ) return NULL;
+    // return pointer
+    return ((t_CKBYTE *)(object->data)) + byteOffset;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_get_origin_shred()
 // desc: get origin shred
 //-----------------------------------------------------------------------------
@@ -2124,6 +2139,7 @@ refcount(ck_refcount),
 create(ck_create_with_shred),
 create_without_shred(ck_create_without_shred),
 create_string(ck_create_string),
+data(ck_obj_data),
 get_origin_shred(ck_get_origin_shred),
 set_origin_shred(ck_set_origin_shred),
 get_mvar_int(ck_get_mvar_int),
