@@ -59,6 +59,7 @@ struct Chuck_VM_Code;
 struct Chuck_VM_Shred;
 struct Chuck_VM;
 struct Chuck_IO_File;
+// utilities
 class  CBufferSimple;
 
 

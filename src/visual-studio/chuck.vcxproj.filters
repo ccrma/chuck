@@ -79,9 +79,6 @@
     <ClCompile Include="..\core\chuck_ugen.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\chuck_utils.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\chuck_vm.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -286,9 +283,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\chuck_ugen.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\core\chuck_utils.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="..\core\chuck_vm.h">

@@ -45,7 +45,6 @@
     <ClInclude Include="..\core\chuck_table.h" />
     <ClInclude Include="..\core\chuck_type.h" />
     <ClInclude Include="..\core\chuck_ugen.h" />
-    <ClInclude Include="..\core\chuck_utils.h" />
     <ClInclude Include="..\core\chuck_vm.h" />
     <ClInclude Include="..\core\chuck_yacc.h" />
     <ClInclude Include="..\core\dirent_win32.h" />
@@ -147,7 +146,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\core</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile Include="..\core\chuck_ugen.cpp" />
-    <ClCompile Include="..\core\chuck_utils.cpp" />
     <ClCompile Include="..\core\chuck_vm.cpp" />
     <ClCompile Include="..\core\chuck_yacc.c" />
     <ClCompile Include="..\core\hidio_sdl.cpp" />

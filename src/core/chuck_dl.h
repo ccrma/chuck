@@ -87,7 +87,9 @@ struct Chuck_ArrayFloat;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
-struct CBufferSimple;
+
+// utility for references
+class CBufferSimple;
 
 
 // param conversion - to extract values from ARGS to functions
