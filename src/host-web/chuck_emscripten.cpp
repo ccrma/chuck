@@ -713,7 +713,7 @@ extern "C"
             std::list< std::string > chugin_search;
             // chugin_search.push_back( chuck_global_data_dir + "/Chugins" );
             // chugin_search.push_back( chuck_global_data_dir + "/ChuGins" );
-            chugin_search.push_back( chuck_global_data_dir + "/chugins" );
+            chugin_search.push_back( chuck_global_data_dir + "chugins" );
             chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, chugin_search );
  
             // default real-time audio is true | chuck-1.4.2.1 (ge) added
