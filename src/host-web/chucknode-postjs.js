@@ -367,7 +367,7 @@ var initGlobals = function( Module )
     clearGlobals = Module.cwrap( 'clearGlobals', 'number', ['number'] );
     cleanupChuckInstance = Module.cwrap( 'cleanupChuckInstance', 'number', ['number'] );
     cleanRegisteredChucks = Module.cwrap( 'cleanRegisteredChucks', null );
-
+ 
     // running code 
     runChuckCode = Module.cwrap( 'runChuckCode', 'number', ['number', 'string'] );
     runChuckCodeWithReplacementDac = Module.cwrap( 'runChuckCodeWithReplacementDac', 'number', ['number', 'string', 'string'] );
@@ -454,25 +454,30 @@ class ChuckNode extends AudioWorkletProcessor
     {
         super();
         
+        // Extract constructor options
         this.srate = options.processorOptions.srate;
         this.inChannels = options.outputChannelCount[0];
         this.outChannels = options.outputChannelCount[0];
-        
         this.myID = options.processorOptions.chuckID;
         
         chucks[this.myID] = this;
         
-        // do this in response to an incoming message
+        // Set up a message handler to respond to incoming messages
         this.port.onmessage = this.handle_message.bind(this);
                     
+        // Initialize properties for this ChuckNode instance
         this.myPointers = {}
         this.myActiveShreds = [];
         this.haveInit = false;
 
+        // Initialize the Chuck AudioWorkletProcessor
         this.init( options.processorOptions.preloadedFiles, 
                    options.processorOptions.wasm );
     }
     
+    /**
+     * Initialize the Chuck as an AudioWorkletProcessor.
+     */
     init( preloadedFiles, wasm )
     {
         if( !globalInit )
@@ -483,7 +488,6 @@ class ChuckNode extends AudioWorkletProcessor
                     {
                         return function( text )
                         {
-                            console.log( text );
                             self.port.postMessage( { type: "console print", message: text } );
                         }
                     })( this ),
@@ -491,7 +495,6 @@ class ChuckNode extends AudioWorkletProcessor
                     {
                         return function( text )
                         {
-                            console.error( text );
                             self.port.postMessage( { type: "console print", message: text } );
                         }
                     })( this ),
@@ -506,6 +509,10 @@ class ChuckNode extends AudioWorkletProcessor
                 {
                     return function()
                     {
+                        // Create a directory for chugins
+                        Module["FS_createPath"]("/", "chugins", true, true);
+
+                        // Preload files into the file system
                         for( var i = 0; i < filesToPreload.length; i++ )
                         {
                             Module["FS_createPreloadedFile"]( "/", 
@@ -534,12 +541,12 @@ class ChuckNode extends AudioWorkletProcessor
                 self._heapOutputBuffer = new HeapAudioBuffer(Module, RENDER_QUANTUM_FRAMES,
                     self.outChannels, MAX_CHANNEL_COUNT);
 
+                // log
+                //setLogLevel( 3 );
+
                 // initialize chuck instance
                 // FYI this invokes `new ChucK()` + instance initialization on the C++ side
                 initChuckInstance( self.myID, self.srate, self.inChannels, self.outChannels );
-
-                // log
-                // setLogLevel( 10 );
 
                 // flag
                 self.haveInit = true;
@@ -549,7 +556,7 @@ class ChuckNode extends AudioWorkletProcessor
             }
         })( this ) );   
     }
-    
+
     handleNewShredID( newShredID, shredCallback )
     {
         if( newShredID > 0 )
@@ -642,7 +649,7 @@ class ChuckNode extends AudioWorkletProcessor
         switch( event.data.type )
         {
         // ================== Filesystem ===================== //
-            case 'loadFile':
+            case 'createFile':
                 this.Module.FS_createDataFile( '/' + event.data.directory, 
                     event.data.filename, event.data.data, true, true, true );
                 break;

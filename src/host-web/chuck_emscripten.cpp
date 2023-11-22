@@ -711,11 +711,11 @@ extern "C"
             chuck->setParam( CHUCK_PARAM_WORKING_DIRECTORY, chuck_global_data_dir );
             // directories to search for chugins and auto-run ck files
             std::list< std::string > chugin_search;
-            chugin_search.push_back( chuck_global_data_dir + "/Chugins" );
-            chugin_search.push_back( chuck_global_data_dir + "/ChuGins" );
-            chugin_search.push_back( chuck_global_data_dir + "/chugins" );
+            // chugin_search.push_back( chuck_global_data_dir + "/Chugins" );
+            // chugin_search.push_back( chuck_global_data_dir + "/ChuGins" );
+            chugin_search.push_back( chuck_global_data_dir + "chugins" );
             chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, chugin_search );
-
+ 
             // default real-time audio is true | chuck-1.4.2.1 (ge) added
             // set hint, so internally can advise things like async data writes etc.
             chuck->setParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, (t_CKINT)TRUE );
