@@ -724,21 +724,20 @@ t_CKBOOL ChucK::initChugins()
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
         // push indent level
         // EM_pushlog();
-        // load external libs | 1.5.0.4 (ge) enabled recursive search
 
-        #ifdef __EMSCRIPTEN__
-        if( !compiler()->load_external_modules( ".chug.wasm", dl_search_path, named_dls, TRUE ) )
+        // chugin extension
+        std::string extension = ".chug";
+#ifdef __EMSCRIPTEN__
+        // webchugins have extension ".chug.wasm" | 1.5.2.0 (terryzfeng) added
+        extension = "chug.wasm";
+#endif
+        // load external libs | 1.5.0.4 (ge) enabled recursive search
+        if( !compiler()->load_external_modules( extension.c_str(), dl_search_path, named_dls, TRUE ) )
         {
             // clean up
             goto error;
         }
-        #else
-        if( !compiler()->load_external_modules( ".chug", dl_search_path, named_dls, TRUE ) )
-        {
-            // clean up
-            goto error;
-        }
-        #endif
+
         // pop log
         // EM_poplog();
 
@@ -859,8 +858,16 @@ void ChucK::probeChugins()
     EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
     // push indent level
     // EM_pushlog();
+
+    // chugin extension
+    std::string extension = ".chug";
+#ifdef __EMSCRIPTEN__
+    // webchugins have extension ".chug.wasm" | 1.5.2.0 (terryzfeng) added
+    extension = "chug.wasm";
+#endif
+
     // load external libs
-    if( !Chuck_Compiler::probe_external_modules( ".chug", dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
+    if( !Chuck_Compiler::probe_external_modules( extension.c_str(), dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
     {
         // warning
         EM_log( CK_LOG_SYSTEM, "error probing chugins..." );
