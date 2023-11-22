@@ -9,6 +9,9 @@
 /src/Release
 /src/Debug
 
+/src/host-web/webchuck/js/webchuck.js
+/src/host-web/webchuck/js/webchuck.wasm
+
 .DS_Store
 project.xcworkspace
 xcuserdata
