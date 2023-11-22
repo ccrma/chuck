@@ -76,7 +76,7 @@ endif
 COBJS_CORE+=chuck.tab.o chuck.yy.o util_math.o util_network.o util_raw.o \
 	util_xforms.o
 CXXOBJS_CORE+=chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
-	chuck_frame.o chuck_symbol.o chuck_table.o chuck_utils.o \
+	chuck_frame.o chuck_symbol.o chuck_table.o \
 	chuck_vm.o chuck_instr.o chuck_scan.o chuck_type.o chuck_emit.o \
 	chuck_compile.o chuck_dl.o chuck_oo.o chuck_lang.o chuck_ugen.o \
 	chuck_otf.o chuck_stats.o chuck_shell.o chuck_io.o \
