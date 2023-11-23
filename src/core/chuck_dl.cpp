@@ -2122,6 +2122,21 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_push_back( Chuck_DL_Api::ArrayInt array
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_int_clear()
+// desc: clear array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_int_clear( Chuck_DL_Api::ArrayInt array )
+{
+    // check
+    if( array == NULL ) return;
+    // clear
+    array->clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_float_size()
 // desc: get size of an array | 1.5.1.8 (nshaheed) added
 //-----------------------------------------------------------------------------
@@ -2182,6 +2197,21 @@ static t_CKBOOL CK_DLL_CALL ck_array_float_push_back( Chuck_DL_Api::ArrayFloat a
     array->push_back( value );
     // done
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_clear()
+// desc: clear array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_float_clear( Chuck_DL_Api::ArrayFloat array )
+{
+    // check
+    if( array == NULL ) return;
+    // clear
+    array->clear();
 }
 
 
@@ -2252,6 +2282,21 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec2_push_back( Chuck_DL_Api::ArrayVec2 arr
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_vec2clear()
+// desc: clear array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec2_clear( Chuck_DL_Api::ArrayVec2 array )
+{
+    // check
+    if( array == NULL ) return;
+    // clear
+    array->clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_vec3_size()
 // desc: get size of an array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
@@ -2312,6 +2357,20 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec3_push_back( Chuck_DL_Api::ArrayVec3 arr
     return TRUE;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3clear()
+// desc: clear array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec3_clear( Chuck_DL_Api::ArrayVec3 array )
+{
+    // check
+    if( array == NULL ) return;
+    // clear
+    array->clear();
+}
 
 
 
@@ -2381,6 +2440,21 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec4_push_back( Chuck_DL_Api::ArrayVec4 arr
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_vec4clear()
+// desc: clear array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec4_clear( Chuck_DL_Api::ArrayVec4 array )
+{
+    // check
+    if( array == NULL ) return;
+    // clear
+    array->clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // constructor for the VMApi; connects function pointers to host-side impl
 //-----------------------------------------------------------------------------
 Chuck_DL_Api::VMApi::VMApi() :
@@ -2426,22 +2500,27 @@ array_int_size(ck_array_int_size),
 array_int_get_idx(ck_array_int_get_idx),
 array_int_get_key(ck_array_int_get_key),
 array_int_push_back(ck_array_int_push_back),
+array_int_clear(ck_array_int_clear),
 array_float_size(ck_array_float_size),
 array_float_get_idx(ck_array_float_get_idx),
 array_float_get_key(ck_array_float_get_key),
 array_float_push_back(ck_array_float_push_back),
+array_float_clear( ck_array_float_clear ),
 array_vec2_size(ck_array_vec2_size),
 array_vec2_get_idx(ck_array_vec2_get_idx),
 array_vec2_get_key(ck_array_vec2_get_key),
 array_vec2_push_back(ck_array_vec2_push_back),
+array_vec2_clear( ck_array_vec2_clear ),
 array_vec3_size(ck_array_vec3_size),
 array_vec3_get_idx(ck_array_vec3_get_idx),
 array_vec3_get_key(ck_array_vec3_get_key),
 array_vec3_push_back(ck_array_vec3_push_back),
+array_vec3_clear( ck_array_vec3_clear ),
 array_vec4_size(ck_array_vec4_size),
 array_vec4_get_idx(ck_array_vec4_get_idx),
 array_vec4_get_key(ck_array_vec4_get_key),
-array_vec4_push_back(ck_array_vec4_push_back)
+array_vec4_push_back(ck_array_vec4_push_back),
+array_vec4_clear( ck_array_vec4_clear )
 { }
 
 
