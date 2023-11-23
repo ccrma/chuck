@@ -446,7 +446,12 @@ typedef enum {
 struct Chuck_DL_Query
 {
 public:
-    // REFACTOR-2017: get associated compiler, vm, env
+    // function pointers - to be called from client module
+    //   Chuck_VM * vm = QUERY->get_vm( QUERY );
+    //   Chuck_VM * api = QUERY->get_api( QUERY );
+    //
+    // get_vm(), get_api(), etc.
+    // REFACTOR-2017: get compiler, vm, etc. asoociated with the QUERY
     f_get_vm get_vm;
     f_get_api get_api;
     f_get_env get_env;
@@ -936,17 +941,17 @@ public:
         t_CKFLOAT (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx );
         t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const char * key, t_CKFLOAT & value );
         t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
-        // array_vec2/complex/polar/16 operations
+        // array_vec2/complex/polar/16 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec2_size)( ArrayVec2 array );
         t_CKVEC2 (CK_DLL_CALL * const array_vec2_get_idx)( ArrayVec2 array, t_CKINT idx );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_get_key)( ArrayVec2 array, const char * key, t_CKVEC2 & value );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_push_back)( ArrayVec2 array, const t_CKVEC2 & value );
-        // array_vec3/24 operations
+        // array_vec3/24 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec3_size)( ArrayVec3 array );
         t_CKVEC3 (CK_DLL_CALL * const array_vec3_get_idx)( ArrayVec3 array, t_CKINT idx );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_get_key)( ArrayVec3 array, const char * key, t_CKVEC3 & value );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_push_back)( ArrayVec3 array, const t_CKVEC3 & value );
-        // array_vec4/32 operations
+        // array_vec4/32 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec4_size)( ArrayVec4 array );
         t_CKVEC4 (CK_DLL_CALL * const array_vec4_get_idx)( ArrayVec4 array, t_CKINT idx );
         t_CKBOOL (CK_DLL_CALL * const array_vec4_get_key)( ArrayVec4 array, const char * key, t_CKVEC4 & value );
@@ -973,7 +978,7 @@ public:
         t_CKBOOL (CK_DLL_CALL * const isa)(Type lhs, Type rhs);
         // register a callback to be invoked whenever a base-type (or its subclass) is instantiated, with option for type system to auto-set shred origin if available
         void (CK_DLL_CALL * const callback_on_instantiate)( f_callback_on_instantiate callback, Type base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
-        // get origin hint (where did this type originate?)
+        // get origin hint ("where did this type originate?")
         ckte_Origin (CK_DLL_CALL * const origin_hint)(Type type);
     } * const type;
 
