@@ -445,10 +445,6 @@ typedef enum {
 //-----------------------------------------------------------------------------
 struct Chuck_DL_Query
 {
-protected:
-    // REFACTOR-2017: carrier ref
-    Chuck_Carrier * m_carrier;
-
 public:
     // REFACTOR-2017: get associated compiler, vm, env
     f_get_vm get_vm;
@@ -564,6 +560,10 @@ public: // host-side functions (not to be called from chugins)
     Chuck_Env * env() const;
     Chuck_Compiler * compiler() const;
     Chuck_Carrier * carrier() const;
+
+protected:
+    // REFACTOR-2017: carrier ref
+    Chuck_Carrier * m_carrier;
 };
 
 
