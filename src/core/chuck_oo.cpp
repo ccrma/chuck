@@ -311,7 +311,7 @@ Chuck_Object::~Chuck_Object()
         }
 
         // chuck-defined destructor | 1.5.2.0 (ge) added
-        if( type->dtor )
+        if( type->dtor_the )
         {
             // verify
             if( !type->dtor_invoker )

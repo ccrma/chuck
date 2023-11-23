@@ -3166,9 +3166,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // set constructor flag
         func->is_ctor = TRUE;
         // set in class as constructor; if not NULL, then a ctor is already set, and this is an overloading
-        if( env->class_def->ctors == NULL )
+        if( env->class_def->ctors_all == NULL )
         {
-            CK_SAFE_REF_ASSIGN( env->class_def->ctors, func );
+            CK_SAFE_REF_ASSIGN( env->class_def->ctors_all, func );
         }
         // check if default constructor
         func->is_default_ctor = (f->arg_list == NULL);
@@ -3183,7 +3183,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( isInDtor )
     {
         // verify
-        if( env->class_def->dtor != NULL )
+        if( env->class_def->dtor_the != NULL )
         {
             EM_error2( f->where, "(internal error): unexpected destructor found in '%s'...", env->class_def->c_name() );
             return FALSE;
@@ -3191,7 +3191,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // set destructor flag
         func->is_dtor = TRUE;
         // set in class as destructor
-        CK_SAFE_REF_ASSIGN( env->class_def->dtor, func );
+        CK_SAFE_REF_ASSIGN( env->class_def->dtor_the, func );
         // set invoker
         env->class_def->dtor_invoker = new Chuck_VM_DtorInvoker;
         // init invoker

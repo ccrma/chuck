@@ -933,11 +933,11 @@ struct Chuck_Type : public Chuck_Object
     // of this type (via new_array_type()), but this flag is this specific type only
     t_CKBOOL has_pre_dtor;
     // constructor(s), potentially overloaded | 1.5.2.0 (ge) added
-    Chuck_Func * ctors;
+    Chuck_Func * ctors_all;
     // default constructor (no arguments) | 1.5.2.0 (ge) added
     Chuck_Func * ctor_default;
     // destructor (also see this->info->pre_dtor) | 1.5.2.0 (ge) added
-    Chuck_Func * dtor;
+    Chuck_Func * dtor_the;
     // destructor invoker (needed since dtor could run outside of chuck shreduling) | 1.5.2.0
     Chuck_VM_DtorInvoker * dtor_invoker;
     // custom allocator

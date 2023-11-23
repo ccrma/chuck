@@ -5880,7 +5880,7 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     }
 
     // locate the constructor by type name
-    Chuck_Func * funcGroup = actualType->ctors;
+    Chuck_Func * funcGroup = actualType->ctors_all;
     // verify
     if( !funcGroup )
     {
@@ -9313,9 +9313,9 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     is_complete = TRUE;
     has_pre_ctor = FALSE;
     has_pre_dtor = FALSE;
-    ctors = NULL;
+    ctors_all = NULL;
     ctor_default = NULL;
-    dtor = NULL;
+    dtor_the = NULL;
     dtor_invoker = NULL;
     allocator = NULL;
 
@@ -9361,9 +9361,9 @@ void Chuck_Type::reset()
         // release references
         CK_SAFE_RELEASE( info );
         CK_SAFE_RELEASE( owner );
-        CK_SAFE_RELEASE( ctors ); // 1.5.2.0 (ge) added
+        CK_SAFE_RELEASE( ctors_all ); // 1.5.2.0 (ge) added
         CK_SAFE_RELEASE( ctor_default ); // 1.5.2.0 (ge) added
-        CK_SAFE_RELEASE( dtor ); // 1.5.2.0 (ge) added
+        CK_SAFE_RELEASE( dtor_the ); // 1.5.2.0 (ge) added
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
