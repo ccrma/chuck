@@ -124,7 +124,6 @@ class CBufferSimple;
 #define GET_CK_VECTOR(ptr)     (*(t_CKVECTOR *)ptr)
 #define GET_CK_OBJECT(ptr)     (*(Chuck_Object **)ptr)
 #define GET_CK_STRING(ptr)     (*(Chuck_String **)ptr)
-#define GET_CK_STRING_SAFE(ptr) std::string( GET_CK_STRING(ptr)->c_str() )
 
 // param conversion with pointer advance
 #define GET_NEXT_FLOAT(ptr)    (*((t_CKFLOAT *&)ptr)++)
@@ -142,7 +141,17 @@ class CBufferSimple;
 #define GET_NEXT_VECTOR(ptr)   (*((t_CKVECTOR *&)ptr)++)
 #define GET_NEXT_OBJECT(ptr)   (*((Chuck_Object **&)ptr)++)
 #define GET_NEXT_STRING(ptr)   (*((Chuck_String **&)ptr)++)
+
+// string-specific operations
+#ifndef __CHUCK_CHUGIN__ // CHUGIN flag NOT present
+// assume macro used from host
+#define GET_CK_STRING_SAFE(ptr) std::string( GET_CK_STRING(ptr)->c_str() )
 #define GET_NEXT_STRING_SAFE(ptr) std::string( GET_NEXT_STRING(ptr)->c_str() )
+#else // CHUGIN flag is present
+// assume macro used from chugin; use chugins runtime API for portability
+#define GET_CK_STRING_SAFE(ptr) std::string( API->object->str((Chuck_String *)ptr) )
+#define GET_NEXT_STRING_SAFE(ptr) std::string( API->object->str(GET_NEXT_STRING(ptr)) )
+#endif
 
 // param conversion
 #define SET_CK_FLOAT(ptr,v)      (*(t_CKFLOAT *&)ptr=v)
