@@ -994,6 +994,10 @@ public:
         void (CK_DLL_CALL * const callback_on_instantiate)( f_callback_on_instantiate callback, Type base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
         // get origin hint ("where did this type originate?")
         ckte_Origin (CK_DLL_CALL * const origin_hint)(Type type);
+        // get type name (full, with decorations) (NOTE do not save a reference to the return value; make a copy if needed) | 1.5.2.0
+        const char * (CK_DLL_CALL * const name)(Type type);
+        // get type base name (no decorations) (NOTE do not save a reference to the return value; make a copy if needed) | 1.5.2.0
+        const char * (CK_DLL_CALL * const base_name)(Type type);
     } * const type;
 
     // api to access host-side shreds | 1.5.2.0

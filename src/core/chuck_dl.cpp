@@ -82,6 +82,8 @@ t_CKBOOL CK_DLL_CALL ck_type_isequal( Chuck_Type * lhs, Chuck_Type * rhs );
 t_CKBOOL CK_DLL_CALL ck_type_isa( Chuck_Type * lhs, Chuck_Type * rhs );
 void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback, Chuck_Type * base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
 ckte_Origin ck_origin_hint( Chuck_Type * type );
+const char * CK_DLL_CALL ck_type_name( Chuck_Type * type );
+const char * CK_DLL_CALL ck_type_base_name( Chuck_Type * type );
 Chuck_VM_Shred * CK_DLL_CALL ck_get_origin_shred( Chuck_Object * object );
 void CK_DLL_CALL ck_set_origin_shred( Chuck_Object * object, Chuck_VM_Shred * shred );
 Chuck_VM_Shred * CK_DLL_CALL ck_shred_parent( Chuck_VM_Shred * shred );
@@ -2535,7 +2537,9 @@ get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
 isa(ck_type_isa),
 callback_on_instantiate(ck_callback_on_instantiate),
-origin_hint(ck_origin_hint)
+origin_hint(ck_origin_hint),
+name(ck_type_name),
+base_name(ck_type_base_name)
 { }
 
 
@@ -2733,6 +2737,36 @@ ckte_Origin CK_DLL_CALL ck_origin_hint( Chuck_Type * type )
     if( !type ) return ckte_origin_UNKNOWN;
     // return origin hint
     return type->originHint;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_type_name()
+// desc: get type name (full, with decorations such as [])
+//-----------------------------------------------------------------------------
+const char * CK_DLL_CALL ck_type_name( Chuck_Type * type )
+{
+    // null
+    if( !type ) return "";
+    // return type name
+    return type->c_name();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_type_base_name()
+// desc: get type base name (no [] decorations)
+//-----------------------------------------------------------------------------
+const char * CK_DLL_CALL ck_type_base_name( Chuck_Type * type )
+{
+    // null
+    if( !type ) return "";
+    // return origin hint
+    return type->base_name.c_str();
 }
 
 
