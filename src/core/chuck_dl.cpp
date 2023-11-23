@@ -63,6 +63,16 @@ char g_chugin_path_envvar[] = "CHUCK_CHUGIN_PATH";
 //-----------------------------------------------------------------------------
 // function prototypes
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Chuck_DL_Query implementation for chugin-side interface
+//-----------------------------------------------------------------------------
+Chuck_VM * CK_DLL_CALL ck_get_vm( Chuck_DL_Query * query );
+CK_DL_API CK_DLL_CALL ck_get_api( Chuck_DL_Query * query );
+Chuck_Env * CK_DLL_CALL ck_get_env( Chuck_DL_Query * query );
+Chuck_Compiler * CK_DLL_CALL ck_get_compiler( Chuck_DL_Query * query );
+Chuck_Carrier * CK_DLL_CALL ck_get_carrier( Chuck_DL_Query * query );
+
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
 void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
 void CK_DLL_CALL ck_em_log( t_CKINT level, const char * text );
@@ -74,6 +84,7 @@ void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback,
 ckte_Origin ck_origin_hint( Chuck_Type * type );
 Chuck_VM_Shred * CK_DLL_CALL ck_get_origin_shred( Chuck_Object * object );
 void CK_DLL_CALL ck_set_origin_shred( Chuck_Object * object, Chuck_VM_Shred * shred );
+Chuck_VM_Shred * CK_DLL_CALL ck_shred_parent( Chuck_VM_Shred * shred );
 
 
 
@@ -834,15 +845,25 @@ Chuck_DL_Value * CK_DLL_CALL make_new_svar( const char * t, const char * n, t_CK
 
 
 
+//-----------------------------------------------------------------------------
+// Chuck_DL_Query implementation for chugin-side interface
+//-----------------------------------------------------------------------------
+Chuck_VM * CK_DLL_CALL ck_get_vm( Chuck_DL_Query * query ) { return query->vm(); }
+CK_DL_API CK_DLL_CALL ck_get_api( Chuck_DL_Query * query ) { return query->api(); }
+Chuck_Env * CK_DLL_CALL ck_get_env( Chuck_DL_Query * query ) { return query->env(); }
+Chuck_Compiler * CK_DLL_CALL ck_get_compiler( Chuck_DL_Query * query ) { return query->compiler(); }
+Chuck_Carrier * CK_DLL_CALL ck_get_carrier( Chuck_DL_Query * query ) { return query->carrier(); }
+
+
 
 //-----------------------------------------------------------------------------
-// Chuck_DL_Query functions
+// Chuck_DL_Query host-side functions
 //-----------------------------------------------------------------------------
-Chuck_Compiler * Chuck_DL_Query::compiler() const { return m_carrier->compiler; }
 Chuck_VM * Chuck_DL_Query::vm() const { return m_carrier->vm; }
-Chuck_Env * Chuck_DL_Query::env() const { return m_carrier->env; }
-Chuck_Carrier * Chuck_DL_Query::carrier() const { return m_carrier; }
 CK_DL_API Chuck_DL_Query::api() const { return m_api; } // 1.5.1.5
+Chuck_Env * Chuck_DL_Query::env() const { return m_carrier->env; }
+Chuck_Compiler * Chuck_DL_Query::compiler() const { return m_carrier->compiler; }
+Chuck_Carrier * Chuck_DL_Query::carrier() const { return m_carrier; }
 
 
 
@@ -1259,6 +1280,11 @@ t_CKBOOL Chuck_DLL::compatible()
 Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 {
     // set the pointers to functions so the module can call
+    get_vm = ck_get_vm;
+    get_api = ck_get_api;
+    get_env = ck_get_env;
+    get_compiler = ck_get_compiler;
+    get_carrier = ck_get_carrier;
     setname = ck_setname;
     begin_class = ck_begin_class;
     add_ctor = ck_add_ctor;
@@ -1769,7 +1795,7 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar(Chuck_DL_Api::Object o, const char * nam
     // make error
     if( !var )
     {
-        EM_error2(0, "get mvar: ck_get_mvar: member variable %s not found", mvar.c_str());
+        EM_error2(0, "get_mvar(): member variable %s not found", mvar.c_str());
         return FALSE;
     }
     // return offset of var
@@ -1777,6 +1803,8 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar(Chuck_DL_Api::Object o, const char * nam
 
     return TRUE;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1793,16 +1821,14 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar_int( Chuck_DL_Api::Object obj, const cha
     t_CKINT offset = -1;
     // get mvar
     t_CKBOOL success = ck_get_mvar(obj, name, te_int, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object* ck_obj = (Chuck_Object*)obj;
-        // get int at offset
-        value = OBJ_MEMBER_INT(ck_obj, offset); // get offset
-    }
+    // check get int at offset
+    if( success ) value = OBJ_MEMBER_INT(obj, offset); // get offset
+
+    // done
     return success;
 }
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -1819,14 +1845,9 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar_float( Chuck_DL_Api::Object obj, const c
     t_CKINT offset = -1;
     // get mvar
     t_CKBOOL success = ck_get_mvar(obj, name, te_float, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object* ck_obj = (Chuck_Object*)obj;
-        // get float at offset
-        value = OBJ_MEMBER_FLOAT(ck_obj, offset);
-    }
+    // check, get float at offset
+    if( success ) value = OBJ_MEMBER_FLOAT(obj, offset);
+
     // done
     return success;
 }
@@ -1848,17 +1869,13 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar_dur( Chuck_DL_Api::Object obj, const cha
     t_CKINT offset = -1;
     // get mvar
     t_CKBOOL success = ck_get_mvar(obj, name, te_dur, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object* ck_obj = (Chuck_Object*)obj;
-        // get dur at offset
-        value = OBJ_MEMBER_DUR(ck_obj, offset);
-    }
+    // check, get dur at offset
+    if( success ) value = OBJ_MEMBER_DUR(obj, offset);
+
     // done
     return success;
 }
+
 
 
 
@@ -1876,14 +1893,105 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar_time( Chuck_DL_Api::Object obj, const ch
     t_CKINT offset = -1;
     // get mvar
     t_CKBOOL success = ck_get_mvar(obj, name, te_time, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object * ck_obj = (Chuck_Object*)obj;
-        // get time value at offset
-        value = OBJ_MEMBER_TIME(ck_obj, offset);
-    }
+    // check, get time value at offset
+    if( success ) value = OBJ_MEMBER_TIME(obj, offset);
+
+    // done
+    return success;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_vec2()
+// desc: retrieve a class's member variable of type vec2/complex/polar
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_get_mvar_vec2( Chuck_DL_Api::Object obj, const char * name, t_CKVEC2 & value )
+{
+    // default value
+    value.x = value.y = 0.0;
+    // check | 1.5.0.1 (ge) changed from assert obj != NULL
+    if( obj == NULL ) return FALSE;
+
+    t_CKINT offset = -1;
+    // get mvar
+    t_CKBOOL success = ck_get_mvar(obj, name, te_vec2, offset);
+    // check, get vec2 value at offset
+    if( success ) value = OBJ_MEMBER_VEC2(obj, offset);
+
+    // done
+    return success;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_vec3()
+// desc: retrieve a class's member variable of type vec3
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_get_mvar_vec3( Chuck_DL_Api::Object obj, const char * name, t_CKVEC3 & value )
+{
+    // default value
+    value.x = value.y = value.z = 0.0;
+    // check | 1.5.0.1 (ge) changed from assert obj != NULL
+    if( obj == NULL ) return FALSE;
+
+    t_CKINT offset = -1;
+    // get mvar
+    t_CKBOOL success = ck_get_mvar(obj, name, te_vec3, offset);
+    // check, get vec3 value at offset
+    if( success ) value = OBJ_MEMBER_VEC3(obj, offset);
+
+    // done
+    return success;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_vec4()
+// desc: retrieve a class's member variable of type vec4
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_get_mvar_vec4( Chuck_DL_Api::Object obj, const char * name, t_CKVEC4 & value )
+{
+    // default value
+    value.x = value.y = value.z = value.w = 0.0;
+    // check | 1.5.0.1 (ge) changed from assert obj != NULL
+    if( obj == NULL ) return FALSE;
+
+    t_CKINT offset = -1;
+    // get mvar
+    t_CKBOOL success = ck_get_mvar(obj, name, te_vec4, offset);
+    // check, get vec4 value at offset
+    if( success ) value = OBJ_MEMBER_VEC4(obj, offset);
+
+    // done
+    return success;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_get_mvar_object()
+// desc: retrieve a class's member variable of type object
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_get_mvar_object( Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
+{
+    // default
+    object = NULL;
+    // check | 1.5.0.1 (ge) changed from assert obj != NULL
+    if( obj == NULL ) return FALSE;
+
+    t_CKINT offset = -1;
+    // TODO how to do this?
+    t_CKBOOL success = ck_get_mvar(obj, name, te_object, offset);
+    // check, get object at offset
+    if( success ) object = OBJ_MEMBER_OBJECT(obj, offset);
+
     // done
     return success;
 }
@@ -1905,51 +2013,21 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar_string( Chuck_DL_Api::Object obj, const 
     t_CKINT offset = -1;
     // get mvar
     t_CKBOOL success = ck_get_mvar(obj, name, te_string, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object * ck_obj = (Chuck_Object*)obj;
-        // get string at offset
-        str = OBJ_MEMBER_STRING(ck_obj, offset);
-    }
-    return success;
-}
+    // check, get string at offset
+    if( success ) str = OBJ_MEMBER_STRING(obj, offset);
 
-
-//-----------------------------------------------------------------------------
-// name: ck_get_mvar_object()
-// desc: retrieve a class's member variable of type object
-//-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_get_mvar_object( Chuck_DL_Api::Object obj, const char * name, Chuck_DL_Api::Object & object )
-{
-    // default
-    object = NULL;
-    // check | 1.5.0.1 (ge) changed from assert obj != NULL
-    if( obj == NULL ) return FALSE;
-
-    t_CKINT offset = -1;
-    // TODO how to do this?
-    t_CKBOOL success = ck_get_mvar(obj, name, te_object, offset);
-    // check
-    if (success)
-    {
-        // get object
-        Chuck_Object * ck_obj = (Chuck_Object*)obj;
-        // get object at offset
-        object = OBJ_MEMBER_OBJECT(ck_obj, offset);
-    }
     // done
     return success;
 }
 
 
 
+
 //-----------------------------------------------------------------------------
-// name: ck_set_string()
+// name: ck_string_set()
 // desc: set a chuck string
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_set_string( Chuck_DL_Api::String s, const char * str )
+static t_CKBOOL CK_DLL_CALL ck_string_set( Chuck_DL_Api::String s, const char * str )
 {
     // check | 1.5.0.1 (ge) changed from assert s != NULL
     if( s == NULL ) return FALSE;
@@ -1963,41 +2041,32 @@ static t_CKBOOL CK_DLL_CALL ck_set_string( Chuck_DL_Api::String s, const char * 
 
 
 
+
 //-----------------------------------------------------------------------------
-// name: ck_array_int_size()
-// desc: get size of an array | 1.5.1.3 (nshaheed) added
+// name: ck_string_get()
+// desc: get a chuck string's internal c-string
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_int_size( Chuck_DL_Api::ArrayInt a, t_CKINT & value )
+static const char * CK_DLL_CALL ck_string_get( Chuck_String * str )
 {
-    // default value
-    value = 0;
     // check
-    if( a == NULL ) return FALSE;
-
-    // cast to array_int
-    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
-
-    value = array->size();
-    return TRUE;
+    if( str == NULL ) return NULL;
+    // get the internal c string
+    return str->str().c_str();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array_int_push_back()
-// desc: push back an element into an array | 1.5.0.1 (ge) added
+// name: ck_array_int_size()
+// desc: get size of an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_int_push_back( Chuck_DL_Api::ArrayInt a, t_CKUINT value )
+static t_CKINT CK_DLL_CALL ck_array_int_size( Chuck_DL_Api::ArrayInt array )
 {
     // check
-    if( a == NULL ) return FALSE;
-    // cast to array_int
-    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
-    // action
-    array->push_back( value );
-    // done
-    return TRUE;
+    if( array == NULL ) return 0;
+    // return size
+    return array->size();
 }
 
 
@@ -2007,31 +2076,46 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_push_back( Chuck_DL_Api::ArrayInt a, t_
 // name: ck_array_int_get_idx()
 // desc: get an indexed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_int_get_idx( Chuck_DL_Api::ArrayInt a, t_CKINT idx, t_CKUINT & value )
+static t_CKINT CK_DLL_CALL ck_array_int_get_idx( Chuck_DL_Api::ArrayInt array, t_CKINT idx )
 {
-    // check
-    if( a == NULL ) return FALSE;
-    // cast to array_int
-    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
-    // action
-    return array->get( idx, &value );
+    // value
+    t_CKINT value = 0;
+    // try to retrive value by index
+    if( array ) array->get( idx, &value );
+    // return value
+    return value;
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array_int_get()
+// name: ck_array_int_get_key()
 // desc: get a keyed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, const std::string& key, t_CKUINT & value )
+static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt array, const char * key, t_CKINT & value )
 {
     // check
-    if( a == NULL ) return FALSE;
-    // cast to array_int
-    Chuck_ArrayInt * array = (Chuck_ArrayInt *)a;
+    if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_int_push_back()
+// desc: push back an element into an array | 1.5.0.1 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_int_push_back( Chuck_DL_Api::ArrayInt array, t_CKINT value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    array->push_back( (t_CKUINT)value );
+    // done
+    return TRUE;
 }
 
 
@@ -2041,18 +2125,44 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt a, cons
 // name: ck_array_float_size()
 // desc: get size of an array | 1.5.1.8 (nshaheed) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_float_size( Chuck_DL_Api::ArrayFloat a, t_CKINT & value )
+static t_CKINT CK_DLL_CALL ck_array_float_size( Chuck_DL_Api::ArrayFloat array )
 {
-    // default value
-    value = 0;
     // check
-    if( a == NULL ) return FALSE;
+    if( array == NULL ) return 0;
+    // done
+    return array->size();
+}
 
-    // cast to array_float
-    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
 
-    value = array->size();
-    return TRUE;
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_get_idx()
+// desc: get an indexed element from an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKFLOAT CK_DLL_CALL ck_array_float_get_idx( Chuck_DL_Api::ArrayFloat array, t_CKINT idx )
+{
+    // value
+    t_CKFLOAT value = 0;
+    // attempt to retrieve value
+    if( array ) array->get( idx, &value );
+    // action
+    return value;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_get_key()
+// desc: get a keyed element from an array | 1.5.1.8 (nshaheed) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_float_get_key( Chuck_DL_Api::ArrayFloat array, const char * key, t_CKFLOAT & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    return array->get( key, &value );
 }
 
 
@@ -2078,34 +2188,193 @@ static t_CKBOOL CK_DLL_CALL ck_array_float_push_back( Chuck_DL_Api::ArrayFloat a
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array_float_get_idx()
-// desc: get an indexed element from an array | 1.5.1.8 (nshaheed) added
+// name: ck_array_vec2_size()
+// desc: get size of an array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_float_get_idx( Chuck_DL_Api::ArrayFloat a, t_CKINT idx, t_CKFLOAT & value )
+static t_CKINT CK_DLL_CALL ck_array_vec2_size( Chuck_DL_Api::ArrayVec2 array )
 {
     // check
-    if( a == NULL ) return FALSE;
-    // cast to array_float
-    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
-    // action
-    return array->get( idx, &value );
+    if( array == NULL ) return 0;
+    // return size
+    return array->size();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: ck_array_float_get()
-// desc: get a keyed element from an array | 1.5.1.8 (nshaheed) added
+// name: ck_array_vec2_get_idx()
+// desc: get indexed element from array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
-static t_CKBOOL CK_DLL_CALL ck_array_float_get_key( Chuck_DL_Api::ArrayFloat a, const std::string& key, t_CKFLOAT & value )
+static t_CKVEC2 CK_DLL_CALL ck_array_vec2_get_idx( Chuck_DL_Api::ArrayVec2 array, t_CKINT idx )
+{
+    // value
+    t_CKVEC2 value; value.x = value.y = 0;
+    // try to retrive value by index
+    if( array ) array->get( idx, &value );
+    // return value
+    return value;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec2_get_key()
+// desc: get keyed element from array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec2_get_key( Chuck_DL_Api::ArrayVec2 array, const char * key, t_CKVEC2 & value )
 {
     // check
-    if( a == NULL ) return FALSE;
-    // cast to array_float
-    Chuck_ArrayFloat * array = (Chuck_ArrayFloat *)a;
+    if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec2_push_back()
+// desc: push back an element into an array | 1.5.0.1 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec2_push_back( Chuck_DL_Api::ArrayVec2 array, const t_CKVEC2 & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    array->push_back( value );
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3_size()
+// desc: get size of an array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKINT CK_DLL_CALL ck_array_vec3_size( Chuck_DL_Api::ArrayVec3 array )
+{
+    // check
+    if( array == NULL ) return 0;
+    // return size
+    return array->size();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3_get_idx()
+// desc: get indexed element from array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKVEC3 CK_DLL_CALL ck_array_vec3_get_idx( Chuck_DL_Api::ArrayVec3 array, t_CKINT idx )
+{
+    // value
+    t_CKVEC3 value; value.x = value.y = value.z = 0;
+    // try to retrive value by index
+    if( array ) array->get( idx, &value );
+    // return value
+    return value;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3_get_key()
+// desc: get keyed element from array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec3_get_key( Chuck_DL_Api::ArrayVec3 array, const char * key, t_CKVEC3 & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3_push_back()
+// desc: push back an element into an array | 1.5.0.1 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec3_push_back( Chuck_DL_Api::ArrayVec3 array, const t_CKVEC3 & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    array->push_back( value );
+    // done
+    return TRUE;
+}
+
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec4_size()
+// desc: get size of an array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKINT CK_DLL_CALL ck_array_vec4_size( Chuck_DL_Api::ArrayVec4 array )
+{
+    // check
+    if( array == NULL ) return 0;
+    // return size
+    return array->size();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec4_get_idx()
+// desc: get indexed element from array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKVEC4 CK_DLL_CALL ck_array_vec4_get_idx( Chuck_DL_Api::ArrayVec4 array, t_CKINT idx )
+{
+    // value
+    t_CKVEC4 value; value.x = value.y = value.z = value.w = 0;
+    // try to retrive value by index
+    if( array ) array->get( idx, &value );
+    // return value
+    return value;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec4_get_key()
+// desc: get keyed element from array | 1.5.2.0 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec4_get_key( Chuck_DL_Api::ArrayVec4 array, const char * key, t_CKVEC4 & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec4_push_back()
+// desc: push back an element into an array | 1.5.0.1 (ge) added
+//-----------------------------------------------------------------------------
+static t_CKBOOL CK_DLL_CALL ck_array_vec4_push_back( Chuck_DL_Api::ArrayVec4 array, const t_CKVEC4 & value )
+{
+    // check
+    if( array == NULL ) return FALSE;
+    // action
+    array->push_back( value );
+    // done
+    return TRUE;
 }
 
 
@@ -2146,17 +2415,33 @@ get_mvar_int(ck_get_mvar_int),
 get_mvar_float(ck_get_mvar_float),
 get_mvar_dur(ck_get_mvar_dur),
 get_mvar_time(ck_get_mvar_time),
+get_mvar_vec2(ck_get_mvar_vec2),
+get_mvar_vec3(ck_get_mvar_vec3),
+get_mvar_vec4(ck_get_mvar_vec4),
 get_mvar_string(ck_get_mvar_string),
 get_mvar_object(ck_get_mvar_object),
-set_string(ck_set_string),
+set_string(ck_string_set),
+str(ck_string_get),
 array_int_size(ck_array_int_size),
-array_int_push_back(ck_array_int_push_back),
 array_int_get_idx(ck_array_int_get_idx),
 array_int_get_key(ck_array_int_get_key),
+array_int_push_back(ck_array_int_push_back),
 array_float_size(ck_array_float_size),
-array_float_push_back(ck_array_float_push_back),
 array_float_get_idx(ck_array_float_get_idx),
-array_float_get_key(ck_array_float_get_key)
+array_float_get_key(ck_array_float_get_key),
+array_float_push_back(ck_array_float_push_back),
+array_vec2_size(ck_array_vec2_size),
+array_vec2_get_idx(ck_array_vec2_get_idx),
+array_vec2_get_key(ck_array_vec2_get_key),
+array_vec2_push_back(ck_array_vec2_push_back),
+array_vec3_size(ck_array_vec3_size),
+array_vec3_get_idx(ck_array_vec3_get_idx),
+array_vec3_get_key(ck_array_vec3_get_key),
+array_vec3_push_back(ck_array_vec3_push_back),
+array_vec4_size(ck_array_vec4_size),
+array_vec4_get_idx(ck_array_vec4_get_idx),
+array_vec4_get_key(ck_array_vec4_get_key),
+array_vec4_push_back(ck_array_vec4_push_back)
 { }
 
 
@@ -2171,9 +2456,18 @@ get_vtable_offset(ck_get_vtable_offset),
 is_equal(ck_type_isequal),
 isa(ck_type_isa),
 callback_on_instantiate(ck_callback_on_instantiate),
-originHint(ck_origin_hint)
+origin_hint(ck_origin_hint)
 { }
 
+
+
+
+//-----------------------------------------------------------------------------
+// constructor for the ShredApi; connects function pointers to host-side impl
+//-----------------------------------------------------------------------------
+Chuck_DL_Api::ShredApi::ShredApi() :
+parent(ck_shred_parent)
+{ }
 
 
 
@@ -2351,7 +2645,7 @@ void CK_DLL_CALL ck_callback_on_instantiate( f_callback_on_instantiate callback,
 
 
 //-----------------------------------------------------------------------------
-// name: ck_callback_on_instantiate()
+// name: ck_origin_hint()
 // desc: where did the type originate? e.g., chugin, builtin, user-defined, etc.
 //-----------------------------------------------------------------------------
 ckte_Origin CK_DLL_CALL ck_origin_hint( Chuck_Type * type )
@@ -2360,6 +2654,21 @@ ckte_Origin CK_DLL_CALL ck_origin_hint( Chuck_Type * type )
     if( !type ) return ckte_origin_UNKNOWN;
     // return origin hint
     return type->originHint;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_shred_parent()
+// desc: where did the type originate? e.g., chugin, builtin, user-defined, etc.
+//-----------------------------------------------------------------------------
+Chuck_VM_Shred * CK_DLL_CALL ck_shred_parent( Chuck_VM_Shred * shred )
+{
+    // null
+    if( !shred ) return NULL;
+    // return origin hint
+    return shred->parent;
 }
 
 

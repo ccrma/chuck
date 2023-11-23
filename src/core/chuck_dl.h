@@ -56,7 +56,8 @@
 
 
 // major version must be the same between chuck:chugin
-#define CK_DLL_VERSION_MAJOR (9)
+// v10.0 -- transition to single-header `chugin.h` | 1.5.2.0
+#define CK_DLL_VERSION_MAJOR (10)
 // minor version of chugin must be less than or equal to chuck's
 #define CK_DLL_VERSION_MINOR (0)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
@@ -96,6 +97,9 @@ struct Chuck_Event;
 struct Chuck_String;
 struct Chuck_ArrayInt;
 struct Chuck_ArrayFloat;
+struct Chuck_ArrayVec2;
+struct Chuck_ArrayVec3;
+struct Chuck_ArrayVec4;
 struct Chuck_UGen;
 struct Chuck_UAna;
 struct Chuck_UAnaBlobProxy;
@@ -340,8 +344,15 @@ typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Object * OBJECT, C
 // chuck DLL query functions, implemented on chuck side for portability
 //-----------------------------------------------------------------------------
 extern "C" {
+// get handles: opaque references to VM, API etc.
+typedef Chuck_VM * (CK_DLL_CALL * f_get_vm)( Chuck_DL_Query * query );
+typedef CK_DL_API (CK_DLL_CALL * f_get_api)( Chuck_DL_Query * query );
+typedef Chuck_Env * (CK_DLL_CALL * f_get_env)( Chuck_DL_Query * query );
+typedef Chuck_Compiler * (CK_DLL_CALL * f_get_compiler)( Chuck_DL_Query * query );
+typedef Chuck_Carrier * (CK_DLL_CALL * f_get_carrier)( Chuck_DL_Query * query );
+
 // set name of ckx
-typedef void ( CK_DLL_CALL * f_setname)( Chuck_DL_Query * query, const char * name );
+typedef void (CK_DLL_CALL * f_setname)( Chuck_DL_Query * query, const char * name );
 
 // begin class/namespace, can be nested
 typedef void (CK_DLL_CALL * f_begin_class)( Chuck_DL_Query * query, const char * name, const char * parent );
@@ -440,11 +451,11 @@ protected:
 
 public:
     // REFACTOR-2017: get associated compiler, vm, env
-    Chuck_Compiler * compiler() const;
-    Chuck_VM * vm() const;
-    Chuck_Env * env() const;
-    Chuck_Carrier * carrier() const;
-    CK_DL_API api() const;
+    f_get_vm get_vm;
+    f_get_api get_api;
+    f_get_env get_env;
+    f_get_compiler get_compiler;
+    f_get_carrier get_carrier;
 
 public:
     // function pointers - to be called from client module
@@ -540,12 +551,19 @@ public:
     // collection of operator overloads
     std::vector<Chuck_DL_Func *> op_overloads;
 
+public: // host-side functions (not to be called from chugins)
     // constructor
-    Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll = NULL );
+    Chuck_DL_Query( Chuck_Carrier * the_carrier, Chuck_DLL * dll = NULL );
     // desctructor
     ~Chuck_DL_Query() { this->clear(); }
     // clear
     void clear();
+    // access to various functions
+    Chuck_VM * vm() const;
+    CK_DL_API api() const;
+    Chuck_Env * env() const;
+    Chuck_Compiler * compiler() const;
+    Chuck_Carrier * carrier() const;
 };
 
 
@@ -828,6 +846,9 @@ struct Chuck_DL_Api
     typedef Chuck_String * String;
     typedef Chuck_ArrayInt * ArrayInt; // 1.5.0.1 (ge) added
     typedef Chuck_ArrayFloat * ArrayFloat; // 1.5.1.8 (nshaheed) added
+    typedef Chuck_ArrayVec2 * ArrayVec2; // 1.5.2.0 (ge) added
+    typedef Chuck_ArrayVec3 * ArrayVec3; // 1.5.2.0 (ge) added
+    typedef Chuck_ArrayVec4 * ArrayVec4; // 1.5.2.0 (ge) added
 
 public:
     static Chuck_DL_Api g_api;
@@ -896,20 +917,46 @@ public:
         t_CKBOOL (CK_DLL_CALL * const get_mvar_float)( Object object, const char * name, t_CKFLOAT & value );
         t_CKBOOL (CK_DLL_CALL * const get_mvar_dur)( Object object, const char * name, t_CKDUR & value );
         t_CKBOOL (CK_DLL_CALL * const get_mvar_time)( Object object, const char * name, t_CKTIME & value );
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_vec2)( Object object, const char * name, t_CKVEC2 & value ); // 1.5.2.0 | vec2/complex/polar
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_vec3)( Object object, const char * name, t_CKVEC3 & value ); // 1.5.2.0 | vec3
+        t_CKBOOL (CK_DLL_CALL * const get_mvar_vec4)( Object object, const char * name, t_CKVEC4 & value ); // 1.5.2.0 | vec4
         t_CKBOOL (CK_DLL_CALL * const get_mvar_string)( Object object, const char * name, String & value );
         t_CKBOOL (CK_DLL_CALL * const get_mvar_object)( Object object, const char * name, Object & value );
         // function pointer for set_string()
         t_CKBOOL (CK_DLL_CALL * const set_string)( String string, const char * value );
+        // get a chuck string's internal c-string (NOTE do not save a reference to the return value; make a copy if needed) | 1.5.2.0
+        const char * (CK_DLL_CALL * const str)( Chuck_String * str );
         // array_int operations
-        t_CKBOOL (CK_DLL_CALL * const array_int_size)( ArrayInt array, t_CKINT & value );
-        t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKUINT value );
-        t_CKBOOL (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx, t_CKUINT & value );
-        t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const std::string & key, t_CKUINT & value );
+        t_CKINT (CK_DLL_CALL * const array_int_size)( ArrayInt array );
+        t_CKINT (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx );
+        t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const char * key, t_CKINT & value  );
+        t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKINT value );
         // array_float operations
-        t_CKBOOL (CK_DLL_CALL * const array_float_size)( ArrayFloat array, t_CKINT & value );
+        t_CKINT (CK_DLL_CALL * const array_float_size)( ArrayFloat array );
+        t_CKFLOAT (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx );
+        t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const char * key, t_CKFLOAT & value );
         t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
-        t_CKBOOL (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx, t_CKFLOAT & value );
-        t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const std::string & key, t_CKFLOAT & value );
+        // array_vec2/complex/polar/16 operations
+        t_CKINT (CK_DLL_CALL * const array_vec2_size)( ArrayVec2 array );
+        t_CKVEC2 (CK_DLL_CALL * const array_vec2_get_idx)( ArrayVec2 array, t_CKINT idx );
+        t_CKBOOL (CK_DLL_CALL * const array_vec2_get_key)( ArrayVec2 array, const char * key, t_CKVEC2 & value );
+        t_CKBOOL (CK_DLL_CALL * const array_vec2_push_back)( ArrayVec2 array, const t_CKVEC2 & value );
+        // array_vec3/24 operations
+        t_CKINT (CK_DLL_CALL * const array_vec3_size)( ArrayVec3 array );
+        t_CKVEC3 (CK_DLL_CALL * const array_vec3_get_idx)( ArrayVec3 array, t_CKINT idx );
+        t_CKBOOL (CK_DLL_CALL * const array_vec3_get_key)( ArrayVec3 array, const char * key, t_CKVEC3 & value );
+        t_CKBOOL (CK_DLL_CALL * const array_vec3_push_back)( ArrayVec3 array, const t_CKVEC3 & value );
+        // array_vec4/32 operations
+        t_CKINT (CK_DLL_CALL * const array_vec4_size)( ArrayVec4 array );
+        t_CKVEC4 (CK_DLL_CALL * const array_vec4_get_idx)( ArrayVec4 array, t_CKINT idx );
+        t_CKBOOL (CK_DLL_CALL * const array_vec4_get_key)( ArrayVec4 array, const char * key, t_CKVEC4 & value );
+        t_CKBOOL (CK_DLL_CALL * const array_vec4_push_back)( ArrayVec4 array, const t_CKVEC4 & value );
+        // (UNSAFE) get c++ vector pointers from chuck arrays | 1.5.2.0
+        // std::vector<t_CKUINT> * (CK_DLL_CALL * const array_int_vector)( ArrayInt array );
+        // std::vector<t_CKFLOAT> * (CK_DLL_CALL * const array_float_vector)( ArrayFloat array );
+        // std::vector<t_CKVEC2> * (CK_DLL_CALL * const array_vec2_vector)( ArrayVec2 array );
+        // std::vector<t_CKVEC3> * (CK_DLL_CALL * const array_vec3_vector)( ArrayVec3 array );
+        // std::vector<t_CKVEC4> * (CK_DLL_CALL * const array_vec4_vector)( ArrayVec4 array );
     } * const object;
 
     // access to host-side chuck types
@@ -927,14 +974,23 @@ public:
         // register a callback to be invoked whenever a base-type (or its subclass) is instantiated, with option for type system to auto-set shred origin if available
         void (CK_DLL_CALL * const callback_on_instantiate)( f_callback_on_instantiate callback, Type base_type, Chuck_VM * vm, t_CKBOOL shouldSetShredOrigin );
         // get origin hint (where did this type originate?)
-        ckte_Origin (CK_DLL_CALL * const originHint)(Type type);
+        ckte_Origin (CK_DLL_CALL * const origin_hint)(Type type);
     } * const type;
+
+    // api to access host-side shreds | 1.5.2.0
+    struct ShredApi
+    {
+        ShredApi();
+        // get shred parent
+        Chuck_VM_Shred * (CK_DLL_CALL * const parent)( Chuck_VM_Shred * shred );
+    } * const shred;
 
     // constructor
     Chuck_DL_Api() :
         vm(new VMApi),
         object(new ObjectApi),
-        type(new TypeApi)
+        type(new TypeApi),
+        shred(new ShredApi)
     { }
 
 private:
@@ -942,7 +998,8 @@ private:
     Chuck_DL_Api( Chuck_DL_Api & a ) :
         vm(a.vm),
         object(a.object),
-        type(a.type)
+        type(a.type),
+        shred(a.shred)
     { assert(0); };
     // make this object un-copy-able, part 2
     Chuck_DL_Api & operator=( Chuck_DL_Api & a ) { assert(0); return a; }

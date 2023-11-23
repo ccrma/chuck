@@ -139,7 +139,7 @@ public:
 public:
     t_CKTIME & when();
     Chuck_ArrayFloat & fvals();
-    Chuck_Array16 & cvals();
+    Chuck_ArrayVec2 & cvals();
 
 public:
     Chuck_Object * realblob() { return m_blob; }

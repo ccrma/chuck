@@ -816,8 +816,8 @@ CK_DLL_SFUN( phase_impl )
 CK_DLL_SFUN( rtop_impl )
 {
     // get array
-    Chuck_Array16 * from = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
-    Chuck_Array16 * to = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * from = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * to = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
 
     // make sure not null
     if( !from || !to )
@@ -855,8 +855,8 @@ CK_DLL_SFUN( rtop_impl )
 CK_DLL_SFUN( ptor_impl )
 {
     // get array
-    Chuck_Array16 * from = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
-    Chuck_Array16 * to = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * from = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * to = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
 
     // make sure not null
     if( !from || !to )

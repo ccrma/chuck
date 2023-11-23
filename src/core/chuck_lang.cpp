@@ -1938,7 +1938,7 @@ CK_DLL_MFUN( uana_cval )
     t_CKINT i = GET_NEXT_INT(ARGS);
     // get the fvals array
     Chuck_UAnaBlobProxy * blob = (Chuck_UAnaBlobProxy *)OBJ_MEMBER_INT(SELF, uana_offset_blob);
-    Chuck_Array16 & cvals = blob->cvals();
+    Chuck_ArrayVec2 & cvals = blob->cvals();
     // check caps
     if( i < 0 || cvals.size() <= i ) RETURN->v_complex.re = RETURN->v_complex.im = 0;
     else
@@ -2000,10 +2000,10 @@ Chuck_ArrayFloat & Chuck_UAnaBlobProxy::fvals()
     return *arr8;
 }
 
-Chuck_Array16 & Chuck_UAnaBlobProxy::cvals()
+Chuck_ArrayVec2 & Chuck_UAnaBlobProxy::cvals()
 {
     // TODO: DANGER: is this actually returning correct reference?!
-    Chuck_Array16 * arr16 = (Chuck_Array16 *)OBJ_MEMBER_INT(m_blob, uanablob_offset_cvals);
+    Chuck_ArrayVec2 * arr16 = (Chuck_ArrayVec2 *)OBJ_MEMBER_INT(m_blob, uanablob_offset_cvals);
     assert( arr16 != NULL );
     return *arr16;
 }
@@ -2027,7 +2027,7 @@ CK_DLL_CTOR( uanablob_ctor )
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
 
     // cvals
-    Chuck_Array16 * arr16 = new Chuck_Array16( 8 );
+    Chuck_ArrayVec2 * arr16 = new Chuck_ArrayVec2( 8 );
     initialize_object( arr16, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
     arr16->add_ref();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
@@ -2043,7 +2043,7 @@ CK_DLL_DTOR( uanablob_dtor )
     OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = 0;
 
     // get array
-    Chuck_Array16 * arr16 = (Chuck_Array16 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
+    Chuck_ArrayVec2 * arr16 = (Chuck_ArrayVec2 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
     // release it
     arr16->release();
     OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = 0;
@@ -2085,7 +2085,7 @@ CK_DLL_MFUN( uanablob_cval )
     // get index
     t_CKINT i = GET_NEXT_INT(ARGS);
     // get the fvals array
-    Chuck_Array16 * cvals = (Chuck_Array16 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
+    Chuck_ArrayVec2 * cvals = (Chuck_ArrayVec2 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
     // check caps
     if( i < 0 || cvals->size() <= i ) RETURN->v_complex.re = RETURN->v_complex.im = 0;
     else
@@ -2100,7 +2100,7 @@ CK_DLL_MFUN( uanablob_cval )
 CK_DLL_MFUN( uanablob_cvals )
 {
     // set return
-    RETURN->v_object = (Chuck_Array16 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
+    RETURN->v_object = (Chuck_ArrayVec2 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
 }
 
 // ctor
@@ -3146,12 +3146,12 @@ CK_DLL_MFUN( array_push_back )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->push_back( GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_back( GET_NEXT_FLOAT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->push_back( GET_NEXT_VEC2( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
-        RETURN->v_int = ((Chuck_Array24 *)array)->push_back( GET_NEXT_VEC3( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
-        RETURN->v_int = ((Chuck_Array32 *)array)->push_back( GET_NEXT_VEC4( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC2_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec2 *)array)->push_back( GET_NEXT_VEC2( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC3_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec3 *)array)->push_back( GET_NEXT_VEC3( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC4_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec4 *)array)->push_back( GET_NEXT_VEC4( ARGS ) );
     else
         assert( FALSE );
 }
@@ -3168,12 +3168,12 @@ CK_DLL_MFUN( array_insert )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->insert( position, GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->insert( position, GET_NEXT_FLOAT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->insert( position, GET_NEXT_VEC2( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
-        RETURN->v_int = ((Chuck_Array24 *)array)->insert( position, GET_NEXT_VEC3( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
-        RETURN->v_int = ((Chuck_Array32 *)array)->insert( position, GET_NEXT_VEC4( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC2_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec2 *)array)->insert( position, GET_NEXT_VEC2( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC3_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec3 *)array)->insert( position, GET_NEXT_VEC3( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC4_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec4 *)array)->insert( position, GET_NEXT_VEC4( ARGS ) );
     else
         assert( FALSE );
 }
@@ -3195,12 +3195,12 @@ CK_DLL_MFUN( array_push_front )
         RETURN->v_int = ((Chuck_ArrayInt *)array)->push_front( GET_NEXT_UINT( ARGS ) );
     else if( array->data_type_kind() == CHUCK_ARRAYFLOAT_DATAKIND )
         RETURN->v_int = ((Chuck_ArrayFloat *)array)->push_front( GET_NEXT_FLOAT( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY16_DATAKIND )
-        RETURN->v_int = ((Chuck_Array16 *)array)->push_front( GET_NEXT_VEC2( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY24_DATAKIND )
-        RETURN->v_int = ((Chuck_Array24 *)array)->push_front( GET_NEXT_VEC3( ARGS ) );
-    else if( array->data_type_kind() == CHUCK_ARRAY32_DATAKIND )
-        RETURN->v_int = ((Chuck_Array32 *)array)->push_front( GET_NEXT_VEC4( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC2_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec2 *)array)->push_front( GET_NEXT_VEC2( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC3_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec3 *)array)->push_front( GET_NEXT_VEC3( ARGS ) );
+    else if( array->data_type_kind() == CHUCK_ARRAYVEC4_DATAKIND )
+        RETURN->v_int = ((Chuck_ArrayVec4 *)array)->push_front( GET_NEXT_VEC4( ARGS ) );
     else
         assert( FALSE );
 }

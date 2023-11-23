@@ -585,7 +585,7 @@ public:
     void transform( );
     void transformFromAccum( );
     void transform( Chuck_ArrayFloat * frame );
-    void copyTo( Chuck_Array16 * cmp );
+    void copyTo( Chuck_ArrayVec2 * cmp );
 
 public:
     // size of FFT
@@ -848,7 +848,7 @@ void FFT_object::transform( Chuck_ArrayFloat * frame )
 // name: copyTo()
 // desc: ...
 //-----------------------------------------------------------------------------
-void FFT_object::copyTo( Chuck_Array16 * cmp )
+void FFT_object::copyTo( Chuck_ArrayVec2 * cmp )
 {
     // buffer could be null
     if( m_buffer == NULL && m_spectrum == NULL )
@@ -962,7 +962,7 @@ CK_DLL_TOCK( FFT_tock )
     t_CKINT i;
 
     // get cvals of output BLOB
-    Chuck_Array16 & cvals = BLOB->cvals();
+    Chuck_ArrayVec2 & cvals = BLOB->cvals();
     // ensure capacity == resulting size
     if( cvals.size() != fft->m_size/2 )
         cvals.set_size( fft->m_size/2 );
@@ -1098,7 +1098,7 @@ CK_DLL_MFUN( FFT_spectrum )
     // get object
     FFT_object * fft = (FFT_object *)OBJ_MEMBER_UINT(SELF, FFT_offset_data);
     // get array
-    Chuck_Array16 * arr = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
     // check for null
     if( !arr )
     {
@@ -1128,7 +1128,7 @@ public:
     t_CKBOOL resize( t_CKINT size );
     t_CKBOOL window( Chuck_ArrayFloat * window, t_CKINT win_size );
     void transform( );
-    void transform( Chuck_Array16 * cmp );
+    void transform( Chuck_ArrayVec2 * cmp );
     void copyTo( Chuck_ArrayFloat * samples );
 
 public:
@@ -1332,7 +1332,7 @@ void IFFT_object::transform( )
 // name: transform()
 // desc: ...
 //-----------------------------------------------------------------------------
-void IFFT_object::transform( Chuck_Array16 * cmp )
+void IFFT_object::transform( Chuck_ArrayVec2 * cmp )
 {
     // convert to right type
     t_CKINT amount = ck_min( cmp->size(), m_size/2 );
@@ -1454,7 +1454,7 @@ CK_DLL_TOCK( IFFT_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array16 & cmp = BLOB_IN->cvals();
+        Chuck_ArrayVec2 & cmp = BLOB_IN->cvals();
         // resize if necessary
         if( cmp.size()*2 > ifft->m_size )
             ifft->resize( cmp.size()*2 );
@@ -1504,7 +1504,7 @@ CK_DLL_MFUN( IFFT_transform )
     // get object
     IFFT_object * ifft = (IFFT_object *)OBJ_MEMBER_UINT(SELF, IFFT_offset_data);
     // get complex array
-    Chuck_Array16 * cmp = (Chuck_Array16 *)GET_NEXT_OBJECT(ARGS);
+    Chuck_ArrayVec2 * cmp = (Chuck_ArrayVec2 *)GET_NEXT_OBJECT(ARGS);
     // sanity
     if( cmp == NULL ) goto null_pointer;
     // resize if bigger
@@ -3616,7 +3616,7 @@ CK_DLL_TOCK( IDCT_tock )
         // sanity check
         assert( BLOB_IN != NULL );
         // get the array
-        Chuck_Array16 & cmp = BLOB_IN->cvals();
+        Chuck_ArrayVec2 & cmp = BLOB_IN->cvals();
         // resize if necessary
         if( cmp.size()*2 > idct->m_size )
             idct->resize( cmp.size()*2 );

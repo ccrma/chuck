@@ -43,10 +43,31 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) examples/class/destructor.ck
 - (added) CKDoc and .help() support for constructors
 - (added) Shred.parent() and Shred.ancestor()
-- (added) chugins support for overloading constructors
-- (added) chugins runtime API support for creating arrays from chugins
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
 - (updated) ChucK API doucmentation for constructors
+==================
+chugins API update
+==================
+- (updated) chugin API version updated to 10.0
+  -- complete decoupling of chugins interface and chuck core 
+     implementation details
+  -- new chugins runtime API functions to provide access
+     to chuck core operations that is safe across the shared/dynamic
+     library boudaries between chugins and a chuck host
+     (see Chuck_DL_Api in chuck_dl.h for details)
+- (updated) all chugins can now include a single header `chugin.h`
+     with no additional header dependencies
+     [see: https://github.com/ccrma/cheaders/tree/main/include]
+     FYI: this single-header `chugin.h` is generated from a minimal
+     set of chuck core header files: chuck_def.h chuck_symbol.h
+     chuck_absyn.h and chuck_dl.h
+- (updated) it is highly recommended that all chugins update to
+     using chugin.h; it is still possible to include chuck headers
+     directly (either chuck_dl.h or chuck.h), but must #define
+     __CHUCK_CHUGIN__ macro (if using chugin.h, this macro is always
+     defined at the top of file)
+- (added) chugins runtime API support for creating arrays from chugins
+- (added) chugins support for overloading constructors
 
 
 1.5.1.8 (October 2023) "Halloween Release"

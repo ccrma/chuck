@@ -181,9 +181,9 @@ public: // static
 #define CHUCK_ARRAY32_DATASIZE sz_VEC4 // 1.3.5.3
 #define CHUCK_ARRAYINT_DATAKIND kindof_INT
 #define CHUCK_ARRAYFLOAT_DATAKIND kindof_FLOAT
-#define CHUCK_ARRAY16_DATAKIND kindof_VEC2 // 1.5.1.7
-#define CHUCK_ARRAY24_DATAKIND kindof_VEC3 // 1.3.5.3
-#define CHUCK_ARRAY32_DATAKIND kindof_VEC4 // 1.3.5.3
+#define CHUCK_ARRAYVEC2_DATAKIND kindof_VEC2 // 1.5.1.7
+#define CHUCK_ARRAYVEC3_DATAKIND kindof_VEC3 // 1.3.5.3
+#define CHUCK_ARRAYVEC4_DATAKIND kindof_VEC4 // 1.3.5.3
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Array
 // desc: native ChucK array (virtual base class)
@@ -275,6 +275,8 @@ public: // specific to this class
     // get value
     t_CKINT get( t_CKINT i, t_CKUINT * val );
     t_CKINT get( const std::string & key, t_CKUINT * val );
+    t_CKINT get( t_CKINT i, t_CKINT * val ); // signed | 1.5.2.0
+    t_CKINT get( const std::string & key, t_CKINT * val ); // signed | 1.5.2.0
     // set value
     t_CKINT set( t_CKINT i, t_CKUINT val );
     t_CKINT set( const std::string & key, t_CKUINT val );
@@ -443,14 +445,15 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array16
+// name: struct Chuck_ArrayVec2
 // desc: native ChucK arrays (for 16-byte) | vec2, complex, polar
+//       1.5.2.0 (ge) renamed from Chuck_Array16 to Chuck_ArrayVec2
 //-----------------------------------------------------------------------------
-struct Chuck_Array16 : public Chuck_Array
+struct Chuck_ArrayVec2 : public Chuck_Array
 {
 public:
-    Chuck_Array16( t_CKINT capacity = 8 );
-    virtual ~Chuck_Array16();
+    Chuck_ArrayVec2( t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayVec2();
 
 public: // specific to this class
     // get address
@@ -492,7 +495,7 @@ public: // array interface implementation
     // size of stored type (from type_ref)
     virtual t_CKINT data_type_size() { return CHUCK_ARRAY16_DATASIZE; }
     // kind of stored type (from kindof)
-    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY16_DATAKIND; }
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAYVEC2_DATAKIND; }
     // clear
     virtual void clear();
     // zero out the array by range [start,end)
@@ -536,14 +539,15 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array24
+// name: struct Chuck_ArrayVec3
 // desc: native ChucK arrays (for vec3)
+//       1.5.2.0 (ge) renamed from Chuck_Array24 to Chuck_ArrayVec3
 //-----------------------------------------------------------------------------
-struct Chuck_Array24 : public Chuck_Array
+struct Chuck_ArrayVec3 : public Chuck_Array
 {
 public:
-    Chuck_Array24( t_CKINT capacity = 8 );
-    virtual ~Chuck_Array24();
+    Chuck_ArrayVec3( t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayVec3();
 
 public: // specific to this class
     // get address
@@ -581,7 +585,7 @@ public: // array interface implementation
     // size of stored type (from type_ref)
     virtual t_CKINT data_type_size() { return CHUCK_ARRAY24_DATASIZE; }
     // kind of stored type (from kindof)
-    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY24_DATAKIND; }
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAYVEC3_DATAKIND; }
     // clear
     virtual void clear();
     // zero out the array by range [start,end)
@@ -622,14 +626,15 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Array32
+// name: struct Chuck_ArrayVec4
 // desc: native ChucK arrays (for vec4)
+//       1.5.2.0 (ge) renamed from Chuck_Array32 to Chuck_ArrayVec4
 //-----------------------------------------------------------------------------
-struct Chuck_Array32 : public Chuck_Array
+struct Chuck_ArrayVec4 : public Chuck_Array
 {
 public:
-    Chuck_Array32( t_CKINT capacity = 8 );
-    virtual ~Chuck_Array32();
+    Chuck_ArrayVec4( t_CKINT capacity = 8 );
+    virtual ~Chuck_ArrayVec4();
 
 public: // specific to this class
     // get address
@@ -667,7 +672,7 @@ public: // array interface implementation
     // size of stored type (from type_ref)
     virtual t_CKINT data_type_size() { return CHUCK_ARRAY32_DATASIZE; }
     // kind of stored type (from kindof)
-    virtual t_CKINT data_type_kind() { return CHUCK_ARRAY32_DATAKIND; }
+    virtual t_CKINT data_type_kind() { return CHUCK_ARRAYVEC4_DATAKIND; }
     // clear
     virtual void clear();
     // zero out the array by range [start,end)

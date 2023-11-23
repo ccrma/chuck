@@ -6307,7 +6307,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // pop the values
         pop_( reg_sp, m_length * (sz_VEC2 / sz_INT) ); // 1.3.1.0 added size division
         // instantiate array
-        Chuck_Array16 * array = new Chuck_Array16( m_length );
+        Chuck_ArrayVec2 * array = new Chuck_ArrayVec2( m_length );
         // problem
         if( !array ) goto out_of_memory;
         // fill array
@@ -6329,7 +6329,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // pop the values
         pop_( reg_sp, m_length * (sz_VEC3 / sz_INT) );
         // instantiate array
-        Chuck_Array24 * array = new Chuck_Array24( m_length );
+        Chuck_ArrayVec3 * array = new Chuck_ArrayVec3( m_length );
         // problem
         if( !array ) goto out_of_memory;
         // fill array
@@ -6349,7 +6349,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // pop the values
         pop_( reg_sp, m_length * (sz_VEC4 / sz_INT) );
         // instantiate array
-        Chuck_Array32 * array = new Chuck_Array32( m_length );
+        Chuck_ArrayVec4 * array = new Chuck_ArrayVec4( m_length );
         // problem
         if( !array ) goto out_of_memory;
         // fill array
@@ -6515,7 +6515,7 @@ Chuck_Object * do_alloc_array(
         }
         else if( kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0) | 1.5.1.7 (ge) complex -> vec2
         {
-            Chuck_Array16 * baseX = new Chuck_Array16( *capacity );
+            Chuck_ArrayVec2 * baseX = new Chuck_ArrayVec2( *capacity );
             if( !baseX ) goto out_of_memory;
 
             // check array type
@@ -6531,7 +6531,7 @@ Chuck_Object * do_alloc_array(
         }
         else if( kind == kindof_VEC3 ) // 1.3.5.3
         {
-            Chuck_Array24 * baseX = new Chuck_Array24( *capacity );
+            Chuck_ArrayVec3 * baseX = new Chuck_ArrayVec3( *capacity );
             if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
@@ -6542,7 +6542,7 @@ Chuck_Object * do_alloc_array(
         }
         else if( kind == kindof_VEC4 ) // 1.3.5.3
         {
-            Chuck_Array32* baseX = new Chuck_Array32( *capacity );
+            Chuck_ArrayVec4* baseX = new Chuck_ArrayVec4( *capacity );
             if( !baseX ) goto out_of_memory;
 
             // initialize object | 1.5.0.0 (ge) use array type instead of base t_array
@@ -6841,7 +6841,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit | 1.5.1.7 (ge) complex -> vec2
     {
         // get array
-        Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
+        Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
         // normalize index to allow for negative indexing
@@ -6865,7 +6865,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array24 * arr = (Chuck_Array24 *)(*sp);
+        Chuck_ArrayVec3 * arr = (Chuck_ArrayVec3 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp + 1));
         // normalize index to allow for negative indexing
@@ -6889,7 +6889,7 @@ void Chuck_Instr_Array_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_kind == kindof_VEC4 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array32 * arr = (Chuck_Array32 *)(*sp);
+        Chuck_ArrayVec4 * arr = (Chuck_ArrayVec4 *)(*sp);
         // get index
         i = (t_CKINT)(*(sp+1));
         // normalize index to allow for negative indexing
@@ -7009,7 +7009,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
+        Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *)(*sp);
         // get index
         key = (Chuck_String *)(*(sp+1));
         // check if writing
@@ -7031,7 +7031,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array24 * arr = (Chuck_Array24 *)(*sp);
+        Chuck_ArrayVec3 * arr = (Chuck_ArrayVec3 *)(*sp);
         // get index
         key = (Chuck_String *)(*(sp+1));
         // check if writing
@@ -7053,7 +7053,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     else if( m_kind == kindof_VEC4 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array32 * arr = (Chuck_Array32 *)(*sp);
+        Chuck_ArrayVec4 * arr = (Chuck_ArrayVec4 *)(*sp);
         // get index
         key = (Chuck_String *)(*(sp+1));
         // check if writing
@@ -7210,7 +7210,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     else if( m_kind == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array16 * arr = (Chuck_Array16 *)(base);
+        Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *)(base);
         // get index
         i = (t_CKINT)(*ptr);
         // check if writing
@@ -7232,7 +7232,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     else if( m_kind == kindof_VEC3 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array24 * arr = (Chuck_Array24 *)(base);
+        Chuck_ArrayVec3 * arr = (Chuck_ArrayVec3 *)(base);
         // get index
         i = (t_CKINT)(*ptr);
         // check if writing
@@ -7254,7 +7254,7 @@ void Chuck_Instr_Array_Access_Multi::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     else if( m_kind == kindof_VEC4 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array32 * arr = (Chuck_Array32 *)(base);
+        Chuck_ArrayVec4 * arr = (Chuck_ArrayVec4 *)(base);
         // get index
         i = (t_CKINT)(*ptr);
         // check if writing
@@ -7367,7 +7367,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_val == kindof_VEC2 ) // ISSUE: 64-bit (fixed 1.3.1.0)
     {
         // get array
-        Chuck_Array16 * arr = (Chuck_Array16 *)(*sp);
+        Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *)(*sp);
         // get value
         v2 = (*(t_CKVEC2 *)(sp+1));
         // append
@@ -7376,7 +7376,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_val == kindof_VEC3 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array24 * arr = (Chuck_Array24 *)(*sp);
+        Chuck_ArrayVec3 * arr = (Chuck_ArrayVec3 *)(*sp);
         // get value
         v3 = (*(t_CKVEC3 *)(sp+1));
         // append
@@ -7385,7 +7385,7 @@ void Chuck_Instr_Array_Append::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     else if( m_val == kindof_VEC4 ) // 1.3.5.3
     {
         // get array
-        Chuck_Array32 * arr = (Chuck_Array32 *)(*sp);
+        Chuck_ArrayVec4 * arr = (Chuck_ArrayVec4 *)(*sp);
         // get value
         v4 = (*(t_CKVEC4 *)(sp+1));
         // append
@@ -8684,7 +8684,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_VEC2:
             {
                 // cast to specific array type
-                Chuck_Array16 * arr = (Chuck_Array16 *) array;
+                Chuck_ArrayVec2 * arr = (Chuck_ArrayVec2 *) array;
                 // get element
                 arr->get( *counter, (t_CKVEC2 *)pVar );
                 break;
@@ -8692,7 +8692,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_VEC3:
             {
                 // cast to specific array type
-                Chuck_Array24 * arr = (Chuck_Array24 *) array;
+                Chuck_ArrayVec3 * arr = (Chuck_ArrayVec3 *) array;
                 // get element
                 arr->get( *counter, (t_CKVEC3 *)pVar );
                 break;
@@ -8700,7 +8700,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
             case kindof_VEC4:
             {
                 // cast to specific array type
-                Chuck_Array32 * arr = (Chuck_Array32 *) array;
+                Chuck_ArrayVec4 * arr = (Chuck_ArrayVec4 *) array;
                 // get element
                 arr->get( *counter, (t_CKVEC4 *)pVar );
                 break;
