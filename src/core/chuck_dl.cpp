@@ -72,6 +72,9 @@ CK_DL_API CK_DLL_CALL ck_get_api( Chuck_DL_Query * query );
 Chuck_Env * CK_DLL_CALL ck_get_env( Chuck_DL_Query * query );
 Chuck_Compiler * CK_DLL_CALL ck_get_compiler( Chuck_DL_Query * query );
 Chuck_Carrier * CK_DLL_CALL ck_get_carrier( Chuck_DL_Query * query );
+void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name, t_CKBOOL attendSpecial );
+void CK_DLL_CALL ck_setinfo( Chuck_DL_Query * query, const char * key, const char * value, t_CKBOOL attendSpecial );
+const char * CK_DLL_CALL ck_getinfo( Chuck_DL_Query * query, const char * key );
 
 void CK_DLL_CALL ck_add_arg( Chuck_DL_Query * query, const char * type, const char * name );
 void CK_DLL_CALL ck_throw_exception( const char * exception, const char * desc, Chuck_VM_Shred * shred );
@@ -101,12 +104,72 @@ t_CKUINT CK_DLL_CALL ck_builtin_declversion() { return CK_DLL_VERSION; }
 
 //-----------------------------------------------------------------------------
 // name: ck_setname()
-// desc: set the name of the module
+// desc: set the name of the module/chugin
 //-----------------------------------------------------------------------------
-void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name )
+void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name, t_CKBOOL attendSpecial )
 {
     // set the name
-    query->dll_name = name;
+    query->dll_name = name ? name : "[no name]";
+    // also set in info, but attendSpecial=FALSE to avoid infinite recursion
+    if( attendSpecial ) ck_setinfo( query, CHUGIN_INFO_NAME, name, FALSE );
+}
+// overload to get around function pointer business for f_setname
+void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name )
+{ ck_setname( query, name, TRUE ); }
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_setinfo() | 1.5.2.0
+// desc: set info (by key) of the module/chugin
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_setinfo( Chuck_DL_Query * query, const char * key, const char * value, t_CKBOOL attendSpecial )
+{
+    // check for null key
+    if( !key ) return;
+
+    // check for null value
+    if( !value )
+    {
+        // check for presence of entry
+        if( query->dll_info.find( key ) != query->dll_info.end() )
+        {
+            // erase the entry
+            query->dll_info.erase( key );
+        }
+    }
+    else
+    {
+        // add or update it
+        query->dll_info[key] = value;
+    }
+
+    // check for special keys
+    if( attendSpecial )
+    {
+        // also set name, but attendSpecial=FALSE to avoid infinite recursion
+        if( string(key) == CHUGIN_INFO_NAME ) ck_setname( query, value, FALSE );
+    }
+}
+// overload to get around function pointer business for f_setinfo
+void CK_DLL_CALL ck_setinfo( Chuck_DL_Query * query, const char * key, const char * value )
+{ ck_setinfo( query, key, value, TRUE ); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_geinfo() | 1.5.2.0
+// desc: get info (by key) of the module/chugin
+//-----------------------------------------------------------------------------
+const char * CK_DLL_CALL ck_getinfo( Chuck_DL_Query * query, const char * key )
+{
+    // check for null key
+    if( !key ) return "";
+    // check for presence of entry
+    if( query->dll_info.find( key ) == query->dll_info.end() ) return "";
+    // return
+    return query->dll_info[key].c_str();
 }
 
 
@@ -179,6 +242,7 @@ void CK_DLL_CALL ck_begin_class( Chuck_DL_Query * query, const char * name, cons
     // curr
     query->curr_class = c;
     query->curr_func = NULL;
+    query->curr_var = NULL; // 1.5.2.0
 }
 
 
@@ -208,6 +272,7 @@ void CK_DLL_CALL ck_add_ctor( Chuck_DL_Query * query, f_ctor ctor )
     // add
     query->curr_class->ctors.push_back( f );
     query->curr_func = f;
+    query->curr_var = NULL; // 1.5.2.0
 }
 
 
@@ -244,8 +309,8 @@ void CK_DLL_CALL ck_add_dtor( Chuck_DL_Query * query, f_dtor dtor )
 
     // add
     query->curr_class->dtor = f;
-    // set
     query->curr_func = NULL;
+    query->curr_var = NULL; // 1.5.2.0
 }
 
 
@@ -276,6 +341,7 @@ void CK_DLL_CALL ck_add_mfun( Chuck_DL_Query * query, f_mfun addr,
     // add
     query->curr_class->mfuns.push_back( f );
     query->curr_func = f;
+    query->curr_var = NULL; // 1.5.2.0
 }
 
 
@@ -306,6 +372,7 @@ void CK_DLL_CALL ck_add_sfun( Chuck_DL_Query * query, f_sfun addr,
     // add
     query->curr_class->sfuns.push_back( f );
     query->curr_func = f;
+    query->curr_var = NULL; // 1.5.2.0
 }
 
 
@@ -335,7 +402,7 @@ void CK_DLL_CALL ck_add_op_overload_binary( Chuck_DL_Query * query, f_gfun addr,
     f->type = type;
     f->gfun = addr;
     f->fpKind = ae_fp_gfun; // 1.5.2.0
-    f->opOverloadKind = te_op_overload_binary;
+    f->opOverloadKind = ckte_op_overload_BINARY;
     f->op2overload = op;
 
     // add
@@ -379,7 +446,7 @@ void CK_DLL_CALL ck_add_op_overload_prefix( Chuck_DL_Query * query, f_gfun addr,
     f->type = type;
     f->gfun = addr;
     f->fpKind = ae_fp_gfun; // 1.5.2.0
-    f->opOverloadKind = te_op_overload_unary_pre;
+    f->opOverloadKind = ckte_op_overload_UNARY_PRE;
     f->op2overload = op;
 
     // add
@@ -418,7 +485,7 @@ void CK_DLL_CALL ck_add_op_overload_postfix( Chuck_DL_Query * query, f_gfun addr
     f->type = type;
     f->gfun = addr;
     f->fpKind = ae_fp_gfun; // 1.5.2.0
-    f->opOverloadKind = te_op_overload_unary_post;
+    f->opOverloadKind = ckte_op_overload_UNARY_POST;
     f->op2overload = op;
 
     // add
@@ -480,7 +547,7 @@ t_CKUINT CK_DLL_CALL ck_add_mvar( Chuck_DL_Query * query,
     // add
     query->curr_class->mvars.push_back( v );
     query->curr_func = NULL;
-    query->last_var = v;
+    query->curr_var = v;
 
     t_CKUINT offset = query->curr_class->current_mvar_offset;
     query->curr_class->current_mvar_offset = type_engine_next_offset( query->curr_class->current_mvar_offset,
@@ -517,8 +584,7 @@ void CK_DLL_CALL ck_add_svar( Chuck_DL_Query * query, const char * type, const c
     // add
     query->curr_class->svars.push_back( v );
     query->curr_func = NULL;
-
-    query->last_var = v;
+    query->curr_var = v;
 }
 
 
@@ -774,13 +840,11 @@ void CK_DLL_CALL ck_unregister_shreds_watcher( Chuck_DL_Query * query, f_shreds_
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 {
-// #ifdef CK_DOC // disable unless CK_DOC
-    if(query->curr_class)
-        query->curr_class->doc = doc;
-    else
-        return FALSE;
-// #endif // CK_DOC
-
+    // if no current class
+    if( !query->curr_class ) return FALSE;
+    // set it
+    query->curr_class->doc = doc;
+    // done
     return TRUE;
 }
 
@@ -791,13 +855,11 @@ t_CKBOOL CK_DLL_CALL ck_doc_class( Chuck_DL_Query * query, const char * doc )
 //-----------------------------------------------------------------------------
 t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 {
-// #ifdef CK_DOC // disable unless CK_DOC
-    if(query->curr_class)
-        query->curr_class->examples.push_back(ex);
-    else
-        return FALSE;
-// #endif // CK_DOC
-
+    // if no current class
+    if( !query->curr_class ) return FALSE;
+    // append it
+    query->curr_class->examples.push_back(ex);
+    // done
     return TRUE;
 }
 
@@ -805,11 +867,11 @@ t_CKBOOL CK_DLL_CALL ck_add_example( Chuck_DL_Query * query, const char * ex )
 // set current function documentation
 t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 {
-    if(query->curr_func)
-        query->curr_func->doc = doc;
-    else
-        return FALSE;
-
+    // if no current function
+    if( !query->curr_func ) return FALSE;
+    // set it
+    query->curr_func->doc = doc;
+    // done
     return TRUE;
 }
 
@@ -817,15 +879,14 @@ t_CKBOOL CK_DLL_CALL ck_doc_func( Chuck_DL_Query * query, const char * doc )
 // set last mvar documentation
 t_CKBOOL CK_DLL_CALL ck_doc_var( Chuck_DL_Query * query, const char * doc )
 {
-// #ifdef CK_DOC // disable unless CK_DOC
-    if(query->last_var)
-        query->last_var->doc = doc;
-    else
-        return FALSE;
-// #endif // CK_DOC
-
+    // if no current var
+    if( !query->curr_var ) return FALSE;
+    // set it
+    query->curr_var->doc = doc;
+    // done
     return TRUE;
 }
+
 
 
 
@@ -968,8 +1029,10 @@ const Chuck_DL_Query * Chuck_DLL::query()
     m_apiVersionMinor = CK_DLL_VERSION_GETMINOR(dll_version);
     // is version ok
     t_CKBOOL version_ok = FALSE;
-    // major version must be same; minor version must less than or equal
-    if( m_apiVersionMajor == CK_DLL_VERSION_MAJOR && m_apiVersionMinor <= CK_DLL_VERSION_MINOR)
+    // major AND minor version must match | 1.5.2.0 (ge)
+    // (was: major version must be same; minor version must less than or equal)
+    if( m_apiVersionMajor == CK_DLL_VERSION_MAJOR &&
+        m_apiVersionMinor == CK_DLL_VERSION_MINOR)
         version_ok = TRUE;
 
     // if version not okay
@@ -1258,18 +1321,20 @@ t_CKBOOL Chuck_DLL::compatible()
 {
     // probe dll
     if( !this->probe() ) return FALSE;
-    // major version must be same between chugin and host
-    // chugin minor version must less than or equal host minor version
-    if( m_apiVersionMajor == CK_DLL_VERSION_MAJOR && m_apiVersionMinor <= CK_DLL_VERSION_MINOR )
-    { return TRUE; }
-    else {
-        m_last_error = string("incompatible API version: chugin (")
-                       + ck_itoa(m_apiVersionMajor) + "." + ck_itoa(m_apiVersionMinor)
-                       + string(") vs. host (")
-                       + ck_itoa(CK_DLL_VERSION_MAJOR) + "." + ck_itoa(CK_DLL_VERSION_MINOR)
-                       + ")";
-        return FALSE;
-    }
+    // major AND minor version must match | 1.5.2.0 (ge)
+    //   (was: major version must be same between chugin and host, and
+    //   chugin minor version must less than or equal host minor version)
+    if( m_apiVersionMajor == CK_DLL_VERSION_MAJOR &&
+        m_apiVersionMinor == CK_DLL_VERSION_MINOR ) return TRUE;
+
+    // error string
+    m_last_error = string("incompatible API version: chugin (")
+                        + ck_itoa(m_apiVersionMajor) + "." + ck_itoa(m_apiVersionMinor)
+                        + string(") vs. host (")
+                        + ck_itoa(CK_DLL_VERSION_MAJOR) + "." + ck_itoa(CK_DLL_VERSION_MINOR)
+                        + ")";
+    // done
+    return FALSE;
 }
 
 
@@ -1282,12 +1347,10 @@ t_CKBOOL Chuck_DLL::compatible()
 Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 {
     // set the pointers to functions so the module can call
-    get_vm = ck_get_vm;
-    get_api = ck_get_api;
-    get_env = ck_get_env;
-    get_compiler = ck_get_compiler;
-    get_carrier = ck_get_carrier;
+    ck_vm = ck_get_vm;
+    ck_api = ck_get_api;
     setname = ck_setname;
+    setinfo = ck_setinfo;
     begin_class = ck_begin_class;
     add_ctor = ck_add_ctor;
     add_dtor = ck_add_dtor;
@@ -1314,8 +1377,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 
-    dll_name = "[noname]";
-    reserved = NULL;
+    dll_name = "[no name]";
     curr_class = NULL;
     curr_func = NULL;
     // memset(reserved2, NULL, sizeof(void*)*RESERVED_SIZE);
@@ -1332,11 +1394,10 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
         // (instead of default sample rate, which could be harder to notice / debug)
         srate = 0;
     }
-
     // get DL API reference | 1.5.1.5
     m_api = Chuck_DL_Api::instance();
 
-    linepos = 0;
+    // clear error flag
     errorEncountered = FALSE;
 }
 
@@ -1349,14 +1410,17 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
 //-----------------------------------------------------------------------------
 void Chuck_DL_Query::clear()
 {
-    // set to 0
-    dll_name = "[noname]";
-    // line pos
-    linepos = 0;
+    // set to no name
+    dll_name = "[no name]";
+
     // delete classes
     for( t_CKUINT i = 0; i < classes.size(); i++ ) CK_SAFE_DELETE( classes[i] );
+    // delete operator overloads
+    for( t_CKUINT i = 0; i < op_overloads.size(); i++ ) CK_SAFE_DELETE( op_overloads[i] );
+
     // clear
     classes.clear();
+    op_overloads.clear();
 }
 
 
@@ -1397,7 +1461,7 @@ Chuck_DL_Func::~Chuck_DL_Func()
     // clear
     args.clear();
     // zero
-    opOverloadKind = te_op_overload_none;
+    opOverloadKind = ckte_op_overload_NONE;
     op2overload = ae_op_none;
 }
 

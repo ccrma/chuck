@@ -837,8 +837,10 @@ void ChucK::probeChugins()
     // push
     EM_pushlog();
     // print host version
-    EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
-    EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host major version" );
+    EM_log( CK_LOG_SYSTEM, "note: chugin API version must match that of host" ); // 1.5.2.0
+    // previously:
+    // EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
+    // EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host major version" );
     // pop
     EM_poplog();
 

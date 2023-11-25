@@ -170,10 +170,6 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // set name
     QUERY->setname( QUERY, "Std" );
 
-    /*! \example
-    std.rand2f( 100.0, 1000.0 ) => stdout;
-    */
-
     // register deprecate
     type_engine_register_deprecate( env, "std", "Std" );
 

@@ -582,7 +582,7 @@ protected:
     // the operator
     ae_Operator m_op;
     // which kind of overload?
-    te_Op_OverloadKind m_kind;
+    ckte_Op_OverloadKind m_kind;
     // the function to call
     Chuck_Func * m_func;
     // left hand side
@@ -628,7 +628,7 @@ public:
     // get op
     ae_Operator op() const { return m_op; }
     // get the kind of overload
-    te_Op_OverloadKind kind() const { return m_kind; }
+    ckte_Op_OverloadKind kind() const { return m_kind; }
     // get func
     Chuck_Func * func() const { return m_func; }
     // get left hand side type

@@ -48,13 +48,15 @@ new Foo(10,11,12) @=> Foo @ f4;
 ==================
 chugins API update
 ==================
-- (updated) chugin API version updated to 10.0
+- (updated) chugin API version updated to 10.x
   -- complete decoupling of chugins interface and chuck core 
      implementation details
   -- new chugins runtime API functions to provide access
      to chuck core operations that is safe across the shared/dynamic
      library boudaries between chugins and a chuck host
      (see Chuck_DL_Api in chuck_dl.h for details)
+- (updated) chugin AND host API version must now match
+     (previously only the major version must match)
 - (updated) all chugins can now include a single header `chugin.h`
      with no additional header dependencies
      [see: https://github.com/ccrma/cheaders/tree/main/include]

@@ -8169,7 +8169,7 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun,
     // copy the operator overload info | 1.5.1.5
     func_def->op2overload = dl_fun->op2overload;
     // set if unary postfix overload | 1.5.1.5
-    func_def->overload_post = (dl_fun->opOverloadKind == te_op_overload_unary_post);
+    func_def->overload_post = (dl_fun->opOverloadKind == ckte_op_overload_UNARY_POST);
 
     return func_def;
 
@@ -10473,11 +10473,11 @@ void Chuck_Op_Registry::reserve( Chuck_Type * lhs, ae_Operator op, Chuck_Type * 
     if( overload )
     {
         // check which kind
-        if( overload->kind() == te_op_overload_binary )
+        if( overload->kind() == ckte_op_overload_BINARY )
             EM_error3( "binary operator '%s' already overloaded on types '%s' and '%s' (or their parents)...", op2str(op), lhs->c_name(), rhs->c_name() );
-        else if( overload->kind() == te_op_overload_unary_pre )
+        else if( overload->kind() == ckte_op_overload_UNARY_PRE )
             EM_error3( "unary (prefix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), rhs->c_name() );
-        else if( overload->kind() == te_op_overload_unary_post )
+        else if( overload->kind() == ckte_op_overload_UNARY_POST )
             EM_error3( "unary (postfix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), lhs->c_name() );
         else
             EM_error3( "(internal error) operator '%s' already overloaded...", op2str(op) );
@@ -10547,11 +10547,11 @@ t_CKBOOL Chuck_Op_Registry::add_overload(
     if( overload )
     {
         // check which kind
-        if( overload->kind() == te_op_overload_binary )
+        if( overload->kind() == ckte_op_overload_BINARY )
             EM_error2( originWhere, "binary operator '%s' already overloaded on types '%s' and '%s' (or their parents)...", op2str(op), lhs->c_name(), rhs->c_name() );
-        else if( overload->kind() == te_op_overload_unary_pre )
+        else if( overload->kind() == ckte_op_overload_UNARY_PRE )
             EM_error2( originWhere, "unary (prefix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), rhs->c_name() );
-        else if( overload->kind() == te_op_overload_unary_post )
+        else if( overload->kind() == ckte_op_overload_UNARY_POST )
             EM_error2( originWhere, "unary (postfix) operator '%s' already overloaded on type '%s' (or its parent)...", op2str(op), lhs->c_name() );
         else
             EM_error2( originWhere, "(internal error) operator '%s' already overloaded...", op2str(op) );
@@ -10827,10 +10827,10 @@ void Chuck_Op_Semantics::getOverloads( std::vector<const Chuck_Op_Overload *> & 
 Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Type * rhs )
 {
     // check which kind we are looking for
-    te_Op_OverloadKind kind = te_op_overload_none;
-    if( lhs && rhs ) kind = te_op_overload_binary;
-    else if( !lhs && rhs ) kind = te_op_overload_unary_pre;
-    else if( lhs && !rhs ) kind = te_op_overload_unary_post;
+    ckte_Op_OverloadKind kind = ckte_op_overload_NONE;
+    if( lhs && rhs ) kind = ckte_op_overload_BINARY;
+    else if( !lhs && rhs ) kind = ckte_op_overload_UNARY_PRE;
+    else if( lhs && !rhs ) kind = ckte_op_overload_UNARY_POST;
     else return NULL;
 
     // key
@@ -10849,7 +10849,7 @@ Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Typ
         if( overload->kind() != kind ) continue;
 
         // check
-        if( overload->kind() == te_op_overload_binary )
+        if( overload->kind() == ckte_op_overload_BINARY )
         {
             // verify
             assert( overload->lhs() != NULL );
@@ -10858,7 +10858,7 @@ Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Typ
             if( isa(lhs,overload->lhs()) && isa(rhs,overload->rhs()) )
                 return overload;
         }
-        else if( overload->kind() == te_op_overload_unary_pre )
+        else if( overload->kind() == ckte_op_overload_UNARY_PRE )
         {
             // verify
             assert( it->second->rhs() != NULL );
@@ -10866,7 +10866,7 @@ Chuck_Op_Overload * Chuck_Op_Semantics::getOverload( Chuck_Type * lhs, Chuck_Typ
             if( isa(rhs,it->second->rhs()) )
                 return it->second;
         }
-        else if( overload->kind() == te_op_overload_unary_post )
+        else if( overload->kind() == ckte_op_overload_UNARY_POST )
         {
             // verify
             assert( it->second->lhs() != NULL );
@@ -10901,9 +10901,9 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Ty
     // set op
     m_op = op;
     // set kind
-    if( LHS && RHS ) m_kind = te_op_overload_binary;
-    else if( !LHS && RHS ) m_kind = te_op_overload_unary_pre;
-    else if( LHS && !RHS ) m_kind = te_op_overload_unary_post;
+    if( LHS && RHS ) m_kind = ckte_op_overload_BINARY;
+    else if( !LHS && RHS ) m_kind = ckte_op_overload_UNARY_PRE;
+    else if( LHS && !RHS ) m_kind = ckte_op_overload_UNARY_POST;
     else {
         // error
         EM_error3( "(internal error) NULL lhs and rhs in Chuck_Op_Overload constructor..." );
@@ -10932,7 +10932,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( Chuck_Type * LHS, ae_Operator op, Chuck_Fu
     // set op
     m_op = op;
     // set as postfix
-    m_kind = te_op_overload_unary_post;
+    m_kind = ckte_op_overload_UNARY_POST;
     // set func
     CK_SAFE_REF_ASSIGN( m_func, func );
     // set lhs
@@ -10954,7 +10954,7 @@ Chuck_Op_Overload::Chuck_Op_Overload( ae_Operator op, Chuck_Type * RHS, Chuck_Fu
     // set op
     m_op = op;
     // set as prefix
-    m_kind = te_op_overload_unary_pre;
+    m_kind = ckte_op_overload_UNARY_PRE;
     // set func
     CK_SAFE_REF_ASSIGN( m_func, func );
     // set rhs
@@ -11047,7 +11047,7 @@ t_CKBOOL Chuck_Op_Overload::isNative() const
 void Chuck_Op_Overload::zero()
 {
     m_op = ae_op_none;
-    m_kind = te_op_overload_none;
+    m_kind = ckte_op_overload_NONE;
     m_func = NULL;
     m_origin = ckte_origin_UNKNOWN;
     m_originWhere = 0;
