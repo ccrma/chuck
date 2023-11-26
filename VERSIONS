@@ -6,6 +6,18 @@ ChucK VERSIONS log
 =======
 - (added) language-level, overloadable class constructors
 - (added) language-level class destructor
+============
+constructors can be invoked when declaring or with `new`:
+```
+// connecting UGens, with construtors
+SinOsc foo(440) => Gain g(.5) => dac;
+// `new` and assignment
+new TriOsc(440,pi/2) @=> Osc @ oscillator;
+// can combine constructors with arrays
+string arr("foo")[10];
+```
+============
+constructors can be defined and overloaded in class definitions:
 ```
 class Foo
 {
@@ -21,11 +33,11 @@ class Foo
     // yet another constructor
     fun @construct( int x, int y ) { x*y => num; }
 
-    // alternate way of define a constructor
-    fun void Foo( int x, int y, int z ) { x*y*z => num; }
+    // alternate way of define a constructor, using the class name
+    fun Foo( int x, int y, int z ) { x*y*z => num; }
 
     // destructor
-    fun @destruct() { <<< "bye:", this >>>; }
+    fun @destruct() { <<< "bye:", this.num >>>; }
 }
 
 // constructor "default"

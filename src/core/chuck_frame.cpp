@@ -165,6 +165,6 @@ void Chuck_Frame::pop_scope( vector<Chuck_Local *> & out )
 
     // sanity (should be at least one left)
     assert( this->stack.size() > 0 );
-    // get ride of null boundary character (added 1.3.0.0)
+    // get rid of null boundary character (added 1.3.0.0)
     this->stack.pop_back();
 }

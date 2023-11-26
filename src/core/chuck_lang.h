@@ -220,8 +220,7 @@ CK_DLL_MFUN( event_waiting_on );
 //-----------------------------------------------------------------------------
 // string API
 //-----------------------------------------------------------------------------
-CK_DLL_CTOR( string_ctor );
-CK_DLL_DTOR( string_dtor );
+CK_DLL_CTOR( string_ctor_str );
 CK_DLL_MFUN( string_length );
 CK_DLL_MFUN( string_upper );
 CK_DLL_MFUN( string_lower );

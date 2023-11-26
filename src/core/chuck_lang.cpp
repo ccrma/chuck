@@ -851,9 +851,15 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     const char * doc = "textual data as a sequence of characters, along with functions for manipulating text.";
 
     // init as base class
-    // TODO: ctor/dtor
+    // NOTE: explicitly instantiated in instantiate_and_initialize_object()
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, doc ) )
         return FALSE;
+
+    // add contructor
+    func = make_new_ctor( string_ctor_str );
+    func->add_arg( "string", "text" );
+    func->doc = "construct a string as a copy of another string.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add length()
     func = make_new_mfun( "int", "length", string_length );
@@ -2570,6 +2576,16 @@ CK_DLL_SFUN( shred_ancestor ) // added 1.5.2.0 (nshaheed)
 //-----------------------------------------------------------------------------
 // string API
 //-----------------------------------------------------------------------------
+CK_DLL_CTOR( string_ctor_str )
+{
+    // self (the string being constructed)
+    Chuck_String * self = (Chuck_String *)SELF;
+    // get arg
+    Chuck_String * rhs = GET_NEXT_STRING(ARGS);
+    // set it
+    self->set( rhs ? rhs->str() : "" );
+}
+
 CK_DLL_MFUN( string_length )
 {
     Chuck_String * s = (Chuck_String *)SELF;
