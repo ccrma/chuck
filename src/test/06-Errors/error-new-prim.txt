@@ -1,4 +1,4 @@
 error-new-prim.ck:1:5: error: cannot use 'new' on primitive type 'int'...
 [1] new int;
         ^
-error-new-prim.ck: (primitive types: 'int', 'float', 'time', 'dur', etc.)
+error-new-prim.ck: (primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)

@@ -3176,7 +3176,7 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 EM_error2( unary->type->where,
                     "cannot use 'new' on primitive type '%s'...",
                     t->c_name() );
-                EM_error2( 0, "(primitive types: 'int', 'float', 'time', 'dur', 'complex', 'vec3', etc.)" );
+                EM_error2( 0, "(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
                 return NULL;
             }
 

@@ -2417,12 +2417,12 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         if( !isaStr )
         {
             EM_error2( decl->where,
-                      "...(primitive types: 'int', 'float', 'time', 'dur', 'complex', 'vec3', etc.)" );
+                      "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
         }
         else
         {
             EM_error2( decl->where,
-                      "...(NOTE 'string' is a special kind of Object whose operation includes elements of Object types and primitive types; e.g., instantiation and function argument-passing are similar to any other Object; however assignment '@=>' and '=>' are carried out by-value, like other primitives such as 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
+                      "...(NOTE 'string' is a special Object whose operational semantics resemble both Object types and primitive types; e.g., instantiation and function argument-passing are like any other Object; however assignment '@=>' and '=>' are carried out by-value, as with primitive types such as 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
         }
         return FALSE;
     }
@@ -2773,7 +2773,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
                 EM_error2( class_def->ext->extend_id->where,
                     "cannot extend primitive type '%s'",
                     t_parent->c_name() );
-                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', 'complex', 'vec3', etc.)" );
+                EM_error2( 0, "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
                 return FALSE;
             }
         }
@@ -2962,7 +2962,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
             "cannot declare references (@) of primitive type '%s'...",
             f->ret_type->c_name() );
         EM_error2( f->type_decl->where,
-            "...(primitive types: 'int', 'float', 'time', 'dur', 'complex', 'vec3')" );
+            "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
         goto error;
     }
 
@@ -3020,7 +3020,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                 "cannot declare references (@) of primitive type '%s'...",
                 arg_list->type->c_name() );
             EM_error2( arg_list->type_decl->where,
-                "...(primitive types: 'int', 'float', 'time', 'dur', 'complex', 'vec3')" );
+                "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
             goto error;
         }
 

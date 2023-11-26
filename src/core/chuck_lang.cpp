@@ -857,7 +857,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add contructor
     func = make_new_ctor( string_ctor_str );
-    func->add_arg( "string", "text" );
+    func->add_arg( "string", "str" );
     func->doc = "construct a string as a copy of another string.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
