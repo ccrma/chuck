@@ -1,4 +1,4 @@
-name: Linux - Build and Unit Tests
+name: Linux - Build & Unit Tests
 
 on:
   push:
