@@ -41,6 +41,7 @@
 #include "chuck_compile.h"
 #include "chuck_instr.h"
 #include "util_math.h"
+#include "util_raw.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -364,7 +365,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // add ctrl: fprob
     func = make_new_mfun( "void", "Gain", gain_ctor_1 );
-    func->doc = "Create a Gain with default value.";
+    func->doc = "construct a Gain with default value.";
     func->add_arg( "float", "gain" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -717,14 +718,37 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     sndbuf_offset_data = type_engine_import_mvar( env, "int", "@sndbuf_data", FALSE );
     if( sndbuf_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a SndBuf with the 'path' to a sound file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path, float rate )
+    func = make_new_ctor( sndbuf_ctor_path_rate );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->doc = "construct a SndBuf with the 'path' to a sound file to read, and a default playback 'rate' (1.0 is normal rate)";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf_ctor_path_rate_pos );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->add_arg( "int", "pos" );
+    func->doc = "construct a SndBuf with the 'path' to a sound file to read, a default playback 'rate' (1.0 is normal rate), and starting at sample position 'pos'";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add ctrl: read
     func = make_new_mfun( "string", "read", sndbuf_ctrl_read );
     func->add_arg( "string", "read" );
     func->doc = "read file for reading.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
-    // add cget: read // area
-    //func = make_new_mfun( "string", "read", sndbuf_cget_read );
-    //if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add cget: ready
+    func = make_new_mfun( "int", "ready", sndbuf_cget_ready );
+    func->doc = "query whether the SndBuf is ready for use (e.g., sound file successfully loaded).";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: write
     func = make_new_mfun( "string", "write", sndbuf_ctrl_write );
@@ -2926,7 +2950,6 @@ void   sndbuf_sinc_interpolate( sndbuf_data * d, SAMPLE * out );
 CK_DLL_CTOR( sndbuf_ctor )
 {
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = (t_CKUINT)new sndbuf_data;
-
 }
 
 CK_DLL_DTOR( sndbuf_dtor )
@@ -2934,6 +2957,41 @@ CK_DLL_DTOR( sndbuf_dtor )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     CK_SAFE_DELETE(d);
     OBJ_MEMBER_UINT(SELF, sndbuf_offset_data) = 0;
+}
+
+CK_DLL_CTOR( sndbuf_ctor_path )
+{
+    Chuck_DL_Return RETURN;
+    // read it
+    sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf_ctor_path_rate )
+{
+    Chuck_DL_Return RETURN;
+    // read it
+    sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
+
+    // advance args, skip over path
+    GET_NEXT_STRING(ARGS);
+    // control rate
+    sndbuf_ctrl_rate( SELF, ARGS, &RETURN, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf_ctor_path_rate_pos )
+{
+    Chuck_DL_Return RETURN;
+    // read it
+    sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
+
+    // advance args, skip over path
+    GET_NEXT_STRING(ARGS);
+    // control rate
+    sndbuf_ctrl_rate( SELF, ARGS, &RETURN, VM, SHRED, API );
+
+    // advance args, skip over rate
+    GET_NEXT_FLOAT(ARGS);
+    sndbuf_ctrl_pos( SELF, ARGS, &RETURN, VM, SHRED, API );
 }
 
 inline t_CKUINT sndbuf_read( sndbuf_data * d, t_CKUINT frame, t_CKUINT num_frames )
@@ -3361,10 +3419,6 @@ CK_DLL_TICKF( sndbuf_tickf )
     return TRUE;
 }
 
-
-#include "util_raw.h"
-
-
 CK_DLL_CTRL( sndbuf_ctrl_read )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
@@ -3667,10 +3721,17 @@ CK_DLL_CTRL( sndbuf_ctrl_write )
 #endif
 }
 
+CK_DLL_CGET( sndbuf_cget_ready )
+{
+    // get the internal representation
+    sndbuf_data * d = ( sndbuf_data * )OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    // ready if we have a file descriptor
+    RETURN->v_int = d->fd != NULL;
+}
 
 CK_DLL_CTRL( sndbuf_ctrl_rate )
 {
-    sndbuf_data * d = ( sndbuf_data * ) OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    sndbuf_data * d = ( sndbuf_data * )OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     t_CKFLOAT rate = GET_CK_FLOAT(ARGS); // rate
     d->rate = rate * d->sampleratio;
     d->rate_factor = rate;

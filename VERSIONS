@@ -57,6 +57,23 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) Shred.parent() and Shred.ancestor()
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
 - (updated) ChucK API doucmentation for constructors
+- (added) overloaded constructors added (more to come)
+==================
+    Gain( float gain );
+        Construct a Gain with default value.
+    SndBuf( string path );
+        Construct a SndBuf with the 'path' to a sound file to read.
+    SndBuf( string path, float rate );
+        Construct a SndBuf with the 'path' to a sound file to read, and a default playback 'rate' (1.0 is normal rate)
+    SndBuf( string path, float rate, int pos );
+        Construct a SndBuf with the 'path' to a sound file to read, a default playback 'rate' (1.0 is normal rate), and starting at sample position 'pos'
+    string( string str );
+        Construct a string as a copy of another string.
+    Osc( float freq );
+        Construct a Osc at specified frequency.
+    Osc( float freq, float phase );
+        Construct an Osc at specified frequency and phase.
+    (similarly for SinOsc, TriOsc, SqrOsc, SawOsc, PulseOsc, Phasor)
 ==================
 chugins API update
 ==================

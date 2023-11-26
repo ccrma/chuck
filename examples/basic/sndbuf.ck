@@ -3,10 +3,13 @@ me.dir() + "../data/snare.wav" => string filename;
 // if there is argument, use it as the filename
 if( me.args() ) me.arg(0) => filename;
 
-// the patch 
-SndBuf buf => dac;
-// load the file
-filename => buf.read;
+// the patch
+SndBuf buf(filename) => dac;
+// can also load the file this way
+// filename => buf.read;
+
+// check if file successfully loaded
+if( !buf.ready() ) me.exit();
 
 // time loop
 while( true )
