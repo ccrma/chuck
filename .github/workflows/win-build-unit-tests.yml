@@ -17,7 +17,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     - name: Compile - windows
-      run: MSBuild.exe /p:Configuration=Release src\visual-studio\chuck.vcxproj
+      run: MSBuild.exe /p:Configuration=Release /p:Platform="x64" src\visual-studio\chuck.vcxproj
       
     - name: Unit Tests - windows
       working-directory: .\src\test\
