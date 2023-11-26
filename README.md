@@ -89,6 +89,8 @@ Here are the source repositories maintained by the ChucK Team. _Developers wante
 
 [**chunreal**](https://github.com/ccrma/chunreal) | ChucK in Unreal Engine (new!)
 
+[**chugl**](https://github.com/ccrma/chugl) | ChucK Graphics Library (new!)
+
 
 ## Integrating ChucK as Component in Other C++ Hosts
 It is possible to incorporate ChucK **core** (compiler, virtual machine, synthesis engine) as a component/library within other c++ software **hosts**. This can be useful for adding ChucK functionalities to your software systems or to create new plugins. FYI the various tools listed in the previous section all incorporate ChucK in this core/host model: including command-line, miniAudicle, Unity, Unreal Engine, WebAssembly; additionally ChucK has been integrated with openFrameworks, iOS/Android apps, embedded systems, and in hybrid language systems, e.g., [FaucK](https://ccrma.stanford.edu/~rmichon/fauck/) (FAUST + ChucK), [ChucKDesigner](https://github.com/DBraun/ChucKDesigner) (ChucK in TouchDesigner), [chuck~](https://github.com/shakfu/pd-chuck/) (ChucK in Pure Data), [chuck~](https://github.com/shakfu/chuck-max) (ChucK in Max/MSP).
