@@ -93,6 +93,7 @@ CK_DLL_CGET( impulse_cget_next );
 
 // step
 CK_DLL_CTOR( step_ctor );
+CK_DLL_CTOR( step_ctor_value );
 CK_DLL_DTOR( step_dtor );
 CK_DLL_TICK( step_tick );
 CK_DLL_CTRL( step_ctrl_next );

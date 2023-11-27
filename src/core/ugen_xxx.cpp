@@ -542,6 +542,12 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     step_offset_data = type_engine_import_mvar( env, "int", "@step_data", FALSE );
     if( step_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // add ctor( float value )
+    func = make_new_ctor( step_ctor_value );
+    func->add_arg( "float", "value" );
+    func->doc = "construct a Step with default 'value'";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add ctrl: next
     func = make_new_mfun( "float", "next", step_ctrl_next );
     func->add_arg( "float", "next" );
@@ -2246,15 +2252,13 @@ CK_DLL_CGET( impulse_cget_next )
 
 //-----------------------------------------------------------------------------
 // name: step_ctor()
-// desc: ...
+// desc: base constructor (always run)
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( step_ctor )
 {
     // return data to be used later
     OBJ_MEMBER_UINT(SELF, step_offset_data) = (t_CKUINT)new SAMPLE( 1.0f );
 }
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -2266,6 +2270,17 @@ CK_DLL_DTOR( step_dtor )
     // delete
     delete (SAMPLE *)OBJ_MEMBER_UINT(SELF, step_offset_data);
     OBJ_MEMBER_UINT(SELF, step_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: step_ctor_value()
+// desc: overloaded constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( step_ctor_value )
+{
+    Chuck_DL_Return RETURN;
+    step_ctrl_next( SELF, ARGS, &RETURN, VM, SHRED, API );
 }
 
 
