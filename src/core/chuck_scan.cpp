@@ -3088,29 +3088,32 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     if( overload != NULL )
     {
         // -----------------------
+        // 1.5.2.0 (ge) reinstating ability for overloaded funcs
+        // (including operators) to return different types
+        // -----------------------
         // make sure return types match
         // 1.5.0.0 (ge) more precise error reporting
         // -----------------------
-        if( *(f->ret_type) != *(overload->func_ref->def()->ret_type) )
-        {
-            EM_error2( f->where, "overloaded functions require matching return types..." );
-            // check if in class definition
-            if( env->class_def )
-            {
-                EM_error3( "    |- function in question: %s %s.%s(...)",
-                           func->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
-                EM_error3( "    |- previous defined as: %s %s.%s(...)",
-                           overload->func_ref->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
-            }
-            else
-            {
-                EM_error3( "    |- function in question: %s %s(...)",
-                           func->def()->ret_type->base_name.c_str(), S_name(f->name) );
-                EM_error3( "    |- previous defined as: %s %s(...)",
-                           overload->func_ref->def()->ret_type->base_name.c_str(), S_name(f->name) );
-            }
-            goto error;
-        }
+        // if( *(f->ret_type) != *(overload->func_ref->def()->ret_type) )
+        // {
+        //    EM_error2( f->where, "overloaded functions require matching return types..." );
+        //    // check if in class definition
+        //    if( env->class_def )
+        //    {
+        //        EM_error3( "    |- function in question: %s %s.%s(...)",
+        //                   func->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
+        //        EM_error3( "    |- previous defined as: %s %s.%s(...)",
+        //                   overload->func_ref->def()->ret_type->base_name.c_str(), env->class_def->c_name(), S_name(f->name) );
+        //    }
+        //    else
+        //    {
+        //        EM_error3( "    |- function in question: %s %s(...)",
+        //                   func->def()->ret_type->base_name.c_str(), S_name(f->name) );
+        //        EM_error3( "    |- previous defined as: %s %s(...)",
+        //                   overload->func_ref->def()->ret_type->base_name.c_str(), S_name(f->name) );
+        //    }
+        //    goto error;
+        // }
 
         // -----------------------
         // make sure not duplicate

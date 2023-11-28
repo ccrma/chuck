@@ -1148,8 +1148,8 @@ const Chuck_DL_Query * Chuck_DLL::query()
                                string("' in dll '") + m_filename + string("'");
                 return NULL;
             }
-            // delete entry
-            CK_SAFE_DELETE( f );
+            // delete entry (and zero out the array element)
+            CK_SAFE_DELETE( m_query.op_overloads[i] );
         }
         // clear
         m_query.op_overloads.clear();

@@ -56,6 +56,8 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) CKDoc and .help() support for constructors
 - (added) Shred.parent() and Shred.ancestor()
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
+- (updated) now overloaded functions (including operators) can have
+  different return types
 - (updated) ChucK API doucmentation for constructors
 - (added) overloaded constructors added (more to come)
 ==================
