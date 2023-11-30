@@ -4288,32 +4288,120 @@ string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member membe
 
 
 //-----------------------------------------------------------------------------
+// name: struct NonspecificFuncMatch | 1.5.2.0 (ge) added
+// desc: struct to store a func with a match score
+//-----------------------------------------------------------------------------
+struct NonspecificFuncMatch
+{
+    // the func
+    Chuck_Func * func;
+    // match score
+    t_CKINT matchScore;
+    // constructor
+    NonspecificFuncMatch( Chuck_Func * f, t_CKINT score )
+    : func(f), matchScore(score) { }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: find_best_nonspecifc_match()
+// desc: check nonspecific function matches
+//-----------------------------------------------------------------------------
+Chuck_Func * find_best_nonspecifc_match( Chuck_Func * f, vector<NonspecificFuncMatch> & nonspecifics, uint32_t where )
+{
+    // empty vector
+    if( nonspecifics.size() == 0 ) return NULL;
+
+    t_CKINT min = CK_INT_MAX, minIndex = 0;
+    // ambiguous funcs
+    vector<Chuck_Func *> ambiguous;
+
+    // find the func with the lowest score
+    for( t_CKUINT i = 0; i < nonspecifics.size(); i++ )
+    {
+        // cerr << "nonspecific: " << nonspecifics[i].func->signature(FALSE,FALSE) << " " << nonspecifics[i].matchScore << endl;
+        // compare
+        if( nonspecifics[i].matchScore < min )
+        {
+            min = nonspecifics[i].matchScore;
+            minIndex = i;
+        }
+    }
+
+    // next, make sure the min score is unique
+    for( t_CKUINT i = 0; i < nonspecifics.size(); i++ )
+    {
+        // compare (including the min)
+        if( nonspecifics[i].matchScore == min )
+        {
+            // add to list of ambiguous
+            ambiguous.push_back( nonspecifics[i].func );
+        }
+    }
+
+    // see if we have any ambiguities beyond the guaranteed match
+    if( ambiguous.size() > 1 )
+    {
+        // error
+        EM_error2( where, "call to '%s' is ambiguous...", f->base_name.c_str() );
+        // print candidates
+        for( t_CKUINT i = 0; i < ambiguous.size(); i++ )
+        {
+            EM_error3( "candidate function:" );
+            EM_error3b( "    %s { ... }\n", ambiguous[i]->signature(FALSE,FALSE).c_str() );
+        }
+
+        return NULL;
+    }
+
+    // return the func
+    return nonspecifics[minIndex].func;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: find_func_match_actual()
-// desc: ...
+// desc: match a function by arguments, with options
 //-----------------------------------------------------------------------------
 Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp args,
-                                     t_CKBOOL implicit, t_CKBOOL specific )
+                                     t_CKBOOL implicit, t_CKBOOL specific, t_CKBOOL & hasError,
+                                     uint32_t where )
 {
     a_Exp e = NULL;
     a_Arg_List e1 = NULL;
     t_CKUINT count = 0;
     Chuck_Func * theFunc = NULL;
     t_CKBOOL match = FALSE;
+    // non-specific match score (only for specifc==FALSE) | 1.5.2.0
+    t_CKINT matchScore = 0;
+    // vector of non-specific matches for a particular class (not including parent or children)
+    vector<NonspecificFuncMatch> nonspecifics;
 
+    // reset error flag | 1.5.2.0
+    hasError = FALSE;
     // see if args is nil
     if( args && args->type == env->ckt_void )
         args = NULL;
 
-    // up is the list of functions in single class / namespace
+    // up is the list of functions in single class/namespace
     while( up )
     {
+        // set the function
         theFunc = up;
+        // clear the non-specific stuff | 1.5.2.0
+        if( !specific ) nonspecifics.clear();
+
         // loop
         while( theFunc )
         {
             e = args;
             e1 = theFunc->def()->arg_list;
             count = 1;
+            matchScore = 0;
 
             // check arguments against the definition
             while( e )
@@ -4322,7 +4410,20 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
                 if( e1 == NULL ) goto moveon;
 
                 // get match
-                match = specific ? e->type == e1->type : isa( e->type, e1->type );
+                match = specific ? equals(e->type,e1->type) : isa(e->type,e1->type);
+                // see
+                if( !specific )
+                {
+                    // if a strict super-type match
+                    if( match && !equals(e->type,e1->type) )
+                    {
+                        t_CKUINT levels = 0;
+                        // get levels of inheritance between two types
+                        isa_levels( *e->type, *e1->type, levels );
+                        // update score
+                        matchScore += levels;
+                    }
+                }
 
                 // no match
                 if( !match )
@@ -4333,7 +4434,11 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
                         // int to float
                         e->cast_to = env->ckt_float;
                     }
-                    else goto moveon; // type mismatch
+                    else
+                    {
+                        // type mismatch; move on
+                        goto moveon;
+                    }
                 }
 
                 e = e->next;
@@ -4342,14 +4447,36 @@ Chuck_Func * find_func_match_actual( Chuck_Env * env, Chuck_Func * up, a_Exp arg
             }
 
             // check for extra arguments
-            if( e1 == NULL ) return theFunc;
+            if( e1 == NULL )
+            {
+                if( !specific && matchScore > 0 )
+                {
+                    // push back and keep going to the next function in the namespace...
+                    nonspecifics.push_back( NonspecificFuncMatch( theFunc, matchScore ) );
+                }
+
+                // if we have no nonspecifics at this point, good to return
+                if( nonspecifics.size() == 0 ) return theFunc;
+            }
 
 moveon:
             // next func
             theFunc = theFunc->next;
         }
 
-        // go up
+        // if at least one non-specific match, find the best
+        // if there was an ambiguity or another issue, will print inside find_best_()
+        if( nonspecifics.size() )
+        {
+            // find best match
+            Chuck_Func * theMatch = find_best_nonspecifc_match( up, nonspecifics, where );
+            // if no match, set error
+            if( !theMatch ) hasError = TRUE;
+            // return the result
+            return theMatch;
+        }
+
+        // go up to parent class/namespace
         if( up->up ) up = up->up->func_ref;
         else up = NULL;
     }
@@ -4365,25 +4492,25 @@ moveon:
 // name: find_func_match()
 // desc: match a function by arguments
 //-----------------------------------------------------------------------------
-Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args )
+Chuck_Func * find_func_match( Chuck_Env * env, Chuck_Func * up, a_Exp args, t_CKBOOL & hasError, uint32_t where )
 {
     Chuck_Func * theFunc = NULL;
 
     // try to find specific
-    theFunc = find_func_match_actual( env, up, args, FALSE, TRUE );
-    if( theFunc ) return theFunc;
+    theFunc = find_func_match_actual( env, up, args, FALSE, TRUE, hasError, where );
+    if( theFunc || hasError ) return theFunc;
 
     // try to find specific with implicit
-    theFunc = find_func_match_actual( env, up, args, TRUE, TRUE );
-    if( theFunc ) return theFunc;
+    theFunc = find_func_match_actual( env, up, args, TRUE, TRUE, hasError, where );
+    if( theFunc || hasError ) return theFunc;
 
     // try to find non-specific
-    theFunc = find_func_match_actual( env, up, args, FALSE, FALSE );
-    if( theFunc ) return theFunc;
+    theFunc = find_func_match_actual( env, up, args, FALSE, FALSE, hasError, where );
+    if( theFunc || hasError ) return theFunc;
 
     // try to find non-specific with implicit
-    theFunc = find_func_match_actual( env, up, args, TRUE, FALSE );
-    if( theFunc ) return theFunc;
+    theFunc = find_func_match_actual( env, up, args, TRUE, FALSE, hasError, where );
+    if( theFunc || hasError ) return theFunc;
 
     return NULL;
 }
@@ -4436,11 +4563,15 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
 
     // look for a match
-    theFunc = find_func_match( env, up, args );
+    t_CKBOOL hasError = FALSE;
+    theFunc = find_func_match( env, up, args, hasError, exp_func->where );
 
     // no func
     if( !theFunc )
     {
+        // hasError implies an error has already been printed
+        if( hasError ) return NULL;
+
         // if primary
         if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
         {
@@ -5596,21 +5727,7 @@ t_CKBOOL equals( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) == (*rhs);
 //-----------------------------------------------------------------------------
 t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 {
-    // check to see if type L == type R
-    if( lhs == rhs ) return TRUE;
-
-    // if lhs is a child of rhs
-    const Chuck_Type * curr = lhs.parent;
-    while( curr )
-    {
-        if( *curr == rhs ) return TRUE;
-        curr = curr->parent;
-    }
-
-    // if lhs is null and rhs is a object | removed 1.5.1.7?
-    if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
-
-    return FALSE;
+    return isa( &lhs, &rhs );
 }
 
 
@@ -5620,7 +5737,46 @@ t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 // name: isa()
 // desc: is LHS a kind of RHS?
 //-----------------------------------------------------------------------------
-t_CKBOOL isa( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) <= (*rhs); }
+t_CKBOOL isa( const Chuck_Type * lhs, const Chuck_Type * rhs )
+{
+    // verify
+    assert( lhs != NULL && rhs != NULL );
+    // need var but return value won't be used
+    t_CKBOOL levels = 0;
+    // check for isa
+    return isa_levels( *lhs, *rhs, levels );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: isa_levels()
+// desc: 1.5.2.0 (ge) also retrieve # of inheritance levels from lhs to rhs
+//-----------------------------------------------------------------------------
+t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & levels )
+{
+    // reset levels
+    levels = 0;
+    // check to see if type L == type R
+    if( lhs == rhs ) return TRUE;
+
+    // if lhs is a child of rhs
+    const Chuck_Type * curr = lhs.parent;
+    while( curr )
+    {
+        levels++;
+        if( *curr == rhs ) return TRUE;
+        curr = curr->parent;
+    }
+
+    // back to 0
+    levels = 0;
+    // if lhs is null and rhs is a object | removed 1.5.1.7?
+    if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
+
+    return FALSE;
+}
 
 
 
@@ -5891,10 +6047,13 @@ Chuck_Func * type_engine_check_ctor_call( Chuck_Env * env, Chuck_Type * type, a_
     }
 
     // look for a match
-    Chuck_Func * theCtor = find_func_match( env, funcGroup, ctorInfo->args );
+    t_CKBOOL hasError = FALSE;
+    Chuck_Func * theCtor = find_func_match( env, funcGroup, ctorInfo->args, hasError, where );
     // no func
     if( !theCtor )
     {
+        // hasError implies an error has already been printed
+        if( hasError ) return NULL;
         // print error
         EM_error2( where, "no matching constructor found for %s(%s)...", actualType->c_name(), args2str.c_str() );
         // bail out

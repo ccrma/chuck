@@ -698,6 +698,34 @@ void EM_error3( const char * message, ... )
 
 
 //-----------------------------------------------------------------------------
+// name: EM_error3b()
+// desc: prints message, no prefix, no line number, no color
+//-----------------------------------------------------------------------------
+void EM_error3b( const char * message, ... )
+{
+    va_list ap;
+
+    // separate errmsgs with newlines
+    if( g_lasterror != "" ) lastErrorCat( "\n" );
+
+    g_buffer[0] = '\0';
+    va_start( ap, message );
+    CK_VFPRINTF_STDERR( message, ap );
+    va_end( ap );
+
+    va_start( ap, message );
+    vsnprintf( g_buffer, CK_ERR_BUF_LENGTH, message, ap );
+    va_end( ap );
+
+    lastErrorCat( g_buffer );
+    CK_FPRINTF_STDERR( "\n" );
+    CK_FFLUSH_STDERR();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_exception()
 // desc: prints exception message
 //-----------------------------------------------------------------------------

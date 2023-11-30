@@ -524,12 +524,12 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
 
     // add running()
     func = make_new_mfun( "int", "running", shred_running );
-    func->doc = "is the Shred currently running?";
+    func->doc = "is the Shred currently actively running in the VM?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add done()
     func = make_new_mfun( "int", "done", shred_done );
-    func->doc = "is the Shred done running?";
+    func->doc = "has the Shred reached the end of its execution?";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add nargs()
