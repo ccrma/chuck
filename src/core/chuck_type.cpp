@@ -43,6 +43,8 @@
 #include "ugen_xxx.h"
 #include "util_string.h"
 
+#include <limits.h>
+
 #include <sstream>
 #include <algorithm>
 using namespace std;

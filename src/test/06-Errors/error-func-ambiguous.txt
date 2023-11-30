@@ -1,0 +1,9 @@
+error-func-ambiguous.ck:19:1: error: call to 'foo' is ambiguous...
+[19] foo( bar, bar );
+     ^
+candidate function:
+    foo( Object a, UGen b ) { ... }
+
+candidate function:
+    foo( UGen a, Object b ) { ... }
+
