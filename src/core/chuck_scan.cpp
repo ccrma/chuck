@@ -2904,6 +2904,8 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     func->code = new Chuck_VM_Code;
     // add reference
     CK_SAFE_ADD_REF( func->code );
+    // add name | 1.5.2.0
+    func->code->name = S_name(f->name);
     // copy the native code, for imported functions
     if( f->s_type == ae_func_builtin )
     {

@@ -8612,7 +8612,7 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
         // begin import as ugen
         if( !type_engine_import_ugen_begin( env, c->name.c_str(),
                                             c->parent.c_str(), env->global(),
-                                            ctor ? ctor->ctor : NULL,
+                                            NULL, // ctor ? ctor->ctor : NULL, // ctors from DL added as type_engine_import_ctor()
                                             dtor ? dtor->dtor : NULL,
                                             c->ugen_tick, c->ugen_tickf, c->ugen_pmsg,
                                             c->ugen_num_in, c->ugen_num_out,
@@ -8624,7 +8624,7 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c )
         // begin import as normal class (non-ugen)
         if( !type_engine_import_class_begin( env, c->name.c_str(),
                                              c->parent.c_str(), env->global(),
-                                             ctor ? ctor->ctor : NULL,
+                                             NULL, // ctor ? ctor->ctor : NULL, // ctors from DL added as type_engine_import_ctor()
                                              dtor ? dtor->dtor : NULL,
                                              c->doc.length() > 0 ? c->doc.c_str() : NULL ) )
             goto error;
