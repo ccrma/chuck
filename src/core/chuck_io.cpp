@@ -2040,7 +2040,7 @@ CK_DLL_MFUN( fileio_writefloatflags )
 CK_DLL_MFUN( chout_close )
 {
     // problem
-    CK_FPRINTF_STDERR( "[chuck]: cannot close 'chout'...\n" );
+    // CK_FPRINTF_STDERR( "[chuck]: cannot close 'chout'...\n" );
     Chuck_IO_Chout * c = SHRED->vm_ref->chout();
     c->close();
 }
@@ -2162,7 +2162,7 @@ CK_DLL_MFUN( chout_writefloat )
 CK_DLL_MFUN( cherr_close )
 {
     // problem
-    CK_FPRINTF_STDERR( "[chuck]: cannot close 'cherr'...\n" );
+    // CK_FPRINTF_STDERR( "[chuck]: cannot close 'cherr'...\n" );
     Chuck_IO_Cherr * c = SHRED->vm_ref->cherr();
     c->close();
 }
