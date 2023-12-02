@@ -2134,6 +2134,13 @@ public:
     t_CKINT train( t_CKINT n_state, t_CKINT n_emission, Chuck_ArrayInt & observations )
     {
         clear();
+        // check
+        for( t_CKINT i = 0; i < observations.size(); i++ ) {
+            if( observations.m_vector[i] >= n_emission ) {
+                EM_error3( "HMM::train() -- observation[%ld] '%ld' exceeds number of emissions '%d'...", i, observations.m_vector[i], n_emission );
+                return FALSE;
+            }
+        }
         // init
         initial = new ChaiVectorFast<t_CKFLOAT>( n_state );
         transition = new ChaiMatrixFast<t_CKFLOAT>( n_state, n_state );
@@ -2206,12 +2213,19 @@ public:
         }
         for( i = 0; i < n; i++ )
             l += log( c.v( i ) );
-        return 0;
+        return TRUE;
     }
 
     // generate
     t_CKINT generate( t_CKINT length, Chuck_ArrayInt & output_ )
     {
+        // check
+        if( emission == NULL )
+        {
+            EM_error3( "HMM::generate() -- generate() called before successful call to train()..." );
+            return FALSE;
+        }
+
         // compute
         t_CKINT state = 0;
         t_CKFLOAT r = 0;
@@ -2256,7 +2270,7 @@ public:
                 r -= emission->v( state, j );
             }
         }
-        return 0;
+        return TRUE;
     }
 
 private:
