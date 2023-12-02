@@ -2662,7 +2662,7 @@ t_CKINT Chuck_ArrayVec4::get( t_CKINT i, t_CKVEC4 * val )
 t_CKINT Chuck_ArrayVec4::get( const string & key, t_CKVEC4 * val )
 {
     // set to zero
-    val->x = val->y = val->z = val->w;
+    val->x = val->y = val->z = val->w = 0;
 
     // iterator
     map<string, t_CKVEC4>::iterator iter = m_map.find( key );

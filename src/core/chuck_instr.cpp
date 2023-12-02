@@ -6978,8 +6978,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &val ) )
-                goto error;
+            arr->get( key->str(), &val );
             // push the value
             push_( sp, val );
         }
@@ -7000,8 +6999,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &fval ) )
-                goto error;
+            arr->get( key->str(), &fval );
             // push the value
             push_( ((t_CKFLOAT *&)sp), fval );
         }
@@ -7022,8 +7020,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &v2 ) )
-                goto error;
+            arr->get( key->str(), &v2 );
             // push the value
             push_( ((t_CKVEC2 *&)sp), v2 );
         }
@@ -7044,8 +7041,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &v3 ) )
-                goto error;
+            arr->get( key->str(), &v3 );
             // push the value
             push_( ((t_CKVEC3 *&)sp), v3 );
         }
@@ -7066,8 +7062,7 @@ void Chuck_Instr_Array_Map_Access::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
             push_( sp, val );
         } else {
             // get the value
-            if( !arr->get( key->str(), &v4 ) )
-                goto error;
+            arr->get( key->str(), &v4 );
             // push the value
             push_( ((t_CKVEC4 *&)sp), v4 );
         }
