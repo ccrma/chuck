@@ -610,6 +610,11 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the calling shred's \"ancestor\" shred (i.e., the top-level shred). Returns itself if the calling shred is the top-level shred. (Related: see Shred.parent())";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
+    // add gc() | 1.5.2.0 (ge) added
+    func = make_new_mfun( "void", "gc", shred_gc );
+    func->doc = "manually trigger a per-shred garbage collection pass; can be used to clean up certain UGens/objects without waiting for the shred to complete; use with care.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/spork2.ck" ) ) goto error;
@@ -2572,6 +2577,16 @@ CK_DLL_SFUN( shred_ancestor ) // added 1.5.2.0 (nshaheed)
     // set return value
     RETURN->v_object = curr;
 }
+
+
+CK_DLL_MFUN( shred_gc ) // added 1.5.2.0 (ge)
+{
+    // invoke manual per-shred GC pass
+    SHRED->gc();
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // string API

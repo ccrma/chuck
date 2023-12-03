@@ -179,18 +179,26 @@ public:
     // yield the shred in vm (without advancing time, politely yield to run
     // all other shreds waiting to run at the current (i.e., 0::second +=> now;)
     t_CKBOOL yield(); // 1.5.0.5 (ge) made this a function from scattered code
+    // add parent object reference (added 1.3.1.2)
+    t_CKVOID add_parent_ref( Chuck_Object * obj );
+    // add get shred id | 1.5.0.8 (ge)
+    t_CKUINT get_id() const { return this->xid; }
+
+public:
     // associate ugen with shred
     t_CKBOOL add( Chuck_UGen * ugen );
     // unassociate ugen with shred
     t_CKBOOL remove( Chuck_UGen * ugen );
     // detach all associate ugens | 1.5.1.5 (ge) added
     void detach_ugens();
+    // clean up ugens | 1.5.2.0 (ge) added
+    void prune_ugens();
 
-    // add parent object reference (added 1.3.1.2)
-    t_CKVOID add_parent_ref( Chuck_Object * obj );
-    // add get shred id | 1.5.0.8 (ge)
-    t_CKUINT get_id() const { return this->xid; }
-
+public:
+    // manually trigger a per-shred garbage collection pass | 1.5.2.0 (ge) added
+    void gc();
+    // acrue towards a GC pass
+    void gc_inc( t_CKDUR inc );
     // affects children shreds sporked from this one
     // mem is memory / call stack (for local vars)
     t_CKINT childSetMemSize( t_CKINT sizeInBytes );
@@ -254,11 +262,6 @@ public:
 
     // event shred is waiting on
     Chuck_Event * event;
-    // map of ugens for the shred
-    std::map<Chuck_UGen *, Chuck_UGen *> m_ugen_map;
-    // references kept by the shred itself (e.g., when sporking member functions)
-    // to be released when shred is done -- added 1.3.1.2
-    std::vector<Chuck_Object *> m_parent_objects;
 
 public: // id
     t_CKUINT xid;
@@ -270,8 +273,16 @@ public:
     Chuck_VM_Shred * prev;
     Chuck_VM_Shred * next;
 
+public:
     // tracking
     CK_TRACK( Shred_Stat * stat );
+
+public:
+    // map of ugens for the shred
+    std::map<Chuck_UGen *, Chuck_UGen *> m_ugen_map;
+    // references kept by the shred itself (e.g., when sporking member functions)
+    // to be released when shred is done -- added 1.3.1.2
+    std::vector<Chuck_Object *> m_parent_objects;
 
 public: // ge: 1.3.5.3
     // make and push new loop counter
@@ -306,6 +317,10 @@ public: // immediate mode temporal restriction | 1.5.1.5 (ge)
 protected:
     t_CKBOOL is_immediate_mode;
     t_CKBOOL is_immediate_mode_violation;
+
+protected:
+    t_CKDUR m_gc_inc; // current GC increment (in samps)
+    t_CKDUR m_gc_threshold; // threshold (in samps) beyond which will trigger a gc()
 
 #ifndef __DISABLE_SERIAL__
 private:
@@ -596,8 +611,8 @@ public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
 
 public: // garbage collection
+    // manually trigger a VM-level garbage collection pass | 1.5.2.0 (ge) added
     void gc();
-    void gc( t_CKUINT amount );
 
 public: // VM message queue
     // queue message to process at next VM compute block (thread-safe but not synchronous)

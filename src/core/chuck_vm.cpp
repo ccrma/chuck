@@ -640,24 +640,23 @@ vm_stop:
 
 
 
-
 //-----------------------------------------------------------------------------
-// name: gc
-// desc: ...
-//-----------------------------------------------------------------------------
-void Chuck_VM::gc( t_CKUINT amount )
-{
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: gc
-// desc: ...
+// name: gc() | 1.5.2.0 (ge) added
+// desc: manually trigger a VM-level garbage collection pass
 //-----------------------------------------------------------------------------
 void Chuck_VM::gc( )
 {
+    // vector of shreds
+    vector<Chuck_VM_Shred *> shreds;
+    // retrieve all shreds currently in the shreduler; this includes the
+    // ready list, the blocked list, and the currently executing shred
+    m_shreduler->get_all_shreds( shreds );
+    // iterate through all shreds in VM
+    for( t_CKUINT i = 0; i < shreds.size(); i++ )
+    {
+        // manually trigger GC pass in each shred
+        shreds[i]->gc();
+    }
 }
 
 
@@ -1715,6 +1714,10 @@ Chuck_VM_Shred::Chuck_VM_Shred()
     is_immediate_mode = FALSE;
     is_immediate_mode_violation = FALSE;
 
+    // garbage collection related | 1.5.2.0
+    m_gc_inc = 0;
+    m_gc_threshold = 4192; // default samps until next per-shred GC event
+
 #ifndef __DISABLE_SERIAL__
     m_serials = NULL;
 #endif
@@ -1811,50 +1814,141 @@ error:
 void Chuck_VM_Shred::detach_ugens()
 {
     // check if we have anything in ugen map for this shred
-    if( m_ugen_map.size() )
+    if( !m_ugen_map.size() )
+        return;
+
+    // spencer - March 2012 (added 1.3.0.0)
+    // can't dealloc ugens while they are still keys to a map;
+    // add reference, store them in a vector, and release them after
+    // SPENCERTODO: is there a better way to do this????
+    std::vector<Chuck_UGen *> release_v;
+    release_v.reserve( m_ugen_map.size() );
+
+    // get iterator to our map
+    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+    while( iter != m_ugen_map.end() )
     {
-        // spencer - March 2012 (added 1.3.0.0)
-        // can't dealloc ugens while they are still keys to a map;
-        // add reference, store them in a vector, and release them after
-        // SPENCERTODO: is there a better way to do this????
-        std::vector<Chuck_UGen *> release_v;
-        release_v.reserve( m_ugen_map.size() );
+        // get the ugen
+        Chuck_UGen * ugen = iter->first;
 
-        // get iterator to our map
-        map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
-        while( iter != m_ugen_map.end() )
-        {
-            // get the ugen
-            Chuck_UGen * ugen = iter->first;
+        // store ref in array for now (added 1.3.0.0)
+        // NOTE no need to bump reference since now ugen_map ref counts
+        release_v.push_back(ugen);
 
-            // store ref in array for now (added 1.3.0.0)
-            // NOTE no need to bump reference since now ugen_map ref counts
-            release_v.push_back(ugen);
+        // make sure if ugen has an origin shred, it is this one | 1.5.1.5
+        assert( !ugen->originShred() || ugen->originShred() == this );
+        // also clear reference to this shred | 1.5.1.5
+        ugen->setOriginShred( NULL );
+        // disconnect
+        ugen->disconnect( TRUE );
 
-            // make sure if ugen has an origin shred, it is this one | 1.5.1.5
-            assert( !ugen->originShred() || ugen->originShred() == this );
-            // also clear reference to this shred | 1.5.1.5
-            ugen->setOriginShred( NULL );
-            // disconnect
-            ugen->disconnect( TRUE );
+        // advance the iterator
+        iter++;
+    }
+    // clear map
+    m_ugen_map.clear();
 
-            // advance the iterator
-            iter++;
-        }
-        // clear map
-        m_ugen_map.clear();
+    // loop over vector
+    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
+         rvi != release_v.end(); rvi++ )
+    {
+        // cerr << "RELEASE: " << (void *) *rvi<< endl;
+        // release it
+        CK_SAFE_RELEASE( *rvi );
+    }
+    // clear the release vector
+    release_v.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: prune_ugens() | 1.5.2.0 (ge) added
+// desc: manually trigger a pruning of UGens that can be safely released,
+//       associated with a shred, instead of waiting for the shred to finish
+//       NOTE this can be useful if a shred dynamically creates a lot of
+//       UGens without exiting
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::prune_ugens()
+{
+    // check if we have anything in ugen map for this shred
+    if( !m_ugen_map.size() )
+        return;
+
+    // ugens to release
+    std::vector<Chuck_UGen *> release_v;
+
+    // get iterator to our map
+    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+    while( iter != m_ugen_map.end() )
+    {
+        // get the ugen
+        Chuck_UGen * ugen = iter->first;
+
+        // verify
+        assert( ugen->refcount() > 0 );
+        // check for ugens with only one reference (to this shred)
+        if( ugen->refcount() == 1 ) release_v.push_back( ugen );
+
+        // advance the iterator
+        iter++;
+    }
+
+    // check if anything to prune
+    if( release_v.size() )
+    {
+        // log
+        EM_log( CK_LOG_FINE, "pruning '%ld' ugen(s) from shred: %x...", release_v.size(), this );
 
         // loop over vector
         for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-             rvi != release_v.end(); rvi++ )
+            rvi != release_v.end(); rvi++ )
         {
-            // cerr << "RELEASE: " << (void *) *rvi<< endl;
-            // release it
+            // remove from map
+            m_ugen_map.erase( *rvi );
+            // release the ugen
             CK_SAFE_RELEASE( *rvi );
         }
         // clear the release vector
         release_v.clear();
     }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: gc_inc() | 1.5.2.0 (ge) added
+// desc: acrue towards a GC pass
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::gc_inc( t_CKDUR inc )
+{
+    // log
+    // EM_log( CK_LOG_FINE, "accruing '%f' towards GC on shred: %x", inc, this );
+
+    // accumulate
+    m_gc_inc += inc;
+    // check threshold
+    if( m_gc_inc > m_gc_threshold )
+    {
+        // invoke gc
+        gc();
+        // reset inc
+        m_gc_inc = 0;
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: gc() | 1.5.2.0 (ge) added
+// desc: manually trigger a pre-shred garbage collection pass
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::gc()
+{
+    this->prune_ugens();
 }
 
 
