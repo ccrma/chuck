@@ -55,12 +55,24 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) examples/class/destructor.ck
 - (added) CKDoc and .help() support for constructors
 - (added) Shred.parent() and Shred.ancestor()
-- (added) overloaded functions can have different return types
+- (added) overloaded functions can now have different return types;
+for example:
+```
+    // foo() overload 1 returns float
+    fun float foo( float b ) { return b; }
+    // foo() overload 2 returns int
+    fun int foo( int a ) { return a; }
+```
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
-- (fixed) overzealous dependency validation for member variable usage from other classes
+- (fixed) overzealous dependency validation for member variable usage
+    from other classes
+- (fixed) overzealous dependency validation for file-level variable
+    usage from functions
 - (fixed) disambiguating overloaded functions to choose the "closest" match
-    by function call argument type inheritance "distance" to function argument type
-- (added) compiler error for ambiguous function calls when there is no "closest" match
+    by function call argument type inheritance "distance" to function
+    argument type
+- (added) compiler error for ambiguous function calls when there is no
+    "closest" match
 - (updated) ChucK API doucmentation for constructors
 - (added) overloaded constructors added (more to come)
 ==================

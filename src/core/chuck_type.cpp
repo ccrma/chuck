@@ -3421,9 +3421,9 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 
                 // make sure v is legit as this point
                 // but only check under certain conditions
-                // 1) file-level variable, invoked from anywhere
+                // 1) file-top-level variable, invoked from file-top-level only
                 // 2) class-level member, invoked from pre-ctor only
-                if( !v->is_decl_checked )
+                if( !v->is_decl_checked && !env->func )
                 {
                     if( v->is_context_global )
                     {
@@ -3432,7 +3432,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             S_name(exp->var) );
                         return NULL;
                     }
-                    else if( v->is_member && !env->func )
+                    else if( v->is_member )
                     {
                         EM_error2( exp->where,
                             "class member '%s' is used before declaration",
