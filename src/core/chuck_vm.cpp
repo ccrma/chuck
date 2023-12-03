@@ -1866,7 +1866,7 @@ void Chuck_VM_Shred::detach_ugens()
 //-----------------------------------------------------------------------------
 // name: prune_ugens() | 1.5.2.0 (ge) added
 // desc: manually trigger a pruning of UGens that can be safely released,
-//       associated with a shred, instead of waiting for the shred to finish
+//       associated with this shred, instead of waiting for the shred to finish
 //       NOTE this can be useful if a shred dynamically creates a lot of
 //       UGens without exiting
 //-----------------------------------------------------------------------------

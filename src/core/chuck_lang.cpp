@@ -611,9 +611,9 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add gc() | 1.5.2.0 (ge) added
-    func = make_new_mfun( "void", "gc", shred_gc );
-    func->doc = "manually trigger a per-shred garbage collection pass; can be used to clean up certain UGens/objects without waiting for the shred to complete; use with care.";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
+    // func = make_new_mfun( "void", "gc", shred_gc );
+    // func->doc = "manually trigger a per-shred garbage collection pass; can be used to clean up certain UGens/objects without waiting for the shred to complete; use with care.";
+    // if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
