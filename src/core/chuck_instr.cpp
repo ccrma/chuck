@@ -6145,7 +6145,7 @@ void Chuck_Instr_Time_Advance::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     shred->is_running = FALSE;
     // increment towards per-shred garbage collection | 1.5.2.0 (ge)
     // NOTE 0-dur advance possible; but inc at least 1::samp
-    shred->gc_inc( ck_max((*sp)-shred->now,1) );
+    // shred->gc_inc( ck_max((*sp)-shred->now,1) );
 
     // track time advance
     CK_TRACK( Chuck_Stats::instance()->advance_time( shred, *sp ) );
