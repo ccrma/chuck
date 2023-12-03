@@ -57,9 +57,10 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) Shred.parent() and Shred.ancestor()
 - (added) overloaded functions can have different return types
 - (fixed) Type.of("int[][]").isArray() now correctly returns true
+- (fixed) overzealous dependency validation for member variable usage from other classes
 - (fixed) disambiguating overloaded functions to choose the "closest" match
     by function call argument type inheritance "distance" to function argument type
-- (added) compiler error for ambiguous function call where function call is ambiguous.
+- (added) compiler error for ambiguous function calls when there is no "closest" match
 - (updated) ChucK API doucmentation for constructors
 - (added) overloaded constructors added (more to come)
 ==================

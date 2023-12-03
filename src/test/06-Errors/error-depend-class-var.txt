@@ -1,0 +1,3 @@
+error-depend-class-var.ck:7:9: error: class member 'myVal' is used before declaration
+[7]     <<< myVal >>>;
+            ^

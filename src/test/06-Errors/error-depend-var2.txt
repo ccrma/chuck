@@ -1,3 +1,3 @@
-error-depend-var2.ck:4:5: error: variable/member 'a' is used before declaration
+error-depend-var2.ck:4:5: error: variable 'a' is used before declaration
 [4] <<< a >>>;
         ^

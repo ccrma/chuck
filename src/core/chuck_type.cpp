@@ -3420,12 +3420,25 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 }
 
                 // make sure v is legit as this point
+                // but only check under certain conditions
+                // 1) file-level variable, invoked from anywhere
+                // 2) class-level member, invoked from pre-ctor only
                 if( !v->is_decl_checked )
                 {
-                    EM_error2( exp->where,
-                        "variable/member '%s' is used before declaration",
-                        S_name(exp->var) );
-                    return NULL;
+                    if( v->is_context_global )
+                    {
+                        EM_error2( exp->where,
+                            "variable '%s' is used before declaration",
+                            S_name(exp->var) );
+                        return NULL;
+                    }
+                    else if( v->is_member && !env->func )
+                    {
+                        EM_error2( exp->where,
+                            "class member '%s' is used before declaration",
+                            S_name(exp->var) );
+                        return NULL;
+                    }
                 }
 
                 // dependency tracking
@@ -9045,9 +9058,9 @@ string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
     string className = value_ref->owner_class ? value_ref->owner_class->name() + "." : "";
     // make signature so far
     string signature = className + base_name + "(";
-    // the function keyword
-    if( incRetType ) signature = def()->ret_type->name() + " " + signature;
     // the return type
+    if( incRetType ) signature = def()->ret_type->name() + " " + signature;
+    // the function keyword
     if( incFuncDef ) signature = string("fun") + " " + signature;
 
     // loop over arguments
@@ -9077,6 +9090,21 @@ string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
 
     // done
     return signature;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ownerType()
+// desc: get owner type: if func part of a class
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Func::ownerType() const
+{
+    // check we have the necessary info
+    if( !value_ref ) return NULL;
+    // return value's owner type
+    return value_ref->owner_class;
 }
 
 
@@ -9324,7 +9352,7 @@ void Chuck_Value_Dependency_Graph::add( Chuck_Value_Dependency_Graph * graph )
 // desc: locate dependency non-recursive
 //-----------------------------------------------------------------------------
 const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateLocal(
-    t_CKUINT pos, t_CKBOOL isMember )
+    t_CKUINT pos, Chuck_Type * fromClassDef )
 {
     // don't worry it if pos == 0 (assume omni-present, which is all good)
     if( !pos ) return NULL;
@@ -9337,13 +9365,21 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateLocal(
     {
         // get value
         v = directs[i].value;
+
         // check
         if( !v ) continue;
+
         // look for any dependencies whose location is after pos
-        if( v->is_member == isMember && pos < v->depend_init_where )
+        if( pos < v->depend_init_where )
         {
-            // return it
-            return &directs[i];
+            // usage NOT from within a class def; value in question NOT a class member OR
+            // usage from within a class def; value in question is a class member of the same class
+            if( (fromClassDef==NULL && v->is_member==FALSE) ||
+                (fromClassDef && v->is_member && equals(v->owner_class, fromClassDef)) )
+            {
+                // return dependency
+                return &directs[i];
+            }
         }
     }
 
@@ -9384,12 +9420,12 @@ void Chuck_Value_Dependency_Graph::resetRecursive( t_CKUINT value )
 // desc: crawl the remote graph, taking care to handle cycle
 //-----------------------------------------------------------------------------
 const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateRecursive(
-    t_CKUINT pos, t_CKBOOL isMember, t_CKUINT searchToken )
+    t_CKUINT pos, Chuck_Type * fromClassDef, t_CKUINT searchToken )
 {
     // pointer to hold dep
     const Chuck_Value_Dependency * dep = NULL;
     // first search locally
-    dep = locateLocal( pos, isMember );
+    dep = locateLocal( pos, fromClassDef );
     // if found, done
     if( dep ) return dep;
 
@@ -9404,7 +9440,7 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateRecursive(
         graph = remotes[i];
         // if not already visited, visit
         if( graph->token != searchToken )
-            dep = graph->locateRecursive( pos, isMember, searchToken );
+            dep = graph->locateRecursive( pos, fromClassDef, searchToken );
         // if found, done
         if( dep ) return dep;
     }
@@ -9420,12 +9456,12 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateRecursive(
 // desc: look for a dependency that occurs AFTER a particular code position
 //-----------------------------------------------------------------------------
 const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locate(
-    t_CKUINT pos, t_CKBOOL isMember )
+    t_CKUINT pos, Chuck_Type * fromClassDef )
 {
     // reset search token
     resetRecursive();
     // recursive search
-    return locateRecursive( pos, isMember, 1 );
+    return locateRecursive( pos, fromClassDef, 1 );
 }
 
 

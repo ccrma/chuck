@@ -1,0 +1,10 @@
+error-depend-class-extend.ck:8:16: error: calling 'make()' at this point skips initialization of a needed variable:
+[8]     BarFactory.make();
+                   ^
+error-depend-class-extend.ck:10:26: error: ...(note: this skipped variable initialization is needed by 'fun BarChild BarFactory.make()')
+[10]     "i am bar" => string name;
+                              ^
+error-depend-class-extend.ck:15:18: error: ...(note: this is where the variable is used within 'fun BarChild BarFactory.make()' or its subsidiaries)
+[15]     "success" => name;
+                      ^
+error-depend-class-extend.ck: ...(hint: try calling 'make()' after the variable initialization)

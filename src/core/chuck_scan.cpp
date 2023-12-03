@@ -2521,8 +2521,8 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         value->is_const = decl->is_const;
 
         // dependency tracking: remember the code position of the DECL | 1.5.0.8
-        // do only if file-top-level or class-top-level, but not global
-        if( (value->is_member || value->is_context_global) && !value->is_global )
+        // NOTE track if context-global and not global, or class-member
+        if( (value->is_context_global && !value->is_global ) || value->is_member )
             value->depend_init_where = var_decl->where;
 
         // remember the value

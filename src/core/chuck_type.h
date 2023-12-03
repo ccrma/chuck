@@ -867,7 +867,7 @@ public:
     void clear();
     // look for a dependency that occurs AFTER a particular code position
     // this function crawls the graph, taking care in the event of cycles
-    const Chuck_Value_Dependency * locate( t_CKUINT pos, t_CKBOOL isClassDef = FALSE );
+    const Chuck_Value_Dependency * locate( t_CKUINT pos, Chuck_Type * fromClassDef = NULL );
 
 public:
     // constructor
@@ -884,11 +884,11 @@ protected:
 
 protected:
     // locate non-recursive
-    const Chuck_Value_Dependency * locateLocal( t_CKUINT pos, t_CKBOOL isClassDef );
+    const Chuck_Value_Dependency * locateLocal( t_CKUINT pos, Chuck_Type * fromClassDef );
     // reset search tokens
     void resetRecursive( t_CKUINT value = 0 );
     // locate recursive
-    const Chuck_Value_Dependency * locateRecursive( t_CKUINT pos, t_CKBOOL isClassDef, t_CKUINT searchToken = 1 );
+    const Chuck_Value_Dependency * locateRecursive( t_CKUINT pos, Chuck_Type * fromClassDef, t_CKUINT searchToken = 1 );
 };
 
 
@@ -1112,6 +1112,8 @@ struct Chuck_Func : public Chuck_VM_Object
     std::string signature( t_CKBOOL incFunDef = TRUE, t_CKBOOL incRetType = TRUE ) const;
     // code (included imported)
     Chuck_VM_Code * code;
+    // get owner type: if func part of a class
+    Chuck_Type * ownerType() const;
     // member (inside class)
     t_CKBOOL is_member;
     // static (inside class)
