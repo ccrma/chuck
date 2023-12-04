@@ -330,15 +330,20 @@ Chuck_Object::~Chuck_Object()
         type = type->parent;
     }
 
-    // release
+    // TODO: release class-scope member vars
+
+    // release origin shred
     CK_SAFE_RELEASE( origin_shred );
+    // release type reference
     CK_SAFE_RELEASE( type_ref );
+
     // CK_SAFE_RELEASE( origin_vm );
     // just zero out | 1.5.1.8 (ge)
     origin_vm = NULL;
 
-    // free
+    // free virtual table
     CK_SAFE_DELETE( vtable );
+    // free data segment
     CK_SAFE_DELETE_ARRAY( data );
 }
 
@@ -754,7 +759,7 @@ t_CKINT Chuck_ArrayInt::pop_front()
     if( m_is_obj )
     {
         // get pointer
-        Chuck_Object * v = (Chuck_Object *)m_vector[m_vector.size()-1];
+        Chuck_Object * v = (Chuck_Object *)m_vector[0];
         // if not null, release
         if( v ) v->release();
     }
