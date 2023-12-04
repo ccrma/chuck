@@ -73,6 +73,7 @@ for example:
     argument type
 - (added) compiler error for ambiguous function calls when there is no
     "closest" match
+- (fixed) array popFront() crash on Object-based arrays
 - (updated) ChucK API doucmentation for constructors
 - (added) overloaded constructors added (more to come)
 ==================
