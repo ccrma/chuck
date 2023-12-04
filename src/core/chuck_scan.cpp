@@ -1041,8 +1041,69 @@ t_CKBOOL type_engine_scan1_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan1_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 {
-    return TRUE;
-}
+    // check syntax
+    switch( exp->s_type )
+    {
+        // variable
+        case ae_primary_var:
+        case ae_primary_num:
+        case ae_primary_float:
+        case ae_primary_str:
+        case ae_primary_char:
+            break;
+
+        // array literal
+        case ae_primary_array:
+            type_engine_scan1_exp_array_lit( env, exp );
+        break;
+
+        // complex literal
+        case ae_primary_complex:
+            // if( !type_engine_scan1_exp_complex_lit( env, exp ) ) return FALSE;
+        break;
+
+        // polar literal
+        case ae_primary_polar:
+            // if( !type_engine_scan1_exp_polar_lit( env, exp ) ) return FALSE;
+        break;
+
+        // vector literal, ge: added 1.3.5.3
+        case ae_primary_vec:
+            // if( !type_engine_scan1_exp_vec_lit( env, exp ) ) return FALSE;
+        break;
+
+        // expression
+        case ae_primary_exp:
+            if( !type_engine_scan1_exp( env, exp->exp ) ) return FALSE;
+        break;
+
+        // hack
+        case ae_primary_hack:
+            // make sure not l-value
+            if( exp->exp->s_type == ae_exp_decl )
+            {
+                EM_error2( exp->where,
+                    "cannot use <<< >>> on variable declarations" );
+                return FALSE;
+            }
+
+            // scan
+            if( !type_engine_scan1_exp( env, exp->exp ) ) return FALSE;
+        break;
+
+        // nil (void)
+        case ae_primary_nil:
+        break;
+
+        // no match
+        default:
+            EM_error2( exp->where,
+                "(internal error) unrecognized primary type '%i'", exp->s_type );
+            return FALSE;
+            break;
+    }
+
+    return TRUE;}
 
 
 
@@ -2202,6 +2263,62 @@ t_CKBOOL type_engine_scan2_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_scan2_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 {
+    // check syntax
+    switch( exp->s_type )
+    {
+        // variable
+        case ae_primary_var:
+        case ae_primary_num:
+        case ae_primary_float:
+        case ae_primary_str:
+        case ae_primary_char:
+            break;
+
+        // array literal
+        case ae_primary_array:
+            type_engine_scan2_exp_array_lit( env, exp );
+        break;
+
+        // complex literal
+        case ae_primary_complex:
+            // if( !type_engine_scan2_exp_complex_lit( env, exp ) ) return FALSE;
+        break;
+
+        // polar literal
+        case ae_primary_polar:
+            // if( !type_engine_scan2_exp_polar_lit( env, exp ) ) return FALSE;
+        break;
+
+        // vector literal, ge: added 1.3.5.3
+        case ae_primary_vec:
+            // if( !type_engine_scan2_exp_vec_lit( env, exp ) ) return FALSE;
+        break;
+
+        // expression
+        case ae_primary_exp:
+            if( !type_engine_scan2_exp( env, exp->exp ) ) return FALSE;
+        break;
+
+        // hack
+        case ae_primary_hack:
+            // make sure not l-value (this should be checked in type_engine_scan1_exp_primary()
+            assert( exp->exp->s_type != ae_exp_decl );
+            // scan
+            if( !type_engine_scan2_exp( env, exp->exp ) ) return FALSE;
+        break;
+
+        // nil (void)
+        case ae_primary_nil:
+        break;
+
+        // no match
+        default:
+            EM_error2( exp->where,
+                "internal error - unrecognized primary type '%i'", exp->s_type );
+            return FALSE;
+            break;
+    }
+
     return TRUE;
 }
 

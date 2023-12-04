@@ -3520,14 +3520,9 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
 
         // hack
         case ae_primary_hack:
-            // make sure not l-value
-            if( exp->exp->s_type == ae_exp_decl )
-            {
-                EM_error2( exp->where,
-                    "cannot use <<< >>> on variable declarations" );
-                return NULL;
-            }
-
+            // make sure not l-value (this should be checked in type_engine_scan1_exp_primary()
+            assert( exp->exp->s_type != ae_exp_decl );
+            // type check
             t = type_engine_check_exp( env, exp->exp );
         break;
 
