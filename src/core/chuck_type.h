@@ -944,6 +944,8 @@ struct Chuck_Type : public Chuck_Object
     f_alloc allocator;
     // origin hint
     ckte_Origin originHint;
+    // offsets of mvars that are Objects
+    std::vector<t_CKUINT> obj_mvars_offsets;
 
     // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;

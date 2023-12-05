@@ -149,7 +149,7 @@ public: // data
     SAMPLE * m_current_v;
 
     // owner
-    Chuck_UGen * owner;
+    Chuck_UGen * owner_ugen;
 
     // what a hack!
     t_CKBOOL m_is_uana;

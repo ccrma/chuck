@@ -4341,12 +4341,12 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
             // cast to ugen
             ugen->m_multi_chan[i] = (Chuck_UGen *)obj;
             // additional reference count
-            ugen->m_multi_chan[i]->add_ref();
+            CK_SAFE_ADD_REF(obj);
             // owner
-            ugen->m_multi_chan[i]->owner = ugen;
+            ugen->m_multi_chan[i]->owner_ugen = ugen;
             // ref count
             // spencer 2013-5-20: don't add extra ref, to avoid a ref cycle
-            //ugen->add_ref();
+            // ugen->add_ref();
         }
         // TODO: alloc channels for uana
     }

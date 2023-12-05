@@ -1,6 +1,9 @@
 // test declaring/instantation classes with inheritance, involving
 // a member variable, declared in the file below its access
-// was issue #376
+//
+// related:
+// https://github.com/ccrma/chuck/issues/349
+// https://github.com/ccrma/chuck/issues/376
 
 public class Foo
 {

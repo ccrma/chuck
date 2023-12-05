@@ -39,6 +39,7 @@
 #include "chuck_vm.h"
 #include "chuck_lang.h"
 #include "chuck_errmsg.h"
+#include "ugen_xxx.h" // for subgraph ops
 using namespace std;
 
 
@@ -212,7 +213,7 @@ void Chuck_UGen::init()
     m_sum_v = NULL;
     m_current_v = NULL;
 
-    owner = NULL;
+    owner_ugen = NULL;
 
     // what a hack
     m_is_uana = FALSE;
@@ -256,13 +257,28 @@ void Chuck_UGen::done()
     CK_SAFE_DELETE_ARRAY( m_sum_v );
     CK_SAFE_DELETE_ARRAY( m_current_v );
 
-    // more reclaim (added 1.3.0.0)
-    CK_SAFE_DELETE_ARRAY( m_multi_chan );
-    // TODO: m_multi_chan, break ref count loop
+    // for each multichan reference | 1.5.2.0
+    for( t_CKUINT i = 0; i < m_multi_chan_size; i++ )
+    {
+        // TODO: disconnect?
 
-    // SPENCERTODO: is this okay??? (added 1.3.0.0)
-    CK_SAFE_DELETE( m_inlet );
-    CK_SAFE_DELETE( m_outlet );
+        // release
+        CK_SAFE_RELEASE( m_multi_chan[i] );
+    }
+
+    // more reclaim (added 1.3.0.0)
+    // TODO: m_multi_chan, break ref count loop
+    CK_SAFE_DELETE_ARRAY( m_multi_chan );
+    // zero out
+    m_multi_chan_size = 0;
+
+    // SPENCER: is this okay??? (added 1.3.0.0)
+    // changed to release | 1.5.2.0 (ge)
+    CK_SAFE_RELEASE( m_inlet );
+    CK_SAFE_RELEASE( m_outlet );
+
+    // clean up inlet/outlet | 1.5.2.0 (ge)
+    if( m_is_subgraph ) ck_subgraph_cleaup_inlet_outlet( this );
 
     // clean up array (added 1.3.0.0)
     CK_SAFE_DELETE_ARRAY( m_multi_in_v );
@@ -308,19 +324,21 @@ void Chuck_UGen::alloc_multi_chan( t_CKUINT num_ins, t_CKUINT num_outs )
 {
     // get max of num_ins and num_outs
     m_multi_chan_size = ( num_ins > num_outs ? num_ins : num_outs );
-
-    // allocate
-    m_multi_chan = new Chuck_UGen *[m_multi_chan_size];
-    // zero it out, whoever call this will fill in
-    memset( m_multi_chan, 0, m_multi_chan_size * sizeof(Chuck_UGen *) );
+    // assert null (no auto-cleanup of any existing m_multi_chan array)
+    assert( m_multi_chan == NULL );
 
     // mono
     if( m_multi_chan_size == 1 )
     {
         // zero out
         m_multi_chan_size = 0;
-        // self
-        m_multi_chan[0] = this;
+    }
+    else // not mono
+    {
+        // allocate
+        m_multi_chan = new Chuck_UGen *[m_multi_chan_size];
+        // zero it out, whoever call this will fill in
+        memset( m_multi_chan, 0, m_multi_chan_size * sizeof(Chuck_UGen *) );
     }
 
     // if there tick-frame (i.e., has multi-channel tick function; added 1.3.0.0)
@@ -433,7 +451,7 @@ void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
 //-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::src_chan( t_CKUINT chan )
 {
-    if( this->m_num_outs == 1)
+    if( this->m_num_outs == 1 )
         return this;
     return m_multi_chan[chan%m_num_outs];
 }
@@ -448,7 +466,7 @@ Chuck_UGen * Chuck_UGen::src_chan( t_CKUINT chan )
 //-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::dst_for_src_chan( t_CKUINT chan )
 {
-    if( this->m_num_ins == 1)
+    if( this->m_num_ins == 1 )
         return this;
     if( chan < this->m_num_ins )
         return m_multi_chan[chan];
@@ -955,13 +973,13 @@ t_CKBOOL Chuck_UGen::system_tick( t_CKTIME now )
     }
 
     // if owner (i.e., this ugen is one of the channels in a multi-channel ugen)
-    if( owner != NULL && owner->m_time < now )
+    if( owner_ugen != NULL && owner_ugen->m_time < now )
     {
         // tick the owner
-        owner->system_tick( now );
+        owner_ugen->system_tick( now );
 
         // if the owner has a multichannel tick function (added 1.3.0.0)
-        if( owner->tickf )
+        if( owner_ugen->tickf )
         {
             // set the latest to the current
             m_last = m_current;
@@ -1166,12 +1184,12 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
     }
 
     // if owner
-    if( owner != NULL && owner->m_time < now )
+    if( owner_ugen != NULL && owner_ugen->m_time < now )
     {
-        owner->system_tick_v( now, numFrames );
+        owner_ugen->system_tick_v( now, numFrames );
 
         // if the owner has a multichannel tick function (added 1.3.0.0)
-        if( owner->tickf )
+        if( owner_ugen->tickf )
         {
             // set the latest to the current
             m_last = m_current_v[numFrames - 1];
@@ -1333,22 +1351,22 @@ void Chuck_UGen::init_subgraph()
     // set as inlet
     m_inlet = (Chuck_UGen *)obj;
     // additional reference count
-    m_inlet->add_ref();
+    CK_SAFE_ADD_REF(m_inlet);
     // owner
-    m_inlet->owner = this;
-    // ref count
-    this->add_ref();
+    m_inlet->owner_ugen = this;
+    // no ref count | to avoid ref cycle | 1.5.2.0
+    // CK_SAFE_ADD_REF(this);
 
     // instantiate object for outlet
     obj = instantiate_and_initialize_object( this->origin_shred->vm_ref->env()->ckt_ugen, this->origin_shred );
     // set as outlet
     m_outlet = (Chuck_UGen *)obj;
     // additional reference count
-    m_outlet->add_ref();
+    CK_SAFE_ADD_REF(m_outlet);
     // owner
-    m_outlet->owner = this;
-    // ref count
-    this->add_ref();
+    m_outlet->owner_ugen = this;
+    // no ref count | to avoid ref cycle | 1.5.2.0
+    // CK_SAFE_ADD_REF(this);
 }
 
 
@@ -1542,10 +1560,11 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
     }
 
     // if owner
-    if( owner != NULL && owner->m_is_uana )
+    if( owner_ugen != NULL && owner_ugen->m_is_uana )
     {
         // cast to uana
-        uana = (Chuck_UAna *)owner;
+        // (requires RTT) dynamic_cast<Chuck_UAna *>(owner_ugen);
+        uana = (Chuck_UAna *)owner_ugen;
         // tock it
         if( uana->m_uana_time < now ) uana->system_tock( now );
     }

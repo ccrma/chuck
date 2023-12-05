@@ -1536,24 +1536,58 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: subgraph_ctor()
-// desc: ...
+// desc: subgraph constructor
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( subgraph_ctor )
 {
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
 
+    // initialize the ugen as subgraph
     ugen->init_subgraph();
 
+    // handle the inlet
     if( ugen->inlet() )
     {
-        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_inlet) = ugen->inlet();
+        // get the ugen
+        Chuck_UGen * in = ugen->inlet();
+        // set the mvar
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_inlet) = in;
+        // add refcount for the mvar | 1.5.2.0 (ge)
+        // NOTE will be released as part of Object cleanup
+        CK_SAFE_ADD_REF(in);
     }
 
+    // handle the outlet
     if( ugen->outlet() )
     {
-        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_outlet) = ugen->outlet();
+        // get the ugen
+        Chuck_UGen * out = ugen->outlet();
+        // set the mvar
+        OBJ_MEMBER_OBJECT(SELF, subgraph_offset_outlet) = out;
+        // add refcount for the mvar | 1.5.2.0 (ge)
+        // NOTE will be released as part of Object cleanup
+        CK_SAFE_ADD_REF(out);
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ck_subgraph_cleaup_inlet_outlet()
+// desc: release and cleanup subgraph inlet/outlet
+//-----------------------------------------------------------------------------
+void ck_subgraph_cleaup_inlet_outlet( Chuck_UGen * ugen )
+{
+    Chuck_UGen * inlet = (Chuck_UGen *)OBJ_MEMBER_OBJECT(ugen, subgraph_offset_inlet);
+    Chuck_UGen * outlet = (Chuck_UGen *)OBJ_MEMBER_OBJECT(ugen, subgraph_offset_outlet);
+
+    // release
+    CK_SAFE_RELEASE( inlet );
+    CK_SAFE_RELEASE( outlet );
+
+    // zero out
+    OBJ_MEMBER_OBJECT(ugen, subgraph_offset_inlet) = NULL;
+    OBJ_MEMBER_OBJECT(ugen, subgraph_offset_outlet) = NULL;
 }
 
 
@@ -1774,20 +1808,19 @@ CK_DLL_CTOR( stereo_ctor )
     // default panning law to preserve unity gain (but a WTF panning scheme)
     OBJ_MEMBER_INT(SELF, stereo_offset_panType) = PAN_WTF_UNITY;
 
-    // multi
-    if( ugen->m_multi_chan_size )
-    {
-        // set left
-        OBJ_MEMBER_UINT(SELF, stereo_offset_left) = (t_CKUINT)(ugen->m_multi_chan[0]);
-        // set right
-        OBJ_MEMBER_UINT(SELF, stereo_offset_right) = (t_CKUINT)(ugen->m_multi_chan[1]);
-    }
-    else // mono
-    {
-        // set left and right to self
-        OBJ_MEMBER_UINT(SELF, stereo_offset_left) = (t_CKUINT)ugen;
-        OBJ_MEMBER_UINT(SELF, stereo_offset_right) = (t_CKUINT)ugen;
-    }
+    // verify | 1.5.2.0 (ge) added
+    assert( ugen->m_multi_chan_size == 2 );
+
+    // set left
+    OBJ_MEMBER_UINT(SELF, stereo_offset_left) = (t_CKUINT)(ugen->m_multi_chan[0]);
+    // add ref | 1.5.2.0
+    CK_SAFE_ADD_REF( ugen->m_multi_chan[0] );
+
+    // set right
+    OBJ_MEMBER_UINT(SELF, stereo_offset_right) = (t_CKUINT)(ugen->m_multi_chan[1]);
+    // add ref | 1.5.2.0
+    CK_SAFE_ADD_REF( ugen->m_multi_chan[1] );
+
 }
 
 

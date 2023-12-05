@@ -246,7 +246,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
         return FALSE;
 
     // add variables
-    uana_offset_blob = type_engine_import_mvar( env, "UAnaBlob", "m_blob", FALSE );
+    uana_offset_blob = type_engine_import_mvar( env, "int", "@m_blobproxy", FALSE );
     if( uana_offset_blob == CK_INVALID_OFFSET ) goto error;
 
     // add upchuck
@@ -1551,10 +1551,8 @@ CK_DLL_DTOR( object_dtor )
     // log
     EM_log( CK_LOG_ALL, "Object destructor..." );
 
-    // get the string
-    Chuck_String * str = (Chuck_String *)OBJ_MEMBER_UINT(SELF, Object_offset_string);
-    // release
-    CK_SAFE_RELEASE( str );
+    // NOTE the garbage collector should take care of
+    // string reference at offset Object_offset_string
 }
 
 
@@ -2032,34 +2030,26 @@ CK_DLL_CTOR( uanablob_ctor )
     OBJ_MEMBER_TIME(SELF, uanablob_offset_when) = 0;
 
     // fvals
-    Chuck_ArrayFloat * arr8 = new Chuck_ArrayFloat( 8 );
-    initialize_object( arr8, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
-    arr8->add_ref();
-    OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arr8;
+    Chuck_ArrayFloat * arrF = new Chuck_ArrayFloat( 8 );
+    initialize_object( arrF, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
+    CK_SAFE_ADD_REF( arrF );
+    OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = (t_CKINT)arrF;
 
-    // cvals
-    Chuck_ArrayVec2 * arr16 = new Chuck_ArrayVec2( 8 );
-    initialize_object( arr16, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
-    arr16->add_ref();
-    OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arr16;
+    // cvals (complex)
+    Chuck_ArrayVec2 * arrC = new Chuck_ArrayVec2( 8 );
+    initialize_object( arrC, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
+    CK_SAFE_ADD_REF( arrC );
+    OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = (t_CKINT)arrC;
 }
 
 // dtor
 CK_DLL_DTOR( uanablob_dtor )
 {
-    // get array
-    Chuck_ArrayFloat * arr8 = (Chuck_ArrayFloat *)OBJ_MEMBER_INT(SELF, uanablob_offset_fvals);
-    // release it
-    arr8->release();
-    OBJ_MEMBER_INT(SELF, uanablob_offset_fvals) = 0;
-
-    // get array
-    Chuck_ArrayVec2 * arr16 = (Chuck_ArrayVec2 *)OBJ_MEMBER_INT(SELF, uanablob_offset_cvals);
-    // release it
-    arr16->release();
-    OBJ_MEMBER_INT(SELF, uanablob_offset_cvals) = 0;
-
+    // set when to 0 for good measure
     OBJ_MEMBER_TIME(SELF, uanablob_offset_when) = 0;
+
+    // typed object mvars are auto-released | 1.5.2.0
+    // include uanablob_offset_fvals and uanablob_offset_cvals
 }
 
 CK_DLL_MFUN( uanablob_when )

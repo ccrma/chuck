@@ -59,6 +59,9 @@ CK_DLL_CGET( multi_cget_chan );
 // bunghole
 CK_DLL_TICK( bunghole_tick );
 
+// subgraph; release and cleanup subgraph inlet/outlet
+void ck_subgraph_cleaup_inlet_outlet( Chuck_UGen * ugen );
+
 // pan2
 CK_DLL_CTOR( pan2_ctor );
 CK_DLL_DTOR( pan2_dtor );

@@ -4181,6 +4181,12 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         {
             // offset
             value->offset = env->curr->offset;
+            // if at class_scope
+            if( env->class_def && env->class_scope == 0 && isobj(env,type) )
+            {
+                // add it to the class | 1.5.2.0 (ge)
+                env->class_def->obj_mvars_offsets.push_back( value->offset );
+            }
 
             /*******************************************************************
              * spencer: added this into function to provide the same logic path
