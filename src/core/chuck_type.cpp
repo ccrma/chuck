@@ -291,8 +291,14 @@ void Chuck_Env::cleanup()
     Chuck_Type * skip = ckt_object->type_ref != NULL ? ckt_object->type_ref->parent : NULL;
     // free the Type type
     CK_SAFE_UNLOCK_DELETE(ckt_class);
+
     // part 2: break the dependency manually | 1.5.0.1 (ge) added
-    ckt_object->type_ref = skip;
+    ckt_object->type_ref = NULL; // was: skip -- but ckt_object is a Chuck_Object...
+    // and will try to to use type_ref->obj_mvars_offsets to cleanup, but aspects
+    // of chuck_type could be already be deleted before ~Chuck_Object() is invoked,
+    // including the obj_mvars_offsets vector; NOTE: this means that the final object
+    // does not delete its string mvar (by default it is NULL, so works out)
+
     // finally, free the Object type
     CK_SAFE_UNLOCK_DELETE(ckt_object);
 }
@@ -4181,9 +4187,10 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         {
             // offset
             value->offset = env->curr->offset;
-            // if at class_scope
-            if( env->class_def && env->class_scope == 0 && isobj(env,type) )
+            // if at class_scope and is object
+            if( is_obj )
             {
+                // cerr << "adding: " << value->name << " : " << value->offset << endl;
                 // add it to the class | 1.5.2.0 (ge)
                 env->class_def->obj_mvars_offsets.push_back( value->offset );
             }
@@ -9565,6 +9572,7 @@ void Chuck_Type::reset()
 
         // TODO: uncomment this, fix it to behave correctly
         // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
+        // TODO: verify this is valid for final shutdown sequence, including Chuck_Env::cleanup()
         // CK_SAFE_RELEASE( parent );
         // CK_SAFE_RELEASE( array_type );
         // CK_SAFE_RELEASE( ugen_info );

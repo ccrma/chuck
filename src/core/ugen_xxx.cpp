@@ -545,7 +545,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctor( float value )
     func = make_new_ctor( step_ctor_value );
     func->add_arg( "float", "value" );
-    func->doc = "construct a Step with default 'value'";
+    func->doc = "construct a Step with default value.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add ctrl: next

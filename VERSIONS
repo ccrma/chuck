@@ -4,10 +4,10 @@ ChucK VERSIONS log
 
 1.5.2.0 (November 2023) "Better Late Than Never...constructors"
 =======
-- (added) language-level, overloadable class constructors
-- (added) language-level class destructor
+- (added) class constructors
+- (added) overloadable class constructors definitions
 ============
-constructors can be invoked when declaring or with `new`:
+constructors can be invoked when declaring a variable or with `new`:
 ```
 // connecting UGens, with construtors
 SinOsc foo(440) => Gain g(.5) => dac;
@@ -54,7 +54,6 @@ new Foo(10,11,12) @=> Foo @ f4;
 - (added) examples/class/constructors.ck
 - (added) examples/class/destructor.ck
 - (added) CKDoc and .help() support for constructors
-- (added) Shred.parent() and Shred.ancestor()
 - (added) overloaded functions can now have different return types;
 for example:
 ```
@@ -71,6 +70,7 @@ for example:
 - (fixed) disambiguating overloaded functions to choose the "closest" match
     by function call argument type inheritance "distance" to function
     argument type
+- (added) Shred.parent() and Shred.ancestor()
 - (added) compiler error for ambiguous function calls when there is no
     "closest" match
 - (fixed) array popFront() crash on Object-based arrays
@@ -85,6 +85,8 @@ for example:
         Construct a SndBuf with the 'path' to a sound file to read, and a default playback 'rate' (1.0 is normal rate)
     SndBuf( string path, float rate, int pos );
         Construct a SndBuf with the 'path' to a sound file to read, a default playback 'rate' (1.0 is normal rate), and starting at sample position 'pos'
+    Step( float value );
+        Construct a Step with a default value.
     string( string str );
         Construct a string as a copy of another string.
     Osc( float freq );
@@ -95,15 +97,13 @@ for example:
 ==================
 chugins API update
 ==================
-- (updated) chugin API version updated to 10.x
+- (updated) chugin API version updated to 10.1
   -- complete decoupling of chugins interface and chuck core 
      implementation details
   -- new chugins runtime API functions to provide access
      to chuck core operations that is safe across the shared/dynamic
      library boudaries between chugins and a chuck host
      (see Chuck_DL_Api in chuck_dl.h for details)
-- (updated) chugin AND host API version must now match
-     (previously only the major version must match)
 - (updated) all chugins can now include a single header `chugin.h`
      with no additional header dependencies
      [see: https://github.com/ccrma/cheaders/tree/main/include]
@@ -115,6 +115,8 @@ chugins API update
      directly (either chuck_dl.h or chuck.h), but must #define
      __CHUCK_CHUGIN__ macro (if using chugin.h, this macro is always
      defined at the top of file)
+- (updated) chugin AND host API version must now match
+     (previously only the major version must match)
 - (added) chugins runtime API support for creating arrays from chugins
 - (added) chugins support for overloading constructors
 

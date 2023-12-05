@@ -2533,13 +2533,13 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         // more info
         if( !isaStr )
         {
-            EM_error2( decl->where,
-                      "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
+            EM_error2( 0,
+                       "...(primitive types: 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
         }
         else
         {
-            EM_error2( decl->where,
-                      "...(NOTE 'string' is a special Object whose operational semantics resemble both Object types and primitive types; e.g., instantiation and function argument-passing are like any other Object; however assignment '@=>' and '=>' are carried out by-value, as with primitive types such as 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
+            EM_error2( 0,
+                       "...(NOTE 'string' is a special Object whose operational semantics resemble both Object types and primitive types; e.g., instantiation and function argument-passing are like any other Object; however assignment '@=>' and '=>' are carried out by-value, as with primitive types such as 'int', 'float', 'time', 'dur', 'vec3', etc.)" );
         }
         return FALSE;
     }

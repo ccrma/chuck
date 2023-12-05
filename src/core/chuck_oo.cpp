@@ -331,22 +331,21 @@ Chuck_Object::~Chuck_Object()
     }
 
     // release class-scope member vars | 1.5.2.0 (ge) added
-    Chuck_Type * t = type_ref;
-    Chuck_Object * obj = NULL;
+    type = this->type_ref; Chuck_Object * obj = NULL;
     // for each type in the inheritance chain
-    while( t )
+    while( type )
     {
         // for each mvar directly in the class
-        for( t_CKUINT i = 0; i < t->obj_mvars_offsets.size(); i++ )
+        for( t_CKUINT i = 0; i < type->obj_mvars_offsets.size(); i++ )
         {
             // get the object reference from the offsets
-            obj = OBJ_MEMBER_OBJECT( this, t->obj_mvars_offsets[i] );
+            obj = OBJ_MEMBER_OBJECT( this, type->obj_mvars_offsets[i] );
             // release
             CK_SAFE_RELEASE(obj);
         }
 
         // go up to parent type
-        t = t->parent;
+        type = type->parent;
     }
 
     // release origin shred
