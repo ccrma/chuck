@@ -323,8 +323,8 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_dac, this );
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
-    stereo_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: is the NULL shred a problem?
     multi_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() );  // TODO: remove and let type system do this
+    stereo_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: is the NULL shred a problem?
     m_dac->add_ref();
     // lock it
     m_dac->lock();
@@ -336,8 +336,8 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_adc, this );
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
-    stereo_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() );
     multi_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: remove and let type system do this
+    stereo_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() );
     m_adc->add_ref();
     // lock it
     m_adc->lock();
@@ -424,7 +424,10 @@ t_CKBOOL Chuck_VM::shutdown()
 
     // log
     EM_log( CK_LOG_SYSTEM, "freeing special ugens..." );
-    // go
+    // explcitly calling a destructor, accounting for internal ref counts | 1.5.2.0
+    stereo_dtor( m_dac, this, NULL, Chuck_DL_Api::instance() );
+    stereo_dtor( m_adc, this, NULL, Chuck_DL_Api::instance() );
+    // release
     CK_SAFE_RELEASE( m_dac );
     CK_SAFE_RELEASE( m_adc );
     CK_SAFE_RELEASE( m_bunghole );

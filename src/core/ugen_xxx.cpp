@@ -221,7 +221,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //---------------------------------------------------------------------
     doc = "base class for stereo unit generators.";
     if( !type_engine_import_ugen_begin( env, "UGen_Stereo", "UGen_Multi", env->global(),
-                                        stereo_ctor, NULL, NULL, NULL, 2, 2, doc.c_str() ) )
+                                        stereo_ctor, stereo_dtor, NULL, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
 
     // add left
@@ -1799,7 +1799,7 @@ void pan_this( Chuck_UGen * left, Chuck_UGen * right, t_CKFLOAT pan, t_CKINT law
 
 //-----------------------------------------------------------------------------
 // name: stereo_ctor()
-// desc: ...
+// desc: stereo constructor
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( stereo_ctor )
 {
@@ -1808,19 +1808,51 @@ CK_DLL_CTOR( stereo_ctor )
     // default panning law to preserve unity gain (but a WTF panning scheme)
     OBJ_MEMBER_INT(SELF, stereo_offset_panType) = PAN_WTF_UNITY;
 
-    // verify | 1.5.2.0 (ge) added
-    assert( ugen->m_multi_chan_size == 2 );
+    // 2 or more
+    if( ugen->m_multi_chan_size )
+    {
+        // set left
+        OBJ_MEMBER_UINT(SELF, stereo_offset_left) = (t_CKUINT)(ugen->m_multi_chan[0]);
+        // add ref | 1.5.2.0
+        CK_SAFE_ADD_REF( ugen->m_multi_chan[0] );
 
-    // set left
-    OBJ_MEMBER_UINT(SELF, stereo_offset_left) = (t_CKUINT)(ugen->m_multi_chan[0]);
-    // add ref | 1.5.2.0
-    CK_SAFE_ADD_REF( ugen->m_multi_chan[0] );
+        // set right
+        OBJ_MEMBER_UINT(SELF, stereo_offset_right) = (t_CKUINT)(ugen->m_multi_chan[1]);
+        // add ref | 1.5.2.0
+        CK_SAFE_ADD_REF( ugen->m_multi_chan[1] );
+    }
+    else // mono
+    {
+        // set left
+        OBJ_MEMBER_OBJECT(SELF, stereo_offset_left) = ugen;
+        // set right
+        OBJ_MEMBER_OBJECT(SELF, stereo_offset_right) = ugen;
 
-    // set right
-    OBJ_MEMBER_UINT(SELF, stereo_offset_right) = (t_CKUINT)(ugen->m_multi_chan[1]);
-    // add ref | 1.5.2.0
-    CK_SAFE_ADD_REF( ugen->m_multi_chan[1] );
+        // add refs 2x | 1.5.2.0
+        CK_SAFE_ADD_REF(ugen); CK_SAFE_ADD_REF(ugen);
+    }
+}
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: stereo_dtor()
+// desc: stereo destructor | 1.5.2.0
+//-----------------------------------------------------------------------------
+CK_DLL_DTOR( stereo_dtor )
+{
+    // left & right
+    Chuck_UGen * left = (Chuck_UGen *)OBJ_MEMBER_OBJECT(SELF, stereo_offset_left);
+    Chuck_UGen * right = (Chuck_UGen *)OBJ_MEMBER_OBJECT(SELF, stereo_offset_right);
+
+    // release
+    CK_SAFE_RELEASE(left);
+    CK_SAFE_RELEASE(right);
+
+    // zero out
+    OBJ_MEMBER_OBJECT(SELF, stereo_offset_left) = NULL;
+    OBJ_MEMBER_OBJECT(SELF, stereo_offset_right) = NULL;
 }
 
 
