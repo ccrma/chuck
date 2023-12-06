@@ -321,6 +321,14 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->ckt_dac)
     env()->ckt_dac->ugen_info->num_outs = env()->ckt_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_dac, this );
+    // special case: DAC is a UGen_Multi, but due to the underlying system /
+    // command-line flags, it's possible to only have one channel | 1.5.2.0
+    if( m_num_dac_channels == 1 ) {
+        m_dac->m_multi_chan = new Chuck_UGen *[1];
+        // assign first channel to dac itself
+        m_dac->m_multi_chan[0] = m_dac;
+        // no ref count will deal with this explicitly on clean up
+    }
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
     multi_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() );  // TODO: remove and let type system do this
@@ -334,6 +342,14 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
     // (REFACTOR-2017: g_t_adc changed to env()->ckt_adc)
     env()->ckt_adc->ugen_info->num_ins = env()->ckt_adc->ugen_info->num_outs = m_num_adc_channels;
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_adc, this );
+    // special case: ADC is a UGen_Multi, but due to the underlying system /
+    // command-line flags, it's possible to only have one channel | 1.5.2.0
+    if( m_num_adc_channels == 1 ) {
+        m_adc->m_multi_chan = new Chuck_UGen *[1];
+        // assign first channel to adc itself
+        m_adc->m_multi_chan[0] = m_adc;
+        // no ref count will deal with this explicitly on clean up
+    }
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
     multi_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: remove and let type system do this
