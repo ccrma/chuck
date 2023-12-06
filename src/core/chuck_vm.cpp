@@ -296,7 +296,7 @@ t_CKBOOL Chuck_VM::initialize( t_CKUINT srate, t_CKUINT dac_chan,
 // name: initialize_synthesis()
 // desc: requires type system
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_VM::initialize_synthesis( )
+t_CKBOOL Chuck_VM::initialize_synthesis()
 {
     if( !m_init )
     {
@@ -327,7 +327,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
         m_dac->m_multi_chan = new Chuck_UGen *[1];
         // assign first channel to dac itself
         m_dac->m_multi_chan[0] = m_dac;
-        // no ref count will deal with this explicitly on clean up
+        // no ref count will deal with this explicitly on clean up in Chuck_VM::shutdown()
     }
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_dac, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
@@ -348,7 +348,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis( )
         m_adc->m_multi_chan = new Chuck_UGen *[1];
         // assign first channel to adc itself
         m_adc->m_multi_chan[0] = m_adc;
-        // no ref count will deal with this explicitly on clean up
+        // no ref count will deal with this explicitly on clean up in Chuck_VM::shutdown()
     }
     // Chuck_DL_Api::instance() added 1.3.0.0
     object_ctor( m_adc, NULL, this, NULL, Chuck_DL_Api::instance() ); // TODO: this can't be the place to do this
@@ -443,6 +443,26 @@ t_CKBOOL Chuck_VM::shutdown()
     // explcitly calling a destructor, accounting for internal ref counts | 1.5.2.0
     stereo_dtor( m_dac, this, NULL, Chuck_DL_Api::instance() );
     stereo_dtor( m_adc, this, NULL, Chuck_DL_Api::instance() );
+    // special case: if mono, must zero out multi-chan[0] (see Chuck_VM::initialize_synthesis())
+    if( m_num_dac_channels == 1 ) // 1.5.2.0 (ge) added
+    {
+        // verify
+        assert( m_dac->m_multi_chan_size == 0 );
+        // zero out, no ref count -- this flies under the ref counting system...
+        m_dac->m_multi_chan[0] = NULL;
+        // reclaim
+        CK_SAFE_DELETE_ARRAY( m_dac->m_multi_chan );
+    }
+    // special case: if mono, must zero out multi-chan[0] (see Chuck_VM::initialize_synthesis())
+    if( m_num_adc_channels == 1 ) // 1.5.2.0 (ge) added
+    {
+        // verify
+        assert( m_adc->m_multi_chan_size == 0 );
+        // zero out, no ref count -- this flies under the ref counting system...
+        m_adc->m_multi_chan[0] = NULL;
+        // reclaim
+        CK_SAFE_DELETE_ARRAY( m_adc->m_multi_chan );
+    }
     // release
     CK_SAFE_RELEASE( m_dac );
     CK_SAFE_RELEASE( m_adc );
