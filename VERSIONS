@@ -2,6 +2,36 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.1 (December 2023) patch release
+=======
+- (added) chugins can now implement a "info query function" to provide 
+    chugin-specific infomation to be accessible from host, including:
+    * chugin author(s)
+    * chugin version (not to be confused with compatbility version)
+    * chugin description
+    * chugin URL
+for example, in the chugin source:
+```
+// chugin info func
+CK_DLL_INFO( MyChugin )
+{
+    // set module name
+    QUERY->setname(QUERY, "FooBar");
+
+    // set info
+    QUERY->setinfo( QUERY, CHUGIN_INFO_AUTHORS, "Ana B. Croft" );
+    QUERY->setinfo( QUERY, CHUGIN_INFO_CHUGIN_VERSION, "v3.6.1" );
+    QUERY->setinfo( QUERY, CHUGIN_INFO_DESCRIPTION, "what does it do?" );
+    QUERY->setinfo( QUERY, CHUGIN_INFO_URL, "https://foo.com/FooBar" );
+    QUERY->setinfo( QUERY, CHUGIN_INFO_EMAIL, "ana@foo.com" );
+}
+```
+- (updated) revert chugin/host compatibility policy
+    chugin major version must == host major version
+    chugin minor version must <= host minor version
+  (previously in 1.5.2.0) chugin AND host API version must match
+
+
 1.5.2.0 (November 2023) "Better Late Than Never...constructors"
 =======
 - (added) class constructors

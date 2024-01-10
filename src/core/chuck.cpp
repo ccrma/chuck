@@ -836,11 +836,9 @@ void ChucK::probeChugins()
     EM_log( CK_LOG_SYSTEM, TC::green("host API version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
     // push
     EM_pushlog();
-    // print host version
-    EM_log( CK_LOG_SYSTEM, "note: chugin API version must match that of host" ); // 1.5.2.0
-    // previously:
-    // EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
-    // EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host major version" );
+    // print version compatbility information
+    EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
+    EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host minor version" );
     // pop
     EM_poplog();
 
