@@ -63,7 +63,7 @@ fun void print( Word2Vec model )
 while( true )
 {
     // prompt
-    in.prompt( "word2vec2chuck =>" ) => now;
+    in.prompt( "word2vec2chuck => " ) => now;
     
     // read
     while( in.more() )

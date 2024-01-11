@@ -116,11 +116,11 @@ while( true )
 {
     if( state == GET_TEXT )
     {
-        "enter a line (e.g., roses are red) =>" => prompt;
+        "enter a line (e.g., roses are red) => " => prompt;
     }
     else
     {
-        "how many degenerations (e.g., 20) =>" => prompt;       
+        "how many degenerations (e.g., 20) => " => prompt; 
     }
     // prompt
     in.prompt( prompt ) => now;
