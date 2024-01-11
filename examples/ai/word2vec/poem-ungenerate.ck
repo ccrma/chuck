@@ -120,7 +120,7 @@ while( true )
     }
     else
     {
-        "how many degenerations (e.g., 20) => " => prompt; 
+        "how many degenerations (e.g., 20) => " => prompt;
     }
     // prompt
     in.prompt( prompt ) => now;
