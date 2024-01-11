@@ -28,8 +28,8 @@ string line[0];
 Word2Vec model;
 
 // loading any default here
-"glove-wiki-gigaword-50-tsne-2.txt" => string filepath;
-<<< "loading 2D model:", filepath, "..." >>>;
+"glove-wiki-gigaword-50.txt" => string filepath;
+<<< "loading model:", filepath, "..." >>>;
 // load model
 if( !model.load( me.dir() + filepath ) )
 {
@@ -106,9 +106,9 @@ fun int execute( string line[] )
     else if( command == "help" || command == "h" )
     {
         <<< "    available word2vec2chuck commands:", "" >>>;
-        <<< "       load / l-- load a pre-trained model", "" >>>;
+        <<< "       load / l -- load a pre-trained model", "" >>>;
         <<< "       eval / e -- evaluate a word vector expression", "" >>>;
-        <<< "       analog / a-- query a logical analogy", "" >>>;
+        <<< "       analog / a -- query a logical analogy", "" >>>;
         <<< "       vector / v -- display vector associated with a word", "" >>>;
         <<< "       go / g -- from a word to another across a duration", "" >>>;
         <<< "       similar / s -- from a vector (model size) return similar words", "" >>>;
@@ -127,7 +127,10 @@ fun int execute( string line[] )
         }
         else
         {
-            <<< "loading model (this could take a few seconds)...", "" >>>;
+            // get filepath to load
+            line[1] => filepath;
+            <<< "loading model:", filepath >>>;
+            <<< "(this could take a few seconds)...", "" >>>;
             // load
             if( !model.load( me.dir() + filepath ) )
             {
