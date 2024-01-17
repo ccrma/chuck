@@ -1232,6 +1232,7 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         string url = dll->getinfo( CHUGIN_INFO_URL );
         string email = dll->getinfo( CHUGIN_INFO_EMAIL );
 
+        // print additional information
         if( authors.length() || version.length() || desc.length() || url.length() )
         {
             EM_pushlog();

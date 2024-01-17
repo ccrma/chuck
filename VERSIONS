@@ -2,15 +2,15 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.2.1 (December 2023) patch release
+1.5.2.1 (December 2023) ChuGL (alpha) => standard distribution
 =======
 - (added) ChuGL (alpha) is now part of the standard chuck distribution
     https://chuck.stanford.edu/chugl/
 =======
 - (added) chugins can now implement a "info query function" to provide 
     chugin-specific infomation to be accessible from host, including:
+    * chugin version (not to be confused with compatibility version)
     * chugin author(s)
-    * chugin version (not to be confused with compatbility version)
     * chugin description
     * (optional) chugin URL
     * (optional) contact email
@@ -20,8 +20,8 @@ for example, in the chugin source:
 CK_DLL_INFO( MyChugin )
 {
     // set info
-    QUERY->setinfo( QUERY, CHUGIN_INFO_AUTHORS, "Ana B. Croft" );
     QUERY->setinfo( QUERY, CHUGIN_INFO_CHUGIN_VERSION, "v3.6.1" );
+    QUERY->setinfo( QUERY, CHUGIN_INFO_AUTHORS, "Ana B. Croft" );
     QUERY->setinfo( QUERY, CHUGIN_INFO_DESCRIPTION, "what does it do?" );
     QUERY->setinfo( QUERY, CHUGIN_INFO_URL, "https://foo.com/FooBar" );
     QUERY->setinfo( QUERY, CHUGIN_INFO_EMAIL, "ana@foo.com" );
