@@ -119,7 +119,7 @@ void emit_engine_track_stmt_refs_cleanup( Chuck_Emitter * emit, Chuck_Instr_Stmt
 Chuck_Emitter * emit_engine_init( Chuck_Env * env )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "initializing emitter..." );
+    EM_log( CK_LOG_HERALD, "initializing emitter..." );
 
     // TODO: ensure this in a better way?
     // whatever t_CKUINT is defined as, it must be the same size as a pointer

@@ -789,7 +789,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
         if( !type_engine_add_class_from_dl( query->env(), query->curr_class ) )
         {
             // should already be message
-            //EM_log(CK_LOG_SEVERE, "error importing class '%s' into type engine",
+            //EM_log(CK_LOG_HERALD, "error importing class '%s' into type engine",
             // query->curr_class->name.c_str());
 
             // pop
@@ -1243,6 +1243,18 @@ const char * Chuck_DLL::name() const
 const char * Chuck_DLL::filepath() const
 {
     return m_filename.c_str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getinfo()
+// desc: get query info
+//-----------------------------------------------------------------------------
+string Chuck_DLL::getinfo( const string & key )
+{
+    return ck_getinfo( &m_query, key.c_str() );
 }
 
 

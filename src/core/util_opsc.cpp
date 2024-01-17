@@ -2172,7 +2172,7 @@ void
 OSC_Address_Space::setSpec( const char *addr, const char * types ) {
     if( snprintf( _spec, sizeof _spec, "%s,%s", addr, types ) >= sizeof _spec) {
         // TODO: handle the overflow more gracefully.
-        EM_log(CK_LOG_SEVERE, "OSC_Address_Space::setSpec: Not enough space in _spec buffer, data was truncated.");
+        EM_log(CK_LOG_HERALD, "OSC_Address_Space::setSpec: Not enough space in _spec buffer, data was truncated.");
     }
     scanSpec();
     _needparse = true;
@@ -2390,17 +2390,17 @@ bool OSC_Address_Space::vcheck( osc_datatype tt )
 {
     if( !_cur_mesg )
     {
-        EM_log( CK_LOG_SEVERE, "OscEvent: getVal(): nextMsg() must be called before reading data..." );
+        EM_log( CK_LOG_HERALD, "OscEvent: getVal(): nextMsg() must be called before reading data..." );
         return false;
     }
     else if( _cur_value < 0 || _cur_value >= _dataSize )
     {
-        EM_log( CK_LOG_SEVERE, "OscEvent: read position %d outside message ...", _cur_value );
+        EM_log( CK_LOG_HERALD, "OscEvent: read position %d outside message ...", _cur_value );
         return false;
     }
     else if( _cur_mesg[_cur_value].t != tt )
     {
-        EM_log( CK_LOG_SEVERE, "OscEvent: error -> message type %s != request type %s", osc_typename_strings[_cur_mesg[_cur_value].t], osc_typename_strings[tt]  );
+        EM_log( CK_LOG_HERALD, "OscEvent: error -> message type %s != request type %s", osc_typename_strings[_cur_mesg[_cur_value].t], osc_typename_strings[tt]  );
         return false;
     }
 

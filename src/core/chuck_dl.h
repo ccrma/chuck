@@ -1138,6 +1138,10 @@ public:
     t_CKBOOL compatible();
 
 public:
+    // get info from query
+    std::string getinfo( const std::string & key );
+
+public:
     // constructor
     Chuck_DLL( Chuck_Carrier * carrier, const char * xid = NULL )
         : m_handle(NULL), m_id(xid ? xid : ""),

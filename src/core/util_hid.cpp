@@ -1019,7 +1019,7 @@ t_CKINT OSX_Hid_Device::start()
             // error during configuration!
             this->unlock();
 
-            EM_log( CK_LOG_SEVERE, "hid: error configuring %s", name );
+            EM_log( CK_LOG_HERALD, "hid: error configuring %s", name );
             EM_poplog();
 
             return -1;
@@ -1034,7 +1034,7 @@ t_CKINT OSX_Hid_Device::start()
     IOReturn result = ( *queue )->start( queue );
     if( result != kIOReturnSuccess )
     {
-        EM_log( CK_LOG_SEVERE, "hid: error starting event queue for %s", name );
+        EM_log( CK_LOG_HERALD, "hid: error starting event queue for %s", name );
         EM_poplog();
         return -1;
     }
@@ -1440,7 +1440,7 @@ void Hid_init2()
     CFMutableDictionaryRef hidMatchDictionary = IOServiceMatching( kIOHIDDeviceKey );
     if( !hidMatchDictionary )
     {
-        EM_log( CK_LOG_SEVERE, "hid: error: unable to retrieving hidMatchDictionary, unable to initialize" );
+        EM_log( CK_LOG_HERALD, "hid: error: unable to retrieving hidMatchDictionary, unable to initialize" );
         return;
     }
 
@@ -1466,7 +1466,7 @@ void Hid_init2()
 
     if( result != kIOReturnSuccess || hidObjectIterator == 0 )
     {
-        EM_log( CK_LOG_SEVERE, "hid: error: unable to retrieving matching services, unable to initialize" );
+        EM_log( CK_LOG_HERALD, "hid: error: unable to retrieving matching services, unable to initialize" );
         return;
     }
 
@@ -2081,7 +2081,7 @@ static void Hid_do_operation( void * info )
             case OSX_Hid_op::open:
                 if( op.index >= op.v->size() )
                 {
-                    EM_log( CK_LOG_SEVERE, "hid: error: no such device %i", op.index );
+                    EM_log( CK_LOG_HERALD, "hid: error: no such device %i", op.index );
                     return;
                 }
 
@@ -2097,7 +2097,7 @@ static void Hid_do_operation( void * info )
             case OSX_Hid_op::close:
                 if( op.index >= op.v->size() )
                 {
-                    EM_log( CK_LOG_SEVERE, "hid: error: no such device %i", op.index );
+                    EM_log( CK_LOG_HERALD, "hid: error: no such device %i", op.index );
                     return;
                 }
 
@@ -4878,7 +4878,7 @@ void Hid_init()
 
     g_device_event = CreateEvent( NULL, FALSE, FALSE, NULL );
     if( g_device_event == NULL )
-        EM_log( CK_LOG_SEVERE, "hid: error: unable to create event (win32 error %i)", GetLastError() );
+        EM_log( CK_LOG_HERALD, "hid: error: unable to create event (win32 error %i)", GetLastError() );
     g_wait_function = Hid_wait_event;
 }
 
@@ -5029,7 +5029,7 @@ void Joystick_init()
 #endif
         {
             lpdi = NULL;
-            EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
+            EM_log( CK_LOG_HERALD, "error: unable to initialize DirectInput, initialization failed" );
             EM_poplog();
             return;
         }
@@ -5059,7 +5059,7 @@ void Joystick_init()
         joysticks = NULL;
         lpdi->Release();
         lpdi = NULL;
-        EM_log( CK_LOG_SEVERE, "error: unable to enumerate devices, initialization failed" );
+        EM_log( CK_LOG_HERALD, "error: unable to enumerate devices, initialization failed" );
         EM_poplog();
         return;
     }
@@ -5801,7 +5801,7 @@ void Keyboard_init()
 #endif
         {
             lpdi = NULL;
-            EM_log( CK_LOG_SEVERE, "error: unable to initialize DirectInput, initialization failed" );
+            EM_log( CK_LOG_HERALD, "error: unable to initialize DirectInput, initialization failed" );
             EM_poplog();
             return;
         }
@@ -5819,7 +5819,7 @@ void Keyboard_init()
         keyboards = NULL;
         lpdi->Release();
         lpdi = NULL;
-        EM_log( CK_LOG_SEVERE, "error: unable to enumerate devices, initialization failed" );
+        EM_log( CK_LOG_HERALD, "error: unable to enumerate devices, initialization failed" );
         EM_poplog();
         return;
     }
@@ -7117,7 +7117,7 @@ void Hid_init()
     int filedes[2];
     if( pipe( filedes ) )
     {
-        EM_log( CK_LOG_SEVERE, "hid: unable to create pipe, initialization failed" );
+        EM_log( CK_LOG_HERALD, "hid: unable to create pipe, initialization failed" );
         return;
     }
 
@@ -7348,14 +7348,14 @@ int Joystick_open( int js )
     {
         if( ( joystick->fd = open( joystick->filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
         {
-            EM_log( CK_LOG_SEVERE, "joystick: unable to open %s: %s", joystick->filename, strerror( errno ) );
+            EM_log( CK_LOG_HERALD, "joystick: unable to open %s: %s", joystick->filename, strerror( errno ) );
             return -1;
         }
 
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, joystick };
         if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
         {
-            EM_log( CK_LOG_SEVERE, "joystick: unable to write channel message %s: %s",
+            EM_log( CK_LOG_HERALD, "joystick: unable to write channel message %s: %s",
                 joystick->filename, strerror( errno ) );
             return -1;
         }
@@ -7379,7 +7379,7 @@ int Joystick_close( int js )
     {
         hid_channel_msg hcm = { HID_CHANNEL_CLOSE, joystick };
         if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1) return -1;
-            EM_log( CK_LOG_SEVERE, "joystick: unable complete close message: %s",
+            EM_log( CK_LOG_HERALD, "joystick: unable complete close message: %s",
                  strerror( errno ) );
     }
 
@@ -7552,7 +7552,7 @@ int Mouse_open( int m )
     {
         if( ( mouse->fd = open( mouse->filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
         {
-            EM_log( CK_LOG_SEVERE, "mouse: unable to open %s: %s", mouse->filename, strerror( errno ) );
+            EM_log( CK_LOG_HERALD, "mouse: unable to open %s: %s", mouse->filename, strerror( errno ) );
             return -1;
         }
 
@@ -7560,7 +7560,7 @@ int Mouse_open( int m )
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, mouse };
         if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
         {
-            EM_log( CK_LOG_SEVERE, "mouse: unable to complete open message %: %s", strerror( errno ) );
+            EM_log( CK_LOG_HERALD, "mouse: unable to complete open message %: %s", strerror( errno ) );
             return -1;
         }
     }
@@ -7748,14 +7748,14 @@ int Keyboard_open( int k )
     {
         if( ( keyboard->fd = open( keyboard->filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
         {
-            EM_log( CK_LOG_SEVERE, "keyboard: unable to open %s: %s", keyboard->filename, strerror( errno ) );
+            EM_log( CK_LOG_HERALD, "keyboard: unable to open %s: %s", keyboard->filename, strerror( errno ) );
             return -1;
         }
 
         hid_channel_msg hcm = { HID_CHANNEL_OPEN, keyboard };
         if(write( hid_channel_w, &hcm, sizeof( hcm ) ) == -1)
         {
-            EM_log( CK_LOG_SEVERE, "keyboard: unable to write open message: %s", strerror( errno ) );
+            EM_log( CK_LOG_HERALD, "keyboard: unable to write open message: %s", strerror( errno ) );
             return -1;
         }
     }

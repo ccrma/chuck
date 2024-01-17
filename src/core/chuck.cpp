@@ -614,7 +614,7 @@ t_CKBOOL ChucK::initCompiler()
     if( (cstr_cwd = getcwd(NULL, 0)) == NULL )
     {
         // uh...
-        EM_log( CK_LOG_SEVERE, "error: unable to determine current working directory!" );
+        EM_log( CK_LOG_HERALD, "error: unable to determine current working directory!" );
     }
     else
     {
@@ -713,7 +713,7 @@ t_CKBOOL ChucK::initChugins()
 
         EM_pushlog();
         // print host version
-        EM_log( CK_LOG_SEVERE, TC::green("host API version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+        EM_log( CK_LOG_HERALD, TC::green("host API version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
         EM_poplog();
 
         //---------------------------------------------------------------------
@@ -758,7 +758,7 @@ t_CKBOOL ChucK::initChugins()
             std::string filename = *j;
 
             // log
-            EM_log( CK_LOG_SEVERE, "preloading '%s'...", filename.c_str() );
+            EM_log( CK_LOG_HERALD, "preloading '%s'...", filename.c_str() );
             // push indent
             EM_pushlog();
 
@@ -829,16 +829,20 @@ void ChucK::probeChugins()
 {
     // ck files to pre load
     std::list<std::string> ck_libs_to_preload;
+    // host verison
+    ostringstream ostr; ostr << CK_DLL_VERSION_MAJOR << "." << CK_DLL_VERSION_MINOR;
 
     // print whether chugins enabled
     EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
     // print host version
-    EM_log( CK_LOG_SYSTEM, TC::green("host API version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    EM_log( CK_LOG_SYSTEM, "chugin host API version: %s", TC::green(ostr.str(),true).c_str() );
     // push
     EM_pushlog();
     // print version compatbility information
     EM_log( CK_LOG_SYSTEM, "chugin major version must == host major version" );
     EM_log( CK_LOG_SYSTEM, "chugin minor version must <= host minor version" );
+    // print chuck language version
+    EM_log( CK_LOG_SYSTEM, "language version: %s", TC::green(CHUCK_VERSION_STRING,true).c_str() );
     // pop
     EM_poplog();
 

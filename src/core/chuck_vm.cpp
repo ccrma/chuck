@@ -317,7 +317,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis()
     }
 
     // log
-    EM_log( CK_LOG_SEVERE, "initializing 'dac'..." );
+    EM_log( CK_LOG_HERALD, "initializing 'dac'..." );
     // allocate dac and adc (REFACTOR-2017: g_t_dac changed to env()->ckt_dac)
     env()->ckt_dac->ugen_info->num_outs = env()->ckt_dac->ugen_info->num_ins = m_num_dac_channels;
     m_dac = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_dac, this );
@@ -338,7 +338,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis()
     m_dac->lock();
 
     // log
-    EM_log( CK_LOG_SEVERE, "initializing 'adc'..." );
+    EM_log( CK_LOG_HERALD, "initializing 'adc'..." );
     // (REFACTOR-2017: g_t_adc changed to env()->ckt_adc)
     env()->ckt_adc->ugen_info->num_ins = env()->ckt_adc->ugen_info->num_outs = m_num_adc_channels;
     m_adc = (Chuck_UGen *)instantiate_and_initialize_object( env()->ckt_adc, this );
@@ -359,7 +359,7 @@ t_CKBOOL Chuck_VM::initialize_synthesis()
     m_adc->lock();
 
     // log
-    EM_log( CK_LOG_SEVERE, "initializing 'blackhole'..." );
+    EM_log( CK_LOG_HERALD, "initializing 'blackhole'..." );
     m_bunghole = new Chuck_UGen;
     m_bunghole->add_ref();
     m_bunghole->lock();
@@ -401,7 +401,7 @@ t_CKBOOL Chuck_VM::shutdown()
     CK_SAFE_DELETE( m_globals_manager );
 
     // log
-    EM_log( CK_LOG_SEVERE, "removing shreds..." );
+    EM_log( CK_LOG_HERALD, "removing shreds..." );
     // removal all | 1.5.0.8 (ge) updated from previously non-functioning code
     this->removeAll();
 
@@ -428,7 +428,7 @@ t_CKBOOL Chuck_VM::shutdown()
 
     // log
     EM_pushlog();
-    EM_log( CK_LOG_SEVERE, "freeing dumped shreds..." );
+    EM_log( CK_LOG_HERALD, "freeing dumped shreds..." );
     // do it
     this->release_dump();
     EM_poplog();
@@ -1399,14 +1399,14 @@ t_CKBOOL Chuck_VM::abort_current_shred()
     if( shred )
     {
         // log
-        EM_log( CK_LOG_SEVERE, "trying to abort current shred (id: %lu)", shred->xid );
+        EM_log( CK_LOG_HERALD, "trying to abort current shred (id: %lu)", shred->xid );
         // flag it
         shred->is_abort = TRUE;
     }
     else
     {
         // log
-        EM_log( CK_LOG_SEVERE, "cannot abort shred: nothing currently running!" );
+        EM_log( CK_LOG_HERALD, "cannot abort shred: nothing currently running!" );
     }
 
     return shred != NULL;

@@ -64,7 +64,7 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     Chuck_Value * value = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'Object'" );
+    EM_log( CK_LOG_HERALD, "class 'Object'" );
 
     const char * doc = "base class for all class types in ChucK.";
 
@@ -127,7 +127,7 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
 
-    EM_log( CK_LOG_SEVERE, "class 'UGen'" );
+    EM_log( CK_LOG_HERALD, "class 'UGen'" );
 
     // add ugen info
     type->ugen_info = new Chuck_UGen_Info;
@@ -229,7 +229,7 @@ t_CKBOOL init_class_uana( Chuck_Env * env, Chuck_Type * type )
 {
     Chuck_DL_Func * func = NULL;
 
-    EM_log( CK_LOG_SEVERE, "class 'UAna'" );
+    EM_log( CK_LOG_HERALD, "class 'UAna'" );
 
     // add uana info
     type->ugen_info = new Chuck_UGen_Info;
@@ -320,7 +320,7 @@ t_CKBOOL init_class_blob( Chuck_Env * env, Chuck_Type * type )
     // Chuck_Value * value = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'UAnaBlob'" );
+    EM_log( CK_LOG_HERALD, "class 'UAnaBlob'" );
 
     const char * doc = "a data structure that contains results associated with UAna analysis. There is a UAnaBlob associated with every UAna. As a UAna is upchucked (using .upchuck()), the result is stored in the UAnaBlob's floating point vector and/or complex vector. The interpretation of the results depends on the specific UAna.";
 
@@ -393,7 +393,7 @@ t_CKBOOL init_class_event( Chuck_Env * env, Chuck_Type * type )
     Chuck_Value * value = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'Event'" );
+    EM_log( CK_LOG_HERALD, "class 'Event'" );
 
     const char *doc = "a mechanism for precise synchronization across shreds.";
 
@@ -485,7 +485,7 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'Shred'" );
+    EM_log( CK_LOG_HERALD, "class 'Shred'" );
 
     const char *doc = "a strongly-timed ChucK thread of execution.";
 
@@ -653,7 +653,7 @@ t_CKBOOL init_class_vec2( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'vec2' (primitive)" );
+    EM_log( CK_LOG_HERALD, "class 'vec2' (primitive)" );
 
     // document
     const char * doc = "a primitive type for a 2-dimensional vector; potentially useful for 2D and UV coordinates.";
@@ -706,7 +706,7 @@ t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'vec3' (primitive)" );
+    EM_log( CK_LOG_HERALD, "class 'vec3' (primitive)" );
 
     // document
     const char *doc = "a primitive type for a 3-dimensional vector; potentially useful for 3D coordinate, RGB color, or as a value/goal/slew interpolator.";
@@ -796,7 +796,7 @@ t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'vec4' (primitive)" );
+    EM_log( CK_LOG_HERALD, "class 'vec4' (primitive)" );
 
     // document
     const char *doc = "a primitive type for a 4-dimensional vector; potentially useful for 4D coordinate and RGBA color.";
@@ -851,7 +851,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'string'" );
+    EM_log( CK_LOG_HERALD, "class 'string'" );
 
     const char * doc = "textual data as a sequence of characters, along with functions for manipulating text.";
 
@@ -1081,7 +1081,7 @@ t_CKBOOL init_class_array( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'array'" );
+    EM_log( CK_LOG_HERALD, "class 'array'" );
 
     // init as base class
     // TODO: ctor/dtor?
@@ -1256,7 +1256,7 @@ error:
 t_CKBOOL init_class_function( Chuck_Env * env, Chuck_Type * type )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "class '@function'" );
+    EM_log( CK_LOG_HERALD, "class '@function'" );
     const char * doc = "the base function Type.";
 
     // init as base class
@@ -1290,7 +1290,7 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'Type'" );
+    EM_log( CK_LOG_HERALD, "class 'Type'" );
     const char * doc = "a representation of a ChucK type.";
 
     // init as base class

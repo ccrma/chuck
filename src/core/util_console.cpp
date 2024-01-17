@@ -116,7 +116,7 @@ t_CKBOOL kb_initscr()
     struct termios term;
     if( tcgetattr(0, &term) == -1 )
     { 
-        EM_log( CK_LOG_SEVERE, "(kbhit disabled): standard input not a tty!");
+        EM_log( CK_LOG_HERALD, "(kbhit disabled): standard input not a tty!");
         return FALSE;
     }
 
