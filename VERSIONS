@@ -5,7 +5,12 @@ ChucK VERSIONS log
 1.5.2.1 (December 2023) ChuGL (alpha) => standard distribution
 =======
 - (added) ChuGL (alpha) is now part of the standard chuck distribution
+    (macOS and windows; on linux, build from source)
     https://chuck.stanford.edu/chugl/
+- (note) this alpha release of ChuGL (ChucK Graphics Library: a real-time
+    audiovisual programming framework) only works with command-line `chuck`
+    and does not work from within miniAudicle (miniAudicle support is on
+    the ChuGL development roadmap)
 =======
 - (added) chugins can now implement a "info query function" to provide 
     chugin-specific infomation to be accessible from host, including:
