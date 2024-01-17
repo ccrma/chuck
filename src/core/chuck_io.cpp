@@ -105,7 +105,7 @@ t_CKBOOL init_class_io( Chuck_Env * env, Chuck_Type * type )
     std::string doc = "Base class for other IO classes such as FileIO, StdOut and StdErr. Besides IO.newline(), it’s unlikely you need to use this class directly.";
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'IO'" );
+    EM_log( CK_LOG_HERALD, "class 'IO'" );
     
     // init as base class
     // TODO: ctor/dtor?
@@ -315,7 +315,7 @@ t_CKBOOL init_class_fileio( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'FileIO'" );
+    EM_log( CK_LOG_HERALD, "class 'FileIO'" );
 
     // init as base class
     // TODO: ctor/dtor?
@@ -530,7 +530,7 @@ t_CKBOOL init_class_chout( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'chout'" );
+    EM_log( CK_LOG_HERALD, "class 'chout'" );
 
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use 'chout' instead." ) )
@@ -620,7 +620,7 @@ t_CKBOOL init_class_cherr( Chuck_Env * env, Chuck_Type * type )
     Chuck_DL_Func * func = NULL;
 
     // log
-    EM_log( CK_LOG_SEVERE, "class 'cherr'" );
+    EM_log( CK_LOG_HERALD, "class 'cherr'" );
 
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, type, env->global(), NULL, NULL, "Do not instantiate this class directly! Use 'cherr' instead." ) )
@@ -5823,7 +5823,7 @@ t_CKBOOL Chuck_IO_Serial::readAsync( t_CKUINT type, t_CKUINT num )
     }
     else
     {
-        EM_log(CK_LOG_SEVERE, "(SerialIO.readAsync): warning: request buffer overflow, dropping read");
+        EM_log(CK_LOG_HERALD, "(SerialIO.readAsync): warning: request buffer overflow, dropping read");
         return FALSE;
     }
 
@@ -5996,7 +5996,7 @@ t_CKBOOL Chuck_IO_Serial::get_buffer(t_CKINT timeout_ms)
         }
         else
         {
-            EM_log(CK_LOG_SEVERE, "(SerialIO::get_buffer): read() returned 0 bytes");
+            EM_log(CK_LOG_HERALD, "(SerialIO::get_buffer): read() returned 0 bytes");
         }
     }
     else
@@ -6386,7 +6386,7 @@ void Chuck_IO_Serial::read_cb()
         {
             if( m_asyncResponses.atMaximum() )
             {
-                EM_log(CK_LOG_SEVERE, "SerialIO.read_cb: error: response buffer overflow, dropping read");
+                EM_log(CK_LOG_HERALD, "SerialIO.read_cb: error: response buffer overflow, dropping read");
                 continue;
             }
 

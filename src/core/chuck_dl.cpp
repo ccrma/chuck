@@ -103,6 +103,18 @@ t_CKUINT CK_DLL_CALL ck_builtin_declversion() { return CK_DLL_VERSION; }
 
 
 //-----------------------------------------------------------------------------
+// name: ck_builtin_info()
+// desc: builtin info func for internal modules
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_builtin_info( Chuck_DL_Query * query )
+{
+    // set nothing here
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_setname()
 // desc: set the name of the module/chugin
 //-----------------------------------------------------------------------------
@@ -116,6 +128,7 @@ void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name, t_CKBOOL
 // overload to get around function pointer business for f_setname
 void CK_DLL_CALL ck_setname( Chuck_DL_Query * query, const char * name )
 { ck_setname( query, name, TRUE ); }
+
 
 
 
@@ -776,7 +789,7 @@ t_CKBOOL CK_DLL_CALL ck_end_class( Chuck_DL_Query * query )
         if( !type_engine_add_class_from_dl( query->env(), query->curr_class ) )
         {
             // should already be message
-            //EM_log(CK_LOG_SEVERE, "error importing class '%s' into type engine",
+            //EM_log(CK_LOG_HERALD, "error importing class '%s' into type engine",
             // query->curr_class->name.c_str());
 
             // pop
@@ -933,7 +946,7 @@ Chuck_Carrier * Chuck_DL_Query::carrier() const { return m_carrier; }
 
 //-----------------------------------------------------------------------------
 // name: load()
-// desc: load dynamic link library
+// desc: load module (chugin/dll) from filename
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL lazy )
 {
@@ -964,12 +977,13 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
 
 //-----------------------------------------------------------------------------
 // name: load()
-// desc: load dynamic link library
+// desc: load module (internal) from query func
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_DLL::load( f_ck_query query_func, t_CKBOOL lazy )
 {
     m_query_func = query_func;
     m_api_version_func = ck_builtin_declversion;
+    m_info_func = ck_builtin_info;
     m_done_query = FALSE;
     m_func = "ck_query";
 
@@ -1001,38 +1015,20 @@ t_CKBOOL Chuck_DLL::good() const
 //-----------------------------------------------------------------------------
 const Chuck_DL_Query * Chuck_DLL::query()
 {
-    if( !m_handle && !m_query_func )
-    {
-        m_last_error = "dynamic link library not loaded for query...";
-        return NULL;
-    }
-
     // return if there already
     if( m_done_query )
         return &m_query;
 
-    // get the address of the DL version function from the DLL
-    if( !m_api_version_func )
-        m_api_version_func = (f_ck_declversion)this->get_addr( CK_DECLVERSION_FUNC );
-    if( !m_api_version_func )
-        m_api_version_func = (f_ck_declversion)this->get_addr( (string("_")+CK_DECLVERSION_FUNC).c_str() );
-    if( !m_api_version_func )
-    {
-        m_last_error = string("no version function found in dll '") + m_filename + string("'");
+    // probe DLL, for version and info
+    if( !probe() )
         return NULL;
-    }
 
-    // check version
-    t_CKUINT dll_version = m_api_version_func();
-    // get major and minor version numbers
-    m_apiVersionMajor = CK_DLL_VERSION_GETMAJOR(dll_version);
-    m_apiVersionMinor = CK_DLL_VERSION_GETMINOR(dll_version);
     // is version ok
     t_CKBOOL version_ok = FALSE;
-    // major AND minor version must match | 1.5.2.0 (ge)
-    // (was: major version must be same; minor version must less than or equal)
+    // chugin major version must == host major version
+    // chugin minor version must <= host minor version
     if( m_apiVersionMajor == CK_DLL_VERSION_MAJOR &&
-        m_apiVersionMinor == CK_DLL_VERSION_MINOR)
+        m_apiVersionMinor <= CK_DLL_VERSION_MINOR)
         version_ok = TRUE;
 
     // if version not okay
@@ -1079,50 +1075,6 @@ const Chuck_DL_Query * Chuck_DLL::query()
                        + string("'");
         return NULL;
     }
-
-    // load the proto table
-    /* Chuck_DL_Proto * proto;
-    m_name2proto.clear();
-    for( t_CKUINT i = 0; i < m_query.dll_exports.size(); i++ )
-    {
-        proto = &m_query.dll_exports[i];
-        if( m_name2proto[proto->name] )
-        {
-            m_last_error = string("duplicate export name '") + proto->name
-                           + string("'");
-            return NULL;
-        }
-
-        // get the addr
-        if( !proto->addr )
-            proto->addr = (f_ck_func)this->get_addr( (char *)proto->name.c_str() );
-        if( !proto->addr )
-        {
-            m_last_error = string("no addr associated with export '") +
-                           proto->name + string("'");
-            return NULL;
-        }
-
-        // put in the lookup table
-        m_name2proto[proto->name] = proto;
-    }
-
-    // load the proto table
-    Chuck_UGen_Info * info;
-    m_name2ugen.clear();
-    for( t_CKUINT j = 0; j < m_query.ugen_exports.size(); j++ )
-    {
-        info = &m_query.ugen_exports[j];
-        if( m_name2ugen[info->name] )
-        {
-            m_last_error = string("duplicate export ugen name '") + info->name
-                           + string("'");
-            return NULL;
-        }
-
-        // put in the lookup table
-        m_name2ugen[info->name] = info;
-    }*/
 
     // set flag
     m_done_query = TRUE;
@@ -1194,6 +1146,19 @@ t_CKBOOL Chuck_DLL::probe()
     // get major and minor version numbers
     m_apiVersionMajor = CK_DLL_VERSION_GETMAJOR(dll_version);
     m_apiVersionMinor = CK_DLL_VERSION_GETMINOR(dll_version);
+
+    // get the address of the DL info function from the DLL
+    if( !m_info_func )
+        m_info_func = (f_ck_info)this->get_addr( CK_INFO_FUNC );
+    if( !m_info_func )
+        m_info_func = (f_ck_info)this->get_addr( (string("_")+CK_INFO_FUNC).c_str() );
+
+    // if info func found
+    if( m_info_func )
+    {
+        // query the module for info
+        m_info_func( &m_query );
+    }
 
     return TRUE;
 }
@@ -1278,6 +1243,18 @@ const char * Chuck_DLL::name() const
 const char * Chuck_DLL::filepath() const
 {
     return m_filename.c_str();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getinfo()
+// desc: get query info
+//-----------------------------------------------------------------------------
+string Chuck_DLL::getinfo( const string & key )
+{
+    return ck_getinfo( &m_query, key.c_str() );
 }
 
 

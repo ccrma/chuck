@@ -487,7 +487,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "initializing type checker..." );
+    EM_log( CK_LOG_HERALD, "initializing type checker..." );
     // push indent level
     EM_pushlog();
 
@@ -551,7 +551,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     t_CKDUR eon = day * 365.256363004 * 1000000000.0;
 
     // add internal classes
-    EM_log( CK_LOG_SEVERE, "adding base classes..." );
+    EM_log( CK_LOG_HERALD, "adding base classes..." );
     EM_pushlog();
 
     // special: Object and Type, whose initializations mutually depend
@@ -717,7 +717,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 void type_engine_shutdown( Chuck_Carrier * carrier )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "shutting down type system..." );
+    EM_log( CK_LOG_HERALD, "shutting down type system..." );
     // push
     EM_pushlog();
 
@@ -725,7 +725,7 @@ void type_engine_shutdown( Chuck_Carrier * carrier )
     CK_SAFE_DELETE( carrier->env );
 
     // log
-    EM_log( CK_LOG_SEVERE, "type system shutdown complete." );
+    EM_log( CK_LOG_HERALD, "type system shutdown complete." );
     // pop
     EM_poplog();
 }
@@ -7302,7 +7302,7 @@ t_CKBOOL type_engine_import_op_overload( Chuck_Env * env, Chuck_DL_Func * sfun )
 void type_engine_init_op_overload_builtin( Chuck_Env * env )
 {
     // log
-    EM_log( CK_LOG_SEVERE, "reserving default operator mappings..." );
+    EM_log( CK_LOG_HERALD, "reserving default operator mappings..." );
 
     // the registry
     Chuck_Op_Registry * registry = &env->op_registry;
@@ -7609,7 +7609,7 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
 {
-    EM_log( CK_LOG_SEVERE, "initializing operator mappings..." );
+    EM_log( CK_LOG_HERALD, "initializing operator mappings..." );
     EM_pushlog();
 
     // the registry
@@ -8543,7 +8543,7 @@ t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
     {
         if( !type_engine_add_class_from_dl(env, query->classes[i]) )
         {
-            EM_log(CK_LOG_SEVERE,
+            EM_log(CK_LOG_HERALD,
                    TC::orange("error importing class '%s' from chugin (%s)",true).c_str(),
                    query->classes[i]->name.c_str(), dll->name());
 

@@ -565,7 +565,7 @@ static unsigned int __stdcall watch_dog( void * )
     t_CKUINT priority = XThreadUtil::our_priority;
 
     // log
-    EM_log( CK_LOG_SEVERE, "starting real-time watch dog process..." );
+    EM_log( CK_LOG_HERALD, "starting real-time watch dog process..." );
     // push log
     EM_pushlog();
     EM_log( CK_LOG_INFO, "watchdog timeout: %f::second", g_watchdog_timeout );
@@ -592,7 +592,7 @@ static unsigned int __stdcall watch_dog( void * )
             if( time - g_watchdog_time > g_watchdog_timeout )
             {
                 // log
-                EM_log( CK_LOG_SEVERE, "real-time watchdog counter-measure activating..." );
+                EM_log( CK_LOG_HERALD, "real-time watchdog counter-measure activating..." );
                 // lowering priority
                 if( g_tid_synthesis && XThreadUtil::our_priority != 0x7fffffff )
                     XThreadUtil::set_priority( g_tid_synthesis, g_watchdog_countermeasure_priority );
@@ -606,7 +606,7 @@ static unsigned int __stdcall watch_dog( void * )
             if( time - g_watchdog_time < g_watchdog_timeout )
             {
                 // log
-                EM_log( CK_LOG_SEVERE, "real-time watchdog resting..." );
+                EM_log( CK_LOG_HERALD, "real-time watchdog resting..." );
                 // raise priority
                 if( g_tid_synthesis && XThreadUtil::our_priority != 0x7fffffff )
                     XThreadUtil::set_priority( g_tid_synthesis, XThreadUtil::our_priority );
@@ -620,7 +620,7 @@ static unsigned int __stdcall watch_dog( void * )
     }
     
     // log
-    EM_log( CK_LOG_SEVERE, "stopping real-time watch dog process..." );
+    EM_log( CK_LOG_HERALD, "stopping real-time watch dog process..." );
 
     return 0;
 }
@@ -900,7 +900,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
             if( nextHighest >= 0 )
             {
                 // log
-                EM_log( CK_LOG_SEVERE, "new sample rate (next highest): %d -> %d",
+                EM_log( CK_LOG_HERALD, "new sample rate (next highest): %d -> %d",
                         sample_rate, device_info.sampleRates[nextHighest] );
                 // update sampling rate
                 m_sample_rate = sample_rate = device_info.sampleRates[nextHighest];
@@ -908,7 +908,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
             else if( closestIndex >= 0 ) // nothing higher
             {
                 // log
-                EM_log( CK_LOG_SEVERE, "new sample rate (closest): %d -> %d",
+                EM_log( CK_LOG_HERALD, "new sample rate (closest): %d -> %d",
                         sample_rate, device_info.sampleRates[closestIndex] );
                 // update sampling rate
                 m_sample_rate = sample_rate = device_info.sampleRates[closestIndex];
@@ -1001,9 +1001,9 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                             // set to 0
                             m_num_channels_in = 0;
                             // log
-                            EM_log( CK_LOG_SEVERE, "cannot find compatible audio input device..." );
+                            EM_log( CK_LOG_HERALD, "cannot find compatible audio input device..." );
                             EM_pushlog();
-                                EM_log(CK_LOG_SEVERE, "defaulting to half-duplex (no audio input)...");
+                                EM_log(CK_LOG_HERALD, "defaulting to half-duplex (no audio input)...");
                             EM_poplog();
 
                             // problem finding audio devices, most likely
@@ -1083,7 +1083,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     // check bufsize
     if( bufsize != (int)m_buffer_size )
     {
-        EM_log( CK_LOG_SEVERE, "new buffer size: %d -> %i", m_buffer_size, bufsize );
+        EM_log( CK_LOG_HERALD, "new buffer size: %d -> %i", m_buffer_size, bufsize );
         m_buffer_size = bufsize;
     }
 
@@ -1103,7 +1103,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     m_num_channels_max = num_dac_channels > num_adc_channels ?
                          num_dac_channels : num_adc_channels;
     // log
-    EM_log( CK_LOG_SEVERE, "allocating buffers for %d x %d samples...",
+    EM_log( CK_LOG_HERALD, "allocating buffers for %d x %d samples...",
             m_buffer_size, m_num_channels_max );
 
     // allocate buffers

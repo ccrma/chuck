@@ -241,6 +241,8 @@ typedef const Chuck_DL_Api * CK_DL_API;
 // macro for declaring version of ChucK DL a given DLL links to
 // example: CK_DLL_DECLVERSION
 #define CK_DLL_DECLVERSION CK_DLL_EXPORT(t_CKUINT) ck_version() { return CK_DLL_VERSION; }
+// macro for defining a DLL info func
+#define CK_DLL_INFO(name) CK_DLL_EXPORT(void) ck_info( Chuck_DL_Query * QUERY )
 // naming convention for static query functions
 #define CK_DLL_QUERY_STATIC_NAME(name) ck_##name##_query
 // macro for defining ChucK DLL export query-functions (static version)
@@ -314,7 +316,7 @@ typedef const Chuck_DL_Api * CK_DL_API;
 extern "C" {
 // query
 typedef t_CKUINT (CK_DLL_CALL * f_ck_declversion)();
-typedef const char * (CK_DLL_CALL * f_ck_info)( const char * key );
+typedef t_CKVOID (CK_DLL_CALL * f_ck_info)( Chuck_DL_Query * QUERY );
 typedef t_CKBOOL (CK_DLL_CALL * f_ck_query)( Chuck_DL_Query * QUERY );
 // object
 typedef Chuck_Object * (CK_DLL_CALL * f_alloc)( Chuck_VM * VM, Chuck_VM_Shred * SHRED, CK_DL_API API );
@@ -344,10 +346,12 @@ typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Object * OBJECT, C
 }
 
 
-// default name in DLL/ckx to look for
-#define CK_QUERY_FUNC        "ck_query"
-// default name in DLL/ckx to look for
-#define CK_DECLVERSION_FUNC  "ck_version"
+// default name in DLL/ckx to look for host/chugin compatibility version func
+#define CK_DECLVERSION_FUNC "ck_version"
+// default name in DLL/ckx to look for info func
+#define CK_INFO_FUNC        "ck_info"
+// default name in DLL/ckx to look for for query func
+#define CK_QUERY_FUNC       "ck_query"
 // bad object data offset
 #define CK_INVALID_OFFSET    0xffffffff
 
@@ -1102,10 +1106,11 @@ private:
 struct Chuck_DLL /* : public Chuck_VM_Object */
 {
 public:
-    // load dynamic ckx/dll from filename
+    // load module (chugin/dll) from filename
     t_CKBOOL load( const char * filename,
                    const char * func = CK_QUERY_FUNC,
                    t_CKBOOL lazy = FALSE );
+    // load module (internal) from query func
     t_CKBOOL load( f_ck_query query_func, t_CKBOOL lazy = FALSE );
     // get address in loaded ckx
     void * get_addr( const char * symbol );
@@ -1131,6 +1136,10 @@ public:
     // major version must be same between chugin and host
     // chugin minor version must less than or equal host minor version
     t_CKBOOL compatible();
+
+public:
+    // get info from query
+    std::string getinfo( const std::string & key );
 
 public:
     // constructor

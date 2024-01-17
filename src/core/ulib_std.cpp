@@ -741,9 +741,9 @@ CK_DLL_SFUN( system_impl )
     else
     {
         // log
-        EM_log( CK_LOG_SEVERE, "invoking system( CMD )..." );
+        EM_log( CK_LOG_HERALD, "invoking system( CMD )..." );
         EM_pushlog();
-        EM_log( CK_LOG_SEVERE, "CMD: \"%s\"", cmd );
+        EM_log( CK_LOG_HERALD, "CMD: \"%s\"", cmd );
         EM_poplog();
         RETURN->v_int = system( cmd );
     }
@@ -1072,7 +1072,7 @@ t_CKBOOL KBHitManager::init()
     the_buf = new CBufferAdvance;
     if( !the_buf->initialize( BUFFER_SIZE, sizeof(t_CKINT) ) )
     {
-        EM_log( CK_LOG_SEVERE, "KBHitManager: couldn't allocate central KB buffer..." );
+        EM_log( CK_LOG_HERALD, "KBHitManager: couldn't allocate central KB buffer..." );
         CK_SAFE_DELETE( the_buf );
         return FALSE;
     }
