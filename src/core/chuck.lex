@@ -354,6 +354,7 @@ global                  { adjust(); return GLOBAL; }
 "=<"                    { adjust(); return UNCHUCK; }
 "!=>"                   { adjust(); return UNCHUCK; }
 "=^"                    { adjust(); return UPCHUCK; }
+"=v"                    { adjust(); return DOWNCHUCK; }
 "@=>"                   { adjust(); return AT_CHUCK; }
 "+=>"                   { adjust(); return PLUS_CHUCK; }
 "-=>"                   { adjust(); return MINUS_CHUCK; }

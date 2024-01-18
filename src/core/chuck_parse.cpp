@@ -559,6 +559,7 @@ string absyn_binary2str( a_Exp_Binary binary )
         case ae_op_chuck:
         case ae_op_unchuck:
         case ae_op_upchuck:
+        case ae_op_downchuck:
         case ae_op_at_chuck:
         case ae_op_eq:
         case ae_op_neq:

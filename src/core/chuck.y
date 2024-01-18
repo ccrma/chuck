@@ -107,7 +107,7 @@ a_Program g_program = NULL;
 // 1.4.0.0: changed to 41 for global keyword
 // 1.4.0.1: changed to 79 for left recursion
 // 1.5.1.1: changed to 80 for trailing comma in array literals
-%expect 80
+%expect 82
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> INT_VAL
@@ -131,7 +131,7 @@ a_Program g_program = NULL;
   SHIFT_LEFT_CHUCK PERCENT_CHUCK
   SHIFT_RIGHT SHIFT_LEFT TILDA CHUCK
   COLONCOLON S_CHUCK AT_CHUCK LEFT_S_CHUCK
-  UNCHUCK UPCHUCK CLASS INTERFACE EXTENDS IMPLEMENTS
+  UNCHUCK UPCHUCK DOWNCHUCK CLASS INTERFACE EXTENDS IMPLEMENTS
   PUBLIC PROTECTED PRIVATE STATIC ABSTRACT CONST 
   SPORK ARROW_RIGHT ARROW_LEFT L_HACK R_HACK
   GRUCK_RIGHT GRUCK_LEFT UNGRUCK_RIGHT UNGRUCK_LEFT
@@ -483,6 +483,7 @@ chuck_operator
         | PERCENT_CHUCK                     { $$ = ae_op_percent_chuck; }
         | UNCHUCK                           { $$ = ae_op_unchuck; }
         | UPCHUCK                           { $$ = ae_op_upchuck; }
+        | DOWNCHUCK                         { $$ = ae_op_downchuck; }
         | S_AND_CHUCK                       { $$ = ae_op_s_and_chuck; }
         | S_OR_CHUCK                        { $$ = ae_op_s_or_chuck; }
         | S_XOR_CHUCK                       { $$ = ae_op_s_xor_chuck; }
@@ -626,6 +627,7 @@ unary_operator
         | EXCLAMATION                       { $$ = ae_op_exclamation; }
         | TIMES                             { $$ = ae_op_times; }
         | SPORK TILDA                       { $$ = ae_op_spork; }
+        | DOWNCHUCK                         { $$ = ae_op_downchuck; }
         // | S_AND                             { $$ = ae_op_s_and; }
         ;
 
@@ -671,6 +673,7 @@ overloadable_operator
         | AT_CHUCK                          { $$ = ae_op_at_chuck; }
         | UNCHUCK                           { $$ = ae_op_unchuck; }
         | UPCHUCK                           { $$ = ae_op_upchuck; }
+        | DOWNCHUCK                         { $$ = ae_op_downchuck; }
         | ARROW_RIGHT                       { $$ = ae_op_arrow_right; }
         | ARROW_LEFT                        { $$ = ae_op_arrow_left; }
         | GRUCK_RIGHT                       { $$ = ae_op_gruck_right; }

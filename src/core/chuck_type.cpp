@@ -7657,6 +7657,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
     registry->add( ae_op_at_chuck )->configure( false, false, false );
     registry->add( ae_op_unchuck )->configure( TRUE, false, false );
     registry->add( ae_op_upchuck )->configure( TRUE, false, false );
+    registry->add( ae_op_downchuck )->configure( TRUE, TRUE, TRUE );
     registry->add( ae_op_arrow_right )->configure( TRUE, false, false );
     registry->add( ae_op_arrow_left )->configure( TRUE, false, false );
     registry->add( ae_op_gruck_right )->configure( TRUE, false, false );
