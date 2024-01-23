@@ -936,25 +936,25 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add ctrl: compress
     func = make_new_mfun( "void", "compress", dyno_ctrl_compress );
     //func->add_arg( "string", "mode" );
-    func->doc = "set parameters to default compressor values.";
+    func->doc = "set parameters to default compressor values: slopeAbove = 0.5, slopeBelow = 1.0, thresh = 0.5, attackTime = 5 ms, releaseTime = 500 ms, externalSideInput = 0 (false)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: gate
     func = make_new_mfun( "void", "gate", dyno_ctrl_gate );
     //func->add_arg( "string", "mode" );
-    func->doc = "set parameters to default noise gate values.";
+    func->doc = "set parameters to default noise gate values: slopeAbove = 1.0, slopeBelow = 1.0E08, thresh = 0.1, attackTime = 11 ms, releaseTime = 100 ms, externalSideInput = 0 (false)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: expand
     func = make_new_mfun( "void", "expand", dyno_ctrl_expand );
     //func->add_arg( "string", "mode" );
-    func->doc = "set parameters to default expander values.";
+    func->doc = "set parameters to default expander values: slopeAbove = 2.0, slopeBelow = 1.0, thresh = 0.5, attackTime = 20 ms, releaseTime = 400 ms, externalSideInput = 0 (false)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add ctrl: duck
     func = make_new_mfun( "void", "duck", dyno_ctrl_duck );
     //func->add_arg( "string", "mode" );
-    func->doc = "set parameters ot default ducker values.";
+    func->doc = "set parameters to default ducker values: slopeAbove = 0.5, slopeBelow = 1.0, thresh = 0.5, attackTime = 10 ms, releaseTime = 1000 ms, externalSideInput = 1 (true)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add ctrl: thresh
@@ -1037,12 +1037,12 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     //add ctrl: externalSideInput
     func = make_new_mfun( "int", "externalSideInput", dyno_ctrl_externalSideInput );
     func->add_arg( "int", "externalSideInput" );
-    func->doc = "set to true to cue the amplitude envelope off of sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often.";
+    func->doc = "set to true to cue the amplitude envelope off sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     //add cget: externalSideInput
     func = make_new_mfun( "int", "externalSideInput", dyno_cget_externalSideInput );
-    func->doc = "get externalSideInput state. if set to true, the amplitude envelope will be cued off of sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often.";
+    func->doc = "get externalSideInput state. If set to true, the amplitude envelope will be cued off sideInput instead of the input signal. Note that this means you will need to manually set sideInput every so often.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
