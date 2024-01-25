@@ -38,9 +38,10 @@
 #include <float.h>
 #include <stdlib.h>
 #include <time.h>
+#include <limits.h>
 
 #include <vector> // 1.5.0.0 (ge) | added
-#include <limits> // 1.5.2.2 (nick) | replaced <limits.h>
+#include <limits> // 1.5.2.2 (nick) | added
 
 
 static double g_pi = CK_ONE_PI;
