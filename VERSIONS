@@ -2,6 +2,11 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.2
+=======
+- (fixed) all Osc( freq, phase ) constructors; previously the phase was not set correctly
+
+
 1.5.2.1 (December 2023) ChuGL (alpha) => standard distribution
 =======
 - (added) ChuGL (alpha) is now part of the standard chuck distribution

@@ -441,7 +441,9 @@ CK_DLL_CTOR( oscx_ctor_2 )
     Chuck_DL_Return r;
     // set freq
     osc_ctrl_freq( SELF, ARGS, &r, VM, SHRED, API );
-    // set freq
+    // advance
+    GET_NEXT_FLOAT(ARGS);
+    // set phase
     osc_ctrl_phase( SELF, ARGS, &r, VM, SHRED, API );
 }
 
