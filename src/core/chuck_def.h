@@ -260,13 +260,13 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 // platform: linux
 // related macros: __LINUX_ALSA__ __LINUX_PULSE__ __LINUX_OSS__ __LINUX_JACK__ __UNIX_JACK__
 //-------------------------------------------
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 //-------------------------------------------
   #ifndef __PLATFORM_LINUX__
   #define __PLATFORM_LINUX__
   #endif
 //-------------------------------------------
-#endif // defined(__linux__)
+#endif // defined(__linux__) || defined(__FreeBSD__)
 //-------------------------------------------
 
 
