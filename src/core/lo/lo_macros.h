@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004 Steve Harris
+ *  Copyright (C) 2014 Steve Harris et al. (see AUTHORS)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -23,9 +23,19 @@
 extern "C" {
 #endif
 
-/* \brief Maximum length of UDP messages in bytes
+/* \brief Left for backward-compatibility.  See
+ * LO_DEFAULT_MAX_MSG_SIZE below, and lo_server_max_msg_size().
  */
 #define LO_MAX_MSG_SIZE 32768
+
+/* \brief Maximum length of incoming UDP messages in bytes.
+ */
+#define LO_MAX_UDP_MSG_SIZE 65535
+
+/* \brief Default maximum length of incoming messages in bytes,
+ * corresponds to max UDP message size.
+ */
+#define LO_DEFAULT_MAX_MSG_SIZE LO_MAX_UDP_MSG_SIZE
 
 /* \brief A set of macros to represent different communications transports
  */
@@ -36,32 +46,21 @@ extern "C" {
 
 /* an internal value, ignored in transmission but check against LO_MARKER in the
  * argument list. Used to do primitive bounds checking */
-#define LO_MARKER_A 0xdeadbeef
-#define LO_MARKER_B 0xf00baa23
+#	define LO_MARKER_A (void *)0xdeadbeefdeadbeefLLU
+#	define LO_MARKER_B (void *)0xf00baa23f00baa23LLU
+
 #define LO_ARGS_END LO_MARKER_A, LO_MARKER_B
 
 #define lo_message_add_varargs(msg, types, list) \
     lo_message_add_varargs_internal(msg, types, list, __FILE__, __LINE__)
 
-#ifdef __GNUC__
+#ifdef _MSC_VER
+#ifndef USE_ANSI_C
+#define USE_ANSI_C
+#endif
+#endif
 
-#define lo_message_add(msg, types...)                         \
-    lo_message_add_internal(msg, __FILE__, __LINE__, types,   \
-                            LO_MARKER_A, LO_MARKER_B)
-
-#define lo_send(targ, path, types...) \
-        lo_send_internal(targ, __FILE__, __LINE__, path, types, \
-                         LO_MARKER_A, LO_MARKER_B)
-
-#define lo_send_timestamped(targ, ts, path, types...) \
-        lo_send_timestamped_internal(targ, __FILE__, __LINE__, ts, path, \
-                                     types, LO_MARKER_A, LO_MARKER_B)
-
-#define lo_send_from(targ, from, ts, path, types...) \
-        lo_send_from_internal(targ, from, __FILE__, __LINE__, ts, path, \
-                              types, LO_MARKER_A, LO_MARKER_B)
-
-#else
+#if defined(USE_ANSI_C) || defined(DLL_EXPORT)
 
 /* In non-GCC compilers, there is no support for variable-argument
  * macros, so provide "internal" vararg functions directly instead. */
@@ -71,7 +70,25 @@ int lo_send(lo_address targ, const char *path, const char *types, ...);
 int lo_send_timestamped(lo_address targ, lo_timetag ts, const char *path, const char *types, ...);
 int lo_send_from(lo_address targ, lo_server from, lo_timetag ts, const char *path, const char *types, ...);
 
-#endif
+#else // !USE_ANSI_C
+
+#define lo_message_add(msg, types...)                         \
+    lo_message_add_internal(msg, __FILE__, __LINE__, types,   \
+                            LO_MARKER_A, LO_MARKER_B)
+
+#define lo_send(targ, path, types...) \
+        lo_send_internal(targ, __FILE__, __LINE__, path, types, \
+			 LO_MARKER_A, LO_MARKER_B)
+
+#define lo_send_timestamped(targ, ts, path, types...) \
+        lo_send_timestamped_internal(targ, __FILE__, __LINE__, ts, path, \
+		       	             types, LO_MARKER_A, LO_MARKER_B)
+
+#define lo_send_from(targ, from, ts, path, types...) \
+        lo_send_from_internal(targ, from, __FILE__, __LINE__, ts, path, \
+		       	             types, LO_MARKER_A, LO_MARKER_B)
+
+#endif // USE_ANSI_C
 
 #ifdef __cplusplus
 }

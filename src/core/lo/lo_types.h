@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004 Steve Harris
+ *  Copyright (C) 2014 Steve Harris et al. (see AUTHORS)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -25,32 +25,31 @@
 extern "C" {
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #endif
 
-#ifndef _WIN32
-#include <pthread.h>
-#endif // _WIN32
-
 #include "lo_osc_types.h"
+
+#define LO_DISABLE 0  //!< Disable a boolean option.
+#define LO_ENABLE 1   //!< Enable a boolean option.
 
 /**
  * \brief A reference to an OSC service.
  *
  * Created by calls to lo_address_new() or lo_address_new_from_url().
  */
-typedef void *lo_address;
+typedef struct lo_address_  *lo_address;
 
 /**
  * \brief A object to store an opaque binary data object.
  *
  * Can be passed over OSC using the 'b' type. Created by calls to lo_blob_new().
  */
-typedef void *lo_blob;
+typedef struct lo_blob_ *lo_blob;
 
 /**
  * \brief A low-level object used to represent messages passed over OSC.
@@ -58,7 +57,7 @@ typedef void *lo_blob;
  * Created by calls to lo_message_new(), arguments can be added with calls to
  * lo_message_add_*().
  */
-typedef void *lo_message;
+typedef struct lo_message_ *lo_message;
 
 /**
  * \brief A low-level object used to represent bundles of messages passed over
@@ -67,7 +66,7 @@ typedef void *lo_message;
  * Created by calls to lo_bundle_new(), messages can be added with calls to
  * lo_bundle_add_message().
  */
-typedef void *lo_bundle;
+typedef struct lo_bundle_ *lo_bundle;
 
 /**
  * \brief An object representing an method on a server.
@@ -75,38 +74,38 @@ typedef void *lo_bundle;
  * Returned by calls to lo_server_thread_add_method() and
  * lo_server_add_method().
  */
-typedef void *lo_method;
+typedef struct lo_method_ *lo_method;
 
 /**
  * \brief An object representing an instance of an OSC server.
  *
- * Created by calls to lo_server_new(). If you with the library to take care of
- * the threading as well you can just use server threads instead.
+ * Created by calls to lo_server_new(). If you wish to have the server
+ * operate in a background thread, use lo_server_thread instead.
  */
-typedef void *lo_server;
+typedef struct lo_server_ *lo_server;
 
 /**
  * \brief An object representing a thread containing an OSC server.
  *
  * Created by calls to lo_server_thread_new().
  */
-typedef void *lo_server_thread;
+typedef struct lo_server_thread_ *lo_server_thread;
 
 /**
- * \brief A callback function to receive notifcation of an error in a server or
+ * \brief A callback function to receive notification of an error in a server or
  * server thread.
  *
- * On callback the paramters will be set to the following values:
+ * On callback the parameters will be set to the following values:
  *
  * \param num An error number that can be used to identify this condition.
- * \param msg An error message describing the condition.
- * \param where A string describing the place the error occurred - typically
+ * \param msg An error message describing the condidtion.
+ * \param where A string describing the place the error occured - typically
  * either a function call or method path.
  */
 typedef void (*lo_err_handler)(int num, const char *msg, const char *where);
 
 /**
- * \brief A callback function to receive notifcation of matching message
+ * \brief A callback function to receive notification of matching message
  * arriving in the server or server thread.
  *
  * The return value tells the method dispatcher whether this handler
@@ -123,18 +122,75 @@ typedef void (*lo_err_handler)(int num, const char *msg, const char *where);
  * will match those and the incoming types will have been coerced to match,
  * otherwise it will be the types of the arguments of the incoming message.
  * \param argv An array of lo_arg types containing the values, e.g. if the
- * first argument of the incoming message is of type 'f' then the vlaue will be
+ * first argument of the incoming message is of type 'f' then the value will be
  * found in argv[0]->f.
- * \param argc The number of argumets received.
+ * \param argc The number of arguments received.
  * \param msg A structure containing the original raw message as received. No
- * type coercion will have occurred and the data will be in OSC byte order
+ * type coercion will have occured and the data will be in OSC byte order
  * (bigendian).
  * \param user_data This contains the user_data value passed in the call to
  * lo_server_thread_add_method.
  */
 typedef int (*lo_method_handler)(const char *path, const char *types,
-                                 lo_arg **argv, int argc, lo_message msg,
-                                 void *user_data);
+				 lo_arg **argv, int argc, lo_message msg,
+				 void *user_data);
+
+/**
+ * \brief A callback function to receive notification of a bundle being
+ * dispatched by the server or server thread.
+ *
+ * This callback allows applications to be aware of incoming bundles
+ * and preserve ordering and atomicity of messages in bundles.
+ *
+ * If installed with lo_server_add_bundle_handlers, this callback will be
+ * called with \a time set to the time tag of the bundle, and \a user_data
+ * set to the user_data parameter passed to lo_server_add_bundle_handlers.
+ *
+ * Note that bundles may be nested, in which case calls to the bundle start
+ * and end handlers will also be nested.  The application can keep track of
+ * nested bundles in a stack-like manner by treating the start handler as
+ * "push" and the end handler as "pop".  For example, a bundle containing two
+ * bundles would fire 6 callbacks: begin, begin, end, begin, end, end.
+ */
+typedef int (*lo_bundle_start_handler)(lo_timetag time, void *user_data);
+
+/**
+ * \brief A callback function to receive notification of a bundle dispatch
+ * being completed by the server or server thread.
+ *
+ * If installed with lo_server_add_bundle_handlers, this callback will be
+ * called after all the messages of a bundle have been dispatched with
+ * \a user_data set to the user_data parameter passed to
+ * lo_server_add_bundle_handlers.
+ */
+typedef int (*lo_bundle_end_handler)(void *user_data);
+
+/**
+ * \brief A callback function to perform initialization when the
+ * server thread is started.
+ *
+ * If installed with lo_server_thread_set_callbacks, this callback
+ * will be called in the server thread, just before the server starts
+ * listening for events. \a user_data is set to the user_data
+ * parameter passed to lo_server_thread_add_functions.
+ *
+ * If the return value is non-zero, the thread start will be aborted.
+ */
+typedef int (*lo_server_thread_init_callback)(lo_server_thread s,
+                                              void *user_data);
+
+/**
+ * \brief A callback function to perform cleanup when the server
+ * thread is started.
+ *
+ * If installed with lo_server_thread_set_callbacks, this callback
+ * will be called in the server thread, after the server have stopped
+ * listening and processing events, before it quits. \a user_data is
+ * set to the user_data parameter passed to
+ * lo_server_thread_add_functions.
+ */
+typedef void (*lo_server_thread_cleanup_callback)(lo_server_thread s,
+                                                  void *user_data);
 
 #ifdef __cplusplus
 }

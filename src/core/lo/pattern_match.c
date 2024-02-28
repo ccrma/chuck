@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2014 Steve Harris et al. (see AUTHORS)
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation; either version 2.1 of the
+ *  License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  $Id$
+ */
+
+/* This code was originally forked from: */
+
 /* Open SoundControl kit in C++                                              */
 /* Copyright (C) 2002-2004 libOSC++ contributors. See AUTHORS                */
 /*                                                                           */
@@ -71,7 +89,7 @@
  * Initial revision
  */
 
-#include "lo.h"
+#include <string.h>
 
 #ifndef NEGATE
 #define NEGATE  '!'
@@ -96,153 +114,170 @@ int lo_pattern_match(const char *str, const char *p)
 
         switch (c = *p++) {
 
-            case '*':
-                while (*p == '*' && *p != '/')
-                    p++;
+        case '*':
+            while (*p == '*' && *p != '/')
+                p++;
 
-                if (!*p)
-                    return true;
+            if (!*p)
+                return true;
 
 //                if (*p != '?' && *p != '[' && *p != '\\')
-                if (*p != '?' && *p != '[' && *p != '{')
-                    while (*str && *p != *str)
-                        str++;
+            if (*p != '?' && *p != '[' && *p != '{')
+                while (*str && *p != *str)
+                    str++;
 
-                while (*str) {
+            while (*str) {
+                if (lo_pattern_match(str, p))
+                    return true;
+                str++;
+            }
+            return false;
+
+        case '?':
+            if (*str)
+                break;
+            return false;
+            /*
+             * set specification is inclusive, that is [a-z] is a, z and
+             * everything in between. this means [z-a] may be interpreted
+             * as a set that contains z, a and nothing in between.
+             */
+        case '[':
+            if (*p != NEGATE)
+                negate = false;
+            else {
+                negate = true;
+                p++;
+            }
+
+            match = false;
+
+            while (!match && (c = *p++)) {
+                if (!*p)
+                    return false;
+                if (*p == '-') {        /* c-c */
+                    if (!*++p)
+                        return false;
+                    if (*p != ']') {
+                        if (*str == c || *str == *p ||
+                            (*str > c && *str < *p))
+                            match = true;
+                    } else {    /* c-] */
+                        // spec 1.0: "no special meaning" so it should match '-'
+                        if (*str == '-')
+                            match = true;
+                        break;
+                    }
+                } else {        /* cc or c] */
+                    if (c == *str)
+                        match = true;
+                    if (*p != ']') {
+                        if (*p == *str)
+                            match = true;
+                    } else
+                        break;
+                }
+            }
+
+            if (negate == match)
+                return false;
+            /*
+             * if there is a match, skip past the cset and continue on
+             */
+            while (*p && *p != ']')
+                p++;
+            if (!*p++)          /* oops! */
+                return false;
+            break;
+
+            /*
+             * {astring,bstring,cstring}
+             */
+        case '{':
+            {
+                // *p is now first character in the {brace list}
+                const char *place = str;        // to backtrack
+                const char *remainder = p;      // to forwardtrack
+
+                // find the end of the brace list
+                while (*remainder && *remainder != '}')
+                    remainder++;
+                if (!*remainder++)      /* oops! */
+                    return false;
+
+                c = *p++;
+
+                while (c) {
+                    if (c == ',') {
+                        if (lo_pattern_match(str, remainder)) {
+                            return true;
+                        } else {
+                            // backtrack on test string
+                            str = place;
+                            // continue testing,
+                        }
+                    } else if (c == '}') {
+                        // continue normal pattern matching
+                        if (!*p && !*str)
+                            return true;
+                        str--;  // str is incremented again below
+                        break;
+                    } else if (c == *str) {
+                        str++;
+                        if (!*str && *remainder)
+                            return false;
+                    } else {    // skip to next comma
+                        str = place;
+                        while (*p != ',' && *p != '}' && *p)
+                            p++;
+                        if (*p == ',')
+                            p++;
+                        else if (*p == '}') {
+                            return false;
+                        }
+                    }
+                    c = *p++;
+                }
+            }
+
+            break;
+
+            /* Not part of OSC pattern matching
+               case '\\':
+               if (*p)
+               c = *p++;
+             */
+
+        case '/':
+            if (*p == '/') {
+                // spec 1.1 '//' xpath-insired pattern, find first
+                // matching subpath
+                while (*p && *str) {
                     if (lo_pattern_match(str, p))
                         return true;
-                    str++;
-                }
-                return false;
-
-            case '?':
-                if (*str)
-                    break;
-                return false;
-                /*
-                 * set specification is inclusive, that is [a-z] is a, z and
-                 * everything in between. this means [z-a] may be interpreted
-                 * as a set that contains z, a and nothing in between.
-                 */
-            case '[':
-                if (*p != NEGATE)
-                    negate = false;
-                else {
-                    negate = true;
-                    p++;
-                }
-
-                match = false;
-
-                while (!match && (c = *p++)) {
-                    if (!*p)
-                        return false;
-                    if (*p == '-') {    /* c-c */
-                        if (!*++p)
+                    else {
+                        while (*++str && *str != '/')
+                            ;
+                        if (!*str)
                             return false;
-                        if (*p != ']') {
-                            if (*str == c || *str == *p ||
-                                    (*str > c && *str < *p))
-                                match = true;
-                        }
-                        else {      /* c-] */
-                            if (*str >= c)
-                                match = true;
-                            break;
-                        }
-                    }
-                    else {          /* cc or c] */
-                        if (c == *str)
-                            match = true;
-                        if (*p != ']') {
-                            if (*p == *str)
-                                match = true;
-                        }
-                        else
-                            break;
                     }
                 }
+            }
 
-                if (negate == match)
-                    return false;
-                /*
-                 * if there is a match, skip past the cset and continue on
-                 */
-                while (*p && *p != ']')
-                    p++;
-                if (!*p++)  /* oops! */
-                    return false;
-                break;
-
-                /*
-                 * {astring,bstring,cstring}
-                 */
-            case '{':
-                {
-                    // *p is now first character in the {brace list}
-                    const char *place = str;    // to backtrack
-                    const char *remainder = p;  // to forwardtrack
-
-                    // find the end of the brace list
-                    while (*remainder && *remainder != '}')
-                        remainder++;
-                    if (!*remainder++)  /* oops! */
-                        return false;
-
-                    c = *p++;
-
-                    while (c) {
-                        if (c == ',') {
-                            if(lo_pattern_match(str, remainder)) {
-                                return true;
-                            } else {
-                                // backtrack on test string
-                                str = place;
-                                // continue testing,
-                                // skip comma
-                                if (!*p++)  // oops
-                                    return false;
-                            }
-                        }
-                        else if (c == '}') {
-                            // continue normal pattern matching
-                            if (!*p && !*str) return true;
-                            str--; // str is incremented again below
-                            break;
-                        } else if (c == *str) {
-                            str++;
-                            if (!*str && *remainder) 
-                                return false;
-                        } else { // skip to next comma
-                            str = place;
-                            while (*p != ',' && *p != '}' && *p)
-                                p++;
-                            if (*p == ',')
-                                p++;
-                            else if (*p == '}') {
-                                return false;
-                            }
-                        }
-                        c = *p++;
-                    }
-                }
-
-                break;
-
-                /* Not part of OSC pattern matching
-                   case '\\':
-                   if (*p)
-                   c = *p++;
-                   */
-
-            default:
-                if (c != *str)
-                    return false;
-                break;
+        default:
+            if (c != *str)
+                return false;
+            break;
 
         }
         str++;
     }
 
     return !*str;
+}
+
+int lo_string_contains_pattern(const char *str)
+{
+    if (!str) return 0;
+    return strpbrk(str, " #*,?[]{}") != NULL;
 }

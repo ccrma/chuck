@@ -22,6 +22,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 /* #undef HAVE_LIBM */
 
+/* 1.5.2.2 (ge) define 1 to enable threads */
+#define ENABLE_THREADS 1
+
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 #define HAVE_LIBPTHREAD 1
 
@@ -120,6 +123,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* 1.5.2.2 (ge) define 1 to enable threads */
+#define ENABLE_THREADS 1
 
 /* Define to 1 if you have the `pthread' library (-lpthread). */
 /* #undef HAVE_LIBPTHREAD */
