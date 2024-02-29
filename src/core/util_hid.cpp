@@ -6376,8 +6376,8 @@ Linux general HID support
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <dirent.h>
-#include <linux/unistd.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/poll.h>
@@ -7033,7 +7033,7 @@ static void Keyboard_init_translation_table()
     kb_translation_table[KEY_F24] |= 0x73 << 8;
 }
 
-static void Keyboard_translate_key( __u16 evdev_key, long & ascii, long & usb )
+static void Keyboard_translate_key( uint16_t evdev_key, long & ascii, long & usb )
 {
     unsigned short tr = kb_translation_table[evdev_key];
 
@@ -7412,10 +7412,12 @@ void Mouse_configure( const char * filename )
     if( S_ISCHR( statbuf.st_mode ) == 0 )
         return; /* not a character device... */
 
+#ifndef __FreeBSD__
     devmajor = ( statbuf.st_rdev & 0xFF00 ) >> 8;
     devminor = ( statbuf.st_rdev & 0x00FF );
     if ( ( devmajor != 13 ) || ( devminor < 64 ) || ( devminor > 96 ) )
         return; /* not an evdev. */
+#endif
 
     if( ( fd = open( filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
         return;
@@ -7619,10 +7621,12 @@ int Keyboard_configure( const char * filename )
     if( S_ISCHR( statbuf.st_mode ) == 0 )
         return HID_KB_CONFIG_INVALID; /* not a character device... */
 
+#ifndef __FreeBSD__
     devmajor = ( statbuf.st_rdev & 0xFF00 ) >> 8;
     devminor = ( statbuf.st_rdev & 0x00FF );
     if ( ( devmajor != 13 ) || ( devminor < 64 ) || ( devminor > 96 ) )
         return HID_KB_CONFIG_INVALID; /* not an evdev. */
+#endif
 
     if( ( fd = open( filename, O_RDONLY | O_NONBLOCK ) ) < 0 )
         return HID_KB_CONFIG_ERROR_CANTOPEN;

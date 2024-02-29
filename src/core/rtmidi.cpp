@@ -794,7 +794,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
 // chuck
 // 1.5.0.7 (ge) since this does not include chuck_def.h, directly check platform macros
 // previously: #if defined(__LINUX_ALSASEQ__) || defined(__PLATFORM_LINUX__)
-#if defined(__linux__) // NOTE: requires ALSA for MIDI on Linux
+#if defined(__linux__) || defined(__FreeBSD__) // NOTE: requires ALSA for MIDI on Linux
 
 // The ALSA Sequencer API is based on the use of a callback function for
 // MIDI input.
@@ -1440,7 +1440,7 @@ void RtMidiOut :: sendMessage( std::vector<unsigned char> *message )
   snd_seq_drain_output(data->seq);
 }
 
-#endif // defined(__linux__)
+#endif // defined(__linux__) || defined(__FreeBSD__)
 
 
 //*********************************************************************//

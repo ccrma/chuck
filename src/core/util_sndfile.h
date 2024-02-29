@@ -176,7 +176,7 @@
 // #define HAVE_ALSA_ASOUNDLIB_H
 // #endif
 
-#if defined(__linux__) // Linux
+#if defined(__linux__) || defined(__FreeBSD__) // Linux and FreeBSD
 #define CPU_CLIPS_POSITIVE 0
 #define CPU_IS_BIG_ENDIAN 0
 #define CPU_IS_LITTLE_ENDIAN 1

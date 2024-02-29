@@ -1,5 +1,5 @@
 
-#if defined(__APPLE__) || defined(__linux__)
+#if defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__)
 // 1.5.0.7 (ge) since this is in the lo/ sub-directory,
 // and does not include chuck_def.h, directly check platform macros
 // #if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__)
@@ -199,4 +199,4 @@
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
 
-#endif // defined(__APPLE__) || defined(__linux__)
+#endif // defined(__APPLE__) || defined(__linux__) || defined(__FreeBSD__)
