@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004 Steve Harris
+ *  Copyright (C) 2014 Steve Harris et al. (see AUTHORS)
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -49,9 +49,14 @@ extern "C" {
  *
  * The lo_address object may be used as the target of OSC messages.
  *
- * Note: if you wish to receive replies from the target of this address, you
- * must first create a lo_server_thread or lo_server object which will receive
- * the replies. The last lo_server(_thread) object creted will be the receiver.
+ * Note: if you wish to receive replies from the target of this
+ * address, you must either supply a lo_server by using lo_send_from()
+ * or lo_send_message_from() to send your message, otherwise the last
+ * lo_server or lo_server_thread that was created will be used as the
+ * reply socket.  The remote receiver may get the reply address by
+ * calling lo_message_get_source() in the message handler.  See
+ * example_tcp_echo_server.c for an example of how to establish
+ * bidirectional communication.
  */
 lo_address lo_address_new(const char *host, const char *port);
 
@@ -65,9 +70,10 @@ lo_address lo_address_new(const char *host, const char *port);
  *
  * The lo_address object may be used as the target of OSC messages.
  *
- * Note: if you wish to receive replies from the target of this address, you
- * must first create a lo_server_thread or lo_server object which will receive
- * the replies. The last lo_server(_thread) object creted will be the receiver.
+ * Note: if you wish to receive replies from the target of this
+ * address, you must first create a lo_server_thread or lo_server
+ * object which will receive the replies. The last lo_server(_thread)
+ * object created will be the receiver.
  */
 lo_address lo_address_new_with_proto(int proto, const char *host, const char *port);
 
@@ -80,27 +86,27 @@ lo_address lo_address_new_from_url(const char *url);
 
 /**
  * \brief Free the memory used by the lo_address object
- */
+ */ 
 void lo_address_free(lo_address t);
 
 /**
  * \brief Set the Time-to-Live value for a given target address.
- *
+ * 
  * This is required for sending multicast UDP messages.  A value of 1
  * (the usual case) keeps the message within the subnet, while 255
  * means a global, unrestricted scope.
- *
+ * 
  * \param t An OSC address.
  * \param ttl An integer specifying the scope of a multicast UDP message.
- */
+ */ 
 void lo_address_set_ttl(lo_address t, int ttl);
 
 /**
  * \brief Get the Time-to-Live value for a given target address.
- *
+ * 
  * \param t An OSC address.
  * \return An integer specifying the scope of a multicast UDP message.
- */
+ */ 
 int lo_address_get_ttl(lo_address t);
 
 /**
@@ -123,12 +129,19 @@ int lo_address_get_ttl(lo_address t);
 int lo_send(lo_address targ, const char *path, const char *type, ...);
 
 /**
- * \brief Send a OSC formatted message to the address specified,
- * from the same socket as the specificied server.
+ * \brief Send a OSC formatted message to the address specified, 
+ * from the same socket as the specified server.
+ *
+ * If a liblo server is receiving this message, it can reply by
+ * getting the server's address by calling lo_message_get_source() in
+ * the message handler, passing the \ref lo_message provided as an
+ * argument to the \ref lo_method_handler.  By this mechanism
+ * bidirectional communication can be established by setting up a \ref
+ * lo_server or \ref lo_server_thread on both sides.
  *
  * \param targ The target OSC address
  * \param from The server to send message from   (can be NULL to use new socket)
- * \param ts   The OSC timetag timestamp at which the message will be processed
+ * \param ts   The OSC timetag timestamp at which the message will be processed 
  * (can be LO_TT_IMMEDIATE if you don't want to attach a timetag)
  * \param path The OSC path the message will be delivered to
  * \param type The types of the data items in the message, types are defined in
@@ -143,10 +156,13 @@ int lo_send(lo_address targ, const char *path, const char *type, ...);
  * lo_send_from(t, serv, LO_TT_IMMEDIATE, "/foo/bar", "ff", 0.1f, 23.0f);
  * \endcode
  *
+ * See \ref example_tcp_echo_server.c for an example of how to use
+ * lo_message_get_source() as described.
+ *
  * \return on success, the number of bytes sent, or -1 on failure.
  */
-int lo_send_from(lo_address targ, lo_server from, lo_timetag ts,
-                 const char *path, const char *type, ...);
+int lo_send_from(lo_address targ, lo_server from, lo_timetag ts, 
+	       		const char *path, const char *type, ...);
 
 /**
  * \brief Send a OSC formatted message to the address specified, scheduled to
@@ -170,7 +186,7 @@ int lo_send_from(lo_address targ, lo_server from, lo_timetag ts,
  * \return on success, the number of bytes sent, or -1 on failure.
  */
 int lo_send_timestamped(lo_address targ, lo_timetag ts, const char *path,
-                        const char *type, ...);
+	       		const char *type, ...);
 
 /**
  * \brief Return the error number from the last failed lo_send() or
@@ -183,137 +199,6 @@ int lo_address_errno(lo_address a);
  * lo_address_new() call
  */
 const char *lo_address_errstr(lo_address a);
-
-/**
- * \brief Create a new server thread to handle incoming OSC
- * messages.
- *
- * Server threads take care of the message reception and dispatch by
- * transparently creating a system thread to handle incoming messages.
- * Use this if you do not want to handle the threading yourself.
- *
- * \param port If NULL is passed then an unused port will be chosen by the
- * system, its number may be retrieved with lo_server_thread_get_port()
- * so it can be passed to clients. Otherwise a decimal port number, service
- * name or UNIX domain socket path may be passed.
- * \param err_h A function that will be called in the event of an error being
- * raised. The function prototype is defined in lo_types.h
- */
-lo_server_thread lo_server_thread_new(const char *port, lo_err_handler err_h);
-
-/**
- * \brief Create a new server thread to handle incoming OSC
- * messages, and join a UDP multicast group.
- *
- * Server threads take care of the message reception and dispatch by
- * transparently creating a system thread to handle incoming messages.
- * Use this if you do not want to handle the threading yourself.
- *
- * \param group The multicast group to join.  See documentation on IP
- * multicast for the acceptable address range; e.g., http://tldp.org/HOWTO/Multicast-HOWTO-2.html
- * \param port If NULL is passed then an unused port will be chosen by the
- * system, its number may be retrieved with lo_server_thread_get_port()
- * so it can be passed to clients. Otherwise a decimal port number, service
- * name or UNIX domain socket path may be passed.
- * \param err_h A function that will be called in the event of an error being
- * raised. The function prototype is defined in lo_types.h
- */
-lo_server_thread lo_server_thread_new_multicast(const char *group, const char *port,
-                                                lo_err_handler err_h);
-
-/**
- * \brief Create a new server thread to handle incoming OSC
- * messages, specifying protocol.
- *
- * Server threads take care of the message reception and dispatch by
- * transparently creating a system thread to handle incoming messages.
- * Use this if you do not want to handle the threading yourself.
- *
- * \param port If NULL is passed then an unused port will be chosen by the
- * system, its number may be retrieved with lo_server_thread_get_port()
- * so it can be passed to clients. Otherwise a decimal port number, service
- * name or UNIX domain socket path may be passed.
- * \param proto The protocol to use, should be one of LO_UDP, LO_TCP or LO_UNIX.
- * \param err_h A function that will be called in the event of an error being
- * raised. The function prototype is defined in lo_types.h
- */
-lo_server_thread lo_server_thread_new_with_proto(const char *port, int proto,
-                                                 lo_err_handler err_h);
-
-/**
- * \brief Free memory taken by a server thread
- *
- * Frees the memory, and, if currently running will stop the associated thread.
- */
-void lo_server_thread_free(lo_server_thread st);
-
-/**
- * \brief Add an OSC method to the specifed server thread.
- *
- * \param st The server thread the method is to be added to.
- * \param path The OSC path to register the method to. If NULL is passed the
- * method will match all paths.
- * \param typespec The typespec the method accepts. Incoming messages with
- * similar typespecs (e.g. ones with numerical types in the same position) will
- * be coerced to the typespec given here.
- * \param h The method handler callback function that will be called it a
- * matching message is received
- * \param user_data A value that will be passed to the callback function, h,
- * when its invoked matching from this method.
- */
-lo_method lo_server_thread_add_method(lo_server_thread st, const char *path,
-                                      const char *typespec, lo_method_handler h,
-                                      void *user_data);
-/**
- * \brief Delete an OSC method from the specifed server thread.
- *
- * \param st The server thread the method is to be removed from.
- * \param path The OSC path of the method to delete. If NULL is passed the
- * method will match the generic handler.
- * \param typespec The typespec the method accepts.
- */
-void lo_server_thread_del_method(lo_server_thread st, const char *path,
-                                 const char *typespec);
-
-/**
- * \brief Start the server thread
- *
- * \param st the server thread to start.
- * \return Less than 0 on failure, 0 on success.
- */
-int lo_server_thread_start(lo_server_thread st);
-
-/**
- * \brief Stop the server thread
- *
- * \param st the server thread to start.
- * \return Less than 0 on failure, 0 on success.
- */
-int lo_server_thread_stop(lo_server_thread st);
-
-/**
- * \brief Return the port number that the server thread has bound to.
- */
-int lo_server_thread_get_port(lo_server_thread st);
-
-/**
- * \brief Return a URL describing the address of the server thread.
- *
- * Return value must be free()'d to reclaim memory.
- */
-char *lo_server_thread_get_url(lo_server_thread st);
-
-/**
- * \brief Return the lo_server for a lo_server_thread
- *
- * This function is useful for passing a thread's lo_server
- * to lo_send_from().
- */
-lo_server lo_server_thread_get_server(lo_server_thread st);
-
-/** \brief Return true if there are scheduled events (eg. from bundles) waiting
- * to be dispatched by the thread */
-int lo_server_thread_events_pending(lo_server_thread st);
 
 /**
  * \brief Create a new OSC blob type.
@@ -339,8 +224,41 @@ uint32_t lo_blob_datasize(lo_blob b);
 /**
  * \brief Return a pointer to the start of the blob data to allow contents to
  * be changed.
+ *
+ * If the size is 0, this will return a NULL-pointer.
  */
 void *lo_blob_dataptr(lo_blob b);
+
+/**
+ * \brief Get information on the version of liblo current in use.
+ *
+ * All parameters are optional and can be given the value of 0 if that
+ * information is not desired.  For example, to get just the version
+ * as a string, call lo_version(str, size, 0, 0, 0, 0, 0, 0, 0);
+ *
+ * The "lt" fields, called the ABI version, corresponds to libtool's
+ * versioning system for binary interface compatibility, and is not
+ * related to the library version number.  This information is usually
+ * encoded in the filename of the shared library.
+ *
+ * Typically the string returned in 'verstr' should correspond with
+ * $major.$minor$extra, e.g., "0.28rc".  If no 'extra' information is
+ * present, e.g., "0.28", extra will given the null string.
+ *
+ * \param verstr       A buffer to receive a string describing the
+ *                     library version.
+ * \param verstr_size  Size of the buffer pointed to by string.
+ * \param major        Location to receive the library major version.
+ * \param minor        Location to receive the library minor version.
+ * \param extra        Location to receive the library version extra string.
+ * \param extra_size   Size of the buffer pointed to by extra.
+ * \param lt_major     Location to receive the ABI major version.
+ * \param lt_minor     Location to receive the ABI minor version.
+ * \param lt_bug       Location to receive the ABI 'bugfix' version.
+ */
+void lo_version(char *verstr, int verstr_size,
+                int *major, int *minor, char *extra, int extra_size,
+                int *lt_major, int *lt_minor, int *lt_bug);
 
 /** @} */
 

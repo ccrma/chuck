@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2004 Steve Harris
+ *  Copyright (C) 2014 Steve Harris et al. (see AUTHORS)
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as
@@ -24,16 +24,16 @@ lo_blob lo_blob_new(int32_t size, const void *data)
 {
     lo_blob b;
 
-    if (size < 1) {
-	return NULL;
+    if (size < 0) {
+        return NULL;
     }
 
-    b = malloc(sizeof(size) + size);
+    b = (lo_blob) malloc(sizeof(size) + size);
 
     b->size = size;
 
-    if (data) {
-	memcpy((char*)b + sizeof(uint32_t), data, size);
+    if (size && data) {
+        memcpy((char*) b + sizeof(uint32_t), data, size);
     }
 
     return b;
@@ -51,14 +51,16 @@ uint32_t lo_blob_datasize(lo_blob b)
 
 void *lo_blob_dataptr(lo_blob b)
 {
-    return (char*)b + sizeof(uint32_t);
+    return b->size
+        ? (char*) b + sizeof(uint32_t)
+        : NULL;
 }
 
 uint32_t lo_blobsize(lo_blob b)
 {
     const uint32_t len = sizeof(uint32_t) + b->size;
 
-    return 4 * (len / 4 + 1);
+    return 4 * ((len + 3) / 4);
 }
 
 /* vi:set ts=8 sts=4 sw=4: */
