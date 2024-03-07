@@ -4,8 +4,14 @@ ChucK VERSIONS log
 
 1.5.2.2
 =======
-- (fixed) all Osc( freq, phase ) constructors; previously the phase was not set correctly
+- (added) Open Sound Control (OSC) address wildcard support
+    (developer note) internally updated OSC implmentation to liblo v0.32
+- (added) OSC wildcard examples
+    examples/osc/wildcards/r-wildcards.ck
+    examples/osc/wildcards/s-multi.ck
 - (fixed) error reporting for =^ =v --> --< operators
+- (fixed) all oscillators Osc( freq, phase ) constructors; previously the phase
+    was not set correctly
 
 
 1.5.2.1 (December 2023) ChuGL (alpha) => standard distribution
