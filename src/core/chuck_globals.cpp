@@ -2196,6 +2196,9 @@ t_CKBOOL Chuck_Globals_Manager::init_global_array( const std::string & name, Chu
 //-----------------------------------------------------------------------------
 Chuck_Object * Chuck_Globals_Manager::get_global_array( const std::string & name )
 {
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return NULL;
+
     return m_global_arrays[name]->array;
 }
 
@@ -2210,6 +2213,11 @@ t_CKINT Chuck_Globals_Manager::get_global_int_array_value( const std::string & n
                                                            t_CKUINT index )
 {
     t_CKUINT result = 0;
+
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return result;
+
+    // get the array from corresponding container
     Chuck_Object * array = m_global_arrays[name]->array;
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalInt )
@@ -2232,6 +2240,11 @@ t_CKINT Chuck_Globals_Manager::get_global_associative_int_array_value(
     const std::string & name, const std::string & key )
 {
     t_CKUINT result = 0;
+
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return result;
+
+    // get the array from corresponding container
     Chuck_Object * array = m_global_arrays[name]->array;
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalInt )
@@ -2254,6 +2267,11 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_float_array_value( const std::string
                                                                t_CKUINT index )
 {
     t_CKFLOAT result = 0;
+
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return result;
+
+    // get the array from corresponding container
     Chuck_Object * array = m_global_arrays[name]->array;
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalFloat )
@@ -2275,6 +2293,11 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value(
     const std::string & name, const std::string & key )
 {
     t_CKFLOAT result = 0;
+
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return result;
+
+    // get the array from corresponding container
     Chuck_Object * array = m_global_arrays[name]->array;
     if( array != NULL &&
        m_global_arrays[name]->array_type == te_globalFloat )
@@ -2294,6 +2317,9 @@ t_CKFLOAT Chuck_Globals_Manager::get_global_associative_float_array_value(
 //-----------------------------------------------------------------------------
 Chuck_Object * * Chuck_Globals_Manager::get_ptr_to_global_array( const std::string & name )
 {
+    // ensure has entry with name | 1.5.2.2 (ge, eito, nick, andrew)
+    if( m_global_arrays.count(name) == 0 ) return NULL;
+
     return &( m_global_arrays[name]->array );
 }
 
