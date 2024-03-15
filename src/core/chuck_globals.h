@@ -305,13 +305,20 @@ public:
     Chuck_UGen* get_global_ugen( const std::string & name );
     Chuck_UGen** get_ptr_to_global_ugen( const std::string & name );
 
+    // global array (internal; audio thread)
     t_CKBOOL init_global_array( const std::string & name, Chuck_Type* type, te_GlobalType arr_type );
+    // global array get (internal; audio thread)
     Chuck_Object* get_global_array( const std::string & name );
     Chuck_Object** get_ptr_to_global_array( const std::string & name );
     t_CKINT get_global_int_array_value( const std::string & name, t_CKUINT index );
     t_CKINT get_global_associative_int_array_value( const std::string & name, const std::string & key );
     t_CKFLOAT get_global_float_array_value( const std::string & name, t_CKUINT index );
     t_CKFLOAT get_global_associative_float_array_value( const std::string & name, const std::string & key );
+    // global array set (internal; audio thread)
+    t_CKBOOL set_global_int_array( const std::string & name, t_CKINT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL set_global_int_array_value( const std::string & name, t_CKUINT index, t_CKINT value );
+    t_CKBOOL set_global_float_array( const std::string & name, t_CKFLOAT arrayValues[], t_CKUINT numValues );
+    t_CKBOOL set_global_float_array_value( const std::string & name, t_CKUINT index, t_CKFLOAT value );
 
     t_CKBOOL init_global_object( const std::string & name, Chuck_Type* type );
     t_CKBOOL is_global_object_init( const std::string & name );
