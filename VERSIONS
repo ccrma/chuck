@@ -12,6 +12,11 @@ ChucK VERSIONS log
 - (fixed) error reporting for =^ =v --> --< operators
 - (fixed) all oscillators Osc( freq, phase ) constructors; previously the phase
     was not set correctly
+- (fixed) crash in cleaning up certain global objects (specifically those
+    with default constructors), including OscIn, and ChuGL classes
+    GGen, Geometry, FileTexture
+- (developer) added internal/audio-thread-callable setters for global 
+    int / float arrays
 
 
 1.5.2.1 (December 2023) ChuGL (alpha) => standard distribution

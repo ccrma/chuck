@@ -4077,10 +4077,15 @@ void call_all_parent_pre_constructors( Chuck_VM * vm, Chuck_VM_Shred * shred,
     {
         call_all_parent_pre_constructors( vm, shred, type->parent, stack_offset );
     }
-    // now, call my ctor
+    // next, call my pre-ctor
     if( type->has_pre_ctor )
     {
         call_pre_constructor( vm, shred, type->info->pre_ctor, stack_offset );
+    }
+    // next, call my default ctor | 1.5.2.2 (ge)
+    if( type->ctor_default && type->ctor_default->code )
+    {
+        call_pre_constructor( vm, shred, type->ctor_default->code, stack_offset );
     }
 }
 
