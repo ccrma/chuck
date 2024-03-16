@@ -10056,8 +10056,8 @@ void apropos_func( std::ostringstream & sout, Chuck_Func * theFunc,
     sout << ");" << endl;
     // output doc
     if( theFunc->doc != "" )
-        sout << PREFIX << "    " << capitalize_and_periodize(theFunc->doc) << endl;
-    else if( !theFunc->def() || !theFunc->def()->arg_list ) // default ctor?
+        sout << PREFIX << "    " << capitalize_and_periodize( theFunc->doc ) << endl;
+    else if( theFunc->is_ctor && (!theFunc->def() || !theFunc->def()->arg_list) ) // default ctor?
         sout << PREFIX << "    " << capitalize_and_periodize( "Default constructor for " + theFunc->base_name ) << endl;
 }
 

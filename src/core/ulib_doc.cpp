@@ -627,7 +627,7 @@ public:
 
         if( m_func->doc.size() > 0 )
             m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize( m_func->doc ) + "</p>\n";
-        else if( !m_func->def() || !m_func->def()->arg_list ) // default ctor?
+        else if( m_func->is_ctor && (!m_func->def() || !m_func->def()->arg_list) ) // default ctor?
             m_outputStr += "<p class=\"member_description\">" + capitalize_and_periodize( "Default constructor for " + m_func->base_name ) + "</p>\n";
         else
             m_outputStr += "<p class=\"empty_member_description\">No description available</p>\n";
