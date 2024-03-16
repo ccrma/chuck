@@ -9,6 +9,21 @@ ChucK VERSIONS log
 - (added) OSC wildcard examples
     examples/osc/wildcards/r-wildcards.ck
     examples/osc/wildcards/s-multi.ck
+- (modified) semantics for connecting (=>) arrays of UGens;
+    1) LHS[X] => RHS: each elements in LHS => to RHS
+    // Gain A[3] => Gain B;
+    2) LHS[X] => RHS[X]: one to one mapping
+    // Gain C[3] => Gain D[3];
+    3) LHS[X] => RHS[Y]: one to one mapping up to min(X,Y), after
+       which elements in the smaller array will modulo to the beginning
+       and connect to remaining elements in larger array
+    // Gain E[2] => Gain F[3];
+    4) LHS => RHS[X]: LHS => to each element in RHS
+    // Gain G => Gain H[3];
+- (added) connecting (=^) arrays of Unit Analyzers (UAnae)
+- (added) examples/array/array_ugen.ck
+- (added) Math.min( int, int ) and Math.max( int, int )
+    NOTE: these overload the existing (float,float) min/max functions
 - (fixed) error reporting for =^ =v --> --< operators
 - (fixed) all oscillators Osc( freq, phase ) constructors; previously the phase
     was not set correctly

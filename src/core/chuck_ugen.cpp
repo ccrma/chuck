@@ -844,8 +844,27 @@ t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
 {
-    if( m_src_list != NULL && fa_lookup( m_src_list, m_num_src, src ) )
-        return TRUE;
+    // check for NULL
+    if( !src ) return FALSE;
+
+    // if we have src list
+    if( m_src_list != NULL )
+    {
+        // check if src in src list
+        if( fa_lookup( m_src_list, m_num_src, src ) )
+            return TRUE;
+
+        // if src is multichannel
+        if( src->m_multi_chan )
+        {
+            for( t_CKUINT i = 0; i < src->m_multi_chan_size; i++ )
+            {
+                // check if src multi-chan in src list
+                if( fa_lookup( m_src_list, m_num_src, src->m_multi_chan[i] ) )
+                    return TRUE;
+            }
+        }
+    }
 
     // multichannel
     if( m_multi_chan != NULL )
@@ -855,6 +874,19 @@ t_CKBOOL Chuck_UGen::is_connected_from( Chuck_UGen * src )
             if( fa_lookup( m_multi_chan[i]->m_src_list,
                            m_multi_chan[i]->m_num_src, src ) )
                 return TRUE;
+
+            // if src is multichannel
+            if( src->m_multi_chan )
+            {
+                for( t_CKUINT j = 0; j < src->m_multi_chan_size; j++ )
+                {
+                    // check if src multi-chan in src list
+                    if( fa_lookup( m_multi_chan[i]->m_src_list,
+                                   m_multi_chan[i]->m_num_src,
+                                   src->m_multi_chan[j] ) )
+                        return TRUE;
+                }
+            }
         }
     }
 
@@ -1604,11 +1636,23 @@ t_CKBOOL Chuck_UAna::system_tock( t_CKTIME now )
 //-----------------------------------------------------------------------------
 t_CKINT ugen_generic_num_in( Chuck_Object * obj, t_CKBOOL isArray )
 {
-    if(isArray)
-        return ((Chuck_ArrayInt *) obj)->size();
-    else
-        return ((Chuck_UGen *) obj)->m_num_ins;
+    if( isArray ) return ((Chuck_ArrayInt *)obj)->size();
+    else return ((Chuck_UGen *)obj)->m_num_ins;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ugen_generic_num_out()
+// dsec: get number of output channels for ugen or ugen array | 1.5.2.2 (ge)
+//-----------------------------------------------------------------------------
+t_CKINT ugen_generic_num_out( Chuck_Object * obj, t_CKBOOL isArray )
+{
+    if( isArray ) return ((Chuck_ArrayInt *)obj)->size();
+    else return ((Chuck_UGen *)obj)->m_num_outs;
+}
+
 
 
 
@@ -1616,13 +1660,13 @@ t_CKINT ugen_generic_num_in( Chuck_Object * obj, t_CKBOOL isArray )
 // name: ugen_generic_get_src()
 // dsec: get source channel given a ugen or ugen array
 //-----------------------------------------------------------------------------
-Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
+Chuck_UGen * ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
 {
     if( isArray )
     {
         Chuck_ArrayInt *arr = (Chuck_ArrayInt *) obj;
         Chuck_UGen *src = NULL;
-        arr->get( chan%arr->size(), (t_CKUINT *) &src );
+        arr->get( chan%arr->size(), (t_CKUINT *)(&src) );
         return src;
     }
     else
@@ -1637,13 +1681,13 @@ Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isA
 // name: ugen_generic_get_dst()
 // dsec: get destination channel given a ugen or array object
 //-----------------------------------------------------------------------------
-Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
+Chuck_UGen * ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
 {
     if( isArray )
     {
         Chuck_ArrayInt *arr = (Chuck_ArrayInt *) obj;
         Chuck_UGen *dst = NULL;
-        ( (Chuck_ArrayInt *) obj )->get( chan%arr->size(), (t_CKUINT *) &dst );
+        ((Chuck_ArrayInt *)obj)->get( chan%arr->size(), (t_CKUINT *)(&dst) );
         return dst;
     }
     else
@@ -1654,3 +1698,69 @@ Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isA
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: ugen_generic_num_in_nochan()
+// dsec: get number of input channels for ugen or ugen array
+//-----------------------------------------------------------------------------
+t_CKINT ugen_generic_num_in_nochan( Chuck_Object * obj, t_CKBOOL isArray )
+{
+    if( isArray ) return ((Chuck_ArrayInt *)obj)->size();
+    else return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ugen_generic_num_out_nochan()
+// dsec: get number of output channels for ugen or ugen array | 1.5.2.2 (ge)
+//-----------------------------------------------------------------------------
+t_CKINT ugen_generic_num_out_nochan( Chuck_Object * obj, t_CKBOOL isArray )
+{
+    if( isArray ) return ((Chuck_ArrayInt *)obj)->size();
+    else return 1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ugen_generic_get_src_nochan()
+// dsec: get source channel given a ugen or ugen array
+//-----------------------------------------------------------------------------
+Chuck_UGen * ugen_generic_get_src_nochan( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
+{
+    if( isArray )
+    {
+        Chuck_ArrayInt *arr = (Chuck_ArrayInt *) obj;
+        Chuck_UGen *src = NULL;
+        arr->get( chan%arr->size(), (t_CKUINT *)(&src) );
+        return src;
+    }
+    else
+    {
+        return ((Chuck_UGen *)obj);
+    }
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: ugen_generic_get_dst_nochan()
+// dsec: get destination channel given a ugen or array object
+//-----------------------------------------------------------------------------
+Chuck_UGen * ugen_generic_get_dst_nochan( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray )
+{
+    if( isArray )
+    {
+        Chuck_ArrayInt *arr = (Chuck_ArrayInt *) obj;
+        Chuck_UGen *dst = NULL;
+        ((Chuck_ArrayInt *)obj)->get( chan%arr->size(), (t_CKUINT *)(&dst) );
+        return dst;
+    }
+    else
+    {
+        return ((Chuck_UGen *)obj);
+    }
+}

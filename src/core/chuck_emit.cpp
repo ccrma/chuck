@@ -3193,7 +3193,7 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     // ugen => ugen
     if( isa( left, emit->env->ckt_ugen ) && isa( right, emit->env->ckt_ugen ) )
     {
-        // link, flag as NOT unchuck
+        // link, flag as NOT upchuck
         emit->append( instr = new Chuck_Instr_UGen_Link( FALSE ) );
         instr->set_linepos( lhs->line );
         // done
@@ -3204,8 +3204,8 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
     if( ( isa( left, emit->env->ckt_ugen ) || ( isa( left, emit->env->ckt_array ) && isa( left->array_type, emit->env->ckt_ugen ) ) ) &&
         ( isa( right, emit->env->ckt_ugen ) || ( isa( right, emit->env->ckt_array ) && isa( right->array_type, emit->env->ckt_ugen ) ) ) )
     {
-        // link, flag as NOT unchuck
-        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->ckt_array ), isa( right, emit->env->ckt_array ) ) );
+        // link, flag as NOT upchuck
+        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->ckt_array ), isa( right, emit->env->ckt_array ), FALSE ) );
         instr->set_linepos( lhs->line );
         // done
         return TRUE;
@@ -3347,6 +3347,17 @@ t_CKBOOL emit_engine_emit_op_upchuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs
         Chuck_Instr * instr = NULL;
         emit->append( instr = new Chuck_Instr_UGen_Link( TRUE ) );
         instr->set_linepos( lhs->line );
+    }
+    // uana[] =^ uana[] (or permutation)
+    else if( ( isa( left, emit->env->ckt_uana ) || ( isa( left, emit->env->ckt_array ) && isa( left->array_type, emit->env->ckt_uana ) ) ) &&
+        ( isa( right, emit->env->ckt_uana ) || ( isa( right, emit->env->ckt_array ) && isa( right->array_type, emit->env->ckt_uana ) ) ) )
+    {
+        // link, flag as upchuck
+        Chuck_Instr * instr = NULL;
+        emit->append( instr = new Chuck_Instr_UGen_Array_Link( isa( left, emit->env->ckt_array ), isa( right, emit->env->ckt_array ), TRUE ) );
+        instr->set_linepos( lhs->line );
+        // done
+        return TRUE;
     }
     else
     {

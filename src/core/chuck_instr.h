@@ -4072,14 +4072,14 @@ protected:
 struct Chuck_Instr_UGen_Array_Link : public Chuck_Instr
 {
 public:
-    Chuck_Instr_UGen_Array_Link( t_CKBOOL srcIsArray, t_CKBOOL dstIsArray ) :
-    m_srcIsArray(srcIsArray), m_dstIsArray(dstIsArray)
+    Chuck_Instr_UGen_Array_Link( t_CKBOOL srcIsArray, t_CKBOOL dstIsArray, t_CKBOOL isUpChuck = FALSE ) :
+    m_srcIsArray(srcIsArray), m_dstIsArray(dstIsArray), m_isUpChuck(isUpChuck)
     { }
 
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
 
 protected:
-    t_CKBOOL m_srcIsArray, m_dstIsArray;
+    t_CKBOOL m_srcIsArray, m_dstIsArray, m_isUpChuck;
 };
 
 

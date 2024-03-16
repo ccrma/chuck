@@ -224,18 +224,30 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->doc_func( QUERY, "Compute the value r such that r=x-n*y, where n is the integer nearest the exact value of x / y. If there are two integers closest to x / y, n shall be the even one. If r is zero, it is given the same sign as x." );
 
+    // min | 1.5.2.2 (ge) added -- NOTE: for now put before float version; overloading needs to implement best match
+    QUERY->add_sfun( QUERY, min_int_impl, "int", "min" );
+    QUERY->add_arg( QUERY, "int", "x" );
+    QUERY->add_arg( QUERY, "int", "y" );
+    QUERY->doc_func( QUERY, "Return the lesser of x and y (int)." );
+
     // min
     QUERY->add_sfun( QUERY, min_impl, "float", "min" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
-    QUERY->doc_func( QUERY, "Return the lesser of x and y." );
+    QUERY->doc_func( QUERY, "Return the lesser of x and y (float)." );
+
+    // max | 1.5.2.2 (ge) added -- NOTE: for now put before float version; overloading needs to implement best match
+    QUERY->add_sfun( QUERY, max_int_impl, "int", "max" );
+    QUERY->add_arg( QUERY, "int", "x" );
+    QUERY->add_arg( QUERY, "int", "y" );
+    QUERY->doc_func( QUERY, "Return the greater of x and y (integer)." );
 
     // max
     //! see \example powerup.ck
     QUERY->add_sfun( QUERY, max_impl, "float", "max" );
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->add_arg( QUERY, "float", "y" );
-    QUERY->doc_func( QUERY, "Return the greater of x and y." );
+    QUERY->doc_func( QUERY, "Return the greater of x and y (float)." );
 
     // isinf
     QUERY->add_sfun( QUERY, isinf_impl, "int", "isinf" );
@@ -700,6 +712,22 @@ CK_DLL_SFUN( max_impl )
     t_CKFLOAT x = GET_CK_FLOAT(ARGS);
     t_CKFLOAT y = *((t_CKFLOAT *)ARGS + 1);
     RETURN->v_float = x > y ? x : y;
+}
+
+// min
+CK_DLL_SFUN( min_int_impl )
+{
+    t_CKINT x = GET_NEXT_INT(ARGS);
+    t_CKINT y = GET_NEXT_INT(ARGS);
+    RETURN->v_int = x < y ? x : y;
+}
+
+// max
+CK_DLL_SFUN( max_int_impl )
+{
+    t_CKINT x = GET_NEXT_INT(ARGS);
+    t_CKINT y = GET_NEXT_INT(ARGS);
+    RETURN->v_int= x > y ? x : y;
 }
 
 // isinf

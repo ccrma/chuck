@@ -190,8 +190,8 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
 
     // add isConnectedTo
     func = make_new_mfun( "int", "isConnectedTo", ugen_connected );
-    func->add_arg( "UGen", "right" );
-    func->doc = "return true if this UGen's output is connected to the input of the argument; return false otherwise.";
+    func->add_arg( "UGen", "rhs" );
+    func->doc = "return true if this UGen's output is connected to the input of rhs; if either this UGen or rhs has more than one channel, this function returns true if any connections exist between the channels; return false if there are no connections.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add buffered

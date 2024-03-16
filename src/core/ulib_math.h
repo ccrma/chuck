@@ -66,6 +66,8 @@ CK_DLL_SFUN( fmod_impl );
 CK_DLL_SFUN( remainder_impl );
 CK_DLL_SFUN( min_impl );
 CK_DLL_SFUN( max_impl );
+CK_DLL_SFUN( min_int_impl );
+CK_DLL_SFUN( max_int_impl );
 CK_DLL_SFUN( isinf_impl );
 CK_DLL_SFUN( isnan_impl );
 CK_DLL_SFUN( equal_impl );
