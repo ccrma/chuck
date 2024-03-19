@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.2.2
+1.5.2.2 (March 2024)
 =======
 - (added) Open Sound Control (OSC) address wildcard support
     (developer note) internally updated OSC implmentation to liblo v0.32
