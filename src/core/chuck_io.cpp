@@ -6809,7 +6809,7 @@ t_CKBOOL init_class_serialio( Chuck_Env * env )
     if( !type_engine_import_add_ex( env, "serial/byte.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/bytes.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/ints-bin.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "serial/ints.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "serial/ints-ascii.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/lines.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/list.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "serial/write-bytes.ck" ) ) goto error;

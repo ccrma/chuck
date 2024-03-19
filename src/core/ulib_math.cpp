@@ -78,10 +78,10 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
 
     // add examples | 1.5.0.4 (ge) added
     QUERY->add_ex( QUERY, "basic/blit2.ck" );
-    QUERY->add_ex( QUERY, "basic/mand-o-matic.ck" );
+    QUERY->add_ex( QUERY, "stk/mand-o-matic.ck" );
     QUERY->add_ex( QUERY, "math/randomize.ck" );
     QUERY->add_ex( QUERY, "math/maybe.ck" );
-    QUERY->add_ex( QUERY, "math/ind-dist.ck" );
+    QUERY->add_ex( QUERY, "math/int-dist.ck" );
     QUERY->add_ex( QUERY, "math/map.ck" );
 
     // add abs

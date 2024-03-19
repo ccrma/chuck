@@ -5086,8 +5086,8 @@ Modified algorithm code by Gary Scavone, 2005.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples | 1.5.0.0
-    type_engine_import_add_ex( env, "examples/midi/midiplay-play.ck" );
-    type_engine_import_add_ex( env, "examples/midi/bwv772.mid" );
+    type_engine_import_add_ex( env, "midi/midiplay-play.ck" );
+    type_engine_import_add_ex( env, "midi/bwv772.mid" );
 
     // end the class import
     type_engine_import_class_end( env );
