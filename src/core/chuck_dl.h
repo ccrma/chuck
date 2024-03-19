@@ -58,10 +58,11 @@
 #include <map>
 
 
-// major and minor must be the same between chuck:chugin
-// major version: significant semantic and/or API update
+// major API version: significant semantic and/or API update
+// major API version must be the same between chuck:chugin
 #define CK_DLL_VERSION_MAJOR (10)
-// minor version: revisions
+// minor API version: revisions
+// minor API version of chuck must >= API version of chugin
 #define CK_DLL_VERSION_MINOR (1)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
