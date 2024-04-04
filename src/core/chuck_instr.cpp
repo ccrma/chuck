@@ -8352,33 +8352,34 @@ void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     // go for it
     // 1.5.2.2 (ge) semantic update: default num_out and num_in to 1,
     // only update if actually an array; let ugen->add() sort out channels
-    num_out = ugen_generic_num_out_nochan( src_obj, m_srcIsArray );
-    num_in = ugen_generic_num_in_nochan( dst_obj, m_dstIsArray );
+    // 1.5.2.3 (pr-lab, ge, nick, eito, terry) un-break case of array => non-mono ugen
+    num_out = ugen_generic_num_out( src_obj, m_srcIsArray );
+    num_in = ugen_generic_num_in( dst_obj, m_dstIsArray );
 
     // check for different combos, similar to ugen->add() | 1.5.2.2 (ge)
     if( num_out == 1 && num_in == 1 )
     {
-        Chuck_UGen * dst_ugen = ugen_generic_get_dst_nochan( dst_obj, 0, m_dstIsArray );
-        Chuck_UGen * src_ugen = ugen_generic_get_src_nochan( src_obj, 0, m_srcIsArray );
+        Chuck_UGen * dst_ugen = ugen_generic_get_dst( dst_obj, 0, m_dstIsArray );
+        Chuck_UGen * src_ugen = ugen_generic_get_src( src_obj, 0, m_srcIsArray );
         if( dst_ugen == NULL || src_ugen == NULL ) goto null_pointer;
         dst_ugen->add( src_ugen, m_isUpChuck );
     }
     else if( num_out == 1 && num_in > 1 )
     {
-        Chuck_UGen * src_ugen = ugen_generic_get_src_nochan( src_obj, 0, m_srcIsArray );
+        Chuck_UGen * src_ugen = ugen_generic_get_src( src_obj, 0, m_srcIsArray );
         for( t_CKINT i = 0; i < num_in; i++ )
         {
-            Chuck_UGen * dst_ugen = ugen_generic_get_dst_nochan( dst_obj, i, m_dstIsArray );
+            Chuck_UGen * dst_ugen = ugen_generic_get_dst( dst_obj, i, m_dstIsArray );
             if( dst_ugen == NULL || src_ugen == NULL ) goto null_pointer;
             dst_ugen->add( src_ugen, m_isUpChuck );
         }
     }
     else if( num_out > 1 && num_in == 1 )
     {
-        Chuck_UGen * dst_ugen = ugen_generic_get_dst_nochan( dst_obj, 0, m_dstIsArray );
+        Chuck_UGen * dst_ugen = ugen_generic_get_dst( dst_obj, 0, m_dstIsArray );
         for( t_CKINT i = 0; i < num_out; i++ )
         {
-            Chuck_UGen * src_ugen = ugen_generic_get_src_nochan( src_obj, i, m_srcIsArray );
+            Chuck_UGen * src_ugen = ugen_generic_get_src( src_obj, i, m_srcIsArray );
             if( dst_ugen == NULL || src_ugen == NULL ) goto null_pointer;
             dst_ugen->add( src_ugen, m_isUpChuck );
         }
@@ -8390,8 +8391,8 @@ void Chuck_Instr_UGen_Array_Link::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
         // map one to one, up to greater (lesser should modulo)
         for( t_CKINT i = 0; i < greater; i++ )
         {
-            Chuck_UGen * src_ugen = ugen_generic_get_src_nochan( src_obj, i, m_srcIsArray );
-            Chuck_UGen * dst_ugen = ugen_generic_get_dst_nochan( dst_obj, i, m_dstIsArray );
+            Chuck_UGen * src_ugen = ugen_generic_get_src( src_obj, i, m_srcIsArray );
+            Chuck_UGen * dst_ugen = ugen_generic_get_dst( dst_obj, i, m_dstIsArray );
             if( dst_ugen == NULL || src_ugen == NULL ) goto null_pointer;
             dst_ugen->add( src_ugen, m_isUpChuck );
         }

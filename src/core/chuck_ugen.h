@@ -193,16 +193,12 @@ public: // data
 
 
 // helper functions for abstracting input/output between arrays and multichan
-//t_CKINT ugen_generic_num_out( Chuck_Object * obj, t_CKBOOL isArray );
-//t_CKINT ugen_generic_num_in( Chuck_Object * obj, t_CKBOOL isArray );
-//Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
-//Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
+t_CKINT ugen_generic_num_out( Chuck_Object * obj, t_CKBOOL isArray );
+t_CKINT ugen_generic_num_in( Chuck_Object * obj, t_CKBOOL isArray );
+Chuck_UGen *ugen_generic_get_src( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
+Chuck_UGen *ugen_generic_get_dst( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
 
-// helper functions for abstracting input/output between arrays and ugen (no channel distinction)
-t_CKINT ugen_generic_num_out_nochan( Chuck_Object * obj, t_CKBOOL isArray );
-t_CKINT ugen_generic_num_in_nochan( Chuck_Object * obj, t_CKBOOL isArray );
-Chuck_UGen *ugen_generic_get_src_nochan( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
-Chuck_UGen *ugen_generic_get_dst_nochan( Chuck_Object * obj, t_CKINT chan, t_CKBOOL isArray );
+
 
 
 #endif

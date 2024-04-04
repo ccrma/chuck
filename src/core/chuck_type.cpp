@@ -2654,7 +2654,7 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
             {
                 // error
                 EM_error2( lhs->where,
-                           "array ugen type '%s' has more than one output channel - can only => one-dimensional array of mono ugens",
+                           "array ugen type '%s' has more than one output channel; can only => one-dimensional array of mono ugens",
                            left_ugen_type->c_name() );
                 return NULL;
             }

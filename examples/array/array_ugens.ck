@@ -22,3 +22,15 @@ for( int i; i < greater; i++ )
 // 4) LHS => RHS[X]: LHS => to each element in RHS
 Gain G => Gain H[3];
 for( UGen h : H ) <<< "4) connected:", G.isConnectedTo(h) >>>;
+
+// array of mono ugens => stereo ugen
+Gain I[2] => Pan2 J;
+// should be 1 0 0 1
+<<< "5) connected:", I[0].isConnectedTo(J.left), I[0].isConnectedTo(J.right),
+    I[1].isConnectedTo(J.left), I[1].isConnectedTo(J.right) >>>;
+
+// stereo ugen => array of mono ugens
+Pan2 K => Gain L[2];
+// should be 1 0 0 1
+<<< "6) connected:", K.left.isConnectedTo(L[0]), K.right.isConnectedTo(L[0]),
+    K.left.isConnectedTo(L[1]), K.right.isConnectedTo(L[1]) >>>;

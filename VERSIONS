@@ -2,6 +2,13 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.3 (April 2024)
+=======
+- (fixed) regression issue with connecting arrays of mono UGens to non-mono ugens;
+  e.g., `Gain a[2] => dac;`
+  FYI examples/stereo/ugen-array.ck now works once again
+
+
 1.5.2.2 (March 2024)
 =======
 - (added) Open Sound Control (OSC) address wildcard support
