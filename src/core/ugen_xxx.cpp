@@ -1455,9 +1455,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (stereo edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa2", "LiSa", env->global(),
-                                       LiSaMulti_ctor, LiSaMulti_dtor,
-                                       NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
+                                        NULL, LiSaMulti_tickf,
+                                        LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
         return FALSE;
 
     // add examples
@@ -1471,9 +1471,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (quad edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa4", "LiSa", env->global(),
-                                       LiSaMulti_ctor, LiSaMulti_dtor,
-                                       NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 4, doc.c_str() ) )
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
+                                        NULL, LiSaMulti_tickf,
+                                        LiSaMulti_pmsg, 1, 4, doc.c_str() ) )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1482,9 +1482,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (6-channel edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa6", "LiSa", env->global(),
-                                       LiSaMulti_ctor, LiSaMulti_dtor,
-                                       NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 6, doc.c_str() ) )
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
+                                        NULL, LiSaMulti_tickf,
+                                        LiSaMulti_pmsg, 1, 6, doc.c_str() ) )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1493,9 +1493,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (8-channel edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa8", "LiSa", env->global(),
-                                       LiSaMulti_ctor, LiSaMulti_dtor,
-                                       NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 8, doc.c_str() ) )
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
+                                        NULL, LiSaMulti_tickf,
+                                        LiSaMulti_pmsg, 1, 8, doc.c_str() ) )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1505,9 +1505,9 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (10-channel edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa10", "LiSa", env->global(),
-                                       LiSaMulti_ctor, LiSaMulti_dtor,
-                                       NULL, LiSaMulti_tickf,
-                                       LiSaMulti_pmsg, 1, 10, doc.c_str() ) )
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
+                                        NULL, LiSaMulti_tickf,
+                                        LiSaMulti_pmsg, 1, 10, doc.c_str() ) )
         return FALSE;
     // end the class import
     type_engine_import_class_end( env );
@@ -1516,7 +1516,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     doc = "a (li)ve (sa)mpling unit generator (16-channel edition); also popularly used for granular synthesis.";
     // multichannel
     if( !type_engine_import_ugen_begin( env, "LiSa16", "LiSa", env->global(),
-                                        LiSaMulti_ctor, LiSaMulti_dtor,
+                                        NULL, NULL, // 1.5.2.4 (ge) null ctor dtor; these duplicate parent ctor and dtor
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, LiSa_MAXCHANNELS, doc.c_str() ) )
         return FALSE;
