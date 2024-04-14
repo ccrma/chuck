@@ -2,6 +2,16 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.4 (April 2024)
+=======
+- (fixed) runtime exception line number reporting
+- (fixed) 3rd-time array ugen link modulo connection between different # of channels
+- (fixed) LiSaX crashing on duplicate constructor and destructors (thanks @eswartz)
+- (fixed) LiSaX memory leak on creation due to duplicate constructor
+- (reinstated) the UGen `bunghole` (a tribute to cultural icon Beavis); equivalent to
+    blackhole in functionality
+
+
 1.5.2.3 (April 2024)
 =======
 - (fixed) regression issue with connecting arrays of mono UGens to 
