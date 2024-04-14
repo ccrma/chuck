@@ -12,3 +12,4 @@
 4) connected: 1 
 5) connected: 1 0 0 1 
 6) connected: 1 0 0 1 
+7) connected: 1 1 1 0 1 1 1 

@@ -34,3 +34,15 @@ Pan2 K => Gain L[2];
 // should be 1 0 0 1
 <<< "6) connected:", K.left.isConnectedTo(L[0]), K.right.isConnectedTo(L[0]),
     K.left.isConnectedTo(L[1]), K.right.isConnectedTo(L[1]) >>>;
+
+// DOUBLE OVERTIME; 1.5.2.4 fix
+3 => int NUM_CHANNELS;
+Noise M[NUM_CHANNELS] => ADSR N[NUM_CHANNELS] => Pan2 P;
+<<< "7) connected:",
+M[0].isConnectedTo(N[0]),
+M[1].isConnectedTo(N[1]),
+M[2].isConnectedTo(N[2]),
+M[0].isConnectedTo(N[1]), // 0
+N[0].isConnectedTo(P.left),
+N[1].isConnectedTo(P.right),
+N[2].isConnectedTo(P.left) >>>; // modulo

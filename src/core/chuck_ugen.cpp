@@ -443,7 +443,6 @@ void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
 
 
 
-
 //-----------------------------------------------------------------------------
 // name: src_chan()
 // desc: added 1.3.3.1
@@ -451,8 +450,9 @@ void Chuck_UGen::get_buffer( SAMPLE * buffer, t_CKINT num_elem )
 //-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::src_chan( t_CKUINT chan )
 {
-    if( this->m_num_outs == 1 )
-        return this;
+    if( this->m_num_outs == 1 ) return this;
+    // multi-channel | modulo by num_ins
+    // NOTE the size of m_multi_chan array is the greater of num_outs and num_ins
     return m_multi_chan[chan%m_num_outs];
 }
 
@@ -466,11 +466,10 @@ Chuck_UGen * Chuck_UGen::src_chan( t_CKUINT chan )
 //-----------------------------------------------------------------------------
 Chuck_UGen * Chuck_UGen::dst_for_src_chan( t_CKUINT chan )
 {
-    if( this->m_num_ins == 1 )
-        return this;
-    if( chan < this->m_num_ins )
-        return m_multi_chan[chan];
-    return NULL;
+    if( this->m_num_ins == 1 ) return this;
+    // multi-channel | 1.5.2.4 (ge) modulo by num_ins
+    // NOTE the size of m_multi_chan array is the greater of num_outs and num_ins
+    return m_multi_chan[chan%m_num_ins];
 }
 
 
