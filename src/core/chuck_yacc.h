@@ -133,28 +133,29 @@
      LEFT_S_CHUCK = 349,
      UNCHUCK = 350,
      UPCHUCK = 351,
-     CLASS = 352,
-     INTERFACE = 353,
-     EXTENDS = 354,
-     IMPLEMENTS = 355,
-     PUBLIC = 356,
-     PROTECTED = 357,
-     PRIVATE = 358,
-     STATIC = 359,
-     ABSTRACT = 360,
-     CONST = 361,
-     SPORK = 362,
-     ARROW_RIGHT = 363,
-     ARROW_LEFT = 364,
-     L_HACK = 365,
-     R_HACK = 366,
-     GRUCK_RIGHT = 367,
-     GRUCK_LEFT = 368,
-     UNGRUCK_RIGHT = 369,
-     UNGRUCK_LEFT = 370,
-     AT_OP = 371,
-     AT_CTOR = 372,
-     AT_DTOR = 373
+     DOWNCHUCK = 352,
+     CLASS = 353,
+     INTERFACE = 354,
+     EXTENDS = 355,
+     IMPLEMENTS = 356,
+     PUBLIC = 357,
+     PROTECTED = 358,
+     PRIVATE = 359,
+     STATIC = 360,
+     ABSTRACT = 361,
+     CONST = 362,
+     SPORK = 363,
+     ARROW_RIGHT = 364,
+     ARROW_LEFT = 365,
+     L_HACK = 366,
+     R_HACK = 367,
+     GRUCK_RIGHT = 368,
+     GRUCK_LEFT = 369,
+     UNGRUCK_RIGHT = 370,
+     UNGRUCK_LEFT = 371,
+     AT_OP = 372,
+     AT_CTOR = 373,
+     AT_DTOR = 374
    };
 #endif
 /* Tokens.  */
@@ -252,28 +253,29 @@
 #define LEFT_S_CHUCK 349
 #define UNCHUCK 350
 #define UPCHUCK 351
-#define CLASS 352
-#define INTERFACE 353
-#define EXTENDS 354
-#define IMPLEMENTS 355
-#define PUBLIC 356
-#define PROTECTED 357
-#define PRIVATE 358
-#define STATIC 359
-#define ABSTRACT 360
-#define CONST 361
-#define SPORK 362
-#define ARROW_RIGHT 363
-#define ARROW_LEFT 364
-#define L_HACK 365
-#define R_HACK 366
-#define GRUCK_RIGHT 367
-#define GRUCK_LEFT 368
-#define UNGRUCK_RIGHT 369
-#define UNGRUCK_LEFT 370
-#define AT_OP 371
-#define AT_CTOR 372
-#define AT_DTOR 373
+#define DOWNCHUCK 352
+#define CLASS 353
+#define INTERFACE 354
+#define EXTENDS 355
+#define IMPLEMENTS 356
+#define PUBLIC 357
+#define PROTECTED 358
+#define PRIVATE 359
+#define STATIC 360
+#define ABSTRACT 361
+#define CONST 362
+#define SPORK 363
+#define ARROW_RIGHT 364
+#define ARROW_LEFT 365
+#define L_HACK 366
+#define R_HACK 367
+#define GRUCK_RIGHT 368
+#define GRUCK_LEFT 369
+#define UNGRUCK_RIGHT 370
+#define UNGRUCK_LEFT 371
+#define AT_OP 372
+#define AT_CTOR 373
+#define AT_DTOR 374
 
 
 
@@ -307,7 +309,7 @@ typedef union YYSTYPE
     a_Vec vec_exp; // ge: added 1.3.5.3
 }
 /* Line 1529 of yacc.c.  */
-#line 311 "chuck.tab.h"
+#line 313 "chuck.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
