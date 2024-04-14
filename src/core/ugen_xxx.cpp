@@ -4757,7 +4757,7 @@ CK_DLL_DTOR( LiSaMulti_dtor )
     // get data
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     // clean up | 1.5.0.0 (ge) added
-    CK_SAFE_DELETE_ARRAY( d->outsamples );
+    if ( d ) CK_SAFE_DELETE_ARRAY( d->outsamples );
     // delete
     CK_SAFE_DELETE(d);
     // set
