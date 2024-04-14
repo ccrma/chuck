@@ -117,6 +117,8 @@ void yyinitial( void )
     EM_tokPos = yycolumn;
     yylloc.first_line   = yylloc.last_line   = 1;
     yylloc.first_column = yylloc.last_column = 0;
+    // 1.5.2.4 (ge) added
+    yylineno = 1;
 }
 
 // yywrap()

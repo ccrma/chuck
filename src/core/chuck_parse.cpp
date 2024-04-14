@@ -114,6 +114,8 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
     {
         // clean lexer
         yyrestart( NULL );
+        // set to initial condition | 1.5.2.4 (ge) added
+        yyinitial();
         // load string (yy_scan_string will copy the C string)
         yyCodeBuffer = yy_scan_string( codeLiteral.c_str() );
         // if could load
