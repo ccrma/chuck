@@ -154,11 +154,16 @@ public:
     void clearGroups();
     // clear output generator
     void clearOutput();
-    // add a group of types to document
+    // add a group of types to document (Type A)
     t_CKBOOL addGroup( const std::vector<Chuck_Type *> & types,
                        const std::string & name,
                        const std::string & shortName,
-                       const std::string & description );
+                        const std::string & description );
+    // add an external group of types to document (Type B) | 1.5.2.4 (ge) added
+    t_CKBOOL addGroupExt( const std::string & name,
+                          const std::string & URL,
+                          const std::string & description,
+                          const std::string & longDesc );
     // get number of groups
     t_CKINT numGroups() const;
     // set output format: CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON

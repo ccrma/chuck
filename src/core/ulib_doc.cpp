@@ -49,6 +49,7 @@ CK_DLL_CTOR( CKDoc_ctor );
 CK_DLL_DTOR( CKDoc_dtor );
 CK_DLL_MFUN( CKDoc_addGroup_str );
 CK_DLL_MFUN( CKDoc_addGroup_type );
+CK_DLL_MFUN( CKDoc_addGroup_ext );
 CK_DLL_MFUN( CKDoc_numGroups );
 CK_DLL_MFUN( CKDoc_clearGroup );
 CK_DLL_CTRL( CKDoc_examplesRoot_set );
@@ -128,6 +129,15 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     func->add_arg( "string", "shortName" );
     func->add_arg( "string", "description" );
     func->doc = "Add a group of types (by type name) to be documented, including group 'name', a 'shortName' to be used for any files, and a group 'description'.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // addGroupExternal | 1.5.2.4 (ge) added
+    func = make_new_mfun( "void", "addGroupExternal", CKDoc_addGroup_ext );
+    func->add_arg( "string", "name" );
+    func->add_arg( "string", "URL" );
+    func->add_arg( "string", "description" );
+    func->add_arg( "string", "longDesc" );
+    func->doc = "Add a group documention at an external URL location";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // numGroups
@@ -225,6 +235,8 @@ struct CKDocGroup
     string shortName;
     // description of the group
     string desc;
+    // long description (for groups that point to external CKDoc) | 1.5.2.4 (ge) added
+    string longDesc;
 };
 
 
@@ -737,22 +749,43 @@ string CKDocHTMLOutput::renderIndex( const string & title, const vector<CKDocGro
     for( t_CKINT i = 0; i < groups.size(); i++ )
     {
         CKDocGroup * group = groups[i];
+        // type A or B output | 1.5.2.4 (ge, azaday) added
+        // A == normal; B == group points to external CKDoc, e.g., ChuGL
+        t_CKBOOL typeA = group->types.size() != 0;
+
         sout << "<div class=\"index_group\">\n";
         sout << "<div class=\"index_group_title\">\n";
-        sout << "<h2><a href=\"" << group->shortName << ".html\">" << group->name << "</a></h2>\n";
+
+        // group name, either linking to generate page (Type A) to external page (Type B)
+        // 1.5.2.4 (ge, azaday) add type B support
+        if( typeA ) sout << "<h2><a href=\"" << group->shortName << ".html\">";
+        else sout << "<h2><a target=\"_blank\" href=\"" << group->shortName << "\">";
+        sout << group->name << "</a></h2>\n";
+
         sout << "<p class=\"index_group_desc\">" << group->desc << "</p>\n";
         sout << "</div>\n";
-        sout << "<div class=\"index_group_classes\">\n";
-        sout << "<p>\n";
 
-        for( t_CKINT j = 0; j < group->types.size(); j++ )
+        // type A == normal
+        if( typeA )
         {
-            Chuck_Type * type = group->types[j];
-            if( !type ) continue;
-            string cssClass = css_class_for_type( m_env_ref, type );
-            // TODO: check for array_depth
-            sout << "<a href=\"" << group->shortName << ".html#" << type->base_name << "\" class=\"" << cssClass << "\">" << type->base_name << "</a>\n";
+            sout << "<div class=\"index_group_classes\">\n";
+            sout << "<p>\n";
+            for( t_CKINT j = 0; j < group->types.size(); j++ )
+            {
+                Chuck_Type * type = group->types[j];
+                if( !type ) continue;
+                string cssClass = css_class_for_type( m_env_ref, type );
+                // TODO: check for array_depth
+                sout << "<a href=\"" << group->shortName << ".html#" << type->base_name << "\" class=\"" << cssClass << "\">" << type->base_name << "</a>\n";
+            }
         }
+        else // type B | 1.5.2.4 (ge, azaday) added
+        {
+            sout << "<div class=\"index_group_external\">\n";
+            sout << "<p>\n";
+            sout << group->longDesc << "\n";
+        }
+
         sout << "</p>\n";
         sout << "</div>\n";
         sout << "<div class=\"clear\"></div>\n";
@@ -898,6 +931,36 @@ t_CKBOOL CKDoc::addGroup( const vector<Chuck_Type *> & types, const string & nam
     return TRUE;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: addGroupExt() | 1.5.2.4 (ge) added
+// desc: add an external group to document
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::addGroupExt( const string & name, const string & URL,
+                             const string & desc, const string & longDesc )
+{
+    // allocate group
+    CKDocGroup * group = new CKDocGroup();
+    // check
+    if( !group )
+    {
+        EM_error3( "[CKDoc.addGroup()]: could not allocate new memory...bailing out" );
+        return FALSE;
+    }
+
+    // copy
+    group->name = trim(name);
+    group->shortName = trim(URL);
+    group->desc = trim(desc);
+    group->longDesc = trim(longDesc);
+
+    // add to groups
+    m_groups.push_back( group );
+
+    return TRUE;
+}
 
 
 
@@ -1431,8 +1494,13 @@ t_CKBOOL CKDoc::outputToDir( const string & outputDir, const string & indexTitle
     // for each group
     for( t_CKINT i = 0; i < m_groups.size(); i++ )
     {
-        if( !outputToFile( path + m_groups[i]->shortName + m_output->fileExtension(), groupOutput[i] ) )
-            goto error;
+        // check if Type A or Type B | 1.5.2.4 (ge) added check to distinguish group type
+        if( m_groups[i]->types.size() )
+        {
+            // not external, output new file
+            if( !outputToFile( path + m_groups[i]->shortName + m_output->fileExtension(), groupOutput[i] ) )
+                goto error;
+        }
     }
 
     // done
@@ -1597,6 +1665,30 @@ CK_DLL_MFUN( CKDoc_addGroup_str )
 error:
     RETURN->v_int = FALSE;
 }
+
+CK_DLL_MFUN( CKDoc_addGroup_ext ) // 1.5.2.4 (ge) added
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    Chuck_String * groupName = GET_NEXT_STRING(ARGS);
+    Chuck_String * URL = GET_NEXT_STRING(ARGS);
+    Chuck_String * desc = GET_NEXT_STRING(ARGS);
+    Chuck_String * longDesc = GET_NEXT_STRING(ARGS);
+
+    // add group
+    ckdoc->addGroupExt( groupName ? groupName->str() : "",
+                        URL ? URL->str() : "",
+                        desc ? desc->str() : "",
+                        longDesc ? longDesc->str() : "" );
+
+    // set return value
+    RETURN->v_int = TRUE;
+    // done
+    return;
+
+error:
+    RETURN->v_int = FALSE;
+}
+
 
 CK_DLL_MFUN( CKDoc_numGroups )
 {
@@ -1803,6 +1895,23 @@ a\n\
 .index_group_classes a\n\
 {\n\
     margin-right: 0.5em;\n\
+    line-height: 1.5em;\n\
+}\n\
+\n\
+.index_group_external\n\
+{\n\
+    padding-top: 0.15em;\n\
+    padding-left: 1em;\n\
+    padding-bottom: 0.15em;\n\
+\n\
+    margin: 0;\n\
+    margin-left: 20%;\n\
+    width: 75%;\n\
+}\n\
+\n\
+.index_group_external a\n\
+{\n\
+    margin-right: 0;\n\
     line-height: 1.5em;\n\
 }\n\
 \n\

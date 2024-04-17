@@ -85,18 +85,17 @@ doc.addGroup(
     "Advanced and specialty unit generators"
 );
 
-// add group
-doc.addGroup(
-    [ "ABSaturator", "AmbPan3", "Bitcrusher", "Elliptic", "ExpDelay", "ExpEnv", "FIR", 
-      "FoldbackSaturator", "GVerb", "KasFilter", "MagicSine", "Mesh2D", "Multicomb", 
-      "Pan4", "Pan8", "Pan16", "PitchTrack", "PowerADSR", "RegEx", "Sigmund",
-      "Spectacle", "WinFuncEnv", "WPDiodeLadder", "WPKorg35" ],
+
+// add group (external; i.e., API reference root elsewhere)
+doc.addGroupExternal(
     // group name
-    "Chugins Library",
-    // file name
-    "chugins",
-    // group descriptions
-    "Default chugins library offering unit generators and utilities."
+    "ChuGL",
+    // URL
+    "../../chugl/api/",
+    // group description
+    "Strongly-timed 2D/3D graphics programming using Graphics Generators (GGens)",
+    // long text description
+    "ChuGL (sounds like \"chuckle\"; rhymes with \"juggle\") is a unified audiovisual programming framework in the ChucK programming language. It expands ChucK's strongly-timed, concurrent programming model and real-time audio synthesis capabilities with a hardware-accelerated 3D graphics engine and API. (See also: <a target=\"_blank\" href=\"../../chugl/\">ChuGL homepage</a> | <a target=\"_blank\" href=\"../../chugl/api\">ChuGL API Reference</a>)"
 );
 
 // add group
@@ -146,6 +145,21 @@ doc.addGroup(
     "utils",
     // group description
     "Additional Utiilities"
+);
+
+
+// add group
+doc.addGroup(
+    [ "ABSaturator", "AmbPan3", "Bitcrusher", "Elliptic", "ExpDelay", "ExpEnv", "FIR", 
+      "FoldbackSaturator", "GVerb", "KasFilter", "MagicSine", "Mesh2D", "Multicomb", 
+      "Pan4", "Pan8", "Pan16", "PitchTrack", "PowerADSR", "RegEx", "Sigmund",
+      "Spectacle", "WinFuncEnv", "WPDiodeLadder", "WPKorg35" ],
+    // group name
+    "Chugins Library",
+    // file name
+    "chugins",
+    // group descriptions
+    "Base chugins library offering unit generators and utilities."
 );
 
 // generate
