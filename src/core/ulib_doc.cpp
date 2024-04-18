@@ -1684,11 +1684,7 @@ CK_DLL_MFUN( CKDoc_addGroup_ext ) // 1.5.2.4 (ge) added
     RETURN->v_int = TRUE;
     // done
     return;
-
-error:
-    RETURN->v_int = FALSE;
 }
-
 
 CK_DLL_MFUN( CKDoc_numGroups )
 {
