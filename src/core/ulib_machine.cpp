@@ -63,6 +63,7 @@ CK_DLL_SFUN( machine_silent_impl );
 CK_DLL_SFUN( machine_eval_impl );
 CK_DLL_SFUN( machine_eval2_impl );
 CK_DLL_SFUN( machine_eval3_impl );
+CK_DLL_SFUN( machine_import_impl );
 CK_DLL_SFUN( machine_version_impl );
 CK_DLL_SFUN( machine_setloglevel_impl );
 CK_DLL_SFUN( machine_getloglevel_impl );
@@ -225,6 +226,11 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "string", "code" );
     QUERY->add_arg( QUERY, "string", "args" );
     QUERY->add_arg( QUERY, "int", "count" );
+
+    // add import
+    QUERY->add_sfun( QUERY, machine_import_impl, "int", "import" );
+    QUERY->doc_func( QUERY, "import an external module, such as a chugin (.chug) or .ck library (.ck)." );
+    QUERY->add_arg( QUERY, "string", "filepath" );
 
     // add get intsize (width)
     //! get the intsize in bits (e.g., 32 or 64)
@@ -578,6 +584,35 @@ CK_DLL_SFUN( machine_eval3_impl )
     t_CKINT count = GET_NEXT_INT(ARGS);
 
     RETURN->v_int = machine_eval( code, argsTogether, count, SHRED );
+}
+
+CK_DLL_SFUN( machine_import_impl )
+{
+    // get arguments
+    Chuck_String * filepath = GET_NEXT_STRING(ARGS);
+
+    // vars
+    string p, n;
+
+    // check
+    if( filepath == NULL )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: Machine.import() given NULL file path; nothing imported...\n" );
+        goto error;
+    }
+
+    // get and process strings
+    p = trim(filepath->str());
+    n = extract_filepath_file(p);
+
+    // set in-language return value
+    RETURN->v_int = VM->carrier()->compiler->load_external_chugin( p, n );
+    // done
+    return;
+
+error:
+    // set false
+    RETURN->v_int = FALSE;
 }
 
 CK_DLL_SFUN( machine_version_impl )

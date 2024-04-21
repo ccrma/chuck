@@ -75,8 +75,8 @@ using namespace std;
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler );
 t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 const char * extension,
-                                std::list<std::string> & chugin_search_paths,
-                                std::list<std::string> & named_dls);
+                                list<string> & chugin_search_paths,
+                                list<string> & named_dls);
 t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env,
                       f_ck_query query, const char * name, const char * nspc );
 
@@ -186,7 +186,7 @@ void Chuck_Compiler::shutdown()
     m_recent.clear();
 
     // clean up DLLs
-    std::list<Chuck_DLL *>::iterator iter;
+    list<Chuck_DLL *>::iterator iter;
     for( iter = m_dlls.begin(); iter != m_dlls.end(); iter++ )
     {
         // delete each DLL
@@ -220,8 +220,8 @@ void Chuck_Compiler::shutdown()
 // name: bind()
 // desc: bind a new type system module, via query function
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const std::string & name,
-                               const std::string & nspc )
+t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const string & name,
+                               const string & nspc )
 {
     // log
     EM_log( CK_LOG_SYSTEM, "on-demand binding compiler module '%s'...",
@@ -366,7 +366,7 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
 //       with the name of an external UGen, and if so which one
 //-----------------------------------------------------------------------------
 void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
-    const std::string & replacement )
+    const string & replacement )
 {
     emitter->should_replace_dac = shouldReplaceDac;
     emitter->dac_replacement = replacement;
@@ -692,7 +692,7 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
 
 //-----------------------------------------------------------------------------
 // name: load_internal_modules()
-// desc: ...
+// desc: load internal base modules
 //-----------------------------------------------------------------------------
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler )
 {
@@ -806,7 +806,7 @@ t_CKBOOL getDirEntryAttribute( dirent * de, t_CKBOOL & isDirectory, t_CKBOOL & i
                   (de->data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) ||
                   (de->data.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE));
 #elif defined(__WINDOWS_PTHREAD__) // Cygwin -- doesn't have dirent d_type
-    std::string absolute_path = std::string(directory) + "/" + de->d_name;
+    string absolute_path = string(directory) + "/" + de->d_name;
     struct stat st;
     if( stat(absolute_path.c_str(), &st) == 0 )
     {
@@ -879,9 +879,11 @@ static string format_dir_name_for_display( const string & path )
 // name: scan_external_modules_in_directory()
 // desc: scan all external modules by extension within a directory
 //-----------------------------------------------------------------------------
-t_CKBOOL scan_external_modules_in_directory( const char * directory,
-    const char * extension, t_CKBOOL recursiveSearch,
-    vector<ChuginFileInfo> & chugins2load, vector<string> & dirs2search,
+t_CKBOOL scan_external_modules_in_directory( const string & directory,
+    const string & extension,
+    t_CKBOOL recursiveSearch,
+    vector<ChuginFileInfo> & chugins2load,
+    vector<string> & dirs2search,
     vector<string> & ckfiles2load )
 {
     // expand directory path
@@ -909,7 +911,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
             if( extension_matches( de->d_name, ".ck" ) )
             {
                 // construct absolute path
-                std::string absolute_path = path + "/" + de->d_name;
+                string absolute_path = path + "/" + de->d_name;
                 // append file path
                 ckfiles2load.push_back( absolute_path );
             }
@@ -917,7 +919,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
             else if( extension_matches( de->d_name, extension ) )
             {
                 // construct absolute path
-                std::string absolute_path = path + "/" + de->d_name;
+                string absolute_path = path + "/" + de->d_name;
                 // append module
                 chugins2load.push_back( ChuginFileInfo( de->d_name, absolute_path ) );
             }
@@ -931,7 +933,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
                 strncmp( de->d_name, "..", sizeof( ".." ) ) != 0 )
             {
                 // construct absolute path (use the non-expanded path for consistency when printing)
-                std::string absolute_path = string(directory) + "/" + de->d_name;
+                string absolute_path = string(directory) + "/" + de->d_name;
                 // queue search in sub-directory
                 dirs2search.push_back( absolute_path );
             }
@@ -945,7 +947,7 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
             // on the filesystem it shows up as a directory ending in .chug.
             // If we see one of these directories, we can dive directly to the Contents/MacOS subfolder
             // and look for a regular file. | 1.5.0.1 (dbraun) added
-            std::string absolute_path = path + "/" + de->d_name + "/Contents/MacOS";
+            string absolute_path = path + "/" + de->d_name + "/Contents/MacOS";
             // probe NAME.chug/Contents/MacOS/NAME
             string actualName = extension_removed( de->d_name, extension );
             // construct
@@ -971,31 +973,56 @@ t_CKBOOL scan_external_modules_in_directory( const char * directory,
 
 
 //-----------------------------------------------------------------------------
-// name: load_external_module_at_path()
-// desc: ...
+// name: load_external_module()
+// desc: load an external module by path and extension; .chug[.wasm] .ck
 //-----------------------------------------------------------------------------
-t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
-                                       const char * name,
-                                       const char * dl_path )
+t_CKBOOL Chuck_Compiler::load_external_module( const string & path, const string & name )
+{
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: logChuginLoad() | 1.5.2.5 (ge)
+// desc: local function quick-hand for logging a chugin load
+//-----------------------------------------------------------------------------
+static void logChuginLoad( const string & name, t_CKINT logLevel )
+{
+    // log with no newline; print `[chugin] X.chug`
+    EM_log_opts( logLevel, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name.c_str() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: load_external_chugin()
+// desc: load chugin module by path
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::load_external_chugin( const string & path, const string & name )
 {
     // get env
-    Chuck_Env * env = compiler->env();
+    Chuck_Env * env = this->env();
 
-    // log with no newline; print status next
-    // NOTE this is more informative if the chugin crashes, we can see the name
-    EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name );
+    // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
+    EM_log( CK_LOG_INFO, "loading [chugin] %s...", name.c_str() );
 
-    Chuck_DLL * dll = new Chuck_DLL( compiler->carrier(), name );
+    // create chuck DLL data structure
+    Chuck_DLL * dll = new Chuck_DLL( this->carrier(), name != "" ? name.c_str() : (extract_filepath_file(path)).c_str() );
     t_CKBOOL query_failed = FALSE;
 
     // load (but don't query yet; lazy mode == TRUE)
-    if( dll->load(dl_path, CK_QUERY_FUNC, TRUE) )
+    if( dll->load( path.c_str(), CK_QUERY_FUNC, TRUE) )
     {
         // probe it
         dll->probe();
         // if not compatible
         if( !dll->compatible() )
         {
+            // print `[chugin] X.chug`
+            logChuginLoad( name, CK_LOG_HERALD );
             // print
             EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(), dll->versionMajor(), dll->versionMinor() );
             // push
@@ -1011,6 +1038,8 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
         // try to add to type system
         if( query_failed || !type_engine_add_dll2( env, dll, "global" ) )
         {
+            // print `[chugin] X.chug`
+            logChuginLoad( name, CK_LOG_HERALD );
             // print
             EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(), dll->versionMajor(), dll->versionMinor() );
             EM_pushlog();
@@ -1020,7 +1049,7 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
                 // print reason
                 EM_log( CK_LOG_HERALD, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
             }
-            EM_log( CK_LOG_HERALD, "%s '%s'...", TC::blue("skipping",true).c_str(), dl_path );
+            EM_log( CK_LOG_HERALD, "%s '%s'...", TC::blue("skipping",true).c_str(), path.c_str() );
             EM_poplog();
             // go to error for cleanup
             goto error;
@@ -1028,7 +1057,9 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
     }
     else
     {
-        // print
+        // print `[chugin] X.chug`
+        logChuginLoad( name, CK_LOG_HERALD );
+        // print error status
         EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_PREFIX, "[%s]", TC::red("FAILED",true).c_str() );
         // more info
         EM_pushlog();
@@ -1038,12 +1069,14 @@ t_CKBOOL load_external_module_at_path( Chuck_Compiler * compiler,
         goto error;
     }
 
-    // print
+    // print `[chugin] X.chug`
+    logChuginLoad( name, CK_LOG_HERALD );
+    // print success status
     EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_PREFIX, "[%s]", TC::green("OK",true).c_str() );
     // add to compiler
-    compiler->m_dlls.push_back(dll);
+    m_dlls.push_back(dll);
     // commit operator overloads | 1.5.1.5
-    compiler->env()->op_registry.preserve();
+    env->op_registry.preserve();
     // return home successful
     return TRUE;
 
@@ -1051,7 +1084,7 @@ error:
     // clean up
     CK_SAFE_DELETE( dll );
     // rollback operator overloads | 1.5.1.5
-    compiler->env()->op_registry.reset2local();
+    env->op_registry.reset2local();
 
     return FALSE;
 }
@@ -1063,10 +1096,10 @@ error:
 // name: load_external_modules_in_directory()
 // desc: load all external modules by extension within a directory
 //-----------------------------------------------------------------------------
-t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
-                                             const char * directory,
-                                             const char * extension,
-                                             t_CKBOOL recursiveSearch )
+t_CKBOOL Chuck_Compiler::load_external_modules_in_directory(
+    const string & directory,
+    const string & extension,
+    t_CKBOOL recursiveSearch )
 {
     vector<ChuginFileInfo> chugins2load;
     vector<string> dirs2search;
@@ -1099,8 +1132,8 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL loaded = load_external_module_at_path( compiler, chugins2load[i].filename.c_str(),
-            chugins2load[i].path.c_str() );
+        t_CKBOOL loaded = this->load_external_chugin( 
+            chugins2load[i].path, chugins2load[i].filename );
         // if no error
         if( chugins2load[i].isBundle && loaded) {
             // log
@@ -1117,7 +1150,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     for( t_CKINT i = 0; i < ckfiles2load.size(); i++ )
     {
         // save for later
-        compiler->m_cklibs_to_preload.push_back( ckfiles2load[i] );
+        this->m_cklibs_to_preload.push_back( ckfiles2load[i] );
     }
 
     // pop log
@@ -1127,7 +1160,7 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
     for( t_CKINT i = 0; i < dirs2search.size(); i++ )
     {
         // search in dir
-        load_external_modules_in_directory( compiler, dirs2search[i].c_str(), extension, recursiveSearch );
+        load_external_modules_in_directory( dirs2search[i], extension, recursiveSearch );
     }
 
     return TRUE;
@@ -1140,9 +1173,9 @@ t_CKBOOL load_external_modules_in_directory( Chuck_Compiler * compiler,
 // name: load_external_modules()
 // desc: load external modules (e.g., .chug and .ck library files)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
-                                                std::list<std::string> & chugin_search_paths,
-                                                std::list<std::string> & named_dls,
+t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
+                                                list<string> & chugin_search_paths,
+                                                list<string> & named_dls,
                                                 t_CKBOOL recursiveSearch )
 {
     // get env
@@ -1155,24 +1188,24 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
     type_engine_load_context( env, context );
 
     // first load dynamic libraries explicitly named on the command line
-    for( std::list<std::string>::iterator i_dl = named_dls.begin();
+    for( list<string>::iterator i_dl = named_dls.begin();
          i_dl != named_dls.end(); i_dl++ )
     {
         // get chugin name
-        std::string & dl_path = *i_dl;
+        string & dl_path = *i_dl;
         // check extension, append if no match
-        if( !extension_matches(dl_path.c_str(), extension) )
+        if( !extension_matches(dl_path, extension) )
             dl_path += extension;
         // load the module
-        load_external_module_at_path( this, dl_path.c_str(), dl_path.c_str() );
+        load_external_chugin( dl_path );
     }
 
     // now recurse through search paths and load any DLs or .ck files found
-    for( std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
+    for( list<string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
         // search directory and load contents
-        load_external_modules_in_directory( this, (*i_sp).c_str(), extension, recursiveSearch );
+        load_external_modules_in_directory( *i_sp, extension, recursiveSearch );
     }
 
     // clear context
@@ -1189,32 +1222,37 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
 
 
 //-----------------------------------------------------------------------------
-// name: probe_external_module_at_path()
-// desc: probe external module
+// name: probe_external_chugin()
+// desc: probe external module by path
 //-----------------------------------------------------------------------------
-t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path )
+t_CKBOOL Chuck_Compiler::probe_external_chugin( const string & path, const string & theName )
 {
+    // name
+    string name = theName != "" ? theName : extract_filepath_file(path);
     // create dynamic module
-    Chuck_DLL * dll = new Chuck_DLL( NULL, name );
+    Chuck_DLL * dll = new Chuck_DLL( NULL, name.c_str() );
 
-    // log with no newline; print status next
-    // NOTE this is more informative if the chugin crashes, we can see the name
-    EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name );
+    // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
+    EM_log( CK_LOG_INFO, "probing [chugin] %s...", name.c_str() );
 
     // load the dll, lazy mode
-    if( dll->load(dl_path, CK_QUERY_FUNC, TRUE) )
+    if( dll->load(path.c_str(), CK_QUERY_FUNC, TRUE) )
     {
         // probe it
         dll->probe();
         // if not compatible
         if( dll->compatible() )
         {
+            // print `[chugin] X.chug`
+            logChuginLoad( name, CK_LOG_SYSTEM );
             // print
             EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::green("OK",true).c_str(),
                          dll->versionMajor(), dll->versionMinor() );
         }
         else
         {
+            // print `[chugin] X.chug`
+            logChuginLoad( name, CK_LOG_SYSTEM );
             // print
             EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s] (API version: %d.%d)", TC::red("FAILED",true).c_str(),
                          dll->versionMajor(), dll->versionMinor() );
@@ -1225,7 +1263,8 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
         }
 
         // print info if available
-        string name = dll->name();
+        string dllName = dll->name();
+        string dllPath = dll->filepath();
         string authors = dll->getinfo( CHUGIN_INFO_AUTHORS );
         string version = dll->getinfo( CHUGIN_INFO_CHUGIN_VERSION );
         string desc = dll->getinfo( CHUGIN_INFO_DESCRIPTION );
@@ -1246,6 +1285,8 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
     }
     else
     {
+        // print `[chugin] X.chug`
+        logChuginLoad( name, CK_LOG_SYSTEM );
         // print
         EM_log_opts( CK_LOG_SYSTEM, EM_LOG_NO_PREFIX, "[%s]...", TC::red("FAILED",true).c_str() );
         // more info
@@ -1260,21 +1301,23 @@ t_CKBOOL probe_external_module_at_path( const char * name, const char * dl_path 
 
 
 
+
 //-----------------------------------------------------------------------------
 // name: probe_external_modules_in_directory()
 // desc: probe all external modules by extension within a directory
 //-----------------------------------------------------------------------------
-t_CKBOOL probe_external_modules_in_directory( const char * directory,
-                                              const char * extension,
-                                              t_CKBOOL recursiveSearch,
-                                              std::list<std::string> & ck_libs )
+t_CKBOOL Chuck_Compiler::probe_external_modules_in_directory(
+    const string & directory,
+    const string & extension,
+    t_CKBOOL recursiveSearch,
+    list<string> & ck_libs )
 {
     vector<ChuginFileInfo> chugins2load;
     vector<string> dirs2search;
     vector<string> ckfiles2load;
 
     // print directory to examine
-    EM_log( CK_LOG_SYSTEM, "searching '%s'", format_dir_name_for_display( directory ).c_str() );
+    EM_log( CK_LOG_SYSTEM, "searching '%s'", format_dir_name_for_display(directory).c_str() );
     // push
     EM_pushlog();
 
@@ -1300,8 +1343,8 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL probed = probe_external_module_at_path(
-            chugins2load[i].filename.c_str(), chugins2load[i].path.c_str() );
+        t_CKBOOL probed = probe_external_chugin(
+            chugins2load[i].path, chugins2load[i].filename );
         // if no error
         if( chugins2load[i].isBundle && probed) {
             // log
@@ -1328,7 +1371,7 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
     for( t_CKINT i = 0; i < dirs2search.size(); i++ )
     {
         // search in dir
-        probe_external_modules_in_directory( dirs2search[i].c_str(), extension, recursiveSearch, ck_libs );
+        probe_external_modules_in_directory( dirs2search[i], extension, recursiveSearch, ck_libs );
     }
 
     return TRUE;
@@ -1341,11 +1384,11 @@ t_CKBOOL probe_external_modules_in_directory( const char * directory,
 // name: probe_external_modules()
 // desc: probe external modules (e.g., .chug and .ck library files)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
-                                                 std::list<std::string> & chugin_search_paths,
-                                                 std::list<std::string> & named_dls,
+t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
+                                                 list<string> & chugin_search_paths,
+                                                 list<string> & named_dls,
                                                  t_CKBOOL recursiveSearch,
-                                                 std::list<std::string> & ck_libs )
+                                                 list<string> & ck_libs )
 {
     // print
     EM_log( CK_LOG_SYSTEM, "probing specified chugins (e.g., via --chugin)..." );
@@ -1353,16 +1396,16 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
     EM_pushlog();
 
     // first load dynamic libraries explicitly named on the command line
-    for( std::list<std::string>::iterator i_dl = named_dls.begin();
+    for( list<string>::iterator i_dl = named_dls.begin();
          i_dl != named_dls.end(); i_dl++ )
     {
         // get chugin name
-        std::string & dl_path = *i_dl;
+        string & dl_path = *i_dl;
         // check extension, append if no match
-        if( !extension_matches(dl_path.c_str(), extension) )
+        if( !extension_matches(dl_path, extension) )
             dl_path += extension;
         // load the module
-        probe_external_module_at_path( dl_path.c_str(), dl_path.c_str() );
+        probe_external_chugin( dl_path, dl_path );
     }
 
     // check
@@ -1377,11 +1420,11 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
     EM_pushlog();
 
     // now recurse through search paths and load any DLs or .ck files found
-    for( std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
+    for( list<string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
         // search directory and load contents
-        probe_external_modules_in_directory( (*i_sp).c_str(), extension, recursiveSearch, ck_libs );
+        probe_external_modules_in_directory( (*i_sp).c_str(), extension.c_str(), recursiveSearch, ck_libs );
     }
 
     // pop

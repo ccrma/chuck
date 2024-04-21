@@ -137,18 +137,36 @@ public: // replace-dac | added 1.4.1.0 (jack)
     void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
 
 public:
-    // chugin load | 1.4.1.0 (ge) refactored
-    t_CKBOOL load_external_modules( const char * extension,
+    // .chug and .ck modules pre-load sequence | 1.4.1.0 (ge) refactored
+    t_CKBOOL load_external_modules( const std::string & extension,
                                     std::list<std::string> & chugin_search_paths,
                                     std::list<std::string> & named_dls,
                                     t_CKBOOL recursiveSearch );
+    // load external modules in named directory
+    t_CKBOOL load_external_modules_in_directory( const std::string & directory,
+                                                 const std::string & extension,
+                                                 t_CKBOOL recursiveSearch );
+    // load an external module by path and extension | 1.5.2.5 (ge) added
+    t_CKBOOL load_external_module( const std::string & path, const std::string & name = "" );
+    // load a chugin by path | 1.5.2.5 (ge) exposed API for more dynamic loading
+    t_CKBOOL load_external_chugin( const std::string & path, const std::string & name = "" );
+    // load a ck module by file path | 1.5.2.5 (ge) exposed API for more dynamic loading
+    t_CKBOOL load_external_cklib( const std::string & path, const std::string & name = "" );
 
+public:
     // chugin probe | 1.5.0.4 (ge) added
-    static t_CKBOOL probe_external_modules( const char * extension,
+    static t_CKBOOL probe_external_modules( const std::string & extension,
                                             std::list<std::string> & chugin_search_paths,
                                             std::list<std::string> & named_dls,
                                             t_CKBOOL recursiveSearch,
                                             std::list<std::string> & ck_libs );
+    // probe all external modules by extension within a directory
+    static t_CKBOOL probe_external_modules_in_directory( const std::string & directory,
+                                                         const std::string & extension,
+                                                         t_CKBOOL recursiveSearch,
+                                                         std::list<std::string> & ck_libs );
+    // probe external chugin by file path
+    static t_CKBOOL probe_external_chugin( const std::string & path, const std::string & name = "" );
 
 protected: // internal
     // do entire file
