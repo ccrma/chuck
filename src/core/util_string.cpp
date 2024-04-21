@@ -840,28 +840,47 @@ std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists )
 // name: extract_filepath_dir()
 // desc: return the directory portion of a file path, excluding the filename
 //-----------------------------------------------------------------------------
-std::string extract_filepath_dir(std::string &filepath)
+std::string extract_filepath_dir( const std::string & filepath )
 {
+    // normalized internal file path separator
     char path_separator = '/';
-    
-//#ifdef __PLATFORM_WINDOWS__
-//    path_separator = '\\';
-//#else
-//    path_separator = '/';
-//#endif
 
-    // if the last character is a slash, skip it
-    t_CKINT i = filepath.rfind(path_separator);
+    // normalize for searching, e.g., \ replaced with / | 1.5.2.5 (ge) added
+    string normalize = normalize_directory_separator( trim(filepath) );
+    // look for separator from the right
+    t_CKINT i = normalize.rfind( path_separator );
     // if not separator found, return empty string
-    if(i == std::string::npos)
-        return "";
+    if( i == std::string::npos ) return "";
     // skip any/all extra trailing slashes
-    while( i > 0 && filepath[i-1] == path_separator )
-        i--;
+    while( i > 0 && normalize[i-1] == path_separator ) i--;
 
     // change spencer 2014-7-17: include trailing slash
-    return std::string(filepath, 0, i+1);
+    return std::string( filepath, 0, i+1 );
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: extract_filepath_file() | 1.5.2.5 (ge) added
+// desc: return the file portion of a file path, excluding the directory portion
+//-----------------------------------------------------------------------------
+std::string extract_filepath_file( const std::string & filepath )
+{
+    // normalized internal file path separator
+    char path_separator = '/';
+
+    // normalize for searching, e.g., \ replaced with /
+    string normalize = normalize_directory_separator( trim(filepath) );
+    // look for separator from the right
+    long i = normalize.rfind( path_separator );
+    // if not separator found, return the path unchanged
+    if( i == std::string::npos ) return filepath;
+
+    // substring after the last /
+    return std::string( filepath, i+1, filepath.length()-i );
+}
+
 
 
 
@@ -952,14 +971,20 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 std::string normalize_directory_separator( const std::string & filepath )
 {
 #ifdef __PLATFORM_WINDOWS__
+    // make a copy
     std::string new_filepath = filepath;
-    t_CKINT len = new_filepath.size();
-    for(int i = 0; i < len; i++)
+    // string length
+    long len = new_filepath.size();
+    // iterate over characters
+    for( long i = 0; i < len; i++ )
     {
+        // replace \ with /
         if( new_filepath[i] == '\\' ) new_filepath[i] = '/';
     }
+    // return potentially modified copy
     return new_filepath;
 #else
+    // return unchanged path
     return filepath;
 #endif // __PLATFORM_WINDOWS__
 }
