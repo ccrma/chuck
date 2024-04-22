@@ -10,7 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: mymindstorm/setup-emsdk@v14
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup and cache Emscripten
+        uses: mymindstorm/setup-emsdk@v14
         with:
             # Make sure to set a version number!
             version: 3.1.57
@@ -19,13 +23,8 @@ jobs:
             #  so make sure it doesn't conflict with anything!
             actions-cache-folder: 'emsdk-cache'
 
-      - name: Add emsdk to PATH
-        run: echo "PATH=$PATH:$(realpath .)/emsdk-cache/upstream/emscripten" >> $GITHUB_ENV
-
-      - uses: actions/checkout@v4
       - name: Compile - Web
         run: cd src/ && make -j web
-      
 
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
