@@ -113,4 +113,7 @@ extern "C"
     // get chuck time
     t_CKTIME EMSCRIPTEN_KEEPALIVE getChuckNow( unsigned int chuckID );
 
+    // chugin load/import API
+    t_CKBOOL EMSCRIPTEN_KEEPALIVE importChugin( unsigned int chuckID, const char * path );
+
 } // extern "C"
