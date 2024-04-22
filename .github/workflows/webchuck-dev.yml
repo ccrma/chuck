@@ -19,8 +19,8 @@ jobs:
             #  so make sure it doesn't conflict with anything!
             actions-cache-folder: 'emsdk-cache'
 
-      - name: Verify emcc
-        run: emcc -v
+      - name: Add emsdk to PATH
+        run: echo "PATH=$PATH:$(realpath .)/emsdk-cache/upstream/emscripten" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
       - name: Compile - Web
