@@ -22,11 +22,11 @@ jobs:
       - name: Verify emcc
         run: emcc -v
 
+      - uses: actions/checkout@v4
       - name: Compile - Web
         run: cd src/ && make -j web
       
 
-      - uses: actions/checkout@v4
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
