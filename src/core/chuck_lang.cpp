@@ -2473,8 +2473,9 @@ CK_DLL_MFUN( shred_sourceDir ) // added 1.3.0.0
 {
     Chuck_VM_Shred * derhs = (Chuck_VM_Shred *)SELF;
 
+    // new chuck string
     Chuck_String * str = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
-
+    // set the content
     str->set( extract_filepath_dir(derhs->code->filename) );
 
     RETURN->v_string = str;

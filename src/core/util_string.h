@@ -98,10 +98,13 @@ std::string get_full_path( const std::string & fp );
 std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists = FALSE );
 
 // get directory portion of a filepath (minus the file itself)
-std::string extract_filepath_dir( std::string & filepath );
+std::string extract_filepath_dir( const std::string & filepath );
+
+// get filename portion of a filepath (minus the directory portion) | 1.5.2.5 (ge) added
+std::string extract_filepath_file( const std::string & filepath );
 
 // convert \ to / (on Windows)
-std::string normalize_directory_separator(const std::string &filepath);
+std::string normalize_directory_separator( const std::string & filepath );
 
 // check if path is absolute on the underlying platform
 t_CKBOOL is_absolute_path( const std::string & path );

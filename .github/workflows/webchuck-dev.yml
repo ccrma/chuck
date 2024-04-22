@@ -34,3 +34,4 @@ jobs:
           key: ${{ secrets.KEY_WC }}
           source: "src/host-web/webchuck/js/webchuck.js, src/host-web/webchuck/js/webchuck.wasm"
           target: ${{ secrets.PATH_WC }}
+          strip_components: 1
