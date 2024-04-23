@@ -2,9 +2,9 @@ name: WebChucK IDE Development - Emscripten Build
 
 on: 
   push:
-    branches: [ main, webchuck-deploy ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, webchuck-deploy]
+    branches: [ main ]
 
 jobs:
   build:
