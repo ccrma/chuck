@@ -138,6 +138,7 @@ typedef struct a_Stmt_Continue_ * a_Stmt_Continue;
 typedef struct a_Stmt_Return_ * a_Stmt_Return;
 typedef struct a_Stmt_Case_ * a_Stmt_Case;
 typedef struct a_Stmt_GotoLabel_ * a_Stmt_GotoLabel;
+typedef struct a_Stmt_Import_ * a_Stmt_Import;
 typedef struct a_Decl_ * a_Decl;
 typedef struct a_Var_Decl_ * a_Var_Decl;
 typedef struct a_Var_Decl_List_ * a_Var_Decl_List;
@@ -188,6 +189,7 @@ a_Stmt new_stmt_from_continue( uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_return( a_Exp exp, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_label( c_str xid, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_case( a_Exp exp, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_import( c_str str, uint32_t line, uint32_t where );
 a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t line, uint32_t where );
 a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, uint32_t line, uint32_t where );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, uint32_t line, uint32_t where );
@@ -278,6 +280,7 @@ void delete_stmt_from_break( a_Stmt stmt );
 void delete_stmt_from_continue( a_Stmt stmt );
 void delete_stmt_from_return( a_Stmt stmt );
 void delete_stmt_from_label( a_Stmt stmt );
+void delete_stmt_from_import( a_Stmt stmt );
 
 // delete an exp
 void delete_exp( a_Exp exp );
@@ -429,6 +432,7 @@ struct a_Stmt_Continue_ { uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Return_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Case_ { a_Exp exp; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_GotoLabel_ { S_Symbol name; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Import_ { c_str what; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Code_
 {
     // statement list
@@ -442,7 +446,8 @@ struct a_Stmt_Code_
 // enum values for stmt type
 typedef enum { ae_stmt_exp, ae_stmt_while, ae_stmt_until, ae_stmt_for, ae_stmt_foreach,
                ae_stmt_loop, ae_stmt_if, ae_stmt_code, ae_stmt_switch, ae_stmt_break,
-               ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel
+               ae_stmt_continue, ae_stmt_return, ae_stmt_case, ae_stmt_gotolabel,
+               ae_stmt_import
              } ae_Stmt_Type;
 
 // a statement
@@ -472,6 +477,7 @@ struct a_Stmt_
         struct a_Stmt_Return_ stmt_return;
         struct a_Stmt_Case_ stmt_case;
         struct a_Stmt_GotoLabel_ stmt_gotolabel;
+        struct a_Stmt_Import_ stmt_import;
     };
 
     // code position

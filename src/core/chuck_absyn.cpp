@@ -342,6 +342,19 @@ a_Stmt new_stmt_from_case( a_Exp exp, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
+a_Stmt new_stmt_from_import( c_str str, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
+{
+    a_Stmt a = (a_Stmt)checked_malloc( sizeof(struct a_Stmt_) );
+    a->s_type = ae_stmt_import;
+    a->stmt_import.what = str; // no strdup( str ); <-- str should have been allocated in alloc_str()
+    a->line = line; a->where = where;
+    a->stmt_import.line = line; a->stmt_import.where = where;
+    a->stmt_import.self = a;
+
+    return a;
+}
+
+
 a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t lineNum, uint32_t posNum )
 {
   a_Exp current;
@@ -1306,6 +1319,9 @@ void delete_stmt( a_Stmt stmt )
     case ae_stmt_gotolabel:
         delete_stmt_from_label( stmt );
         break;
+    case ae_stmt_import:
+        delete_stmt_from_import( stmt );
+        break;
     }
 
     CK_SAFE_FREE( stmt );
@@ -1386,6 +1402,12 @@ void delete_stmt_from_continue( a_Stmt stmt )
 void delete_stmt_from_label( a_Stmt stmt )
 {
     // TODO: someting with S_Symbol stmt->gotolabel.name
+}
+
+void delete_stmt_from_import( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (import)...", (void *)stmt );
+    CK_SAFE_FREE( stmt->stmt_import.what );
 }
 
 void delete_exp_from_primary( a_Exp_Primary_ & p )

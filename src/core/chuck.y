@@ -107,7 +107,8 @@ a_Program g_program = NULL;
 // 1.4.0.0: changed to 41 for global keyword
 // 1.4.0.1: changed to 79 for left recursion
 // 1.5.1.1: changed to 80 for trailing comma in array literals
-%expect 82
+// 1.5.2.5: changed to 84 for @import statements
+%expect 84
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> INT_VAL
@@ -135,7 +136,7 @@ a_Program g_program = NULL;
   PUBLIC PROTECTED PRIVATE STATIC ABSTRACT CONST 
   SPORK ARROW_RIGHT ARROW_LEFT L_HACK R_HACK
   GRUCK_RIGHT GRUCK_LEFT UNGRUCK_RIGHT UNGRUCK_LEFT
-  AT_OP AT_CTOR AT_DTOR
+  AT_OP AT_CTOR AT_DTOR AT_IMPORT
 
 
 %type <program> program
@@ -156,6 +157,7 @@ a_Program g_program = NULL;
 %type <stmt> selection_statement
 %type <stmt> jump_statement
 %type <stmt> expression_statement
+%type <stmt> import_statement
 %type <exp> expression
 %type <exp> chuck_expression
 %type <exp> arrow_expression
@@ -355,6 +357,7 @@ statement
         | jump_statement                    { $$ = $1; }
         // | label_statement                   { }
         | code_segment                      { $$ = $1; }
+        | import_statement                  { $$ = $1; }
         ;
 
 jump_statement
@@ -395,6 +398,10 @@ code_segment
         | LBRACE statement_list RBRACE      { $$ = new_stmt_from_code( $2, @1.first_line, @1.first_column ); }
         ;
         
+import_statement
+        : AT_IMPORT STRING_LIT SEMICOLON    { $$ = new_stmt_from_import( $2, @1.first_line, @1.first_column ); }
+        ;
+
 expression_statement
         : SEMICOLON                         { $$ = NULL; }
         | expression SEMICOLON              { $$ = new_stmt_from_expression( $1, @1.first_line, @1.first_column ); }

@@ -1060,6 +1060,10 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
     // the type of stmt
     switch( stmt->s_type )
     {
+        case ae_stmt_import: // 1.5.2.5 (ge) added
+            // do nothing here
+            break;
+
         case ae_stmt_if:
             // count scope to help determine class member
             env->class_scope++;
