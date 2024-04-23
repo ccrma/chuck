@@ -29,9 +29,9 @@ jobs:
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.HOST_WC }}
-          username: ${{ secrets.USERNAME_WC }}
-          key: ${{ secrets.KEY_WC }}
+          host: ${{ secrets.HOST_WEBCHUCK }}
+          username: ${{ secrets.HOST_USERNAME }}
+          key: ${{ secrets.PRIVATEKEY_WEBCHUCK }}
           source: "src/host-web/webchuck/js/webchuck.js, src/host-web/webchuck/js/webchuck.wasm"
-          target: ${{ secrets.PATH_WC }}
+          target: ${{ secrets.PATH_WEBCHUCK_DEV }}
           strip_components: 4
