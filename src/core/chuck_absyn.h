@@ -152,6 +152,7 @@ typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.2.0 (ge) added
 typedef struct a_Complex_ * a_Complex;
 typedef struct a_Polar_ * a_Polar;
 typedef struct a_Vec_ * a_Vec; // ge: added 1.3.5.3
+typedef struct a_Import_ * a_Import; // 1.5.2.5 (ge) added
 
 // forward reference for type
 typedef struct Chuck_Type * t_CKTYPE;
@@ -189,7 +190,7 @@ a_Stmt new_stmt_from_continue( uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_return( a_Exp exp, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_label( c_str xid, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_case( a_Exp exp, uint32_t line, uint32_t where );
-a_Stmt new_stmt_from_import( c_str str, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_import( a_Import target, uint32_t line, uint32_t where );
 a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t line, uint32_t where );
 a_Exp new_exp_from_binary( a_Exp lhs, ae_Operator oper, a_Exp rhs, uint32_t line, uint32_t where );
 a_Exp new_exp_from_unary( ae_Operator oper, a_Exp exp, uint32_t line, uint32_t where );
@@ -228,6 +229,8 @@ a_Array_Sub prepend_array_sub( a_Array_Sub array, a_Exp exp, uint32_t line, uint
 a_Complex new_complex( a_Exp re, uint32_t line, uint32_t where );
 a_Polar new_polar( a_Exp mod, uint32_t line, uint32_t where ); // ge: added 1.3.5.3
 a_Vec new_vec( a_Exp e, uint32_t line, uint32_t where );
+a_Import new_import( c_str str, a_Id_List id_list, uint32_t line, uint32_t where );
+a_Import prepend_import( a_Import target, a_Import list, uint32_t line, uint32_t where );
 
 a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
 a_Class_Body new_class_body( a_Section section, uint32_t line, uint32_t where );
@@ -351,6 +354,7 @@ struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
 struct a_Complex_ { a_Exp re; a_Exp im; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Polar_ { a_Exp mod; a_Exp phase; uint32_t line; uint32_t where; a_Exp self; };
 struct a_Vec_ { a_Exp args; int numdims; uint32_t line; uint32_t where; a_Exp self; }; // ge: added 1.3.5.3
+struct a_Import_ { c_str what; a_Import next; uint32_t line; uint32_t where; }; // 1.5.2.5 (ge) added
 
 // enum primary exp type
 typedef enum { ae_primary_var, ae_primary_num, ae_primary_float,
@@ -432,7 +436,7 @@ struct a_Stmt_Continue_ { uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Return_ { a_Exp val; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Case_ { a_Exp exp; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_GotoLabel_ { S_Symbol name; uint32_t line; uint32_t where; a_Stmt self; };
-struct a_Stmt_Import_ { c_str what; uint32_t line; uint32_t where; a_Stmt self; };
+struct a_Stmt_Import_ { a_Import list; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Code_
 {
     // statement list

@@ -382,15 +382,15 @@ void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
 t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
 {
     // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env(), g_program, te_do_all ) )
+    if( !type_engine_scan0_prog( env(), context->parse_tree, te_do_all ) )
          return FALSE;
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env(), g_program, te_do_all ) )
+    if( !type_engine_scan1_prog( env(), context->parse_tree, te_do_all ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env(), g_program, te_do_all ) )
+    if( !type_engine_scan2_prog( env(), context->parse_tree, te_do_all ) )
         return FALSE;
 
     // check the program (pass 3)
@@ -398,42 +398,7 @@ t_CKBOOL Chuck_Compiler::do_entire_file( Chuck_Context * context )
         return FALSE;
 
     // emit (pass 4)
-    if( !emit_engine_emit_prog( emitter, g_program ) )
-        return FALSE;
-
-    // set the state of the context to done
-    context->progress = Chuck_Context::P_ALL_DONE;
-
-    return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: do_only_classes()
-// desc: compile only classes definitions
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
-{
-    // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env(), g_program, te_do_classes_only ) )
-        return FALSE;
-
-    // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env(), g_program, te_do_classes_only ) )
-        return FALSE;
-
-    // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env(), g_program, te_do_classes_only ) )
-        return FALSE;
-
-    // check the program (pass 3)
-    if( !type_engine_check_context( env(), context, te_do_classes_only ) )
-        return FALSE;
-
-    // emit (pass 4)
-    code = emit_engine_emit_prog( emitter, g_program , te_do_classes_only );
+    this->code = emit_engine_emit_prog( emitter, context->parse_tree );
     if( !code ) return FALSE;
 
     // set the state of the context to done
@@ -446,27 +411,62 @@ t_CKBOOL Chuck_Compiler::do_only_classes( Chuck_Context * context )
 
 
 //-----------------------------------------------------------------------------
-// name: do_all_except_classes()
-// desc: compile everything except classes
+// name: do_import_only() // 1.5.2.5 (ge) added
+// desc: import only public definitions (classes and operator overloads)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::do_all_except_classes( Chuck_Context * context )
+t_CKBOOL Chuck_Compiler::do_import_only( Chuck_Context * context )
+{
+    // 0th-scan (pass 0)
+    if( !type_engine_scan0_prog( env(), context->parse_tree, te_do_import_only ) )
+         return FALSE;
+
+    // 1st-scan (pass 1)
+    if( !type_engine_scan1_prog( env(), context->parse_tree, te_do_import_only ) )
+        return FALSE;
+
+    // 2nd-scan (pass 2)
+    if( !type_engine_scan2_prog( env(), context->parse_tree, te_do_import_only ) )
+        return FALSE;
+
+    // check the program (pass 3)
+    if( !type_engine_check_context( env(), context, te_do_import_only ) )
+        return FALSE;
+
+    // emit (pass 4)
+    if( !emit_engine_emit_prog( emitter, context->parse_tree ) )
+        return FALSE;
+
+    // set the state of the context to done
+    context->progress = Chuck_Context::P_IMPORTED;
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: do_all_except_import()
+// desc: compile everything except public definitions
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::do_all_except_import( Chuck_Context * context )
 {
     // 0th scan only deals with classes, so is not needed
 
     // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env(), g_program, te_do_no_classes ) )
+    if( !type_engine_scan1_prog( env(), context->parse_tree, te_skip_import ) )
         return FALSE;
 
     // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env(), g_program, te_do_no_classes ) )
+    if( !type_engine_scan2_prog( env(), context->parse_tree, te_skip_import ) )
         return FALSE;
 
     // check the program (pass 3)
-    if( !type_engine_check_context( env(), context, te_do_no_classes ) )
+    if( !type_engine_check_context( env(), context, te_skip_import ) )
         return FALSE;
 
     // emit (pass 4)
-    code = emit_engine_emit_prog( emitter, g_program, te_do_no_classes );
+    code = emit_engine_emit_prog( emitter, context->parse_tree, te_skip_import );
     if( !code ) return FALSE;
 
     // set the state of the context to done
@@ -511,25 +511,9 @@ t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename,
     if( !type_engine_load_context( env(), context ) )
         return FALSE;
 
-    // 0th-scan (pass 0)
-    if( !type_engine_scan0_prog( env(), g_program, te_do_all ) )
+    // compile
+    if( !do_entire_file( context ) )
     { ret = FALSE; goto cleanup; }
-
-    // 1st-scan (pass 1)
-    if( !type_engine_scan1_prog( env(), g_program, te_do_all ) )
-    { ret = FALSE; goto cleanup; }
-
-    // 2nd-scan (pass 2)
-    if( !type_engine_scan2_prog( env(), g_program, te_do_all ) )
-    { ret = FALSE; goto cleanup; }
-
-    // check the program (pass 3)
-    if( !type_engine_check_context( env(), context, te_do_all ) )
-    { ret = FALSE; goto cleanup; }
-
-    // emit (pass 4)
-    code = emit_engine_emit_prog( emitter, g_program, te_do_all );
-    if( !code ) { ret = FALSE; goto cleanup; }
 
 cleanup:
 
@@ -610,39 +594,38 @@ cleanup:
 
 
 
-
 //-----------------------------------------------------------------------------
-// name: find_recent_path()
-// desc: find recent context by path
+// name: add_import_path()
+// desc: add import context by path
 //-----------------------------------------------------------------------------
-Chuck_Context * Chuck_Compiler::find_recent_path( const string & path )
-{
-    return NULL;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: find_recent_type()
-// desc: find recent context by type name
-//-----------------------------------------------------------------------------
-Chuck_Context * Chuck_Compiler::find_recent_type( const string & type )
-{
-    return NULL;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: add_recent_path()
-// desc: add recent context by path
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::add_recent_path( const string & path,
+t_CKBOOL Chuck_Compiler::add_import_path( const string & path,
                                           Chuck_Context * context )
 {
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: find_import_path()
+// desc: find imported context by path
+//-----------------------------------------------------------------------------
+Chuck_Context * Chuck_Compiler::find_import_path( const string & path )
+{
+    return NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: find_import_type()
+// desc: find import context by type name
+//-----------------------------------------------------------------------------
+Chuck_Context * Chuck_Compiler::find_import_type( const string & type )
+{
+    return NULL;
 }
 
 

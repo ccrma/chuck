@@ -116,7 +116,7 @@ static const char * g_str[] = {
 
 //-----------------------------------------------------------------------------
 // name: EM_set_current_chuck()
-// set current ChucK; used to query current params
+// desc: set current ChucK; used to query current params
 //-----------------------------------------------------------------------------
 void EM_set_current_chuck( ChucK * ck )
 {

@@ -832,7 +832,7 @@ Chuck_Context * type_engine_make_context( a_Program prog, const string & filenam
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_context()
-// desc: ...
+// desc: type check a context (a context is equivalent to a single .ck file)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_context( Chuck_Env * env,
                                     Chuck_Context * context,
@@ -873,21 +873,21 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
         {
         case ae_section_stmt:
             // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            if( how_much == te_do_import_only ) break;
             // check the statements
             ret = type_engine_check_stmt_list( env, prog->section->stmt_list );
             break;
 
         case ae_section_func:
-            // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            // check the compilation criteria | 1.5.2.5 (ge) added
+            if( !howMuch_criteria_match( how_much, prog->section->func_def ) ) break;
             // check the function definition
             ret = type_engine_check_func_def( env, prog->section->func_def );
             break;
 
         case ae_section_class:
-            // if no classes, then skip
-            if( how_much == te_do_no_classes ) break;
+            // check the compilation criteria | 1.5.2.5 (ge) added
+            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // check the class definition
             ret = type_engine_check_class_def( env, prog->section->class_def );
             break;
@@ -8743,14 +8743,14 @@ t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType )
 
 
 
-static const char * g_howmuch[] = { "ALL", "CLASSES_ONLY", "ALL_EXCEPT_CLASSES" };
+static const char * g_howmuch[] = { "ALL", "IMPORT_ONLY", "ALL_EXCEPT_IMPORT" };
 //-----------------------------------------------------------------------------
 // name: howmuch2str()
 // desc: ...
 //-----------------------------------------------------------------------------
 const char * howmuch2str( te_HowMuch how_much )
 {
-    if( how_much < 0 || how_much > te_do_no_classes ) return "[INVALID]";
+    if( how_much < 0 || how_much > te_skip_import ) return "[INVALID]";
     else return g_howmuch[how_much];
 }
 
@@ -11403,4 +11403,59 @@ t_CKBOOL Chuck_Type::do_cbs_on_instantiate( std::vector<CallbackOnInstantiate> &
     }
     // done
     return retval;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: howMuch_criteria_match()
+// desc: check if a func def meets "HowMuch" to compile criteria
+//-----------------------------------------------------------------------------
+t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Func_Def func_def )
+{
+    switch( criteria )
+    {
+        case te_do_all:
+            // categorically true
+            return TRUE;
+        case te_do_import_only:
+            // check if 1) func def is public and 2) is an operator overload
+            if( func_def->func_decl == ae_key_public && func_def->op2overload != ae_op_none ) return TRUE;
+            break;
+        case te_skip_import:
+            // pass if either not public or not an operator overload
+            if( func_def->func_decl != ae_key_public || func_def->op2overload == ae_op_none ) return TRUE;
+            break;
+    }
+    // catch all
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: howMuch_criteria_match()
+// desc: check if a class def meets "HowMuch" to compile criteria
+//-----------------------------------------------------------------------------
+t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Class_Def class_def )
+{
+    switch( criteria )
+    {
+        case te_do_all:
+            // categorically true
+            return TRUE;
+            break;
+        case te_do_import_only:
+            // check if class is declared as public
+            if( class_def->decl == ae_key_public ) return TRUE;
+            break;
+        case te_skip_import:
+            // check if class is declared as public
+            if( class_def->decl != ae_key_public ) return TRUE;
+            break;
+    }
+    // catch all
+    return FALSE;
 }

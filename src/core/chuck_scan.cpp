@@ -160,8 +160,8 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             break;
 
         case ae_section_class:
-            // if no classes, then skip
-            if( how_much == te_do_no_classes ) break;
+            // check the compilation criteria | 1.5.2.5 (ge) added
+            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // make global, if marked public
             if( prog->section->class_def->decl == ae_key_public )
             {
@@ -400,21 +400,21 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
         {
         case ae_section_stmt:
             // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            if( how_much == te_do_import_only ) break;
             // scan the statements
             ret = type_engine_scan1_stmt_list( env, prog->section->stmt_list );
             break;
 
         case ae_section_func:
-            // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            // check the compilation criteria | 1.5.2.5 (ge)
+            if( !howMuch_criteria_match( how_much, prog->section->func_def ) ) break;
             // scan the function definition
             ret = type_engine_scan1_func_def( env, prog->section->func_def );
             break;
 
         case ae_section_class:
-            // if no classes, then skip
-            if( how_much == te_do_no_classes ) break;
+            // check the compilation criteria | 1.5.2.5 (ge)
+            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // scan the class definition
             ret = type_engine_scan1_class_def( env, prog->section->class_def );
             break;
@@ -1669,21 +1669,21 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
         {
         case ae_section_stmt:
             // if classes only, then skip
-            if( how_much == te_do_classes_only ) break;
+            if( how_much == te_do_import_only ) break;
             // scan the statements
             ret = type_engine_scan2_stmt_list( env, prog->section->stmt_list );
             break;
 
         case ae_section_func:
-            // if classes only, then skip
-            if( how_much == te_do_classes_only ) break;
+            // check the compilation criteria | 1.5.2.5 (ge)
+            if( !howMuch_criteria_match( how_much, prog->section->func_def ) ) break;
             // scan the function definition
             ret = type_engine_scan2_func_def( env, prog->section->func_def );
             break;
 
         case ae_section_class:
-            // if no classes, then skip
-            if( how_much == te_do_no_classes ) break;
+            // check the compilation criteria | 1.5.2.5 (ge)
+            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // scan the class definition
             ret = type_engine_scan2_class_def( env, prog->section->class_def );
             break;

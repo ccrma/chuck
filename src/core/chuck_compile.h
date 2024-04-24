@@ -169,26 +169,28 @@ public:
     static t_CKBOOL probe_external_chugin( const std::string & path, const std::string & name = "" );
 
 protected: // internal
-    // do entire file
-    t_CKBOOL do_entire_file( Chuck_Context * context );
-    // do just class definitions
-    t_CKBOOL do_only_classes( Chuck_Context * context );
-    // do all excect classes
-    t_CKBOOL do_all_except_classes( Chuck_Context * context );
-    // do normal compile
+    // normal compile
     t_CKBOOL do_normal_depend( const std::string & path,
                                const std::string & codeLiteral = "",
                                const std::string & full_path = "" );
-    // do auto-depend compile
+    // auto-depend compile
     t_CKBOOL do_auto_depend( const std::string & path,
                              const std::string & codeLiteral = "",
                              const std::string & full_path = "" );
+    // compile entire file
+    t_CKBOOL do_entire_file( Chuck_Context * context );
+    // import only: public definitions (e.g., classes and operator overloads)
+    t_CKBOOL do_import_only( Chuck_Context * context ); // 1.5.2.5 (ge) added
+    // all except import
+    t_CKBOOL do_all_except_import( Chuck_Context * context );
+
+public: // import
+    // add import path
+    t_CKBOOL add_import_path( const std::string & path, Chuck_Context * context );
     // look up in recent
-    Chuck_Context * find_recent_path( const std::string & path );
+    Chuck_Context * find_import_path( const std::string & path );
     // look up in recent
-    Chuck_Context * find_recent_type( const std::string & type );
-    // add to recent
-    t_CKBOOL add_recent_path( const std::string & path, Chuck_Context * context );
+    Chuck_Context * find_import_type( const std::string & type );
 };
 
 

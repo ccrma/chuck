@@ -33,6 +33,7 @@
 #include "chuck_errmsg.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <string> // 1.5.1.5 for string concat
 
 
@@ -342,11 +343,11 @@ a_Stmt new_stmt_from_case( a_Exp exp, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Stmt new_stmt_from_import( c_str str, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
+a_Stmt new_stmt_from_import( a_Import list, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
 {
     a_Stmt a = (a_Stmt)checked_malloc( sizeof(struct a_Stmt_) );
     a->s_type = ae_stmt_import;
-    a->stmt_import.what = str; // no strdup( str ); <-- str should have been allocated in alloc_str()
+    a->stmt_import.list = list;
     a->line = line; a->where = where;
     a->stmt_import.line = line; a->stmt_import.where = where;
     a->stmt_import.self = a;
@@ -354,24 +355,73 @@ a_Stmt new_stmt_from_import( c_str str, uint32_t line, uint32_t where ) // 1.5.2
     return a;
 }
 
+a_Import new_import( c_str str, a_Id_List list, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
+{
+    a_Import a = (a_Import)checked_malloc( sizeof(struct a_Import_) );
+
+    // check which option
+    if( str )
+    {
+        a->what = str; // no strdup( str ); <-- str should have been allocated in alloc_str()
+    }
+    else // id list
+    {
+        a_Id_List curr = list;
+        std::string result = "";
+
+        // iterate over id list
+        while( curr )
+        {
+            result += S_name(list->xid);
+            // if not the last, appent DOT
+            if( curr->next ) result += ".";
+            // set to next
+            curr = curr->next;
+        }
+
+        // sum of string lengths, +1 for null terminator
+        size_t len = result.length() + 1;
+        // allocate
+        char * sc = (char *)checked_malloc( len );
+        // copy
+        strncpy( sc, result.c_str(), len );
+        // set
+        a->what = sc;
+        // clean up id list, since we will not have references to it after this
+        delete_id_list( list );
+    }
+
+    // set line info
+    a->line = line; a->where = where;
+
+    return a;
+}
+
+a_Import prepend_import( a_Import target, a_Import list, uint32_t lineNum, uint32_t posNum )
+{
+    target->next = list;
+    return target;
+}
 
 a_Exp append_expression( a_Exp list, a_Exp exp, uint32_t lineNum, uint32_t posNum )
 {
-  a_Exp current;
-  current = list->next;
-  if (current == NULL) {
-    list->next = exp;
-    return list;
-  }
-
-  while (1)
+    a_Exp current;
+    current = list->next;
+    if( current == NULL )
     {
-      if (current->next == NULL) {
-        current->next = exp;
-        break;
-      } else {
-        current = current->next;
-      }
+        list->next = exp;
+        return list;
+    }
+
+    while( true )
+    {
+        if( current->next == NULL ) {
+            current->next = exp;
+            break;
+        }
+        else {
+            current = current->next;
+        }
     }
     return list;
 }
@@ -1407,7 +1457,22 @@ void delete_stmt_from_label( a_Stmt stmt )
 void delete_stmt_from_import( a_Stmt stmt )
 {
     EM_log( CK_LOG_FINEST, "deleting stmt %p (import)...", (void *)stmt );
-    CK_SAFE_FREE( stmt->stmt_import.what );
+
+    // pointer
+    a_Import next = NULL, i = stmt->stmt_import.list;
+
+    // iterate instead of recurse to avoid stack overflow
+    while( i )
+    {
+        // delete the content
+        CK_SAFE_FREE( i->what );
+        // get next before we delete this one
+        next = i->next;
+        // delete the import target
+        CK_SAFE_FREE( i );
+        // move to the next one
+        i = next;
+    }
 }
 
 void delete_exp_from_primary( a_Exp_Primary_ & p )

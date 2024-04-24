@@ -75,11 +75,17 @@ typedef enum { te_globalTypeNone,
 
 //-----------------------------------------------------------------------------
 // name: enum te_HowMuch
-// desc: how much to scan/type check
+// desc: how much to scan/type check/emit
 //-----------------------------------------------------------------------------
 typedef enum {
-    te_do_all = 0, te_do_classes_only, te_do_no_classes
+    te_do_all = 0,
+    te_do_import_only, // 1.5.2.5 (ge) added for import mechanic
+    te_skip_import
 } te_HowMuch;
+
+// function to test for the critica
+t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Func_Def func_def );
+t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Class_Def class_def );
 
 
 
@@ -366,13 +372,13 @@ struct Chuck_Context : public Chuck_VM_Object
     // error - means to free nspc too
     t_CKBOOL has_error;
 
-    // AST parse tree (does not persist past context unloading)
+    // AST (does not persist past context unloading)
     a_Program parse_tree;
     // AST public class def if any (does not persist past context unloading)
     a_Class_Def public_class_def;
 
     // progress
-    enum { P_NONE = 0, P_CLASSES_ONLY, P_ALL_DONE };
+    enum { P_NONE = 0, P_IMPORTED, P_ALL_DONE };
     // progress in scan / type check / emit
     t_CKUINT progress;
 

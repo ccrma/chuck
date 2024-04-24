@@ -264,6 +264,9 @@ void reset_parse( )
 
     // clean up the AST
     cleanup_AST();
+    // NB for normal compilation cycles, the AST is now cleaned up on a
+    // per-context basis, due to the need to keep potentially multiple ASTs
+    // around for import purposes | 1.5.2.5 (ge)
 }
 
 

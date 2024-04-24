@@ -212,21 +212,21 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         {
         case ae_section_stmt: // code section
             // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            if( how_much == te_do_import_only ) break;
             // emit statement list
             ret = emit_engine_emit_stmt_list( emit, prog->section->stmt_list );
             break;
 
         case ae_section_func: // function definition
-            // if only classes, then skip
-            if( how_much == te_do_classes_only ) break;
+            // check the compilation criteria | 1.5.2.5 (ge) added
+            if( !howMuch_criteria_match( how_much, prog->section->func_def ) ) break;
             // check function definition
             ret = emit_engine_emit_func_def( emit, prog->section->func_def );
             break;
 
         case ae_section_class: // class definition
-            // if no classes, then skip
-            if( how_much == te_do_no_classes ) break;
+            // check the compilation criteria | 1.5.2.5 (ge) added
+            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // check class definition
             ret = emit_engine_emit_class_def( emit, prog->section->class_def );
             break;
