@@ -4,7 +4,7 @@
 // let's say we define a custom class...
 public class Foo { int num; }
 
-// persistent operator overloading (trascends contexts)
+// persistent operator overloading (transcends file contexts)
 // NOTE the use of 'public' instead of 'fun' -- it's fun for all!
 public Foo @operator =^( Foo lhs, Foo rhs )
 { /* do stuff for Foo =^ Foo */ return rhs; }
