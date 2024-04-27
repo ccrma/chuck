@@ -2,6 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.5
+=======
+- (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
+          original theme by Koji Kondo; modeled in ChucK by Wesley Burchell in 2017
+
+
 1.5.2.4 (April 2024)
 =======
 - (fixed) runtime exception line number reporting
