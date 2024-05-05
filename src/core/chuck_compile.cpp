@@ -479,6 +479,115 @@ t_CKBOOL Chuck_Compiler::do_all_except_import( Chuck_Context * context )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_scan_import()
+// desc: scan for a list of imports
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list, vector<string> & results )
+{
+    // type check the stmt_list
+    while( stmt_list )
+    {
+        // the current statement
+        if( stmt_list->stmt && stmt_list->stmt->s_type == ae_stmt_import )
+        {
+            // get the import list
+            a_Import import = stmt_list->stmt->stmt_import.list;
+            // loop over import list
+            while( import )
+            {
+                results.push_back( import->what );
+                import = import->next;
+            }
+        }
+
+        // advance to the next statement
+        stmt_list = stmt_list->next;
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_scan_import()
+// desc: scan for a list of imports
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Program prog, vector<string> & results )
+{
+    t_CKBOOL ret = TRUE;
+
+    if( !prog )
+        return FALSE;
+
+    // log
+    EM_log( CK_LOG_FINER, "scanning for @import..." );
+
+    // push indent
+    EM_pushlog();
+
+    // go through each of the program sections
+    while( prog && ret )
+    {
+        switch( prog->section->s_type )
+        {
+        case ae_section_stmt:
+            // scan the statements
+            ret = type_engine_scan_import( env, prog->section->stmt_list, results );
+            break;
+
+        case ae_section_func:
+            break;
+
+        case ae_section_class:
+            break;
+
+        default:
+            EM_error2( prog->where,
+                "(internal error) unrecognized program section in type checker pre-scan..." );
+            ret = FALSE;
+            break;
+        }
+
+        // next section
+        prog = prog->next;
+    }
+
+    // pop indent
+    EM_poplog();
+
+    return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: scan_imports()
+// desc: scan for @import statements; return a list of resulting import targets
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::scan_imports( Chuck_Env * env, Chuck_Context * context, vector<string> & targets )
+{
+    return type_engine_scan_import( env, context->parse_tree, targets );
+}
+
+
+
+struct CompileTarget
+{
+    te_HowMuch howMuch; // all or import-only
+    std::string absolutePath; // this should be unique; also key for import hash
+    std::vector<CompileTarget *> dependencies;
+    // used for cycle detection
+    t_CKBOOL flag;
+
+    // constructor
+    CompileTarget( te_HowMuch extent = te_do_import_only )
+    : howMuch(extent), flag(FALSE) { }
+};
+
+//-----------------------------------------------------------------------------
 // name: do_normal_depend()
 // desc: compile normally without auto-depend
 //-----------------------------------------------------------------------------
@@ -492,6 +601,7 @@ t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename,
     // expand
     string theFilename = expand_filepath(filename);
     string theFullpath = expand_filepath(full_path);
+    vector<string> importTargets;
 
     // parse the code
     if( !chuck_parse( theFilename, codeLiteral ) )
@@ -503,6 +613,23 @@ t_CKBOOL Chuck_Compiler::do_normal_depend( const string & filename,
 
     // remember full path (added 1.3.0.0)
     context->full_path = theFullpath;
+
+    // add the current file name to targets (to avoi
+    // scan for @import statements
+    if( !scan_imports( env(), context, importTargets ) )
+        goto cleanup;
+
+    // print
+//    for( int i = 0; i < importTargets.size(); i++ )
+//    {
+//        cerr << importTargets[i] << endl;
+//    }
+
+    // @import processing
+    // 0) scan for imports, detecting cycles (including self-includes)
+    // 1) keep import stack (for error reporting, in case an import filed contains error)
+    // 2) keep a hash or list of imported files and success status (cache for future imports of the same files)
+    // 3) loop over a ordered list of contexts to import, as well as the original file to compile
 
     // reset the env
     env()->reset();

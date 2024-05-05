@@ -185,12 +185,26 @@ protected: // internal
     t_CKBOOL do_all_except_import( Chuck_Context * context );
 
 public: // import
+    // scan for @import statements, and return a list of resulting import targets
+    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_Context * context, std::vector<std::string> & targets );
+
     // add import path
     t_CKBOOL add_import_path( const std::string & path, Chuck_Context * context );
     // look up in recent
     Chuck_Context * find_import_path( const std::string & path );
     // look up in recent
     Chuck_Context * find_import_type( const std::string & type );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_ParseContext
+// desc: per-file parser context; associated with a Chuck_Context
+//-----------------------------------------------------------------------------
+struct Chuck_ParseContext
+{
 };
 
 

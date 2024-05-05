@@ -372,7 +372,7 @@ a_Import new_import( c_str str, a_Id_List list, uint32_t line, uint32_t where ) 
         // iterate over id list
         while( curr )
         {
-            result += S_name(list->xid);
+            result += S_name(curr->xid);
             // if not the last, appent DOT
             if( curr->next ) result += ".";
             // set to next
