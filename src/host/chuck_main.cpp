@@ -979,6 +979,25 @@ t_CKBOOL go( int argc, const char ** argv )
             {
                 doVersion = TRUE;
             }
+            else if( !strncmp( argv[i], "--query:", 8 ) ) // Added 1.5.2.5 (nshaheed)
+            {
+                // advance pointer to beginning of argument
+                const char * str = argv[i]+8;
+
+                if ( !strcmp( str, "version_language" ) )
+                {
+                  CK_FPRINTF_STDERR(CHUCK_VERSION_STRING);
+                }
+                else if ( !strcmp( str, "version_chugin_api" ) )
+                {
+                  CK_FPRINTF_STDERR("%d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR);
+                }
+                else {
+                  errorMessage1 = "invalid arguments for '--query:[version_language|version_chugin_api]'";
+                  break;
+                }
+                EXIT_with_global_cleanup( 0 );
+            }
             else
             {
                 // boost log level
