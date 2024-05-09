@@ -63,6 +63,7 @@ t_CKBOOL global_cleanup();
 void all_stop();
 void all_detach();
 void usage();
+void usage_query();
 void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
 static void audio_cb( SAMPLE * in, SAMPLE * out, t_CKUINT numFrames,
@@ -247,7 +248,7 @@ static void version()
 
 //-----------------------------------------------------------------------------
 // name: usage()
-// desc: ...
+// desc: print command line options
 //-----------------------------------------------------------------------------
 void usage()
 {
@@ -262,11 +263,27 @@ void usage()
     CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "                color:{on|off}|pid-file:<path>|cmd-listener:{on|off}\n" );
+    CK_FPRINTF_STDERR( "                query|query:<name>\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
     CK_FPRINTF_STDERR( "   [commands] = add|replace|remove|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
     CK_FPRINTF_STDERR( "       [+-=^] = shortcuts for add, remove, replace, status\n" );
     version();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: usage_query() | added 1.5.2.5 (nshaheed, ge)
+// desc: print command line options for --query:<name>
+//-----------------------------------------------------------------------------
+void usage_query()
+{
+    CK_FPRINTF_STDERR( "possible names for --query:<name>: \n" );
+    CK_FPRINTF_STDERR( "    VERSION_LANGUAGE : language version (e.g., 1.5.2.0 (chai))\n" );
+    CK_FPRINTF_STDERR( "    VERSION_CHUGIN_API : chugin API version (e.g., 10.1)\n" );
+    CK_FPRINTF_STDERR( "    VERSION : (same as VERSION_LANGUAGE)\n" );
 }
 
 
@@ -979,23 +996,36 @@ t_CKBOOL go( int argc, const char ** argv )
             {
                 doVersion = TRUE;
             }
-            else if( !strncmp( argv[i], "--query:", 8 ) ) // Added 1.5.2.5 (nshaheed)
+            else if( !strncmp( argv[i], "--query:", 8 ) ) // added 1.5.2.5 (nshaheed)
             {
                 // advance pointer to beginning of argument
-                const char * str = argv[i]+8;
+                string str = ::tolower(argv[i]+8);
 
-                if ( !strcmp( str, "version_language" ) )
+                // check <name>
+                if( str == "version_language" || str == "version" )
                 {
-                  CK_FPRINTF_STDERR(CHUCK_VERSION_STRING);
+                    CK_FPRINTF_STDOUT( "%s\n", CHUCK_VERSION_STRING );
                 }
-                else if ( !strcmp( str, "version_chugin_api" ) )
+                else if( str == "version_chugin_api" )
                 {
-                  CK_FPRINTF_STDERR("%d.%d", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR);
+                    CK_FPRINTF_STDOUT( "%d.%d\n", CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
                 }
-                else {
-                  errorMessage1 = "invalid arguments for '--query:[version_language|version_chugin_api]'";
-                  break;
+                else // no match
+                {
+                    // print error
+                    EM_error2( 0, "invalid argument '%s' for '--query:<name>'", str.c_str() );
+                    // print --query usage
+                    usage_query();
                 }
+
+                // clean up and exit
+                EXIT_with_global_cleanup( 0 );
+            }
+            else if( !strncmp( argv[i], "--query", 7 ) ) // added 1.5.2.5 (nshaheed)
+            {
+                // print --query:<name> usage
+                usage_query();
+                // clean up and exit
                 EXIT_with_global_cleanup( 0 );
             }
             else
