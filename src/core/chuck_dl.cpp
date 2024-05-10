@@ -825,6 +825,16 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
 }
 
+//-----------------------------------------------------------------------------
+// name: ck_register_callback_on_shutdown() | 1.5.2.5 (ge) added
+// desc: register a callback function to be called on host exit
+//       (both natural or SIGINT)
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_register_callback_on_shutdown( Chuck_DL_Query * query, f_callback_on_shutdown cb, void * bindle )
+{
+    // register
+    query->vm()->register_callback_on_shutdown( cb, bindle );
+}
 
 //-----------------------------------------------------------------------------
 // name: ck_register_shreds_watcher()
@@ -1351,6 +1361,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     create_main_thread_hook = ck_create_main_thread_hook;
     register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.5 (ge & andrew)
     unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.5 (ge & andrew)
+    register_callback_on_shutdown = ck_register_callback_on_shutdown; // 1.5.2.5 (ge)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 

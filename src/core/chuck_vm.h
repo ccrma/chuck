@@ -413,6 +413,33 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Callback_On_Shutdown
+// desc: an entry for a callback to be called on VM shutdown
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Callback_On_Shutdown
+{
+    // function pointer to call
+    f_callback_on_shutdown cb;
+    // user data
+    void * userdata;
+
+    // constructor
+    Chuck_VM_Callback_On_Shutdown( f_callback_on_shutdown f = NULL, void * data = NULL )
+    : cb(f), userdata(data) { }
+
+    // copy constructor
+    Chuck_VM_Callback_On_Shutdown( const Chuck_VM_Callback_On_Shutdown & other )
+    : cb(other.cb), userdata(other.userdata) { }
+
+    // ==
+    bool operator ==( const Chuck_VM_Callback_On_Shutdown & other )
+    { return this->cb == other.cb; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Shreduler
 // desc: a ChucK shreduler shredules shreds
 //-----------------------------------------------------------------------------
@@ -657,6 +684,14 @@ public:
     // remove shreds watcher callback | 1.5.1.5
     void remove_watcher( f_shreds_watcher cb );
 
+public:
+    // register a callback to be called on VM shutdown | 1.5.2.5 (ge) added
+    void register_callback_on_shutdown( f_callback_on_shutdown cb, void * bindle );
+
+protected:
+    // notify callbacks on VM shutdown | 1.5.2.5 (ge) added
+    void notify_callbacks_on_shutdown();
+
 //-----------------------------------------------------------------------------
 // data
 //-----------------------------------------------------------------------------
@@ -733,6 +768,10 @@ protected:
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_remove;
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_suspend;
     std::list<Chuck_VM_Shreds_Watcher> m_shreds_watchers_activate;
+
+protected:
+    // 1.5.2.5 (ge) on major VM events callbacks
+    std::list<Chuck_VM_Callback_On_Shutdown> m_callbacks_on_shutdown;
 };
 
 

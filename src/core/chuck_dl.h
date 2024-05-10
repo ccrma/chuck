@@ -340,6 +340,8 @@ typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA,
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadhook)( void * bindle );
 // "main thread" quit (stop running hook)
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
+// callback function, called on host shutdown
+typedef void (CK_DLL_CALL * f_callback_on_shutdown)( void * bindle );
 // shreds watcher callback
 typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 // type instantiation callback
@@ -414,6 +416,8 @@ typedef void (CK_DLL_CALL * f_add_ugen_funcf_auto_num_channels)( Chuck_DL_Query 
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+// register a callback to be called on host shutdown, e.g., for chugin cleanup
+typedef void (CK_DLL_CALL * f_register_callback_on_shutdown)( Chuck_DL_Query * query, f_callback_on_shutdown cb, void * bindle );
 // register a callback function to receive notification from the VM about shreds (add, remove, etc.)
 typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
 // unregister a shreds notification callback
@@ -588,6 +592,14 @@ public:
     // deals with graphics or windowing | re-added 1.4.0.1
     // -------------
     f_create_main_thread_hook create_main_thread_hook;
+
+public:
+    // -------------
+    // register a function to be run on host shutdown; this can be used
+    // for chugin cleanup when the host (chuck, miniAudicle, etc.) exits
+    // including on SIGINT (ctrl-c termination) | added 1.5.2.5 (ge)
+    // -------------
+    f_register_callback_on_shutdown register_callback_on_shutdown;
 
 public:
     // -------------
