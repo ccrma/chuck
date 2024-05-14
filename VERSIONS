@@ -4,8 +4,12 @@ ChucK VERSIONS log
 
 1.5.2.5
 =======
+- (updated) chugin API version from 10.1 to 10.2
+- (added) chugin API for callback on shutdown
+- (added) command line query system `--query:<name>`
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
           original theme by Koji Kondo; modeled in ChucK by Wesley Burchell in 2017
+- (fixed) globals events system synchronization
 
 
 1.5.2.4 (April 2024)
