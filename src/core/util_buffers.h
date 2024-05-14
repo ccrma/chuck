@@ -43,6 +43,7 @@
 #include <vector>
 #include <queue>
 #include <iostream>
+#include <atomic> // added 1.5.2.5 (ge) for "lock-free" circle buffer
 
 #define DWORD__                t_CKUINT
 #define SINT__                 t_CKINT
@@ -382,13 +383,13 @@ protected:
     // the buffer
     T * m_buffer;
     // the buffer length (capacity)
-    volatile long m_length;
+    std::atomic_ulong m_length;
     // write index
-    volatile long m_writeIndex;
+    std::atomic_ulong m_writeIndex;
     // read index
-    volatile long m_readIndex;
+    std::atomic_ulong m_readIndex;
     // num elements
-    volatile long m_numElements;
+    std::atomic_ulong m_numElements;
 };
 
 
