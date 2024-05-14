@@ -37,16 +37,13 @@
 #include "util_platforms.h"
 #include "util_string.h"
 
-#ifndef __DISABLE_THREADS__
-#include "util_thread.h"
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <sstream>
 #include <iostream>
+#include <mutex> // c++11
 using namespace std;
 
 
@@ -75,9 +72,7 @@ static std::string g_error2str = "";
 // log globals
 t_CKINT g_loglevel = CK_LOG_CORE;
 t_CKINT g_logstack = 0;
-#ifndef __DISABLE_THREADS__
-XMutex g_logmutex;
-#endif
+std::mutex g_logmutex;
 
 // more local globals
 std::stringstream g_stdout_stream;
@@ -882,6 +877,9 @@ void EM_print2magenta( const char * message, ... )
 //-----------------------------------------------------------------------------
 void EM_log( t_CKINT level, const char * message, ... )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(g_logmutex);
+
     va_list ap;
 
     if( level > CK_LOG_ALL ) level = CK_LOG_ALL;
@@ -889,10 +887,6 @@ void EM_log( t_CKINT level, const char * message, ... )
 
     // check level
     if( level > g_loglevel ) return;
-
-    #ifndef __DISABLE_THREADS__
-    g_logmutex.acquire();
-    #endif
 
     TC::off();
     CK_FPRINTF_STDERR( "[%s:%s:%s]: ",
@@ -911,10 +905,6 @@ void EM_log( t_CKINT level, const char * message, ... )
 
     CK_FPRINTF_STDERR( "\n" );
     CK_FFLUSH_STDERR();
-
-    #ifndef __DISABLE_THREADS__
-    g_logmutex.release();
-    #endif
 }
 
 
@@ -926,6 +916,9 @@ void EM_log( t_CKINT level, const char * message, ... )
 //-----------------------------------------------------------------------------
 void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, ... )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(g_logmutex);
+
     va_list ap;
 
     if( level > CK_LOG_ALL ) level = CK_LOG_ALL;
@@ -938,10 +931,6 @@ void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, 
     t_CKBOOL prefix = !(options & EM_LOG_NO_PREFIX);
     // whether to print newline at end
     t_CKBOOL nl = !(options & EM_LOG_NO_NEWLINE);
-
-    #ifndef __DISABLE_THREADS__
-    g_logmutex.acquire();
-    #endif
 
     // check option
     if( prefix )
@@ -967,10 +956,6 @@ void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, 
 
     // flush
     CK_FFLUSH_STDERR();
-
-    #ifndef __DISABLE_THREADS__
-    g_logmutex.release();
-    #endif
 }
 
 

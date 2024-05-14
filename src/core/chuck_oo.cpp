@@ -3103,19 +3103,19 @@ t_CKUINT Chuck_Event::our_waiting_on = 0;
 //-----------------------------------------------------------------------------
 void Chuck_Event::signal_local()
 {
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+
+    // if queue not empty
     if( !m_queue.empty() )
     {
         // get the shred on top of the queue
         Chuck_VM_Shred * shred = m_queue.front();
         // pop the top
         m_queue.pop();
-        // release it!
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
+        // release lock
+        m_queue_lock.unlock();
+
         // REFACTOR-2017: BUG-FIX
         // release the extra ref we added when we started waiting for this event
         CK_SAFE_RELEASE( shred->event );
@@ -3129,12 +3129,6 @@ void Chuck_Event::signal_local()
         t_CKTIME *& sp = (t_CKTIME *&)shred->reg->sp;
         push_( sp, shreduler->now_system );
     }
-    else
-    {
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
-    }
 }
 
 
@@ -3146,13 +3140,13 @@ void Chuck_Event::signal_local()
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 {
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+
+    // queue of shred pointers
     queue<Chuck_VM_Shred *> temp;
     t_CKBOOL removed = FALSE;
 
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
     // while something in queue
     while( !m_queue.empty() )
     {
@@ -3181,10 +3175,6 @@ t_CKBOOL Chuck_Event::remove( Chuck_VM_Shred * shred )
 
     // copy temp back to queue
     m_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 
     return removed;
 }
@@ -3266,13 +3256,12 @@ void Chuck_Event::global_listen( t_CKINT id, void (* cb)(t_CKINT),
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
 {
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+    // temp queue
     std::queue<Chuck_Global_Event_Listener> temp;
     t_CKBOOL removed = FALSE;
 
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
     // while something in queue
     while( !m_global_queue.empty() )
     {
@@ -3294,10 +3283,6 @@ t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
 
     // copy temp back to queue
     m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 
     return removed;
 }
@@ -3311,13 +3296,12 @@ t_CKBOOL Chuck_Event::remove_listen( void (* cb)(void) )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)  )
 {
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+
     std::queue<Chuck_Global_Event_Listener> temp;
     t_CKBOOL removed = FALSE;
 
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
     // while something in queue
     while( !m_global_queue.empty() )
     {
@@ -3339,10 +3323,6 @@ t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)
 
     // copy temp back to queue
     m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 
     return removed;
 }
@@ -3356,13 +3336,12 @@ t_CKBOOL Chuck_Event::remove_listen( std::string name, void (* cb)(const char *)
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Event::remove_listen( t_CKINT id, void (* cb)(t_CKINT)  )
 {
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+    // temp queue of listeners
     std::queue<Chuck_Global_Event_Listener> temp;
     t_CKBOOL removed = FALSE;
 
-    // lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
     // while something in queue
     while( !m_global_queue.empty() )
     {
@@ -3384,10 +3363,6 @@ t_CKBOOL Chuck_Event::remove_listen( t_CKINT id, void (* cb)(t_CKINT)  )
 
     // copy temp back to queue
     m_global_queue = temp;
-    // release lock
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 
     return removed;
 }
@@ -3401,10 +3376,10 @@ t_CKBOOL Chuck_Event::remove_listen( t_CKINT id, void (* cb)(t_CKINT)  )
 //-----------------------------------------------------------------------------
 void Chuck_Event::signal_global()
 {
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
 
+    // if global queue not empty
     if( !m_global_queue.empty() )
     {
         // get the listener on top of the queue
@@ -3439,10 +3414,6 @@ void Chuck_Event::signal_global()
             m_global_queue.push( listener );
         }
     }
-
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 }
 
 
@@ -3454,11 +3425,12 @@ void Chuck_Event::signal_global()
 //-----------------------------------------------------------------------------
 void Chuck_Event::broadcast_global()
 {
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+    // queue of event listeners
     std::queue< Chuck_Global_Event_Listener > call_again;
 
+    // check globals queue
     while( !m_global_queue.empty() )
     {
         // get the listener on top of the queue
@@ -3496,10 +3468,6 @@ void Chuck_Event::broadcast_global()
 
     // for those that should be called again, store them again
     m_global_queue = call_again;
-
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 }
 
 
@@ -3513,26 +3481,21 @@ void Chuck_Event::broadcast_global()
 //-----------------------------------------------------------------------------
 void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 {
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
     // TODO: handle multiple VM
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
+
+    // if not empty
     if( !m_queue.empty() )
     {
         // get shred (only to get the VM ref)
         Chuck_VM_Shred * shred = m_queue.front();
+
         // release lock
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
+        m_queue_lock.unlock();
+
         // queue the event on the vm (added 1.3.0.0: event_buffer)
         shred->vm_ref->queue_event( this, 1, event_buffer );
-    }
-    else
-    {
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
     }
 }
 
@@ -3546,28 +3509,21 @@ void Chuck_Event::queue_broadcast( CBufferSimple * event_buffer )
 //-----------------------------------------------------------------------------
 void Chuck_Event::broadcast_local()
 {
-    // lock queue
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.acquire();
-    #endif
+    // 1.5.2.5 (ge) updated to std::mutex
+    std::lock_guard<std::mutex> lock(m_queue_lock);
+
     // while not empty
     while( !m_queue.empty() )
     {
         // release first
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
+        m_queue_lock.unlock();
+
         // signal the next shred
         this->signal_local();
+
         // lock again
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.acquire();
-        #endif
+        m_queue_lock.lock();
     }
-    // release
-    #ifndef __DISABLE_THREADS__
-    m_queue_lock.release();
-    #endif
 }
 
 
@@ -3592,14 +3548,12 @@ void Chuck_Event::wait( Chuck_VM_Shred * shred, Chuck_VM * vm )
         // suspend
         shred->is_running = FALSE;
 
+        // 1.5.2.5 (ge) updated to std::mutex
+        std::lock_guard<std::mutex> lock(m_queue_lock);
         // add to waiting list
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.acquire();
-        #endif
         m_queue.push( shred );
-        #ifndef __DISABLE_THREADS__
-        m_queue_lock.release();
-        #endif
+        // release
+        m_queue_lock.unlock();
 
         // add event to shred
         assert( shred->event == NULL );
