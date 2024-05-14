@@ -44,6 +44,7 @@
 #include <queue>
 #include <iostream>
 #include <atomic> // added 1.5.2.5 (ge) for "lock-free" circle buffer
+#include <mutex> // added 1.5.2.5 (ge) hmm so much for "lock-free"
 
 #define DWORD__                t_CKUINT
 #define SINT__                 t_CKINT
@@ -390,6 +391,8 @@ protected:
     std::atomic_ulong m_readIndex;
     // num elements
     std::atomic_ulong m_numElements;
+    // mutex | 1.5.2.5 (ge)
+    std::mutex m_mutex;
 };
 
 
@@ -420,7 +423,8 @@ XCircleBuffer<T>::XCircleBuffer( long length )
 template <typename T>
 XCircleBuffer<T>::~XCircleBuffer()
 {
-
+    CK_SAFE_DELETE_ARRAY( m_buffer );
+    m_length = m_readIndex = m_writeIndex = m_numElements = 0;
 }
 
 
@@ -433,6 +437,9 @@ XCircleBuffer<T>::~XCircleBuffer()
 template <typename T>
 void XCircleBuffer<T>::init( long length )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // clean up is necessary
     if( m_buffer )
     {
@@ -496,6 +503,9 @@ long XCircleBuffer<T>::length() const
 template <typename T>
 void XCircleBuffer<T>::clear()
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // zero out
     m_readIndex = m_writeIndex = m_numElements = 0;
 }
@@ -559,6 +569,9 @@ void XCircleBuffer<T>::advanceRead()
 template <typename T>
 void XCircleBuffer<T>::put( const T & item )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // sanity check
     if( m_buffer == NULL ) return;
 
@@ -615,6 +628,9 @@ bool XCircleBuffer<T>::more() const
 template <typename T>
 long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // sanity check
     if( m_buffer == NULL ) return 0;
 
@@ -666,6 +682,9 @@ long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
 template <typename T>
 long XCircleBuffer<T>::pop( long numItems )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // sanity check
     if( m_buffer == NULL ) return 0;
 
@@ -694,6 +713,9 @@ long XCircleBuffer<T>::pop( long numItems )
 template <typename T>
 bool XCircleBuffer<T>::get( T * result )
 {
+    // 1.5.2.5 (ge) added
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // sanity check
     if( m_buffer == NULL || m_readIndex == m_writeIndex ) return false;
 
