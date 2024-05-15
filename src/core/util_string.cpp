@@ -873,7 +873,7 @@ std::string extract_filepath_file( const std::string & filepath )
     // normalize for searching, e.g., \ replaced with /
     string normalize = normalize_directory_separator( trim(filepath) );
     // look for separator from the right
-    long i = normalize.rfind( path_separator );
+    size_t i = normalize.rfind( path_separator );
     // if not separator found, return the path unchanged
     if( i == std::string::npos ) return filepath;
 
@@ -974,7 +974,7 @@ std::string normalize_directory_separator( const std::string & filepath )
     // make a copy
     std::string new_filepath = filepath;
     // string length
-    long len = new_filepath.size();
+    size_t len = new_filepath.size();
     // iterate over characters
     for( long i = 0; i < len; i++ )
     {
