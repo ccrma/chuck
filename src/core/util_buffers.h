@@ -730,7 +730,7 @@ bool XCircleBuffer<T>::get( T * result )
 // desc: hopefully this will the last lock-free queue we need to implement...
 //       hopefully not like Final Fantasy which has 15 sequels to date
 //
-// adapted from:
+// added 1.5.2.5 (ge) | adapted from:
 // Lock-Free Ring Buffer (LFRB) for embedded systems
 // GitHub: https://github.com/QuantumLeaps/lock-free-ring-buffer
 // SPDX-License-Identifier: MIT
@@ -750,7 +750,8 @@ bool XCircleBuffer<T>::get( T * result )
 * correctly aligned for "atomic" access. In practice, most C compilers
 * should provide such natural alignment (by inserting some padding into the
 * ::FinalRingBuffer class/struct, if necessary). */
-#define FinalBufferAtomic std::atomic<t_CKUINT>
+//-----------------------------------------------------------------------------
+typedef std::atomic_ulong FinalBufferAtomic;
 //-----------------------------------------------------------------------------
 template <typename T>
 class FinalRingBuffer
