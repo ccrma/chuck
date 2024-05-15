@@ -374,8 +374,6 @@ protected: // helper functions
     inline void advanceRead();
 
 protected:
-    // the buffer
-    T * m_buffer;
     // the buffer length (capacity)
     std::atomic_ulong m_length;
     // write index
@@ -384,6 +382,10 @@ protected:
     std::atomic_ulong m_readIndex;
     // num elements
     std::atomic_ulong m_numElements;
+
+    // the buffer
+    T * m_buffer;
+
     // mutex | 1.5.2.5 (ge)
     std::mutex m_mutex; // TODO necessary? review code
 };
@@ -718,6 +720,143 @@ bool XCircleBuffer<T>::get( T * result )
     advanceRead();
 
     return true;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: FinalRingBuffer
+// desc: hopefully this will the last lock-free queue we need to implement...
+//       hopefully not like Final Fantasy which has 15 sequels to date
+//
+// adapted from:
+// Lock-Free Ring Buffer (LFRB) for embedded systems
+// GitHub: https://github.com/QuantumLeaps/lock-free-ring-buffer
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+/* the following FinalBufferAtomic type is assumed to be "atomic" in a
+* target CPU, meaning that the CPU needs to write the whole FinalBufferAtomic
+* in one machine instruction. An example of violating this assumption would
+* be an 8-bit CPU, which writes uint16_t (2-bytes) in 2 machine instructions.
+* For such 8-bit CPU, the maximum size of FinalBufferAtomic would be uint8_t
+* (1-byte).
+*
+* Another case of violating the "atomic" writes to FinalBufferAtomic type
+* would be misalignment of a FinalBufferAtomic variable in memory, which could
+* cause the compiler to generate multiple instructions to write a
+* FinalBufferAtomic value. Therefore, it is further assumed that all
+* FinalBufferAtomic variables in the following FinalBuffer struct *are*
+* correctly aligned for "atomic" access. In practice, most C compilers
+* should provide such natural alignment (by inserting some padding into the
+* ::FinalRingBuffer class/struct, if necessary). */
+#define FinalBufferAtomic std::atomic<t_CKUINT>
+//-----------------------------------------------------------------------------
+template <typename T>
+class FinalRingBuffer
+{
+public:
+    FinalRingBuffer();
+    ~FinalRingBuffer();
+    // reset length of buffer (capacity)
+    void init( t_CKUINT capacity );
+
+public:
+    bool put( T & element );
+    bool get( T * pElement );
+    bool more();
+
+protected:
+    /* the type of ring buffer elements is not critical for the lock-free
+    * operation and does not need to be "atomic". For example, it can be
+    * an integer type (uint16_t, uint32_t, uint64_t), a pointer type,
+    * or even a struct type. */
+    T * m_buf; // pointer to the start of the ring buffer
+    FinalBufferAtomic m_end;  // offset of the end of the ring buffer
+    FinalBufferAtomic m_head; // offset to where next el. will be inserted
+    FinalBufferAtomic m_tail; // offset of where next el. will be removed
+};
+
+template <typename T>
+FinalRingBuffer<T>::FinalRingBuffer()
+{
+    m_buf = NULL;
+    m_end = m_head = m_tail = 0;
+}
+
+template <typename T>
+void FinalRingBuffer<T>::init( t_CKUINT capacity )
+{
+    // dealloc
+    CK_SAFE_DELETE_ARRAY( m_buf );
+    // allocate
+    m_buf = new T[capacity];
+    m_end = capacity;
+    m_head = m_tail = 0;
+}
+
+template <typename T>
+FinalRingBuffer<T>::~FinalRingBuffer()
+{
+    CK_SAFE_DELETE_ARRAY(m_buf);
+    m_end = m_head = m_tail = 0;
+}
+
+template <typename T>
+bool FinalRingBuffer<T>::put( T & element )
+{
+    // check
+    if( !m_buf ) return false;
+
+    // local head variable (need to be atomic?)
+    t_CKUINT head = m_head + 1;
+    if( head == m_end ) head = 0;
+
+    // buffer NOT full?
+    if( head != m_tail )
+    {
+        // copy the element into the buffer
+        m_buf[m_head] = element;
+        // update the head to a *valid* index
+        m_head = head;
+        // element placed in the buffer
+        return true;
+    }
+
+    // element NOT placed in the buffer
+    return false;
+}
+
+template <typename T>
+bool FinalRingBuffer<T>::get( T * pElement )
+{
+    // check for NULL
+    if( !m_buf || !pElement ) return false;
+
+    // local tail variable (need to be atomic?)
+    t_CKUINT tail = m_tail;
+    // ring buffer NOT empty?
+    if( m_head != tail )
+    {
+        // copy element
+        *pElement = m_buf[tail];
+        // advance local tail
+        ++tail; if( tail == m_end ) { tail = 0; }
+        // update the tail to a *valid* index
+        m_tail = tail;
+        // gotten
+        return true;
+    }
+
+    // not gotten
+    return false;
+}
+
+template <typename T>
+bool FinalRingBuffer<T>::more()
+{
+    // has elements?
+    return m_head != m_tail;
 }
 
 
