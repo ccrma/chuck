@@ -37,11 +37,13 @@
 
 #include "chuck_oo.h"
 #include "chuck_errmsg.h"
+#ifndef __DISABLE_THREADS__
+#include "util_thread.h"
+#endif
 #include <vector>
 #include <queue>
 #include <iostream>
-#include <atomic> // added 1.5.2.5 (ge) for "lock-free" circle buffer | c++11
-#include <mutex> // added 1.5.2.5 (ge) hmm so much for "lock-free"... | c++11
+#include <atomic> // c++11
 
 #define DWORD__                t_CKUINT
 #define SINT__                 t_CKINT
@@ -82,7 +84,7 @@ public:
 protected:
     BYTE__ * m_data;
     UINT__   m_data_width;
-    // UINT__   m_read_offset;
+    //UINT__   m_read_offset;
 
     // this holds the offset allocated by join(), paired with an optional
     // Chuck_Event to notify when things are put in the buffer
@@ -95,12 +97,15 @@ protected:
     };
     std::vector<ReadOffset> m_read_offsets;
     std::queue<UINT__> m_free;
+
     SINT__   m_write_offset;
     SINT__   m_max_elem;
 
-    // updated | 1.5.2.5 (ge) from XMutex to std::mutex
-    std::mutex m_mutex; // TODO necessary?
-    // buffer
+    // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
+    XMutex m_mutex;
+    #endif
+
     CBufferSimple * m_event_buffer;
 };
 
@@ -127,14 +132,15 @@ public:
 
 protected:
     BYTE__ * m_data;
-    std::atomic_ulong m_data_width;
-    std::atomic_ulong m_read_offset;
-    std::atomic_ulong m_write_offset;
-    std::atomic_ulong m_max_elem;
+    UINT__   m_data_width;
+    UINT__   m_read_offset;
+    UINT__   m_write_offset;
+    UINT__   m_max_elem;
 
+#ifndef __DISABLE_THREADS__
     // added | 1.5.1.5 (ge & andrew) twilight zone
-    // updated | 1.5.2.5 (ge) to std::mutex
-    std::mutex m_mutex;
+    XMutex m_mutex;
+#endif
 };
 
 
@@ -338,6 +344,8 @@ protected:
 //-----------------------------------------------------------------------------
 // name: class XCircleBuffer
 // desc: templated circular buffer class (different impl from ge-X-lib)
+//       NOTE: the lock-free queue DOES NOT WORK; can crash; keeping for study
+//       NOTE: use FinalRingBuffer instead | 1.5.2.5 (ge)
 //-----------------------------------------------------------------------------
 template <typename T>
 class XCircleBuffer
@@ -374,6 +382,8 @@ protected: // helper functions
     inline void advanceRead();
 
 protected:
+    // the buffer
+    T * m_buffer;
     // the buffer length (capacity)
     std::atomic_ulong m_length;
     // write index
@@ -382,12 +392,6 @@ protected:
     std::atomic_ulong m_readIndex;
     // num elements
     std::atomic_ulong m_numElements;
-
-    // the buffer
-    T * m_buffer;
-
-    // mutex | 1.5.2.5 (ge)
-    std::mutex m_mutex; // TODO necessary? review code
 };
 
 
@@ -418,8 +422,7 @@ XCircleBuffer<T>::XCircleBuffer( long length )
 template <typename T>
 XCircleBuffer<T>::~XCircleBuffer()
 {
-    CK_SAFE_DELETE_ARRAY( m_buffer );
-    m_length = m_readIndex = m_writeIndex = m_numElements = 0;
+
 }
 
 
@@ -432,9 +435,6 @@ XCircleBuffer<T>::~XCircleBuffer()
 template <typename T>
 void XCircleBuffer<T>::init( long length )
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // clean up is necessary
     if( m_buffer )
     {
@@ -498,9 +498,6 @@ long XCircleBuffer<T>::length() const
 template <typename T>
 void XCircleBuffer<T>::clear()
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // zero out
     m_readIndex = m_writeIndex = m_numElements = 0;
 }
@@ -564,9 +561,6 @@ void XCircleBuffer<T>::advanceRead()
 template <typename T>
 void XCircleBuffer<T>::put( const T & item )
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // sanity check
     if( m_buffer == NULL ) return;
 
@@ -623,9 +617,6 @@ bool XCircleBuffer<T>::more() const
 template <typename T>
 long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // sanity check
     if( m_buffer == NULL ) return 0;
 
@@ -677,9 +668,6 @@ long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
 template <typename T>
 long XCircleBuffer<T>::pop( long numItems )
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // sanity check
     if( m_buffer == NULL ) return 0;
 
@@ -708,9 +696,6 @@ long XCircleBuffer<T>::pop( long numItems )
 template <typename T>
 bool XCircleBuffer<T>::get( T * result )
 {
-    // 1.5.2.5 (ge) added
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     // sanity check
     if( m_buffer == NULL || m_readIndex == m_writeIndex ) return false;
 
@@ -799,7 +784,7 @@ void FinalRingBuffer<T>::init( t_CKUINT capacity )
 template <typename T>
 FinalRingBuffer<T>::~FinalRingBuffer()
 {
-    CK_SAFE_DELETE_ARRAY(m_buf);
+    CK_SAFE_DELETE_ARRAY( m_buf );
     m_end = m_head = m_tail = 0;
 }
 
