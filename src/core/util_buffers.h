@@ -343,7 +343,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // name: FinalRingBuffer
-// desc: hopefully this will the last lock-free queue we need to implement...
+// desc: hopefully this will be the last lock-free queue we need to implement...
 //       hopefully not like FinalFantasy which has sequels
 //
 // added 1.5.2.5 (ge) | adapted from:

@@ -258,12 +258,15 @@ error:
 }
 
 
-#else // ? e.g. iPhone
+#else // ? e.g., iPhone
 
-vector<string> SerialIOManager::availableSerialDevices()
+
+// for compatibility | 1.5.2.5 (ge & eito) added std::
+std::vector<std::string> SerialIOManager::availableSerialDevices()
 {
-    vector<string> devices;
-
+    // vector of devices
+    std::vector<std::string> devices;
+    // return empty list
     return devices;
 }
 
