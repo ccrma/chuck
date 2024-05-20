@@ -6,9 +6,13 @@
 250::ms => dur T;
 
 // patch
-Blit s => LPF lpf => ADSR e => DelayL eicho => JCRev r => dac;
+Blit s => LPF lpf => PoleZero dcb => ADSR e => DelayL eicho => JCRev r => dac;
 // feedback
 eicho => Gain g(.8) => eicho;
+// block zero
+.99 => dcb.blockZero;
+// lower the volume a bit
+.65 => s.gain;
 
 // delay settings
 T*2/3 => eicho.max => eicho.delay;
