@@ -2,7 +2,7 @@
 // desc: lounge blit
 // date: spring 2024; made for svork's concert lounge music
 
-// a duration
+// a duration... 350::ms can bring the vibes too
 250::ms => dur T;
 
 // patch
