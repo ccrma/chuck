@@ -10,8 +10,10 @@ ChucK VERSIONS log
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
           original theme by Koji Kondo; modeled in ChucK by Wesley Burchell in 2017
 - (added) examples/basic/blit3.ck -- lounge blit; made for svork concert lounge music
-- (fixed) globals events system synchronization (this fixes a long-running,
-    elusive Chunity crashing bug)
+- (added) Type type added to CKDoc script and deployed online:
+    https://chuck.stanford.edu/doc/reference/utils.html#Type
+- (fixed) globals events system synchronization (FYI this fixes a long-running,
+    elusive Chunity crashing bug involving various syncers)
 
 
 1.5.2.4 (April 2024)
