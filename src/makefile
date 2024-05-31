@@ -16,7 +16,7 @@ CK_HOST_DIR=host
 # where to find RtAudio
 RTAUDIO_DIR=RtAudio
 # chuck version
-CK_VERSION=1.5.2.5-dev
+CK_VERSION=1.5.2.4-dev
 
 
 ########################## DEFAULT MAKE TARGET ################################
@@ -51,6 +51,35 @@ EMSCRIPTEN_POSTJS=host-web/chucknode-postjs.js
 .PHONY: emscripten web
 emscripten: host-web/webchuck/js/webchuck.js
 web: host-web/webchuck/js/webchuck.js
+web-debug: $(EMSCRIPTENSRCS) $(EMSCRIPTEN_POSTJS)
+	emcc -pthread -s MAIN_MODULE=2 -s DISABLE_EXCEPTION_CATCHING=0 \
+	-D__DISABLE_MIDI__ -D__DISABLE_WATCHDOG__ -D__DISABLE_NETWORK__ \
+	-D__DISABLE_OTF_SERVER__ -D__ALTER_HID__ -D__DISABLE_HID__ \
+	-D__DISABLE_SERIAL__ -D__DISABLE_ASYNCH_IO__ -D__DISABLE_THREADS__ \
+	-D__DISABLE_KBHIT__ -D__DISABLE_PROMPTER__ -D__DISABLE_SHELL__ \
+	-D__CHUCK_USE_PLANAR_BUFFERS__ -D__OLDSCHOOL_RANDOM__ \
+	-Icore -Wformat=0 $(EMSCRIPTENSRCS) -o host-web/webchuck/js/webchuck.js \
+	-s EXPORTED_FUNCTIONS="['_malloc']" \
+	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8", "GROWABLE_HEAP_F32"]' \
+	-s LINKABLE=1 -s MODULARIZE=1 -s ALLOW_MEMORY_GROWTH=1 \
+	-s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1 \
+	-s USE_GLFW=3 \
+	-s USE_WEBGPU \
+	-s 'EXPORT_NAME="ChucK"' \
+	-s ENVIRONMENT="web,worker" \
+	-sPTHREAD_POOL_SIZE_STRICT=0 \
+	-pthread \
+	-g3
+
+# -s USE_PTHREADS=1
+# -s PTHREAD_POOL_SIZE=4
+# -sASSERTIONS=2
+# -sSAFE_HEAP=1
+# -sMALLOC=mimalloc 
+
+# -s --extern-post-js $(EMSCRIPTEN_POSTJS) \
+# azaday added 5/31
+
 # recipe
 host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS) $(EMSCRIPTEN_POSTJS)
 	emcc -O3 -s MAIN_MODULE=2 -s DISABLE_EXCEPTION_CATCHING=0 \
@@ -61,11 +90,14 @@ host-web/webchuck/js/webchuck.js: $(EMSCRIPTENSRCS) $(EMSCRIPTEN_POSTJS)
 	-D__CHUCK_USE_PLANAR_BUFFERS__ -D__OLDSCHOOL_RANDOM__ \
 	-Icore -Wformat=0 $(EMSCRIPTENSRCS) -o host-web/webchuck/js/webchuck.js \
 	-s EXPORTED_FUNCTIONS="['_malloc']" \
+	-pthread \
 	-s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap", "getValue", "setValue", "addFunction", "removeFunction", "UTF8ToString", "stringToUTF8"]' \
 	-s LINKABLE=1 -s MODULARIZE=1 -s ALLOW_MEMORY_GROWTH=1 \
 	-s RESERVED_FUNCTION_POINTERS=50 -s FORCE_FILESYSTEM=1 \
 	-s --extern-post-js $(EMSCRIPTEN_POSTJS) \
-	-s 'EXPORT_NAME="ChucK"'
+	-s USE_GLFW=3 \
+	-s USE_WEBGPU \
+	-s 'EXPORT_NAME="ChucK"' \
 
 # whack-a-mole options for trying to build MAIN_MODULE=2 without LINKABLE=1
 #	-s EXPORTED_FUNCTIONS="['_malloc','_dlopen','___THREW__','___threwValue']" \
