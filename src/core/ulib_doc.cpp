@@ -270,7 +270,257 @@ string type2url( const string & type, const vector<CKDocGroup *> & groups )
 }
 
 
+//-----------------------------------------------------------------------------
+// name: class CKDocJSONOutput | (terry feng)
+// desc: JSON output
+//-----------------------------------------------------------------------------
+class CKDocJSONOutput : public CKDocOutput
+{
+private:
+    Chuck_Func * m_func;
+    std::string m_title;
+    Chuck_VM * m_vm_ref;
+    Chuck_Env * m_env_ref;
+public:
+    CKDocJSONOutput( Chuck_VM * vm )
+      : m_func(NULL), m_vm_ref(vm)
+    {
+        // get the env
+        m_env_ref = vm != NULL ? vm->env() : NULL;
+    }
+    // file extension
+    virtual string fileExtension() const { return ".json"; }
+    // render JSON index
+    virtual string renderIndex( const string & indexTitle, const vector<CKDocGroup *> & groups ) {
+        ostringstream sout;
+        sout << "{\n";
 
+        for(t_CKINT i = 0; i < groups.size(); ++i) {
+            sout << "  \"" << groups[i]->name << "\": [\n";
+            for(t_CKINT j = 0; j < groups[i]->types.size(); ++j) {
+                sout << "    \"" << groups[i]->types[j]->base_name << "\"";
+                if(j < groups[i]->types.size() - 1) {
+                    sout << ",";
+                }
+                sout << "\n";
+            }
+            sout << "  ]";
+            if(i < groups.size() - 1) {
+                sout << ",";
+            }
+            sout << "\n";
+        }
+        sout << "  ]\n}\n";
+        return sout.str();
+    }
+
+public:
+    void begin( const string & title )
+    {
+        m_title = trim(title);
+        // check length
+        if( m_title.length() == 0 ) m_title = "";
+        // string to return
+        m_outputStr += "{\n";
+        m_outputStr += "  \"title\": \"" + m_title + "\",\n";
+        m_outputStr += "  \"groups\": [\n";
+    }
+    void heading() { }
+    void end() { m_outputStr += "  ]\n}\n"; }
+    void title(const std::string &_title) { }
+    void begin_body() { }
+    void end_body() { }
+    void begin_toc() { }
+    void toc_class(Chuck_Type * type) { }
+    void end_toc() { }
+    void begin_classes( CKDocGroup * group ) { }
+    void end_classes() { }
+    void begin_class(Chuck_Type * type, const vector<CKDocGroup *> & groups) 
+    { 
+        m_outputStr += "    {\n";
+        m_outputStr += "      \"name\": \"" + type->base_name + "\",\n";
+        m_outputStr += "      \"description\": \"" + type->doc + "\",\n";
+
+        // type heirarchy, iterate through parents
+        Chuck_Type * parent = type->parent;
+        // check if there is a parent class
+        if( parent != NULL )
+        {
+            m_outputStr += "      \"inherits\": [";
+        }
+        while( parent != NULL )
+        {
+            m_outputStr += "\"" + parent->base_name + "\"";
+            parent = parent->parent;
+            if( parent != NULL )
+            {
+                m_outputStr += ", ";
+            }
+        }
+        if( type->parent != NULL ) m_outputStr += "],\n";
+    }
+
+    void end_class() { m_outputStr += "    },\n"; }
+    void begin_examples() { }
+    void end_examples() { }
+    void begin_static_member_vars() { }
+    void end_static_member_vars() { }
+    void begin_member_vars() { }
+    void end_member_vars() { }
+    void begin_static_member_funcs() { }
+    void end_static_member_funcs() { }
+    void begin_ctors() { }
+    void begin_dtor() { }
+    void begin_member_funcs() { }
+    void end_member_funcs() { }
+
+    void example(const std::string &name, const std::string &url) 
+    { 
+        m_outputStr += "      \"example\": \"" + name + "\",\n";
+        m_outputStr += "      \"url\": \"" + url + "\"\n";
+    }
+
+    void static_member_var(Chuck_Value * var) 
+    { 
+        m_outputStr += "      \"static member variable\": \"" + var->name + "\",\n";
+        m_outputStr += "      \"type\": \"" + var->type->base_name + "\",\n";
+        m_outputStr += "      \"description\": \"" + var->doc + "\"\n";
+
+        // check array depth
+        if( var->type->array_depth )
+        {
+            m_outputStr += "      \"array depth\": " + std::to_string(var->type->array_depth) + "\n";
+        }
+
+        // function name
+        m_outputStr += "      \"function name\": " + var->name + "\n";
+    }
+
+    void member_var(Chuck_Value * var) 
+    {
+        m_outputStr += "      \"member variable\": \"" + var->name + "\",\n";
+        m_outputStr += "      \"type\": \"" + var->type->base_name + "\",\n";
+        m_outputStr += "      \"description\": \"" + var->doc + "\"\n";
+
+        // check array depth
+        if( var->type->array_depth )
+        {
+            m_outputStr += "      \"array depth\": " + std::to_string(var->type->array_depth) + "\n";
+        }
+
+        // function name
+        m_outputStr += "      \"function name\": " + var->name + "\n";
+    }
+
+    void begin_static_member_func(Chuck_Func * func) 
+    { 
+        m_outputStr += "      {\n";
+        m_outputStr += "      \"static member function\": \"" + func->base_name + "\",\n";
+
+        // return type
+        string ret_type = func->def()->ret_type->base_name;
+        string ret_brackets = func->def() && func->def()->ret_type->array_depth ? array_depth_to_brackets(func->def()->ret_type->array_depth) : ""; 
+        m_outputStr += "      \"return type\": \"" + ret_type + ret_brackets + "\",\n";
+
+        // remember
+        m_func = func;
+    }
+
+    void end_static_member_func() 
+    { 
+        // verify
+        if( !m_func ) return;
+
+        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
+
+        // finish output string
+        // m_outputStr += "      ]\n";
+        m_outputStr += "    },\n";
+
+        // zero out
+        m_func = NULL;
+    }
+
+    void begin_member_func(Chuck_Func * func) 
+    {
+        // function name
+        m_outputStr += "      \"member function\": \"" + func->base_name + "\",\n";
+
+        // return type
+        string ret_type = func->def()->ret_type->base_name;
+        string ret_brackets = func->def() && func->def()->ret_type->array_depth ? array_depth_to_brackets(func->def()->ret_type->array_depth) : "";
+        m_outputStr += "      \"return type\": \"" + ret_type + ret_brackets + "\",\n";
+
+        // save for end_member_func()
+        m_func = func;
+    }
+
+    void end_member_func() 
+    {
+        // verify
+        if( !m_func ) return;
+
+        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
+
+        // finish output
+        m_outputStr += "    },\n";
+
+        // zero out
+        m_func = NULL;
+    }
+
+    void begin_ctor( Chuck_Func * func ) { 
+        // function name
+        m_outputStr += "      \"constructor\": \"" + func->base_name + "\",\n";
+        // save for end_member_func()
+        m_func = func;
+    }
+
+    void end_ctor() 
+    {
+        // verify
+        if( !m_func ) return;
+
+        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
+
+        // finish output
+        m_outputStr += "    },\n";
+
+        // zero out
+        m_func = NULL;
+    }
+
+    void func_arg( a_Arg_List arg ) 
+    {
+        // argument type
+        string arg_type = arg->type->base_name;
+        string arg_brackets = arg->type->array_depth ? array_depth_to_brackets(arg->type->array_depth) : "";
+        m_outputStr += "      \"argument type\": \"" + arg_type + arg_brackets + "\",\n";
+        // argument name
+        string varname = varnameclean(S_name(arg->var_decl->xid));
+        m_outputStr += "      \"argument name\": \"" + varname + "\",\n";
+    }
+
+public:
+    static string array_depth_to_brackets( int depth )
+    {
+        string brackets = "";
+        for( int i = 0; i < depth; i++ )
+        {
+            brackets += "[]";
+        }
+        return brackets;
+    }
+
+    static std::string varnameclean( std::string vn )
+    {
+        // strip []
+        vn.erase(std::remove(vn.begin(), vn.end(), '['), vn.end());
+        vn.erase(std::remove(vn.begin(), vn.end(), ']'), vn.end());
+        return vn;
+    }
+
+};
 
 
 //-----------------------------------------------------------------------------
@@ -1000,9 +1250,10 @@ t_CKBOOL CKDoc::setOutputFormat( t_CKINT which )
         case FORMAT_TEXT:
         case FORMAT_MARKDOWN:
         case FORMAT_JSON:
-            EM_error3( "[CKDoc]: unsupported format '%s'...", formats[which] );
-            goto error;
-
+            m_output = new CKDocJSONOutput( m_vm_ref );
+            // EM_error3( "[CKDoc]: unsupported format '%s'...", formats[which] );
+            // goto error;
+            break;
         // unrecognized
         default:
             EM_error3( "[CKDoc]: unrecognized format ID '%i'...", which );
