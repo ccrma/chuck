@@ -6,6 +6,30 @@ ChucK VERSIONS log
 =======
 - (updated) chugin API version from 10.1 to 10.2
 - (added) chugin API for callback on shutdown
+- (added) chugin API for setting array elements (thanks @AndrewAday)
+- (added) overloaded constructors added (more to come) 
+==================
+    Envelope( dur durationToTarget )
+        Construct an Envelope with duration to reach target (assumed to be 1.0)
+    Envelope( float secondsToTarget )
+        Construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0)
+    Envelope( dur durationToTarget, float target )
+        Construct an Envelope with duration to reach target.
+    Envelope( float durationToTarget, float target )
+        Construct an Envelope with duration (in seconds) to reach target.
+
+    ADSR(dur attack, dur decay, float sustain, dur release)
+        Construct an ADSR with attack, decay, sustain, and release values. Attack, 
+        decay, and release values are durations; sustain is a float value typically 
+        between 0 and 1.
+    ADSR(float attack, float decay, float sustain, float release)
+        Construct an ADSR with attack, decay, sustain, and release values. Attack, 
+        decay, and release values are in seconds; sustain is a float value 
+        typically between 0 and 1.
+==================
+- (added) void Envelope.set( dur durationToTarget, float target );
+          void Envelope.set( float secondsToTarget, float target );
+          examples/basic/envelope2.ck
 - (added) command line query system `--query:<name>`
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
           original theme by Koji Kondo; (meticulously) modeled in ChucK by 
@@ -17,7 +41,6 @@ ChucK VERSIONS log
           scream generator
 - (added) Type type added to CKDoc script and deployed online:
     https://chuck.stanford.edu/doc/reference/utils.html#Type
-- (added) chugin DL API for setting array elements (thanks @AndrewAday)
 - (fixed) globals events system synchronization (FYI this fixes a long-running,
     elusive Chunity crashing bug involving various syncers)
 
