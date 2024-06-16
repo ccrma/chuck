@@ -1024,31 +1024,41 @@ public:
         // array_int operations
         t_CKINT (CK_DLL_CALL * const array_int_size)( ArrayInt array );
         t_CKINT (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_int_set_idx)( ArrayInt array, t_CKINT idx, t_CKINT value );
         t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const char * key, t_CKINT & value  );
+        void (CK_DLL_CALL *const array_int_set_key)( ArrayInt array, const char *key, t_CKINT value );
         t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKINT value );
         void (CK_DLL_CALL * const array_int_clear)( ArrayInt array );
         // array_float operations
         t_CKINT (CK_DLL_CALL * const array_float_size)( ArrayFloat array );
         t_CKFLOAT (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_float_set_idx)( ArrayFloat array, t_CKINT idx, t_CKFLOAT value );
         t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const char * key, t_CKFLOAT & value );
+        void (CK_DLL_CALL *const array_float_set_key)( ArrayFloat array, const char *key, t_CKFLOAT value );
         t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
         void (CK_DLL_CALL * const array_float_clear)(ArrayFloat array);
         // array_vec2/complex/polar/16 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec2_size)( ArrayVec2 array );
         t_CKVEC2 (CK_DLL_CALL * const array_vec2_get_idx)( ArrayVec2 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec2_set_idx)( ArrayVec2 array, t_CKINT idx, t_CKVEC2 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_get_key)( ArrayVec2 array, const char * key, t_CKVEC2 & value );
+        void (CK_DLL_CALL *const array_vec2_set_key)( ArrayVec2 array, const char *key, t_CKVEC2 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_push_back)( ArrayVec2 array, const t_CKVEC2 & value );
         void (CK_DLL_CALL * const array_vec2_clear)(ArrayVec2 array);
         // array_vec3/24 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec3_size)( ArrayVec3 array );
         t_CKVEC3 (CK_DLL_CALL * const array_vec3_get_idx)( ArrayVec3 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec3_set_idx)( ArrayVec3 array, t_CKINT idx, t_CKVEC3 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_get_key)( ArrayVec3 array, const char * key, t_CKVEC3 & value );
+        void (CK_DLL_CALL *const array_vec3_set_key)( ArrayVec3 array, const char *key, t_CKVEC3 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_push_back)( ArrayVec3 array, const t_CKVEC3 & value );
         void (CK_DLL_CALL * const array_vec3_clear)(ArrayVec3 array);
         // array_vec4/32 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec4_size)( ArrayVec4 array );
         t_CKVEC4 (CK_DLL_CALL * const array_vec4_get_idx)( ArrayVec4 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec4_set_idx)( ArrayVec4 array, t_CKINT idx, t_CKVEC4 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec4_get_key)( ArrayVec4 array, const char * key, t_CKVEC4 & value );
+        void (CK_DLL_CALL *const array_vec4_set_key)( ArrayVec4 array, const char *key, t_CKVEC4 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec4_push_back)( ArrayVec4 array, const t_CKVEC4 & value );
         void (CK_DLL_CALL * const array_vec4_clear)(ArrayVec4 array);
         // (UNSAFE) get c++ vector pointers from chuck arrays | 1.5.2.0
