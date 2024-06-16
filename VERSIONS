@@ -8,10 +8,16 @@ ChucK VERSIONS log
 - (added) chugin API for callback on shutdown
 - (added) command line query system `--query:<name>`
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
-          original theme by Koji Kondo; modeled in ChucK by Wesley Burchell in 2017
-- (added) examples/basic/blit3.ck -- lounge blit; made for svork concert lounge music
+          original theme by Koji Kondo; (meticulously) modeled in ChucK by 
+          Wesley Burchell in 2017
+- (added) examples/basic/blit3.ck -- lounge blit; made for svork concert
+          lounge music for premiere in May 2024
+- (added) examples/special/scream-o-matic/scream-o-matic.ck -- using 
+          multiple LiSas for granular synthesis, to make continuous 
+          scream generator
 - (added) Type type added to CKDoc script and deployed online:
     https://chuck.stanford.edu/doc/reference/utils.html#Type
+- (added) chugin DL API for setting array elements (thanks @AndrewAday)
 - (fixed) globals events system synchronization (FYI this fixes a long-running,
     elusive Chunity crashing bug involving various syncers)
 
