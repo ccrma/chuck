@@ -15,13 +15,11 @@ while( true )
     Math.random2f(500,1000)::ms => dur duration;
     // next target
     Math.random2f(.1, 10) => float target;
-    // print
-    <<< "duration:", duration/second, "target:", target >>>;
 
+    // print duration and target
+    <<< "duration:", duration/second, "target:", target >>>;
     // set duration and target
     e.set( duration, target );
-    // key on (without key off): ramp to new target
-    e.keyOn();
     // advance by duration-to-target
     duration => now;
 }
