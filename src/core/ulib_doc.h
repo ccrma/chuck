@@ -169,7 +169,7 @@ public:
     // set output format: CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON
     t_CKBOOL setOutputFormat( t_CKINT which );
     // get output format
-    t_CKINT getOutpuFormat() const;
+    t_CKINT getOutputFormat() const;
     // set base examples root path
     void setExamplesRoot( const std::string & path );
     // get base examples root path
@@ -196,6 +196,8 @@ public:
     static const t_CKINT FORMAT_TEXT;     // same as help
     static const t_CKINT FORMAT_MARKDOWN; // not implemented
     static const t_CKINT FORMAT_JSON;     // not implemented
+    // sorting flag
+    bool m_disable_sort;
 
 protected:
     // write string to file

@@ -56,6 +56,8 @@ CK_DLL_CTRL( CKDoc_examplesRoot_set );
 CK_DLL_CGET( CKDoc_examplesRoot_get );
 CK_DLL_CTRL( CKDoc_outputFormat_set );
 CK_DLL_CGET( CKDoc_outputFormat_get );
+CK_DLL_MFUN( CKDoc_sort_set );
+CK_DLL_MFUN( CKDoc_sort_get );
 CK_DLL_MFUN( CKDoc_genIndex );
 CK_DLL_MFUN( CKDoc_genCSS );
 CK_DLL_MFUN( CKDoc_genGroups );
@@ -170,6 +172,17 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     // CKDoc_outputFormat_set
     func = make_new_mfun( "int", "outputFormat", CKDoc_outputFormat_get );
     func->doc = "Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // CKDoc disable sort
+    func = make_new_mfun( "int", "disableSort", CKDoc_sort_set );
+    func->add_arg("int", "disable");
+    func->doc = "Disable alphabetical sorting of the documentation.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // CKDoc get sort status
+    func = make_new_mfun( "int", "disableSort", CKDoc_sort_get );
+    func->doc = "Get the current status of alphabetical sorting.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // genIndex
@@ -811,6 +824,8 @@ CKDoc::CKDoc( Chuck_VM * vm )
     // reset
     m_format = FORMAT_NONE;
     m_output = NULL;
+    // enable alphabetical sorting by default
+    m_disable_sort = false;
 
     // default
     setOutputFormat( FORMAT_HTML );
@@ -1025,7 +1040,7 @@ error:
 // name: getOutputFormat()
 // desc: get output format
 //-----------------------------------------------------------------------------
-t_CKINT CKDoc::getOutpuFormat() const
+t_CKINT CKDoc::getOutputFormat() const
 {
     return m_format;
 }
@@ -1316,12 +1331,15 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             }
         }
 
+        // @kellyyyyyyyyyyyyyyyy @azaday make alphabetical sorting optional
         // sort
-        sort( svars.begin(), svars.end(), ck_comp_value );
-        sort( mvars.begin(), mvars.end(), ck_comp_value );
-        sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
-        sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
-        sort( ctors.begin(), ctors.end(), ck_comp_func_args );
+        if (!m_disable_sort) {
+            sort( svars.begin(), svars.end(), ck_comp_value );
+            sort( mvars.begin(), mvars.end(), ck_comp_value );
+            sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
+            sort( mfuncs.begin(), mfuncs.end(), ck_comp_func );
+            sort( ctors.begin(), ctors.end(), ck_comp_func_args );
+        }
 
         // whether to potentially insert a default constructor | 1.5.2.0
         t_CKBOOL insertDefaultCtor = type_engine_has_implicit_def_ctor( type );
@@ -1731,14 +1749,27 @@ CK_DLL_CTRL( CKDoc_outputFormat_set )
     // attempt to set
     ckdoc->setOutputFormat( format );
     // return (could be different than requested)
-    RETURN->v_int = ckdoc->getOutpuFormat();
+    RETURN->v_int = ckdoc->getOutputFormat();
 }
 
 CK_DLL_CGET( CKDoc_outputFormat_get )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
     // return
-    RETURN->v_int = ckdoc->getOutpuFormat();
+    RETURN->v_int = ckdoc->getOutputFormat();
+}
+
+CK_DLL_MFUN( CKDoc_sort_set )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    ckdoc->m_disable_sort = GET_NEXT_INT(ARGS);
+    RETURN->v_int = ckdoc->m_disable_sort;
+}
+
+CK_DLL_MFUN( CKDoc_sort_get )
+{
+    CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
+    RETURN->v_int = ckdoc->m_disable_sort;
 }
 
 CK_DLL_MFUN( CKDoc_genIndex )
