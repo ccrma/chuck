@@ -10,13 +10,17 @@ ChucK VERSIONS log
 - (added) overloaded constructors added (more to come) 
 ==================
     Envelope( dur durationToTarget )
-        Construct an Envelope with duration to reach target (assumed to be 1.0)
+        Construct an Envelope with duration to reach target (assumed to be 1.0);
+        FYI this does not start the Envelope until .keyOn() is called.
     Envelope( float secondsToTarget )
-        Construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0)
+        Construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0);
+        FYI this does not start the Envelope until .keyOn() is called.
     Envelope( dur durationToTarget, float target )
-        Construct an Envelope with duration to reach target.
+        Construct an Envelope with duration to reach target;
+        FYI this does not start the Envelope until .keyOn() is called.
     Envelope( float durationToTarget, float target )
-        Construct an Envelope with duration (in seconds) to reach target.
+        Construct an Envelope with duration (in seconds) to reach target;
+        FYI this does not start the Envelope until .keyOn() is called.
 
     ADSR(dur attack, dur decay, float sustain, dur release)
         Construct an ADSR with attack, decay, sustain, and release values. Attack, 
@@ -27,8 +31,15 @@ ChucK VERSIONS log
         decay, and release values are in seconds; sustain is a float value 
         typically between 0 and 1.
 ==================
-- (added) void Envelope.set( dur durationToTarget, float target );
-          void Envelope.set( float secondsToTarget, float target );
+- (added) new member functions
+==================
+    fun dur Envelope.ramp( dur durationToTarget, float target );
+          Over the given duration, ramp toward the specified target; returns the given 
+          duration.
+    fun dur Envelope.ramp( float secondsToTarget, float target );
+          Over the given duration (in seconds), ramp toward the specified target; returns the 
+          given duration.
+==================
           examples/basic/envelope2.ck
 - (added) command line query system `--query:<name>`
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.

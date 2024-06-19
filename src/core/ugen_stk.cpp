@@ -3726,41 +3726,41 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // add constructor Envelope( dur durationToTarget ) | 1.5.2.5 (added) ge & eito
     func = make_new_ctor( Envelope_ctor_duration );
     func->add_arg( "dur", "durationToTarget" );
-    func->doc = "construct an Envelope with duration to reach target (assumed to be 1.0)";
+    func->doc = "construct an Envelope with duration to reach target (assumed to be 1.0); FYI this does not start the Envelope until .keyOn() is called.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add constructor Envelope( float secondsToTarget ) | 1.5.2.5 (added) ge & eito
     func = make_new_ctor( Envelope_ctor_float );
     func->add_arg( "float", "secondsToTarget" );
-    func->doc = "construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0)";
+    func->doc = "construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0); FYI this does not start the Envelope until .keyOn() is called.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add constructor Envelope( dur durationToTarget, float target ) | 1.5.2.5 (added) ge & eito
     func = make_new_ctor( Envelope_ctor_duration_target );
     func->add_arg( "dur", "durationToTarget" );
     func->add_arg( "float", "target" );
-    func->doc = "construct an Envelope with duration to reach target.";
+    func->doc = "construct an Envelope with duration to reach target; FYI this does not start the Envelope until .keyOn() is called.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add constructor Envelope( float durationToTarget, float target ) | 1.5.2.5 (added) ge & eito
     func = make_new_ctor( Envelope_ctor_float_target );
-    func->add_arg( "float", "durationToTarget" );
+    func->add_arg( "float", "secondsToTarget" );
     func->add_arg( "float", "target" );
-    func->doc = "construct an Envelope with duration (in seconds) to reach target.";
+    func->doc = "construct an Envelope with duration (in seconds) to reach target; FYI this does not start the Envelope until .keyOn() is called.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
-    // add set( dur durationToTarget, float target ) | 1.5.2.5 (added) ge
-    func = make_new_mfun( "void", "set", Envelope_mfun_duration_target );
+    // add ramp( dur durationToTarget, float target ) | 1.5.2.5 (added) ge
+    func = make_new_mfun( "dur", "ramp", Envelope_mfun_duration_target );
     func->add_arg( "dur", "durationToTarget" );
     func->add_arg( "float", "target" );
-    func->doc = "set duration to reach the next target.";
+    func->doc = "over the given duration, ramp toward the specified target; returns the given duration.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add set( float durationToTarget, float target ) | 1.5.2.5 (added) ge
-    func = make_new_mfun( "void", "set", Envelope_mfun_duration_target );
-    func->add_arg( "float", "durationToTarget" );
+    // add ramp( float durationToTarget, float target ) | 1.5.2.5 (added) ge
+    func = make_new_mfun( "dur", "ramp", Envelope_mfun_float_target );
+    func->add_arg( "float", "secondsToTarget" );
     func->add_arg( "float", "target" );
-    func->doc = "set duration to reach the next target.";
+    func->doc = "over the given duration (in seconds), ramp toward the specified target; returns the given duration.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn0 ); //! ramp to 1.0
@@ -8712,6 +8712,22 @@ void Envelope :: setValue(MY_FLOAT aValue)
 int Envelope :: getState(void) const
 {
   return state;
+}
+
+void Envelope :: prepTarget(MY_FLOAT aTarget)
+{
+    m_target = aTarget;
+}
+
+void Envelope :: prepTime(MY_FLOAT aTime)
+{
+    if (aTime < 0.0) {
+      printf("[chuck](via Envelope): negative times not allowed ... correcting!\n");
+      aTime = -aTime;
+    }
+
+    // should >= 0
+    m_time = aTime;
 }
 
 MY_FLOAT Envelope :: tick(void)
@@ -24073,8 +24089,10 @@ CK_DLL_PMSG( Envelope_pmsg )
 CK_DLL_CTOR( Envelope_ctor_duration )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
+    // prep (without triggering envelope)
+    d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
 }
+
 
 //-----------------------------------------------------------------------------
 // name: Envelope_ctor_float()
@@ -24083,7 +24101,8 @@ CK_DLL_CTOR( Envelope_ctor_duration )
 CK_DLL_CTOR( Envelope_ctor_float )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_FLOAT(ARGS) );
+    // prep (without triggering envelope)
+    d->prepTime( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -24094,8 +24113,8 @@ CK_DLL_CTOR( Envelope_ctor_float )
 CK_DLL_CTOR( Envelope_ctor_duration_target )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
-    d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
+    d->prepTarget( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -24106,32 +24125,36 @@ CK_DLL_CTOR( Envelope_ctor_duration_target )
 CK_DLL_CTOR( Envelope_ctor_float_target )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_FLOAT(ARGS) );
-    d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    d->prepTime( GET_NEXT_FLOAT(ARGS) );
+    d->prepTarget( GET_NEXT_FLOAT(ARGS) );
 }
 
 
 //-----------------------------------------------------------------------------
 // name: Envelope_mfun_duration_target()
-// desc: set( dur durationToTarget, float target )
+// desc: ramp( dur durationToTarget, float target )
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( Envelope_mfun_duration_target )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
+    t_CKDUR vdur = GET_NEXT_DUR(ARGS);
+    d->prepTime( vdur / Stk::sampleRate() );
     d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    RETURN->v_dur = vdur;
 }
 
 
 //-----------------------------------------------------------------------------
 // name: Envelope_mfun_float_target()
-// desc: set( float secondsToTarget, float target )
+// desc: ramp( float secondsToTarget, float target )
 //-----------------------------------------------------------------------------
 CK_DLL_MFUN( Envelope_mfun_float_target )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_FLOAT(ARGS) );
+    t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
+    d->prepTime( s );
     d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    RETURN->v_dur = s * Stk::sampleRate();
 }
 
 
