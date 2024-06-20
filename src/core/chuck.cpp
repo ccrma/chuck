@@ -58,6 +58,7 @@
 #include "util_network.h"
 #endif
 
+#include "ulib_std.h"
 #include "util_platforms.h"
 #include "util_string.h"
 #include "ugen_stk.h"
@@ -1510,7 +1511,7 @@ void ChucK::globalCleanup()
 
     #ifndef __DISABLE_KBHIT__
     // shutdown kb loop
-    // KBHitManager::shutdown();
+    KBHitManager::shutdown();
     #endif // __DISABLE_KBHIT__
 
     // pop
