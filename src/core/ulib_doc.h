@@ -190,14 +190,16 @@ public:
     std::string genType( Chuck_Type * type, t_CKBOOL clearOutput = TRUE );
 
 public:
+    // sort functions and variables | 1.5.2.5 (@kellyyyyyyyyyyyyyyyy @azaday) added
+    t_CKBOOL m_sort_entries;
+
+public:
     // enumeration for output format types
     static const t_CKINT FORMAT_NONE;     // no output format
     static const t_CKINT FORMAT_HTML;     // default
     static const t_CKINT FORMAT_TEXT;     // same as help
     static const t_CKINT FORMAT_MARKDOWN; // not implemented
     static const t_CKINT FORMAT_JSON;     // not implemented
-    // sorting flag
-    bool m_disable_sort;
 
 protected:
     // write string to file

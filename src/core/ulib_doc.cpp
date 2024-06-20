@@ -174,14 +174,14 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     func->doc = "Set which output format is selected; see CKDoc.HTML, CKDoc.TEXT, CKDoc.MARKDOWN, CKDoc.JSON.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // CKDoc disable sort
-    func = make_new_mfun( "int", "disableSort", CKDoc_sort_set );
-    func->add_arg("int", "disable");
-    func->doc = "Disable alphabetical sorting of the documentation.";
+    // CKDoc toggle sort | 1.5.2.5 (@kellyyyyyyyyyyyyyyyy @azaday)
+    func = make_new_mfun( "int", "sort", CKDoc_sort_set );
+    func->add_arg( "int", "toggle" );
+    func->doc = "Enable or disable alphabetical sorting of functions and variables.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // CKDoc get sort status
-    func = make_new_mfun( "int", "disableSort", CKDoc_sort_get );
+    // CKDoc get sort status | 1.5.2.5 (@kellyyyyyyyyyyyyyyyy @azaday)
+    func = make_new_mfun( "int", "sort", CKDoc_sort_get );
     func->doc = "Get the current status of alphabetical sorting.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
@@ -825,7 +825,7 @@ CKDoc::CKDoc( Chuck_VM * vm )
     m_format = FORMAT_NONE;
     m_output = NULL;
     // enable alphabetical sorting by default
-    m_disable_sort = false;
+    m_sort_entries = true;
 
     // default
     setOutputFormat( FORMAT_HTML );
@@ -1331,9 +1331,9 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             }
         }
 
-        // @kellyyyyyyyyyyyyyyyy @azaday make alphabetical sorting optional
-        // sort
-        if (!m_disable_sort) {
+        // sort | 1.5.2.5 (@kellyyyyyyyyyyyyyyyy @azaday) added check
+        if( m_sort_entries )
+        {
             sort( svars.begin(), svars.end(), ck_comp_value );
             sort( mvars.begin(), mvars.end(), ck_comp_value );
             sort( sfuncs.begin(), sfuncs.end(), ck_comp_func );
@@ -1762,14 +1762,14 @@ CK_DLL_CGET( CKDoc_outputFormat_get )
 CK_DLL_MFUN( CKDoc_sort_set )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    ckdoc->m_disable_sort = GET_NEXT_INT(ARGS);
-    RETURN->v_int = ckdoc->m_disable_sort;
+    ckdoc->m_sort_entries = GET_NEXT_INT(ARGS);
+    RETURN->v_int = ckdoc->m_sort_entries;
 }
 
 CK_DLL_MFUN( CKDoc_sort_get )
 {
     CKDoc * ckdoc = (CKDoc *)OBJ_MEMBER_UINT(SELF, CKDoc_offset_data);
-    RETURN->v_int = ckdoc->m_disable_sort;
+    RETURN->v_int = ckdoc->m_sort_entries;
 }
 
 CK_DLL_MFUN( CKDoc_genIndex )
