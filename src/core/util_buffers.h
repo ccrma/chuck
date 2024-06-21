@@ -43,6 +43,7 @@
 #include <vector>
 #include <queue>
 #include <iostream>
+#include <atomic> // c++11
 
 #define DWORD__                t_CKUINT
 #define SINT__                 t_CKINT
@@ -341,368 +342,508 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: class XCircleBuffer
-// desc: templated circular buffer class (different impl from ge-X-lib)
+// name: FinalRingBuffer
+// desc: hopefully this will be the last lock-free queue we need to implement...
+//       hopefully not like FinalFantasy which has sequels
+//
+// added 1.5.2.5 (ge) | adapted from:
+// Lock-Free Ring Buffer (LFRB) for embedded systems
+// GitHub: https://github.com/QuantumLeaps/lock-free-ring-buffer
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+/* the following FinalBufferAtomic type is assumed to be "atomic" in a
+* target CPU, meaning that the CPU needs to write the whole FinalBufferAtomic
+* in one machine instruction. An example of violating this assumption would
+* be an 8-bit CPU, which writes uint16_t (2-bytes) in 2 machine instructions.
+* For such 8-bit CPU, the maximum size of FinalBufferAtomic would be uint8_t
+* (1-byte).
+*
+* Another case of violating the "atomic" writes to FinalBufferAtomic type
+* would be misalignment of a FinalBufferAtomic variable in memory, which could
+* cause the compiler to generate multiple instructions to write a
+* FinalBufferAtomic value. Therefore, it is further assumed that all
+* FinalBufferAtomic variables in the following FinalBuffer struct *are*
+* correctly aligned for "atomic" access. In practice, most C compilers
+* should provide such natural alignment (by inserting some padding into the
+* ::FinalRingBuffer class/struct, if necessary). */
+//-----------------------------------------------------------------------------
+typedef std::atomic_ulong FinalRingBufferAtomic;
 //-----------------------------------------------------------------------------
 template <typename T>
-class XCircleBuffer
+class FinalRingBuffer
 {
 public:
-    XCircleBuffer( long length = 0 );
-    ~XCircleBuffer();
-
-public:
+    FinalRingBuffer();
+    ~FinalRingBuffer();
     // reset length of buffer (capacity)
-    void init( long length );
-    // get length
-    long length() const;
-    // clear (does no explicit memory management)
-    void clear();
+    void init( t_CKUINT capacity );
 
 public:
-    // put an element into the buffer - the item will be copied
-    // NOTE: if over-capacity, will discard least recently put item
-    void put( const T & item );
-    // get next item (FIFO)
-    bool get( T * pItem );
-    // number of valid elements in buffer
-    long numElements() const;
-    // are there more elements?
-    bool more() const;
-    // get elements without advancing - returns number of valid elements
-    long peek( T * array, long numItems, unsigned long stride = 0 );
-    // pop
-    long pop( long numItems = 1 );
-
-protected: // helper functions
-    inline void advanceWrite();
-    inline void advanceRead();
+    bool put( T & element );
+    bool get( T * pElement );
+    bool more();
 
 protected:
-    // the buffer
-    T * m_buffer;
-    // the buffer length (capacity)
-    volatile long m_length;
-    // write index
-    volatile long m_writeIndex;
-    // read index
-    volatile long m_readIndex;
-    // num elements
-    volatile long m_numElements;
+    /* the type of ring buffer elements is not critical for the lock-free
+    * operation and does not need to be "atomic". For example, it can be
+    * an integer type (uint16_t, uint32_t, uint64_t), a pointer type,
+    * or even a struct type. */
+    T * m_buf; // pointer to the start of the ring buffer
+    FinalRingBufferAtomic m_end;  // offset of the end of the ring buffer
+    FinalRingBufferAtomic m_head; // offset to where next el. will be inserted
+    FinalRingBufferAtomic m_tail; // offset of where next el. will be removed
 };
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: XCircleBuffer()
-// desc: constructor
-//-----------------------------------------------------------------------------
 template <typename T>
-XCircleBuffer<T>::XCircleBuffer( long length )
+FinalRingBuffer<T>::FinalRingBuffer()
 {
-    // zero out first
-    m_buffer = NULL;
-    m_length = m_readIndex = m_writeIndex = m_numElements = 0;
-
-    // call init
-    this->init( length );
+    m_buf = NULL;
+    m_end = m_head = m_tail = 0;
 }
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: ~XCircleBuffer
-// desc: destructor
-//-----------------------------------------------------------------------------
 template <typename T>
-XCircleBuffer<T>::~XCircleBuffer()
+void FinalRingBuffer<T>::init( t_CKUINT capacity )
 {
-
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: init()
-// desc: reset length of buffer
-//-----------------------------------------------------------------------------
-template <typename T>
-void XCircleBuffer<T>::init( long length )
-{
-    // clean up is necessary
-    if( m_buffer )
-    {
-        // delete array - should call destructors and zero out variable
-        CK_SAFE_DELETE_ARRAY( m_buffer );
-        // zero out
-        m_length = m_readIndex = m_writeIndex = m_numElements = 0;
-    }
-
-    // sanity check
-    if( length < 0 )
-    {
-        // doh
-        std::cerr << "[XCircleBuffer]: error invalid length '"
-                  << length << "' requested" << std::endl;
-
-        return;
-    }
-
-    // check for zero length
-    if( length == 0 ) return;
-
+    // dealloc
+    CK_SAFE_DELETE_ARRAY( m_buf );
     // allocate
-    m_buffer = new T[length];
+    m_buf = new T[capacity];
+    m_end = capacity;
+    m_head = m_tail = 0;
+}
+
+template <typename T>
+FinalRingBuffer<T>::~FinalRingBuffer()
+{
+    CK_SAFE_DELETE_ARRAY( m_buf );
+    m_end = m_head = m_tail = 0;
+}
+
+template <typename T>
+bool FinalRingBuffer<T>::put( T & element )
+{
     // check
-    if( m_buffer == NULL )
-    {
-        // doh
-        std::cerr << "[XCircleBuffer]: failed to allocate buffer of length '"
-                  << length << "'..." << std::endl;
+    if( !m_buf ) return false;
 
-        return;
+    // local head variable (need to be atomic?)
+    t_CKUINT head = m_head + 1;
+    if( head == m_end ) head = 0;
+
+    // buffer NOT full?
+    if( head != m_tail )
+    {
+        // copy the element into the buffer
+        m_buf[m_head] = element;
+        // update the head to a *valid* index
+        m_head = head;
+        // element placed in the buffer
+        return true;
     }
 
-    // save
-    m_length = length;
-    // zero out
-    m_readIndex = m_writeIndex = m_numElements = 0;
+    // element NOT placed in the buffer
+    return false;
 }
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: length()
-// desc: get length
-//-----------------------------------------------------------------------------
 template <typename T>
-long XCircleBuffer<T>::length() const
+bool FinalRingBuffer<T>::get( T * pElement )
 {
-    return m_length;
-}
+    // check for NULL
+    if( !m_buf || !pElement ) return false;
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: clear()
-// desc: clear (does no explicit memory management)
-//-----------------------------------------------------------------------------
-template <typename T>
-void XCircleBuffer<T>::clear()
-{
-    // zero out
-    m_readIndex = m_writeIndex = m_numElements = 0;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: advanceWrite()
-// desc: helper to advance write index
-//-----------------------------------------------------------------------------
-template <typename T>
-void XCircleBuffer<T>::advanceWrite()
-{
-    // increment
-    m_writeIndex++;
-
-    // check for bounds
-    if( m_writeIndex >= m_length )
+    // local tail variable (need to be atomic?)
+    t_CKUINT tail = m_tail;
+    // ring buffer NOT empty?
+    if( m_head != tail )
     {
-        // wrap
-        m_writeIndex -= m_length;
+        // copy element
+        *pElement = m_buf[tail];
+        // advance local tail
+        ++tail; if( tail == m_end ) { tail = 0; }
+        // update the tail to a *valid* index
+        m_tail = tail;
+        // gotten
+        return true;
     }
 
-    // increment count
-    m_numElements++;
+    // not gotten
+    return false;
 }
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: advanceRead()
-// desc: helper to advance read index
-//-----------------------------------------------------------------------------
 template <typename T>
-void XCircleBuffer<T>::advanceRead()
+bool FinalRingBuffer<T>::more()
 {
-    // increment
-    m_readIndex++;
-
-    // check for bounds
-    if( m_readIndex >= m_length )
-    {
-        // wrap
-        m_readIndex -= m_length;
-    }
-
-    // decrement count
-    m_numElements--;
+    // has elements?
+    return m_head != m_tail;
 }
 
 
 
 
-//-----------------------------------------------------------------------------
-// name: put()
-// desc: put an element into the buffer - the item will be copied
-//       if over-capacity, will discard least recently put item
-//-----------------------------------------------------------------------------
-template <typename T>
-void XCircleBuffer<T>::put( const T & item )
-{
-    // sanity check
-    if( m_buffer == NULL ) return;
-
-    // copy it
-    m_buffer[m_writeIndex] = item;
-
-    // advance write index
-    advanceWrite();
-
-    // if read and write pointer are the same, over-capacity
-    if( m_writeIndex == m_readIndex )
-    {
-        // warning | 1.5.0.1 (ge) make this a log message
-        EM_log( CK_LOG_WARNING, "[circular-buffer]: buffer full, dropping items!" );
-        // advance read!
-        advanceRead();
-    }
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: numElements()
-// desc: get number of valid elements in buffer
-//-----------------------------------------------------------------------------
-template <typename T>
-long XCircleBuffer<T>::numElements() const
-{
-    // return our count
-    return m_numElements;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: hasMore()
-// desc: are there more elements?
-//-----------------------------------------------------------------------------
-template <typename T>
-bool XCircleBuffer<T>::more() const
-{
-    return m_numElements > 0;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: peek
-// desc: get elements without advancing - returns number returned
-//-----------------------------------------------------------------------------
-template <typename T>
-long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
-{
-    // sanity check
-    if( m_buffer == NULL ) return 0;
-
-    // sanity check (so the wrap can be sure to land inbounds)
-    if( stride >= m_length ) return 0;
-
-    // count
-    long count = 0;
-    // actual count, taking stride out of the equation
-    long actualCount = 0;
-
-    // starting index
-    long index = m_writeIndex - 1;
-    if( index < 0 ) index += m_length;
-
-    // while need more but haven't reached write index...
-    while( (count < numItems) && (count < m_numElements) )
-    {
-        // copy
-        array[actualCount] = m_buffer[index];
-        // increment
-        count++; count += stride;
-        // advance
-        index--; index -= stride;
-        // actual count, don't stride
-        actualCount++;
-        // wrap
-        if( index < 0 ) index += m_length;
-    }
-
-    // reverse contents
-    for( int i = 0; i < actualCount/2; i++ )
-    {
-        T v = array[i];
-        array[i] = array[actualCount-1-i];
-        array[actualCount-1-i] = v;
-    }
-
-    return actualCount;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: pop()
-// desc: pop one or more elements
-//-----------------------------------------------------------------------------
-template <typename T>
-long XCircleBuffer<T>::pop( long numItems )
-{
-    // sanity check
-    if( m_buffer == NULL ) return 0;
-
-    // count
-    long count = 0;
-
-    // while there is more to pop and need to pop more
-    while( more() && count < numItems )
-    {
-        // advance read
-        advanceRead();
-        // increment count
-        count++;
-    }
-
-    return count;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: get()
-// desc: get next read element
-//-----------------------------------------------------------------------------
-template <typename T>
-bool XCircleBuffer<T>::get( T * result )
-{
-    // sanity check
-    if( m_buffer == NULL || m_readIndex == m_writeIndex ) return false;
-
-    // get item to read
-    *result = m_buffer[m_readIndex];
-    // advance read
-    advanceRead();
-
-    return true;
-}
+////-----------------------------------------------------------------------------
+//// name: class XCircleBuffer
+//// desc: templated circular buffer class (different impl from ge-X-lib)
+////       NOTE: the lock-free queue DOES NOT WORK; can crash; keeping for study
+////       NOTE: use FinalRingBuffer instead | 1.5.2.5 (ge)
+////-----------------------------------------------------------------------------
+//template <typename T>
+//class XCircleBuffer
+//{
+//public:
+//    XCircleBuffer( long length = 0 );
+//    ~XCircleBuffer();
+//
+//public:
+//    // reset length of buffer (capacity)
+//    void init( long length );
+//    // get length
+//    long length() const;
+//    // clear (does no explicit memory management)
+//    void clear();
+//
+//public:
+//    // put an element into the buffer - the item will be copied
+//    // NOTE: if over-capacity, will discard least recently put item
+//    void put( const T & item );
+//    // get next item (FIFO)
+//    bool get( T * pItem );
+//    // number of valid elements in buffer
+//    long numElements() const;
+//    // are there more elements?
+//    bool more() const;
+//    // get elements without advancing - returns number of valid elements
+//    long peek( T * array, long numItems, unsigned long stride = 0 );
+//    // pop
+//    long pop( long numItems = 1 );
+//
+//protected: // helper functions
+//    inline void advanceWrite();
+//    inline void advanceRead();
+//
+//protected:
+//    // the buffer
+//    T * m_buffer;
+//    // the buffer length (capacity)
+//    std::atomic_ulong m_length;
+//    // write index
+//    std::atomic_ulong m_writeIndex;
+//    // read index
+//    std::atomic_ulong m_readIndex;
+//    // num elements
+//    std::atomic_ulong m_numElements;
+//};
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: XCircleBuffer()
+//// desc: constructor
+////-----------------------------------------------------------------------------
+//template <typename T>
+//XCircleBuffer<T>::XCircleBuffer( long length )
+//{
+//    // zero out first
+//    m_buffer = NULL;
+//    m_length = m_readIndex = m_writeIndex = m_numElements = 0;
+//
+//    // call init
+//    this->init( length );
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: ~XCircleBuffer
+//// desc: destructor
+////-----------------------------------------------------------------------------
+//template <typename T>
+//XCircleBuffer<T>::~XCircleBuffer()
+//{
+//
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: init()
+//// desc: reset length of buffer
+////-----------------------------------------------------------------------------
+//template <typename T>
+//void XCircleBuffer<T>::init( long length )
+//{
+//    // clean up is necessary
+//    if( m_buffer )
+//    {
+//        // delete array - should call destructors and zero out variable
+//        CK_SAFE_DELETE_ARRAY( m_buffer );
+//        // zero out
+//        m_length = m_readIndex = m_writeIndex = m_numElements = 0;
+//    }
+//
+//    // sanity check
+//    if( length < 0 )
+//    {
+//        // doh
+//        std::cerr << "[XCircleBuffer]: error invalid length '"
+//                  << length << "' requested" << std::endl;
+//
+//        return;
+//    }
+//
+//    // check for zero length
+//    if( length == 0 ) return;
+//
+//    // allocate
+//    m_buffer = new T[length];
+//    // check
+//    if( m_buffer == NULL )
+//    {
+//        // doh
+//        std::cerr << "[XCircleBuffer]: failed to allocate buffer of length '"
+//                  << length << "'..." << std::endl;
+//
+//        return;
+//    }
+//
+//    // save
+//    m_length = length;
+//    // zero out
+//    m_readIndex = m_writeIndex = m_numElements = 0;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: length()
+//// desc: get length
+////-----------------------------------------------------------------------------
+//template <typename T>
+//long XCircleBuffer<T>::length() const
+//{
+//    return m_length;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: clear()
+//// desc: clear (does no explicit memory management)
+////-----------------------------------------------------------------------------
+//template <typename T>
+//void XCircleBuffer<T>::clear()
+//{
+//    // zero out
+//    m_readIndex = m_writeIndex = m_numElements = 0;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: advanceWrite()
+//// desc: helper to advance write index
+////-----------------------------------------------------------------------------
+//template <typename T>
+//void XCircleBuffer<T>::advanceWrite()
+//{
+//    // increment
+//    m_writeIndex++;
+//
+//    // check for bounds
+//    if( m_writeIndex >= m_length )
+//    {
+//        // wrap
+//        m_writeIndex -= m_length;
+//    }
+//
+//    // increment count
+//    m_numElements++;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: advanceRead()
+//// desc: helper to advance read index
+////-----------------------------------------------------------------------------
+//template <typename T>
+//void XCircleBuffer<T>::advanceRead()
+//{
+//    // increment
+//    m_readIndex++;
+//
+//    // check for bounds
+//    if( m_readIndex >= m_length )
+//    {
+//        // wrap
+//        m_readIndex -= m_length;
+//    }
+//
+//    // decrement count
+//    m_numElements--;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: put()
+//// desc: put an element into the buffer - the item will be copied
+////       if over-capacity, will discard least recently put item
+////-----------------------------------------------------------------------------
+//template <typename T>
+//void XCircleBuffer<T>::put( const T & item )
+//{
+//    // sanity check
+//    if( m_buffer == NULL ) return;
+//
+//    // copy it
+//    m_buffer[m_writeIndex] = item;
+//
+//    // advance write index
+//    advanceWrite();
+//
+//    // if read and write pointer are the same, over-capacity
+//    if( m_writeIndex == m_readIndex )
+//    {
+//        // warning | 1.5.0.1 (ge) make this a log message
+//        EM_log( CK_LOG_WARNING, "[circular-buffer]: buffer full, dropping items!" );
+//        // advance read!
+//        advanceRead();
+//    }
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: numElements()
+//// desc: get number of valid elements in buffer
+////-----------------------------------------------------------------------------
+//template <typename T>
+//long XCircleBuffer<T>::numElements() const
+//{
+//    // return our count
+//    return m_numElements;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: hasMore()
+//// desc: are there more elements?
+////-----------------------------------------------------------------------------
+//template <typename T>
+//bool XCircleBuffer<T>::more() const
+//{
+//    return m_numElements > 0;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: peek
+//// desc: get elements without advancing - returns number returned
+////-----------------------------------------------------------------------------
+//template <typename T>
+//long XCircleBuffer<T>::peek( T * array, long numItems, unsigned long stride )
+//{
+//    // sanity check
+//    if( m_buffer == NULL ) return 0;
+//
+//    // sanity check (so the wrap can be sure to land inbounds)
+//    if( stride >= m_length ) return 0;
+//
+//    // count
+//    long count = 0;
+//    // actual count, taking stride out of the equation
+//    long actualCount = 0;
+//
+//    // starting index
+//    long index = m_writeIndex - 1;
+//    if( index < 0 ) index += m_length;
+//
+//    // while need more but haven't reached write index...
+//    while( (count < numItems) && (count < m_numElements) )
+//    {
+//        // copy
+//        array[actualCount] = m_buffer[index];
+//        // increment
+//        count++; count += stride;
+//        // advance
+//        index--; index -= stride;
+//        // actual count, don't stride
+//        actualCount++;
+//        // wrap
+//        if( index < 0 ) index += m_length;
+//    }
+//
+//    // reverse contents
+//    for( int i = 0; i < actualCount/2; i++ )
+//    {
+//        T v = array[i];
+//        array[i] = array[actualCount-1-i];
+//        array[actualCount-1-i] = v;
+//    }
+//
+//    return actualCount;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: pop()
+//// desc: pop one or more elements
+////-----------------------------------------------------------------------------
+//template <typename T>
+//long XCircleBuffer<T>::pop( long numItems )
+//{
+//    // sanity check
+//    if( m_buffer == NULL ) return 0;
+//
+//    // count
+//    long count = 0;
+//
+//    // while there is more to pop and need to pop more
+//    while( more() && count < numItems )
+//    {
+//        // advance read
+//        advanceRead();
+//        // increment count
+//        count++;
+//    }
+//
+//    return count;
+//}
+//
+//
+//
+//
+////-----------------------------------------------------------------------------
+//// name: get()
+//// desc: get next read element
+////-----------------------------------------------------------------------------
+//template <typename T>
+//bool XCircleBuffer<T>::get( T * result )
+//{
+//    // sanity check
+//    if( m_buffer == NULL || m_readIndex == m_writeIndex ) return false;
+//
+//    // get item to read
+//    *result = m_buffer[m_readIndex];
+//    // advance read
+//    advanceRead();
+//
+//    return true;
+//}
 
 
 

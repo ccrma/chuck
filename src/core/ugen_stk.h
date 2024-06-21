@@ -388,6 +388,11 @@ public:
   //! Return the last computed output value.
   MY_FLOAT lastOut(void) const;
 
+  //! Set the target value (without triggering the envelope) | 1.5.2.5 (ge & eito) added
+  void prepTarget(MY_FLOAT aTarget);
+  //! Set the time value (without triggering the envelope) | 1.5.2.5 (ge & eito) added
+  void prepTime(MY_FLOAT aTime);
+
 public:
   MY_FLOAT value;
   MY_FLOAT target;

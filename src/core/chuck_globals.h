@@ -356,7 +356,7 @@ private:
     std::map< std::string, Chuck_Global_Object_Container* > m_global_objects;
 
     // global variables -- messages for set, get, etc.
-    XCircleBuffer< Chuck_Global_Request > m_global_request_queue;
+    FinalRingBuffer< Chuck_Global_Request > m_global_request_queue;
 
     // retry queue: sometimes a request comes through exactly 1 sample
     // before the relevant global variable is constructed
@@ -364,7 +364,7 @@ private:
     // in these cases, retrying 1 sample later usually works.
     // this is ok because the external host has no guarantee of sample-level
     // determinism, like we have within the ChucK VM
-    XCircleBuffer< Chuck_Global_Request > m_global_request_retry_queue;
+    FinalRingBuffer< Chuck_Global_Request > m_global_request_retry_queue;
 };
 
 

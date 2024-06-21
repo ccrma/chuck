@@ -2,10 +2,13 @@
 // name: scream-o-matic.ck
 // desc: using multiple LiSas for granular synthesis, to make a
 //       continuous scream generator; based on the patch for
-//       the augmented FlowBee interface (2014). See:
+//       the augmented FlowBee interface (2014):
 //       
 //       "Suck-O-Phonic 6000: Augmented Flowbee Musical Interface"
 //       https://www.youtube.com/watch?v=g3bkaljCVRs
+//
+// sound files used in this example:
+//       https://chuck.stanford.edu/doc/examples/special/scream-o-matic/data/
 //
 // author: Alex Chechile
 //         Spencer Salazar

@@ -471,6 +471,9 @@ t_CKBOOL Chuck_VM::shutdown()
     // set state
     m_init = FALSE;
 
+    // notify registered callbacks we are shutting down | 1.5.2.5 (ge) added
+    notify_callbacks_on_shutdown();
+
     // relockdown (added 1.3.6.0)
     // REFACTOR-2017: TODO -- remove once made per-VM
     Chuck_VM_Object::lock_all();
@@ -1426,6 +1429,52 @@ Chuck_VM_Shred * Chuck_VM::get_current_shred() const
     if( !m_shreduler ) return NULL;
     // return shreduler's current shred
     return m_shreduler->get_current_shred();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: register_callback_on_shutdown()
+// cesc: register a callback to be called on VM shutdown | 1.5.2.5 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_VM::register_callback_on_shutdown( f_callback_on_shutdown cb, void * bindle )
+{
+    // check
+    if( !cb ) return;
+
+    // ensure no duplicates
+    list<Chuck_VM_Callback_On_Shutdown>::iterator it = std::find( m_callbacks_on_shutdown.begin(),
+                                                                  m_callbacks_on_shutdown.end(), cb );
+    // add if not already preset
+    if( it == m_callbacks_on_shutdown.end() )
+    {
+        // append
+        m_callbacks_on_shutdown.push_back( Chuck_VM_Callback_On_Shutdown(cb, bindle) );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: notify_callbacks_on_shutdown()
+// desc: notify callbacks on VM shutdown | 1.5.2.5 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_VM::notify_callbacks_on_shutdown()
+{
+    // the function to call eventually
+    f_callback_on_shutdown f = NULL;
+    // iterator
+    list<Chuck_VM_Callback_On_Shutdown>::iterator it;
+    // iterate
+    for( it = m_callbacks_on_shutdown.begin(); it != m_callbacks_on_shutdown.end(); it++ )
+    {
+        // the function
+        f = (*it).cb;
+        // call it with user data
+        f( (*it).userdata );
+    }
 }
 
 

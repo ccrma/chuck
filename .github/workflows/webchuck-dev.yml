@@ -1,0 +1,37 @@
+name: WebChucK IDE Development - Emscripten Build 
+
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup and cache Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+            # Make sure to set a version number!
+            version: 3.1.57
+            # This is the name of the cache folder.
+            # The cache folder will be placed in the build directory,
+            #  so make sure it doesn't conflict with anything!
+            actions-cache-folder: 'emsdk-cache'
+
+      - name: Compile - Web
+        run: cd src/ && make -j web
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST_WEBCHUCK }}
+          username: ${{ secrets.HOST_USERNAME }}
+          key: ${{ secrets.PRIVATEKEY_WEBCHUCK }}
+          source: "src/host-web/webchuck/js/webchuck.js, src/host-web/webchuck/js/webchuck.wasm"
+          target: ${{ secrets.PATH_WEBCHUCK_DEV }}
+          strip_components: 4

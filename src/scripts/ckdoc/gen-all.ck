@@ -138,7 +138,7 @@ doc.addGroup(
 // add group
 doc.addGroup(
     // class names
-    [ "CKDoc", "StringTokenizer", "ConsoleInput" ],
+    [ "CKDoc", "Type", "StringTokenizer", "ConsoleInput" ],
     // group name
     "Utilities",
     // file name

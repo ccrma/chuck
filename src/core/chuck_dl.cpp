@@ -825,6 +825,16 @@ Chuck_DL_MainThreadHook * CK_DLL_CALL ck_create_main_thread_hook( Chuck_DL_Query
     return new Chuck_DL_MainThreadHook( hook, quit, bindle, query->carrier() );
 }
 
+//-----------------------------------------------------------------------------
+// name: ck_register_callback_on_shutdown() | 1.5.2.5 (ge) added
+// desc: register a callback function to be called on host exit
+//       (both natural or SIGINT)
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_register_callback_on_shutdown( Chuck_DL_Query * query, f_callback_on_shutdown cb, void * bindle )
+{
+    // register
+    query->vm()->register_callback_on_shutdown( cb, bindle );
+}
 
 //-----------------------------------------------------------------------------
 // name: ck_register_shreds_watcher()
@@ -1351,6 +1361,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     create_main_thread_hook = ck_create_main_thread_hook;
     register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.5 (ge & andrew)
     unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.5 (ge & andrew)
+    register_callback_on_shutdown = ck_register_callback_on_shutdown; // 1.5.2.5 (ge)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 
@@ -2133,6 +2144,18 @@ static t_CKINT CK_DLL_CALL ck_array_int_get_idx( Chuck_DL_Api::ArrayInt array, t
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_int_set_idx()
+// desc: set an indexed element in an array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_int_set_idx( Chuck_DL_Api::ArrayInt array, t_CKINT idx, t_CKINT value )
+{
+    if( array ) array->set( idx, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_int_get_key()
 // desc: get a keyed element from an array | 1.5.1.3 (nshaheed) added
 //-----------------------------------------------------------------------------
@@ -2142,6 +2165,18 @@ static t_CKBOOL CK_DLL_CALL ck_array_int_get_key( Chuck_DL_Api::ArrayInt array, 
     if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_int_set_key()
+// desc: set a keyed element in an array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_int_set_key( Chuck_DL_Api::ArrayInt array, const char * key, t_CKINT value )
+{
+    if( array ) array->set( key, value );
 }
 
 
@@ -2212,6 +2247,18 @@ static t_CKFLOAT CK_DLL_CALL ck_array_float_get_idx( Chuck_DL_Api::ArrayFloat ar
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_float_set_idx()
+// desc: set an indexed element in an array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_float_set_idx( Chuck_DL_Api::ArrayFloat array, t_CKINT idx, t_CKFLOAT value )
+{
+    if( array ) array->set( idx, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_float_get_key()
 // desc: get a keyed element from an array | 1.5.1.8 (nshaheed) added
 //-----------------------------------------------------------------------------
@@ -2221,6 +2268,18 @@ static t_CKBOOL CK_DLL_CALL ck_array_float_get_key( Chuck_DL_Api::ArrayFloat arr
     if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_float_set_key()
+// desc: set a keyed element in an array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_float_set_key( Chuck_DL_Api::ArrayFloat array, const char * key, t_CKFLOAT value )
+{
+    if( array ) array->set( key, value );
 }
 
 
@@ -2293,6 +2352,18 @@ static t_CKVEC2 CK_DLL_CALL ck_array_vec2_get_idx( Chuck_DL_Api::ArrayVec2 array
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_vec2_set_idx()
+// desc: set indexed element in array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec2_set_idx( Chuck_DL_Api::ArrayVec2 array, t_CKINT idx, t_CKVEC2 value)
+{
+    if( array ) array->set( idx, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_vec2_get_key()
 // desc: get keyed element from array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
@@ -2302,6 +2373,18 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec2_get_key( Chuck_DL_Api::ArrayVec2 array
     if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec2_set_key()
+// desc: set keyed element in array | 1.5.2.5 (azady) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec2_set_key( Chuck_DL_Api::ArrayVec2 array, const char * key, t_CKVEC2 value )
+{
+    if( array ) array->set( key, value );
 }
 
 
@@ -2372,6 +2455,18 @@ static t_CKVEC3 CK_DLL_CALL ck_array_vec3_get_idx( Chuck_DL_Api::ArrayVec3 array
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_vec3_set_idx()
+// desc: set indexed element in array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec3_set_idx( Chuck_DL_Api::ArrayVec3 array, t_CKINT idx, t_CKVEC3 value )
+{
+    if( array ) array->set( idx, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_vec3_get_key()
 // desc: get keyed element from array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
@@ -2381,6 +2476,18 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec3_get_key( Chuck_DL_Api::ArrayVec3 array
     if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec3_set_key()
+// desc: set keyed element in array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec3_set_key( Chuck_DL_Api::ArrayVec3 array, const char * key, t_CKVEC3 value )
+{
+    if( array ) array->set( key, value );
 }
 
 
@@ -2451,6 +2558,18 @@ static t_CKVEC4 CK_DLL_CALL ck_array_vec4_get_idx( Chuck_DL_Api::ArrayVec4 array
 
 
 //-----------------------------------------------------------------------------
+// name: ck_array_vec4_set_idx()
+// desc: set indexed element in array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec4_set_idx( Chuck_DL_Api::ArrayVec4 array, t_CKINT idx, t_CKVEC4 value )
+{
+    if( array ) array->set( idx, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: ck_array_vec4_get_key()
 // desc: get keyed element from array | 1.5.2.0 (ge) added
 //-----------------------------------------------------------------------------
@@ -2460,6 +2579,18 @@ static t_CKBOOL CK_DLL_CALL ck_array_vec4_get_key( Chuck_DL_Api::ArrayVec4 array
     if( array == NULL ) return FALSE;
     // action
     return array->get( key, &value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_array_vec4_set_key()
+// desc: set keyed element in array | 1.5.2.5 (azaday) added
+//-----------------------------------------------------------------------------
+static void CK_DLL_CALL ck_array_vec4_set_key( Chuck_DL_Api::ArrayVec4 array, const char * key, t_CKVEC4 value )
+{
+    if( array ) array->set( key, value );
 }
 
 
@@ -2541,27 +2672,37 @@ set_string(ck_string_set),
 str(ck_string_get),
 array_int_size(ck_array_int_size),
 array_int_get_idx(ck_array_int_get_idx),
+array_int_set_idx(ck_array_int_set_idx),
 array_int_get_key(ck_array_int_get_key),
+array_int_set_key(ck_array_int_set_key),
 array_int_push_back(ck_array_int_push_back),
 array_int_clear(ck_array_int_clear),
 array_float_size(ck_array_float_size),
 array_float_get_idx(ck_array_float_get_idx),
+array_float_set_idx(ck_array_float_set_idx),
 array_float_get_key(ck_array_float_get_key),
+array_float_set_key(ck_array_float_set_key),
 array_float_push_back(ck_array_float_push_back),
 array_float_clear( ck_array_float_clear ),
 array_vec2_size(ck_array_vec2_size),
 array_vec2_get_idx(ck_array_vec2_get_idx),
+array_vec2_set_idx(ck_array_vec2_set_idx),
 array_vec2_get_key(ck_array_vec2_get_key),
+array_vec2_set_key(ck_array_vec2_set_key),
 array_vec2_push_back(ck_array_vec2_push_back),
 array_vec2_clear( ck_array_vec2_clear ),
 array_vec3_size(ck_array_vec3_size),
 array_vec3_get_idx(ck_array_vec3_get_idx),
+array_vec3_set_idx(ck_array_vec3_set_idx),
 array_vec3_get_key(ck_array_vec3_get_key),
+array_vec3_set_key(ck_array_vec3_set_key),
 array_vec3_push_back(ck_array_vec3_push_back),
 array_vec3_clear( ck_array_vec3_clear ),
 array_vec4_size(ck_array_vec4_size),
 array_vec4_get_idx(ck_array_vec4_get_idx),
+array_vec4_set_idx(ck_array_vec4_set_idx),
 array_vec4_get_key(ck_array_vec4_get_key),
+array_vec4_set_key(ck_array_vec4_set_key),
 array_vec4_push_back(ck_array_vec4_push_back),
 array_vec4_clear( ck_array_vec4_clear )
 { }

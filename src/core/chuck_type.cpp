@@ -1123,7 +1123,9 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
 
         case ae_stmt_code:
             env->class_scope++;
+            env->curr->value.push(); // 1.5.2.5 (ge) added
             ret = type_engine_check_code_segment( env, &stmt->stmt_code );
+            env->curr->value.pop(); // 1.5.2.5 (ge) added
             env->class_scope--;
             break;
 

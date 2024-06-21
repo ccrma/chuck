@@ -145,6 +145,8 @@ CK_DLL_CTOR( ADSR_ctor );
 CK_DLL_DTOR( ADSR_dtor );
 CK_DLL_TICK( ADSR_tick );
 CK_DLL_PMSG( ADSR_pmsg );
+CK_DLL_CTOR( ADSR_ctor_floats );
+CK_DLL_CTOR( ADSR_ctor_durs );
 CK_DLL_CTRL( ADSR_ctrl_attackTime );
 CK_DLL_CTRL( ADSR_ctrl_attackRate );
 CK_DLL_CTRL( ADSR_ctrl_decayTime );
@@ -256,6 +258,12 @@ CK_DLL_CTOR( Envelope_ctor );
 CK_DLL_DTOR( Envelope_dtor );
 CK_DLL_TICK( Envelope_tick );
 CK_DLL_PMSG( Envelope_pmsg );
+CK_DLL_CTOR( Envelope_ctor_duration );
+CK_DLL_CTOR( Envelope_ctor_float );
+CK_DLL_CTOR( Envelope_ctor_duration_target );
+CK_DLL_CTOR( Envelope_ctor_float_target );
+CK_DLL_MFUN( Envelope_mfun_duration_target );
+CK_DLL_MFUN( Envelope_mfun_float_target );
 CK_DLL_CTRL( Envelope_ctrl_rate );
 CK_DLL_CTRL( Envelope_ctrl_target );
 CK_DLL_CTRL( Envelope_cget_target );
@@ -3707,12 +3715,53 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         Envelope_tick, Envelope_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/envelope.ck");
+    type_engine_import_add_ex(env, "basic/envelope2.ck");
     type_engine_import_add_ex(env, "basic/chirp2.ck");
     type_engine_import_add_ex(env, "deep/say-chu.ck");
 
-    //member variable
+    // member variable
     Envelope_offset_data = type_engine_import_mvar ( env, "int", "@Envelope_data", FALSE );
     if( Envelope_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add constructor Envelope( dur durationToTarget ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( Envelope_ctor_duration );
+    func->add_arg( "dur", "durationToTarget" );
+    func->doc = "construct an Envelope with duration to reach target (assumed to be 1.0); FYI this does not start the Envelope until .keyOn() is called.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add constructor Envelope( float secondsToTarget ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( Envelope_ctor_float );
+    func->add_arg( "float", "secondsToTarget" );
+    func->doc = "construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0); FYI this does not start the Envelope until .keyOn() is called.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add constructor Envelope( dur durationToTarget, float target ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( Envelope_ctor_duration_target );
+    func->add_arg( "dur", "durationToTarget" );
+    func->add_arg( "float", "target" );
+    func->doc = "construct an Envelope with duration to reach target; FYI this does not start the Envelope until .keyOn() is called.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add constructor Envelope( float durationToTarget, float target ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( Envelope_ctor_float_target );
+    func->add_arg( "float", "secondsToTarget" );
+    func->add_arg( "float", "target" );
+    func->doc = "construct an Envelope with duration (in seconds) to reach target; FYI this does not start the Envelope until .keyOn() is called.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ramp( dur durationToTarget, float target ) | 1.5.2.5 (added) ge
+    func = make_new_mfun( "dur", "ramp", Envelope_mfun_duration_target );
+    func->add_arg( "dur", "durationToTarget" );
+    func->add_arg( "float", "target" );
+    func->doc = "over the given duration, ramp toward the specified target; returns the given duration.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add ramp( float durationToTarget, float target ) | 1.5.2.5 (added) ge
+    func = make_new_mfun( "dur", "ramp", Envelope_mfun_float_target );
+    func->add_arg( "float", "secondsToTarget" );
+    func->add_arg( "float", "target" );
+    func->doc = "over the given duration (in seconds), ramp toward the specified target; returns the given duration.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "int", "keyOn", Envelope_ctrl_keyOn0 ); //! ramp to 1.0
     func->doc = "get keyOn state.";
@@ -3797,6 +3846,24 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     type_engine_import_add_ex(env, "basic/adsr.ck");
     type_engine_import_add_ex(env, "basic/blit2.ck");
+
+    // add construtor ADSR( dur attack, dur decay, float sustain, dur release ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( ADSR_ctor_floats );
+    func->add_arg( "dur", "attack" );
+    func->add_arg( "dur", "decay" );
+    func->add_arg( "float", "sustain" );
+    func->add_arg( "dur", "release" );
+    func->doc = "construct an ADSR with attack, decay, sustain, and release values. Attack, decay, and release values are durations; sustain is a float value typically between 0 and 1.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add constructor ADSR( float attack, float decay, float sustain, float release ) | 1.5.2.5 (added) ge & eito
+    func = make_new_ctor( ADSR_ctor_durs );
+    func->add_arg( "float", "attack" );
+    func->add_arg( "float", "decay" );
+    func->add_arg( "float", "sustain" );
+    func->add_arg( "float", "release" );
+    func->doc = "construct an ADSR with attack, decay, sustain, and release values. Attack, decay, and release values are in seconds; sustain is a float value typically between 0 and 1.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "attackTime", ADSR_ctrl_attackTime ); //! attack time
     func->add_arg( "dur", "value" );
@@ -8645,6 +8712,22 @@ void Envelope :: setValue(MY_FLOAT aValue)
 int Envelope :: getState(void) const
 {
   return state;
+}
+
+void Envelope :: prepTarget(MY_FLOAT aTarget)
+{
+    m_target = aTarget;
+}
+
+void Envelope :: prepTime(MY_FLOAT aTime)
+{
+    if (aTime < 0.0) {
+      printf("[chuck](via Envelope): negative times not allowed ... correcting!\n");
+      aTime = -aTime;
+    }
+
+    // should >= 0
+    m_time = aTime;
 }
 
 MY_FLOAT Envelope :: tick(void)
@@ -24000,6 +24083,82 @@ CK_DLL_PMSG( Envelope_pmsg )
 
 
 //-----------------------------------------------------------------------------
+// name: Envelope_ctor_duration()
+// desc: ctor( dur durationToTarget )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Envelope_ctor_duration )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    // prep (without triggering envelope)
+    d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Envelope_ctor_float()
+// desc: ctor( float secondsToTarget )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Envelope_ctor_float )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    // prep (without triggering envelope)
+    d->prepTime( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Envelope_ctor_duration_target()
+// desc: ctor( dur durationToTarget, float target )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Envelope_ctor_duration_target )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
+    d->prepTarget( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Envelope_ctor_float_target()
+// desc: ctor( float secondsToTarget, float target )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Envelope_ctor_float_target )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    d->prepTime( GET_NEXT_FLOAT(ARGS) );
+    d->prepTarget( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Envelope_mfun_duration_target()
+// desc: ramp( dur durationToTarget, float target )
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( Envelope_mfun_duration_target )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    t_CKDUR vdur = GET_NEXT_DUR(ARGS);
+    d->prepTime( vdur / Stk::sampleRate() );
+    d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    RETURN->v_dur = vdur;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Envelope_mfun_float_target()
+// desc: ramp( float secondsToTarget, float target )
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( Envelope_mfun_float_target )
+{
+    Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
+    d->prepTime( s );
+    d->setTarget( GET_NEXT_FLOAT(ARGS) );
+    RETURN->v_dur = s * Stk::sampleRate();
+}
+
+
+//-----------------------------------------------------------------------------
 // name: Envelope_ctrl_time()
 // desc: CTRL function ...
 //-----------------------------------------------------------------------------
@@ -24029,7 +24188,7 @@ CK_DLL_CGET( Envelope_cget_time )
 CK_DLL_CTRL( Envelope_ctrl_duration )
 {
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
-    d->setTime( GET_NEXT_FLOAT(ARGS) / Stk::sampleRate() );
+    d->setTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
     RETURN->v_float = d->m_time * Stk::sampleRate();
 }
 
@@ -24226,6 +24385,40 @@ CK_DLL_TICK( ADSR_tick )
 CK_DLL_PMSG( ADSR_pmsg )
 {
     return FALSE;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ADSR_ctor_floats()
+// desc: ctor( float attack, float decay, float sustain, float release )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( ADSR_ctor_floats )
+{
+    ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    t_CKFLOAT a = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT d = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT r = GET_NEXT_FLOAT(ARGS);
+
+    // set A D S R
+    e->setAllTimes( a, d, s, r );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: ADSR_ctor_durs()
+// desc: ctor( dur attack, dur decay, dur sustain, dur release )
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( ADSR_ctor_durs )
+{
+    ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    t_CKDUR a = GET_NEXT_DUR(ARGS);
+    t_CKDUR d = GET_NEXT_DUR(ARGS);
+    t_CKFLOAT s = GET_NEXT_FLOAT(ARGS);
+    t_CKDUR r = GET_NEXT_DUR(ARGS);
+
+    // set A D S R
+    e->setAllTimes( a/Stk::sampleRate(), d/Stk::sampleRate(), s, r/Stk::sampleRate() );
 }
 
 

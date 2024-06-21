@@ -340,6 +340,8 @@ typedef t_CKBOOL (CK_DLL_CALL * f_tock)( Chuck_Object * SELF, Chuck_UAna * UANA,
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadhook)( void * bindle );
 // "main thread" quit (stop running hook)
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
+// callback function, called on host shutdown
+typedef void (CK_DLL_CALL * f_callback_on_shutdown)( void * bindle );
 // shreds watcher callback
 typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 // type instantiation callback
@@ -414,6 +416,8 @@ typedef void (CK_DLL_CALL * f_add_ugen_funcf_auto_num_channels)( Chuck_DL_Query 
 typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 // create main thread hook- used for executing a "hook" function in the main thread of a primary chuck instance
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
+// register a callback to be called on host shutdown, e.g., for chugin cleanup
+typedef void (CK_DLL_CALL * f_register_callback_on_shutdown)( Chuck_DL_Query * query, f_callback_on_shutdown cb, void * bindle );
 // register a callback function to receive notification from the VM about shreds (add, remove, etc.)
 typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
 // unregister a shreds notification callback
@@ -588,6 +592,14 @@ public:
     // deals with graphics or windowing | re-added 1.4.0.1
     // -------------
     f_create_main_thread_hook create_main_thread_hook;
+
+public:
+    // -------------
+    // register a function to be run on host shutdown; this can be used
+    // for chugin cleanup when the host (chuck, miniAudicle, etc.) exits
+    // including on SIGINT (ctrl-c termination) | added 1.5.2.5 (ge)
+    // -------------
+    f_register_callback_on_shutdown register_callback_on_shutdown;
 
 public:
     // -------------
@@ -1012,31 +1024,41 @@ public:
         // array_int operations
         t_CKINT (CK_DLL_CALL * const array_int_size)( ArrayInt array );
         t_CKINT (CK_DLL_CALL * const array_int_get_idx)( ArrayInt array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_int_set_idx)( ArrayInt array, t_CKINT idx, t_CKINT value );
         t_CKBOOL (CK_DLL_CALL * const array_int_get_key)( ArrayInt array, const char * key, t_CKINT & value  );
+        void (CK_DLL_CALL *const array_int_set_key)( ArrayInt array, const char *key, t_CKINT value );
         t_CKBOOL (CK_DLL_CALL * const array_int_push_back)( ArrayInt array, t_CKINT value );
         void (CK_DLL_CALL * const array_int_clear)( ArrayInt array );
         // array_float operations
         t_CKINT (CK_DLL_CALL * const array_float_size)( ArrayFloat array );
         t_CKFLOAT (CK_DLL_CALL * const array_float_get_idx)( ArrayFloat array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_float_set_idx)( ArrayFloat array, t_CKINT idx, t_CKFLOAT value );
         t_CKBOOL (CK_DLL_CALL * const array_float_get_key)( ArrayFloat array, const char * key, t_CKFLOAT & value );
+        void (CK_DLL_CALL *const array_float_set_key)( ArrayFloat array, const char *key, t_CKFLOAT value );
         t_CKBOOL (CK_DLL_CALL * const array_float_push_back)( ArrayFloat array, t_CKFLOAT value );
         void (CK_DLL_CALL * const array_float_clear)(ArrayFloat array);
         // array_vec2/complex/polar/16 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec2_size)( ArrayVec2 array );
         t_CKVEC2 (CK_DLL_CALL * const array_vec2_get_idx)( ArrayVec2 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec2_set_idx)( ArrayVec2 array, t_CKINT idx, t_CKVEC2 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_get_key)( ArrayVec2 array, const char * key, t_CKVEC2 & value );
+        void (CK_DLL_CALL *const array_vec2_set_key)( ArrayVec2 array, const char *key, t_CKVEC2 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec2_push_back)( ArrayVec2 array, const t_CKVEC2 & value );
         void (CK_DLL_CALL * const array_vec2_clear)(ArrayVec2 array);
         // array_vec3/24 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec3_size)( ArrayVec3 array );
         t_CKVEC3 (CK_DLL_CALL * const array_vec3_get_idx)( ArrayVec3 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec3_set_idx)( ArrayVec3 array, t_CKINT idx, t_CKVEC3 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_get_key)( ArrayVec3 array, const char * key, t_CKVEC3 & value );
+        void (CK_DLL_CALL *const array_vec3_set_key)( ArrayVec3 array, const char *key, t_CKVEC3 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec3_push_back)( ArrayVec3 array, const t_CKVEC3 & value );
         void (CK_DLL_CALL * const array_vec3_clear)(ArrayVec3 array);
         // array_vec4/32 operations | 1.5.2.0 (ge) added
         t_CKINT (CK_DLL_CALL * const array_vec4_size)( ArrayVec4 array );
         t_CKVEC4 (CK_DLL_CALL * const array_vec4_get_idx)( ArrayVec4 array, t_CKINT idx );
+        void (CK_DLL_CALL *const array_vec4_set_idx)( ArrayVec4 array, t_CKINT idx, t_CKVEC4 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec4_get_key)( ArrayVec4 array, const char * key, t_CKVEC4 & value );
+        void (CK_DLL_CALL *const array_vec4_set_key)( ArrayVec4 array, const char *key, t_CKVEC4 value );
         t_CKBOOL (CK_DLL_CALL * const array_vec4_push_back)( ArrayVec4 array, const t_CKVEC4 & value );
         void (CK_DLL_CALL * const array_vec4_clear)(ArrayVec4 array);
         // (UNSAFE) get c++ vector pointers from chuck arrays | 1.5.2.0
