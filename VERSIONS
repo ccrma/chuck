@@ -6,14 +6,58 @@ ChucK VERSIONS log
 =======
 - (updated) chugin API version from 10.1 to 10.2
 - (added) chugin API for callback on shutdown
-- (added) command line query system `--query:<name>`
+- (added) chugin API for setting array elements (thanks azaday)
+- (added) overloaded constructors added (more to come) 
+==================
+    Envelope( dur durationToTarget )
+        Construct an Envelope with duration to reach target (assumed to be 1.0);
+        FYI this does not start the Envelope until .keyOn() is called.
+    Envelope( float secondsToTarget )
+        Construct an Envelope with duration (in seconds) to reach target (assumed to be 1.0);
+        FYI this does not start the Envelope until .keyOn() is called.
+    Envelope( dur durationToTarget, float target )
+        Construct an Envelope with duration to reach target;
+        FYI this does not start the Envelope until .keyOn() is called.
+    Envelope( float durationToTarget, float target )
+        Construct an Envelope with duration (in seconds) to reach target;
+        FYI this does not start the Envelope until .keyOn() is called.
+
+    ADSR(dur attack, dur decay, float sustain, dur release)
+        Construct an ADSR with attack, decay, sustain, and release values. Attack, 
+        decay, and release values are durations; sustain is a float value typically 
+        between 0 and 1.
+    ADSR(float attack, float decay, float sustain, float release)
+        Construct an ADSR with attack, decay, sustain, and release values. Attack, 
+        decay, and release values are in seconds; sustain is a float value 
+        typically between 0 and 1.
+==================
+- (added) new member functions
+==================
+    fun dur Envelope.ramp( dur durationToTarget, float target );
+        Over the given duration, ramp toward the specified target; returns the given 
+        duration.
+    fun dur Envelope.ramp( float secondsToTarget, float target );
+        Over the given duration (in seconds), ramp toward the specified target; returns
+        the given duration.
+==================
+- (added) examples/basic/envelope2.ck -- to show Envelope.ramp() in action
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
-          original theme by Koji Kondo; modeled in ChucK by Wesley Burchell in 2017
-- (added) examples/basic/blit3.ck -- lounge blit; made for svork concert lounge music
+          original theme by Koji Kondo; (meticulously) modeled in ChucK by 
+          Wesley Burchell in 2017
+- (added) examples/basic/blit3.ck -- lounge blit; made for svork concert
+          lounge music for premiere in May 2024
+- (added) examples/special/scream-o-matic/scream-o-matic.ck -- using 
+          multiple LiSas for granular synthesis, to make continuous 
+          scream generator
+- (added) command line query system `--query:<name>`
 - (added) Type type added to CKDoc script and deployed online:
     https://chuck.stanford.edu/doc/reference/utils.html#Type
+- (added) CKDoc.sort( int ) -- toggle alphabetical sorting of functions and variables
+    within Type documentation generation (thanks azaday)
 - (fixed) globals events system synchronization (FYI this fixes a long-running,
     elusive Chunity crashing bug involving various syncers)
+- (fixed) local non-control structure local scope Objects now correctly cleaned
+          up at the end of local scope
 
 
 1.5.2.4 (April 2024)
@@ -29,10 +73,10 @@ ChucK VERSIONS log
 1.5.2.3 (April 2024)
 =======
 - (fixed) regression issue with connecting arrays of mono UGens to 
-  non-mono ugens; e.g., `Gain a[2] => dac;`
-  FYI examples/stereo/ugen-array.ck now works once again
+    non-mono ugens; e.g., `Gain a[2] => dac;`
+    FYI examples/stereo/ugen-array.ck now works once again
 - (updated) examples/array/array_ugens.ck contains additional 
-  examples of array of ugens connecting with stereo ugens
+    examples of array of ugens connecting with stereo ugens
 
 
 1.5.2.2 (March 2024)

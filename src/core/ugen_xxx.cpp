@@ -1136,6 +1136,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_add_ex( env, "special/LiSa-track4.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-track5.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "special/scream-o-matic/scream-o-matic.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb-interp.ck" ) ) goto error;
 

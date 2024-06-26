@@ -620,7 +620,12 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
             break;
 
         case ae_stmt_code:  // code segment
+            // push scope | 1.5.2.5 (ge)
+            emit->push_scope();
+            // { code }
             ret = emit_engine_emit_code_segment( emit, &stmt->stmt_code );
+            // pop scope | 1.5.2.5 (ge)
+            emit->pop_scope();
             break;
 
         case ae_stmt_switch:  // switch statement

@@ -1,0 +1,9 @@
+1  
+2  
+destructor: -2 
+3  
+destructor: -1 
+4  
+5  
+destructor: 0 
+6  
