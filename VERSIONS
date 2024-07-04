@@ -50,6 +50,7 @@ ChucK VERSIONS log
           multiple LiSas for granular synthesis, to make continuous 
           scream generator
 - (added) command line query system `--query:<name>`
+- (added) CKDoc JSON output (terry feng)
 - (added) Type type added to CKDoc script and deployed online:
     https://chuck.stanford.edu/doc/reference/utils.html#Type
 - (added) CKDoc.sort( int ) -- toggle alphabetical sorting of functions and variables
