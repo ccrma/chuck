@@ -294,9 +294,9 @@ private:
     std::string m_title;
     Chuck_VM * m_vm_ref;
     Chuck_Env * m_env_ref;
+    vector< pair<string, string> > m_args;
 public:
-    CKDocJSONOutput( Chuck_VM * vm )
-      : m_func(NULL), m_vm_ref(vm)
+    CKDocJSONOutput( Chuck_VM * vm ) : m_func(NULL), m_vm_ref(vm)
     {
         // get the env
         m_env_ref = vm != NULL ? vm->env() : NULL;
@@ -323,7 +323,7 @@ public:
             }
             sout << "\n";
         }
-        sout << "  ]\n}\n";
+        sout << "}\n";
         return sout.str();
     }
 
@@ -342,7 +342,9 @@ public:
     void end() { m_outputStr += "  ]\n}\n"; }
     void title(const std::string &_title) { }
     void begin_body() { }
-    void end_body() { }
+    void end_body() { 
+        removeTrailingComma(m_outputStr);
+    }
     void begin_toc() { }
     void toc_class(Chuck_Type * type) { }
     void end_toc() { }
@@ -352,7 +354,7 @@ public:
     { 
         m_outputStr += "    {\n";
         m_outputStr += "      \"name\": \"" + type->base_name + "\",\n";
-        m_outputStr += "      \"description\": \"" + type->doc + "\",\n";
+        m_outputStr += "      \"description\": \"" + jsonStringify(type->doc) + "\",\n";
 
         // type heirarchy, iterate through parents
         Chuck_Type * parent = type->parent;
@@ -373,132 +375,208 @@ public:
         if( type->parent != NULL ) m_outputStr += "],\n";
     }
 
-    void end_class() { m_outputStr += "    },\n"; }
-    void begin_examples() { }
-    void end_examples() { }
-    void begin_static_member_vars() { }
-    void end_static_member_vars() { }
-    void begin_member_vars() { }
-    void end_member_vars() { }
-    void begin_static_member_funcs() { }
-    void end_static_member_funcs() { }
-    void begin_ctors() { }
+    void end_class() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "    },\n"; 
+    }
+    void begin_examples() { 
+        m_outputStr += "      \"examples\": [\n";
+    }
+    void end_examples() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
+    void begin_static_member_vars() { 
+        m_outputStr += "      \"static member variables\": [\n";
+    }
+    void end_static_member_vars() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
+    void begin_member_vars() { 
+        m_outputStr += "      \"member variables\": [\n";
+    }
+    void end_member_vars() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
+    void begin_static_member_funcs() { 
+        m_outputStr += "      \"static member functions\": [\n";
+    }
+    void end_static_member_funcs() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
+    void begin_ctors() { 
+        m_outputStr += "      \"constructors\": [\n";
+    }
+    void end_ctors() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
     void begin_dtor() { }
-    void begin_member_funcs() { }
-    void end_member_funcs() { }
+    void begin_member_funcs() { 
+        m_outputStr += "      \"member functions\": [\n";
+    }
+    void end_member_funcs() { 
+        removeTrailingComma(m_outputStr);
+        m_outputStr += "      ],\n";
+    }
 
     void example(const std::string &name, const std::string &url) 
     { 
-        m_outputStr += "      \"example\": \"" + name + "\",\n";
-        m_outputStr += "      \"url\": \"" + url + "\"\n";
+        // remove the "../"
+        m_outputStr += "        \"" + EXAMPLES_URL_BASE + url.substr(3) + "\",\n";
     }
 
     void static_member_var(Chuck_Value * var) 
     { 
-        m_outputStr += "      \"static member variable\": \"" + var->name + "\",\n";
-        m_outputStr += "      \"type\": \"" + var->type->base_name + "\",\n";
-        m_outputStr += "      \"description\": \"" + var->doc + "\"\n";
-
-        // check array depth
-        if( var->type->array_depth )
-        {
-            m_outputStr += "      \"array depth\": " + std::to_string(var->type->array_depth) + "\n";
-        }
-
-        // function name
-        m_outputStr += "      \"function name\": " + var->name + "\n";
+        m_outputStr += "        {\n";
+        m_outputStr += "          \"name\": \"" + var->name + "\",\n";
+        m_outputStr += "          \"type\": \"" + var->type->base_name + array_depth_to_brackets(var->type->array_depth) + "\",\n";
+        m_outputStr += "          \"description\": \"" + jsonStringify(var->doc) + "\"\n";
+        m_outputStr += "        },\n";
     }
 
     void member_var(Chuck_Value * var) 
     {
-        m_outputStr += "      \"member variable\": \"" + var->name + "\",\n";
-        m_outputStr += "      \"type\": \"" + var->type->base_name + "\",\n";
-        m_outputStr += "      \"description\": \"" + var->doc + "\"\n";
-
-        // check array depth
-        if( var->type->array_depth )
-        {
-            m_outputStr += "      \"array depth\": " + std::to_string(var->type->array_depth) + "\n";
-        }
-
-        // function name
-        m_outputStr += "      \"function name\": " + var->name + "\n";
+        m_outputStr += "        {\n";
+        m_outputStr += "          \"name\": \"" + var->name + "\",\n";
+        m_outputStr += "          \"type\": \"" + var->type->base_name + array_depth_to_brackets(var->type->array_depth) + "\",\n";
+        m_outputStr += "          \"description\": \"" + jsonStringify(var->doc) + "\"\n";
+        m_outputStr += "        },\n";
     }
 
     void begin_static_member_func(Chuck_Func * func) 
     { 
-        m_outputStr += "      {\n";
-        m_outputStr += "      \"static member function\": \"" + func->base_name + "\",\n";
-
+        // begin
+        m_outputStr += "        {\n";
+        // function name
+        m_outputStr += "          \"static member function\": \"" + func->base_name + "\",\n";
         // return type
         string ret_type = func->def()->ret_type->base_name;
-        string ret_brackets = func->def() && func->def()->ret_type->array_depth ? array_depth_to_brackets(func->def()->ret_type->array_depth) : ""; 
-        m_outputStr += "      \"return type\": \"" + ret_type + ret_brackets + "\",\n";
-
-        // remember
+        string ret_brackets = func->def() && func->def()->ret_type->array_depth ? array_depth_to_brackets(func->def()->ret_type->array_depth) : "";
+        m_outputStr += "          \"return type\": \"" + ret_type + ret_brackets + "\",\n";
+        // save for end_ctor()
         m_func = func;
+        // clear func arg list
+        m_args.clear();
     }
 
     void end_static_member_func() 
     { 
         // verify
         if( !m_func ) return;
-
-        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
-
-        // finish output string
-        // m_outputStr += "      ]\n";
-        m_outputStr += "    },\n";
-
+        // output constructor arguments
+        if (m_args.empty()) 
+        {
+            m_outputStr += "          \"arguments\": [],\n";
+        } 
+        else 
+        {
+            m_outputStr += "          \"arguments\": [\n";
+            for (vector< pair<std::string, std::string> >::iterator arg_it = m_args.begin(); arg_it != m_args.end(); ++arg_it)
+            {
+                m_outputStr += "            {\n";
+                m_outputStr += "              \"type\": \"" + arg_it->first + "\",\n";
+                m_outputStr += "              \"name\": \"" + arg_it->second + "\"\n";
+                m_outputStr += "            },\n";
+            }
+            removeTrailingComma(m_outputStr);
+            m_outputStr += "          ],\n";
+        }
+        // description
+        m_outputStr += "          \"description\": \"" + jsonStringify(capitalize_and_periodize(m_func->doc)) + "\"\n";
+        // finish output
+        m_outputStr += "        },\n";
         // zero out
         m_func = NULL;
     }
 
     void begin_member_func(Chuck_Func * func) 
     {
+        // begin
+        m_outputStr += "        {\n";
         // function name
-        m_outputStr += "      \"member function\": \"" + func->base_name + "\",\n";
-
+        m_outputStr += "          \"member function\": \"" + func->base_name + "\",\n";
         // return type
         string ret_type = func->def()->ret_type->base_name;
         string ret_brackets = func->def() && func->def()->ret_type->array_depth ? array_depth_to_brackets(func->def()->ret_type->array_depth) : "";
-        m_outputStr += "      \"return type\": \"" + ret_type + ret_brackets + "\",\n";
-
+        m_outputStr += "          \"return type\": \"" + ret_type + ret_brackets + "\",\n";
         // save for end_member_func()
         m_func = func;
+        // clear func arg list
+        m_args.clear();
     }
 
     void end_member_func() 
     {
         // verify
         if( !m_func ) return;
-
-        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
-
+        // output constructor arguments
+        if (m_args.empty()) 
+        {
+            m_outputStr += "          \"arguments\": [],\n";
+        } 
+        else 
+        {
+            m_outputStr += "          \"arguments\": [\n";
+            for (vector< pair<std::string, std::string> >::iterator arg_it = m_args.begin(); arg_it != m_args.end(); ++arg_it)
+            {
+                m_outputStr += "            {\n";
+                m_outputStr += "              \"type\": \"" + arg_it->first + "\",\n";
+                m_outputStr += "              \"name\": \"" + arg_it->second + "\"\n";
+                m_outputStr += "            },\n";
+            }
+            removeTrailingComma(m_outputStr);
+            m_outputStr += "          ],\n";
+        }
+        // description
+        m_outputStr += "          \"description\": \"" + jsonStringify(capitalize_and_periodize(m_func->doc)) + "\"\n";
         // finish output
-        m_outputStr += "    },\n";
-
+        m_outputStr += "        },\n";
         // zero out
         m_func = NULL;
     }
 
-    void begin_ctor( Chuck_Func * func ) { 
+    void begin_ctor( Chuck_Func * func ) 
+    { 
+        // begin
+        m_outputStr += "        {\n";
         // function name
-        m_outputStr += "      \"constructor\": \"" + func->base_name + "\",\n";
-        // save for end_member_func()
+        m_outputStr += "          \"constructor\": \"" + func->base_name + "\",\n";
+        // save for end_ctor()
         m_func = func;
+        // clear func arg list
+        m_args.clear();
     }
 
     void end_ctor() 
     {
         // verify
         if( !m_func ) return;
-
-        m_outputStr += "      \"description\": \"" + capitalize_and_periodize(m_func->doc) + "\",\n";
-
+        // output constructor arguments
+        if (m_args.empty()) 
+        {
+            m_outputStr += "          \"arguments\": [],\n";
+        } 
+        else 
+        {
+            m_outputStr += "          \"arguments\": [\n";
+            for (vector< pair<std::string, std::string> >::iterator arg_it = m_args.begin(); arg_it != m_args.end(); ++arg_it)
+            {
+                m_outputStr += "            {\n";
+                m_outputStr += "              \"type\": \"" + arg_it->first + "\",\n";
+                m_outputStr += "              \"name\": \"" + arg_it->second + "\"\n";
+                m_outputStr += "            },\n";
+            }
+            removeTrailingComma(m_outputStr);
+            m_outputStr += "          ],\n";
+        }
+        // description
+        m_outputStr += "          \"description\": \"" + jsonStringify(capitalize_and_periodize(m_func->doc)) + "\"\n";
         // finish output
-        m_outputStr += "    },\n";
-
+        m_outputStr += "        },\n";
         // zero out
         m_func = NULL;
     }
@@ -508,13 +586,15 @@ public:
         // argument type
         string arg_type = arg->type->base_name;
         string arg_brackets = arg->type->array_depth ? array_depth_to_brackets(arg->type->array_depth) : "";
-        m_outputStr += "      \"argument type\": \"" + arg_type + arg_brackets + "\",\n";
+        string type = arg_type + arg_brackets;
         // argument name
-        string varname = varnameclean(S_name(arg->var_decl->xid));
-        m_outputStr += "      \"argument name\": \"" + varname + "\",\n";
+        string name = varnameclean(S_name(arg->var_decl->xid));
+
+        m_args.push_back(make_pair(type, name));
     }
 
 public:
+    // compute array_depth and return brackets string
     static string array_depth_to_brackets( int depth )
     {
         string brackets = "";
@@ -525,6 +605,7 @@ public:
         return brackets;
     }
 
+    // remove brackets from varname
     static std::string varnameclean( std::string vn )
     {
         // strip []
@@ -533,6 +614,47 @@ public:
         return vn;
     }
 
+    // make valid JSON string
+    static std::string jsonStringify( const std::string & str ) 
+    {
+        // copy
+        string jsonStr = string(str);
+        // convert b-slash to double b-slash
+        replaceAll(jsonStr, std::string("\\"), string("\\\\"));
+        // convert quotes
+        replaceAll(jsonStr, std::string("\""), string("\\\""));
+        // convert newlines to spaces
+        replace(jsonStr.begin(), jsonStr.end(), '\n', ' ');
+        // remove double spaces
+        replaceAll(jsonStr, std::string("  "), string(" "));
+        return jsonStr;
+    }
+
+    // replace string `from` instances with `to`
+    static void replaceAll( std::string & str, const std::string & from, const std::string & to ) {
+        if (from.empty()) return;
+        size_t pos = 0;
+        while ((pos = str.find(from, pos)) != std::string::npos)
+        {
+            str.replace(pos, from.length(), to);
+            pos += to.length();
+        }
+    }
+
+    // remove trailing comma if present
+    static void removeTrailingComma( std::string & str )
+    {
+        // if last or second to last character is a comma, remove it
+        // accounts for the possibility of a comma followed by a newline
+        if (str[str.length() - 1] == ',')
+        {
+            str.erase(str.length() - 1, 1);
+        } 
+        else if (str[str.length() - 2] == ',')
+        {
+            str.erase(str.length() - 2, 1);
+        }
+    }
 };
 
 
@@ -724,6 +846,11 @@ public:
         m_outputStr += "<h3 class=\"class_section_header\">constructors</h3>\n<div class=\"members\">\n";
     }
 
+    void end_ctors() // 1.5.2.0
+    {
+        m_outputStr += "</div>\n";
+    }
+
     void begin_dtor() // 1.5.2.0
     {
         m_outputStr += "<h3 class=\"class_section_header\">destructor</h3>\n<div class=\"members\">\n";
@@ -784,7 +911,7 @@ public:
         }
         m_outputStr += "</span> ";
 
-        // function name
+        // member name
         m_outputStr += "<span class=\"membername\">" + var->name + "</span></p>";
 
         if(var->doc.size() > 0)
@@ -1633,7 +1760,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             }
 
             // end member functions
-            output->end_member_funcs();
+            output->end_ctors();
         }
 
         // destructor | 1.5.2.0 (ge) added but not added
@@ -1756,8 +1883,11 @@ t_CKBOOL CKDoc::outputToDir( const string & outputDir, const string & indexTitle
 
     // gen index
     if( !outputToFile( path + "index" + m_output->fileExtension(), genIndex( indexTitle ) ) ) goto error;
-    // gen CSS
-    if( !outputToFile( path + "ckdoc.css", genCSS() ) ) goto error;
+    if (getOutputFormat() == FORMAT_HTML)
+    {
+        // gen CSS
+        if( !outputToFile( path + "ckdoc.css", genCSS() ) ) goto error;
+    }
     // gen groups
     genGroups( groupOutput );
     // for each group

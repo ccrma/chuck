@@ -47,6 +47,8 @@ struct Chuck_Type;
 struct CKDocGroup;
 class CKDocHTMLOutput;
 
+// URL to the chuck examples hosted @ Stanford
+static std::string EXAMPLES_URL_BASE = "https://chuck.stanford.edu/doc/";
 
 
 
@@ -108,6 +110,7 @@ public:
     virtual void begin_static_member_funcs() = 0;
     virtual void end_static_member_funcs() = 0;
     virtual void begin_ctors() = 0;
+    virtual void end_ctors() = 0;
     virtual void begin_member_funcs() = 0;
     virtual void end_member_funcs() = 0;
 

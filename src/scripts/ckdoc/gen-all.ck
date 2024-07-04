@@ -162,6 +162,9 @@ doc.addGroup(
     "Base chugins library offering unit generators and utilities."
 );
 
+// to generate JSON
+// doc.outputFormat(CKDoc.JSON);
+
 // generate
 doc.outputToDir( ".", "ChucK Class Library Reference" );
 

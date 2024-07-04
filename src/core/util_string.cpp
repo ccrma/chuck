@@ -185,7 +185,7 @@ string capitalize( const string & s )
 
 //-----------------------------------------------------------------------------
 // name: capitalize_and_periodize()
-// desc: capiitalize first character and ensure trailing period
+// desc: capitalize first character and ensure trailing period
 //-----------------------------------------------------------------------------
 string capitalize_and_periodize( const string & s )
 {
