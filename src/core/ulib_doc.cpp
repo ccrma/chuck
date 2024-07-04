@@ -283,8 +283,10 @@ string type2url( const string & type, const vector<CKDocGroup *> & groups )
 }
 
 
+
+
 //-----------------------------------------------------------------------------
-// name: class CKDocJSONOutput | (terry feng)
+// name: class CKDocJSONOutput | 1.5.2.5 (terry feng) added
 // desc: JSON output
 //-----------------------------------------------------------------------------
 class CKDocJSONOutput : public CKDocOutput
@@ -295,6 +297,7 @@ private:
     Chuck_VM * m_vm_ref;
     Chuck_Env * m_env_ref;
     vector< pair<string, string> > m_args;
+
 public:
     CKDocJSONOutput( Chuck_VM * vm ) : m_func(NULL), m_vm_ref(vm)
     {
@@ -304,21 +307,26 @@ public:
     // file extension
     virtual string fileExtension() const { return ".json"; }
     // render JSON index
-    virtual string renderIndex( const string & indexTitle, const vector<CKDocGroup *> & groups ) {
+    virtual string renderIndex( const string & indexTitle, const vector<CKDocGroup *> & groups )
+    {
         ostringstream sout;
         sout << "{\n";
 
-        for(t_CKINT i = 0; i < groups.size(); ++i) {
+        for( t_CKINT i = 0; i < groups.size(); ++i )
+        {
             sout << "  \"" << groups[i]->name << "\": [\n";
-            for(t_CKINT j = 0; j < groups[i]->types.size(); ++j) {
+            for( t_CKINT j = 0; j < groups[i]->types.size(); ++j )
+            {
                 sout << "    \"" << groups[i]->types[j]->base_name << "\"";
-                if(j < groups[i]->types.size() - 1) {
+                if(j < groups[i]->types.size() - 1)
+                {
                     sout << ",";
                 }
                 sout << "\n";
             }
             sout << "  ]";
-            if(i < groups.size() - 1) {
+            if(i < groups.size() - 1)
+            {
                 sout << ",";
             }
             sout << "\n";
@@ -342,9 +350,8 @@ public:
     void end() { m_outputStr += "  ]\n}\n"; }
     void title(const std::string &_title) { }
     void begin_body() { }
-    void end_body() { 
-        removeTrailingComma(m_outputStr);
-    }
+    void end_body()
+    { removeTrailingComma(m_outputStr); }
     void begin_toc() { }
     void toc_class(Chuck_Type * type) { }
     void end_toc() { }
@@ -422,7 +429,6 @@ public:
         removeTrailingComma(m_outputStr);
         m_outputStr += "      ],\n";
     }
-
     void example(const std::string &name, const std::string &url) 
     { 
         // remove the "../"
@@ -846,7 +852,7 @@ public:
         m_outputStr += "<h3 class=\"class_section_header\">constructors</h3>\n<div class=\"members\">\n";
     }
 
-    void end_ctors() // 1.5.2.0
+    void end_ctors() // 1.5.2.5
     {
         m_outputStr += "</div>\n";
     }
@@ -854,7 +860,7 @@ public:
     void begin_dtor() // 1.5.2.0
     {
         m_outputStr += "<h3 class=\"class_section_header\">destructor</h3>\n<div class=\"members\">\n";
-    }
+    } 
 
     void begin_member_funcs()
     {
@@ -1387,15 +1393,17 @@ t_CKBOOL CKDoc::setOutputFormat( t_CKINT which )
         case FORMAT_HTML:
             m_output = new CKDocHTMLOutput( m_vm_ref );
             break;
+        case FORMAT_JSON:
+            m_output = new CKDocJSONOutput( m_vm_ref );
+            break;
 
         // currently unsupported
         case FORMAT_TEXT:
         case FORMAT_MARKDOWN:
-        case FORMAT_JSON:
-            m_output = new CKDocJSONOutput( m_vm_ref );
-            // EM_error3( "[CKDoc]: unsupported format '%s'...", formats[which] );
-            // goto error;
+            EM_error3( "[CKDoc]: unsupported format '%s'...", formats[which] );
+            goto error;
             break;
+
         // unrecognized
         default:
             EM_error3( "[CKDoc]: unrecognized format ID '%i'...", which );
@@ -1725,7 +1733,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
         // constructors | 1.5.2.0 (ge) added
         if( ctors.size() || insertDefaultCtor )
         {
-            // begin member functions
+            // begin constructors
             output->begin_ctors();
 
             // add default constructor, if non-explicitly specified
@@ -1755,7 +1763,7 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
                     output->func_arg(args);
                     args = args->next;
                 }
-                // end the func
+                // end the constructor
                 output->end_ctor();
             }
 
@@ -1883,13 +1891,17 @@ t_CKBOOL CKDoc::outputToDir( const string & outputDir, const string & indexTitle
 
     // gen index
     if( !outputToFile( path + "index" + m_output->fileExtension(), genIndex( indexTitle ) ) ) goto error;
-    if (getOutputFormat() == FORMAT_HTML)
+
+    // if format is HTML
+    if( getOutputFormat() == FORMAT_HTML )
     {
         // gen CSS
         if( !outputToFile( path + "ckdoc.css", genCSS() ) ) goto error;
     }
+
     // gen groups
     genGroups( groupOutput );
+
     // for each group
     for( t_CKINT i = 0; i < m_groups.size(); i++ )
     {
