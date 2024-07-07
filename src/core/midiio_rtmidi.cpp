@@ -102,7 +102,17 @@ t_CKUINT MidiOut::send( t_CKBYTE status )
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::send( t_CKBYTE status, t_CKBYTE data1 )
 {
-    return this->send( status, data1, 0 );
+    if( !m_valid ) return 0;
+
+    // clear
+    m_msg.clear();
+    // add
+    m_msg.push_back( status );
+    m_msg.push_back( data1 );
+
+    mout->sendMessage( &m_msg );
+
+    return 2;
 }
 
 
@@ -211,7 +221,7 @@ t_CKBOOL MidiOut::close( )
 // desc: note on message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::noteon( t_CKUINT channel, t_CKUINT note, t_CKUINT velocity )
-{ return this->send( (t_CKBYTE)(MIDI_NOTEON + channel), note, velocity ); }
+{ return this->send( (t_CKBYTE)(MIDI_NOTEON + channel - 1), note, velocity ); }
 
 
 
@@ -221,7 +231,7 @@ t_CKUINT MidiOut::noteon( t_CKUINT channel, t_CKUINT note, t_CKUINT velocity )
 // desc: note off message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::noteoff( t_CKUINT channel, t_CKUINT note, t_CKUINT velocity )
-{ return this->send( (t_CKBYTE)(MIDI_NOTEOFF + channel), note, velocity ); }
+{ return this->send( (t_CKBYTE)(MIDI_NOTEOFF + channel - 1), note, velocity ); }
 
 
 
@@ -231,7 +241,7 @@ t_CKUINT MidiOut::noteoff( t_CKUINT channel, t_CKUINT note, t_CKUINT velocity )
 // desc: polypress message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::polypress( t_CKUINT channel, t_CKUINT note, t_CKUINT pressure )
-{ return this->send( (t_CKBYTE)(MIDI_POLYPRESS + channel), note, pressure ); }
+{ return this->send( (t_CKBYTE)(MIDI_POLYPRESS + channel - 1), note, pressure ); }
 
 
 
@@ -241,7 +251,7 @@ t_CKUINT MidiOut::polypress( t_CKUINT channel, t_CKUINT note, t_CKUINT pressure 
 // desc: ctrl change message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::ctrlchange( t_CKUINT channel, t_CKUINT ctrl_num, t_CKUINT ctrl_val )
-{ return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel), ctrl_num, ctrl_val ); }
+{ return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel - 1), ctrl_num, ctrl_val ); }
 
 
 
@@ -251,7 +261,7 @@ t_CKUINT MidiOut::ctrlchange( t_CKUINT channel, t_CKUINT ctrl_num, t_CKUINT ctrl
 // desc: prog change message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::progchange( t_CKUINT channel, t_CKUINT patch )
-{ return this->send( (t_CKBYTE)(MIDI_PROGCHANGE + channel), patch, 0 ); }
+{ return this->send( (t_CKBYTE)(MIDI_PROGCHANGE + channel - 1), patch ); }
 
 
 
@@ -261,8 +271,16 @@ t_CKUINT MidiOut::progchange( t_CKUINT channel, t_CKUINT patch )
 // desc: chan press
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::chanpress( t_CKUINT channel, t_CKUINT pressure )
-{ return this->send( (t_CKBYTE)(MIDI_CHANPRESS + channel), pressure, 0 ); }
+{ return this->send( (t_CKBYTE)(MIDI_CHANPRESS + channel - 1), pressure ); }
 
+
+
+//-----------------------------------------------------------------------------
+// name: pitchbend()
+// desc: pitch bend
+//-----------------------------------------------------------------------------
+t_CKUINT MidiOut::pitchbendFine( t_CKUINT channel, t_CKUINT lsb, t_CKUINT msb)
+{ return this->send( (t_CKBYTE)(MIDI_PITCHBEND + channel - 1), lsb, msb ); }
 
 
 
@@ -271,14 +289,7 @@ t_CKUINT MidiOut::chanpress( t_CKUINT channel, t_CKUINT pressure )
 // desc: pitch bend
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
-{
-    assert( FALSE );
-    return 0;
-//    return this->send( (t_CKBYTE)(MIDI_PITCHBEND + channel),
-//                       (t_CKBYTE)(HIBYTE( bend_val << 1 )),
-//                       (t_CKBYTE)(LOBYTE( bend_val & 0x7f )) );
-}
-
+{ return this->pitchbendFine( channel, 0, bend_val ); }
 
 
 
@@ -287,10 +298,7 @@ t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
 // desc: allnotesoff
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::allnotesoff( t_CKUINT channel )
-{
-    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel),
-                       (t_CKBYTE)(MIDI_ALLNOTESOFF), 0 );
-}
+{ return this->ctrlchange( channel, 123, 0 ); }
 
 
 
