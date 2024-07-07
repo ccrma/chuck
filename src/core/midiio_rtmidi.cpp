@@ -99,6 +99,10 @@ t_CKUINT MidiOut::send( t_CKBYTE status )
 //-----------------------------------------------------------------------------
 // name: send()
 // desc: send 2 byte midi message
+// note: previously, this was sending a 3 byte message with data2 = 0, this was
+//       causing a problem on macOS (only) where rtmidi was sending two program
+//       change messages instead of one. This was fixed by sending a 2 byte
+//       message.
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::send( t_CKBYTE status, t_CKBYTE data1 )
 {
@@ -296,6 +300,9 @@ t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
 //-----------------------------------------------------------------------------
 // name: allnotesoff()
 // desc: allnotesoff
+// note: allnotesoff and others are channel mode messages, not that commonly
+//       used and very easy to implement with MidiOut::ctrlchange so we're not
+//       exposing them for now.
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::allnotesoff( t_CKUINT channel )
 { return this->ctrlchange( channel, 123, 0 ); }

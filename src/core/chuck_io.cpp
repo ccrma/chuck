@@ -908,7 +908,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->doc = "Send out a pitchBend message.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add pitchBend()
+    // add pitchBend() - fine resolution
     func = make_new_mfun( "int", "pitchBend", MidiOut_pitchBend_fine );
     func->add_arg( "int", "channel" );
     func->add_arg( "int", "lsb" );
