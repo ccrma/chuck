@@ -361,7 +361,7 @@ public:
     { 
         m_outputStr += "    {\n";
         m_outputStr += "      \"name\": \"" + type->base_name + "\",\n";
-        m_outputStr += "      \"description\": \"" + jsonStringify(type->doc) + "\",\n";
+        m_outputStr += "      \"description\": \"" + jsonStringify(capitalize_and_periodize(type->doc)) + "\",\n";
 
         // type heirarchy, iterate through parents
         Chuck_Type * parent = type->parent;
@@ -440,7 +440,7 @@ public:
         m_outputStr += "        {\n";
         m_outputStr += "          \"name\": \"" + var->name + "\",\n";
         m_outputStr += "          \"type\": \"" + var->type->base_name + array_depth_to_brackets(var->type->array_depth) + "\",\n";
-        m_outputStr += "          \"description\": \"" + jsonStringify(var->doc) + "\"\n";
+        m_outputStr += "          \"description\": \"" + jsonStringify(capitalize_and_periodize(var->doc)) + "\"\n";
         m_outputStr += "        },\n";
     }
 
@@ -449,7 +449,7 @@ public:
         m_outputStr += "        {\n";
         m_outputStr += "          \"name\": \"" + var->name + "\",\n";
         m_outputStr += "          \"type\": \"" + var->type->base_name + array_depth_to_brackets(var->type->array_depth) + "\",\n";
-        m_outputStr += "          \"description\": \"" + jsonStringify(var->doc) + "\"\n";
+        m_outputStr += "          \"description\": \"" + jsonStringify(capitalize_and_periodize(var->doc)) + "\"\n";
         m_outputStr += "        },\n";
     }
 
