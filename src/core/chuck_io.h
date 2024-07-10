@@ -542,6 +542,7 @@ CK_DLL_MFUN( MidiOut_num );
 CK_DLL_MFUN( MidiOut_name );
 CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
+CK_DLL_MFUN( MidiOut_send_msg );
 CK_DLL_MFUN( MidiOut_noteOn );
 CK_DLL_MFUN( MidiOut_noteOff );
 CK_DLL_MFUN( MidiOut_controlChange );

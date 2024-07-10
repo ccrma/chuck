@@ -7,7 +7,7 @@ ChucK VERSIONS log
 - (updated) chugin API version from 10.1 to 10.2
 - (added) chugin API for callback on shutdown
 - (added) chugin API for setting array elements (thanks azaday)
-- (added) overloaded constructors added (more to come) 
+- (added) overloaded constructors (more to come) 
 ==================
     Envelope( dur durationToTarget )
         Construct an Envelope with duration to reach target (assumed to be 1.0);
@@ -33,14 +33,38 @@ ChucK VERSIONS log
 ==================
 - (added) new member functions
 ==================
-    fun dur Envelope.ramp( dur durationToTarget, float target );
+    dur Envelope.ramp( dur durationToTarget, float target );
         Over the given duration, ramp toward the specified target; returns the given 
         duration.
-    fun dur Envelope.ramp( float secondsToTarget, float target );
+    dur Envelope.ramp( float secondsToTarget, float target );
         Over the given duration (in seconds), ramp toward the specified target; returns
         the given duration.
 ==================
 - (added) examples/basic/envelope2.ck -- to show Envelope.ramp() in action
+- (added) new MIDI message voice message convenience functions (thanks @cviejo;
+    previously these are possible only through `MidiOut.send( MidiMsg msg )`:
+==================
+    int MidiOut.send( int status, int data1, int data2 );
+        Send out a MIDI message consisting of one status byte and two data bytes.
+    int channelPressure(int channel, int pressure)
+        Send out a channelPressure message.
+    int controlChange(int channel, int controller, int value)
+        Send out a controlChange message.
+    int noteOff(int channel, int note, int velocity)
+        Send out a noteOff message.
+    int noteOn(int channel, int note, int velocity)
+        Send out a noteOn message.
+    int pitchBend(int channel, int value)
+        Send out a pitchBend message.
+    int pitchBend(int channel, int lsb, int msb)
+        Send out a pitchBend message with fine and coarse values.
+    int polyPressure(int channel, int note, int pressure)
+        Send out a polyPressure message.
+    int programChange(int channel, int program)
+        Send out a programChange message.
+==================
+- (added) examples/midi/midiout2.ck -- demonstrates using the above channel
+          voice messages
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
           original theme by Koji Kondo; (meticulously) modeled in ChucK by 
           Wesley Burchell in 2017
