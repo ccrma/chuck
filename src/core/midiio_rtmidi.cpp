@@ -99,10 +99,24 @@ t_CKUINT MidiOut::send( t_CKBYTE status )
 //-----------------------------------------------------------------------------
 // name: send()
 // desc: send 2 byte midi message
+// note: previously, this was sending a 3 byte message with data2 = 0, this was
+//       causing a problem on macOS (only) where rtmidi was sending two program
+//       change messages instead of one. This was fixed by sending a 2 byte
+//       message | 1.5.2.5 (cviejo)
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::send( t_CKBYTE status, t_CKBYTE data1 )
 {
-    return this->send( status, data1, 0 );
+    if( !m_valid ) return 0;
+
+    // clear
+    m_msg.clear();
+    // add
+    m_msg.push_back( status );
+    m_msg.push_back( data1 );
+
+    mout->sendMessage( &m_msg );
+
+    return 2;
 }
 
 
@@ -251,7 +265,7 @@ t_CKUINT MidiOut::ctrlchange( t_CKUINT channel, t_CKUINT ctrl_num, t_CKUINT ctrl
 // desc: prog change message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::progchange( t_CKUINT channel, t_CKUINT patch )
-{ return this->send( (t_CKBYTE)(MIDI_PROGCHANGE + channel), patch, 0 ); }
+{ return this->send( (t_CKBYTE)(MIDI_PROGCHANGE + channel), patch ); }
 
 
 
@@ -261,7 +275,17 @@ t_CKUINT MidiOut::progchange( t_CKUINT channel, t_CKUINT patch )
 // desc: chan press
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::chanpress( t_CKUINT channel, t_CKUINT pressure )
-{ return this->send( (t_CKBYTE)(MIDI_CHANPRESS + channel), pressure, 0 ); }
+{ return this->send( (t_CKBYTE)(MIDI_CHANPRESS + channel), pressure ); }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: pitchbend()
+// desc: pitch bend
+//-----------------------------------------------------------------------------
+t_CKUINT MidiOut::pitchbendFine( t_CKUINT channel, t_CKUINT lsb, t_CKUINT msb)
+{ return this->send( (t_CKBYTE)(MIDI_PITCHBEND + channel), lsb, msb ); }
 
 
 
@@ -271,13 +295,7 @@ t_CKUINT MidiOut::chanpress( t_CKUINT channel, t_CKUINT pressure )
 // desc: pitch bend
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
-{
-    assert( FALSE );
-    return 0;
-//    return this->send( (t_CKBYTE)(MIDI_PITCHBEND + channel),
-//                       (t_CKBYTE)(HIBYTE( bend_val << 1 )),
-//                       (t_CKBYTE)(LOBYTE( bend_val & 0x7f )) );
-}
+{ return this->pitchbendFine( channel, 0, bend_val ); }
 
 
 
@@ -285,12 +303,12 @@ t_CKUINT MidiOut::pitchbend( t_CKUINT channel, t_CKUINT bend_val )
 //-----------------------------------------------------------------------------
 // name: allnotesoff()
 // desc: allnotesoff
+// note: allnotesoff and others are channel mode messages, not that commonly
+//       used and very easy to implement with MidiOut::ctrlchange so we're not
+//       exposing them for now.
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::allnotesoff( t_CKUINT channel )
-{
-    return this->send( (t_CKBYTE)(MIDI_CTRLCHANGE + channel),
-                       (t_CKBYTE)(MIDI_ALLNOTESOFF), 0 );
-}
+{ return this->ctrlchange( channel, 123, 0 ); }
 
 
 
