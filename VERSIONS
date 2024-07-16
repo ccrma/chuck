@@ -81,6 +81,7 @@ ChucK VERSIONS log
     within Type documentation generation (thanks azaday)
 - (fixed) globals events system synchronization (FYI this fixes a long-running,
     elusive Chunity crashing bug involving various syncers)
+- (fixed) STK Moog parameters now consistent (should sound more Moog-y)
 - (fixed) local non-control structure local scope Objects now correctly cleaned
           up at the end of local scope
 
