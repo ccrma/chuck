@@ -174,6 +174,7 @@ $(HOST_EXES): chuck-core $(COBJS_HOST) $(CXXOBJS_HOST) $(CXXOBJS_HOST_EXE)
 
 # clean generated files
 clean:
+	@echo "removing compiled host-examples files..."
 	@rm -rf $(HOST_EXES) *.o *.d */*.{o,d} */*/*.{o,d} \
 	$(OBJS) $(patsubst %.o,%.d,$(OBJS))*~ $(CHUCK_CORE_DIR)/chuck.output \
 	$(CHUCK_CORE_DIR)/chuck.tab.h $(CHUCK_CORE_DIR)/chuck.tab.c $(CHUCK_CORE_DIR)/chuck.yy.c \

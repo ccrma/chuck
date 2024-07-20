@@ -269,8 +269,15 @@ $(CXXOBJS_HOST): %.o: %.cpp
 
 
 ############################## RUN UNIT TEST ##################################
+.PHONY: test
 test:
-	(cd test && ./test.py ../chuck .)
+	@make -C test
+
+
+####################### GENERATE API DOCUMENTATION ############################
+.PHONY: doc ckdoc
+doc ckdoc:
+	@make -C scripts/ckdoc
 
 
 ############################### DISTRIBUTION ##################################
@@ -312,7 +319,8 @@ endif
 
 
 ############################## CLEAN UP #######################################
-clean:
+.PHONY: clean-src
+clean-src:
 	@echo "removing compiled output..."
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} \
 	$(OBJS) $(patsubst %.o,%.d,$(OBJS))*~ $(CK_CORE_DIR)/chuck.output \
@@ -320,11 +328,9 @@ clean:
 	$(DIST_ROOT)/$(DIST_DIR) $(DIST_ROOT)/$(DIST_DIR){,.tgz,.zip} \
 	host-web/webchuck/js/webchuck.js host-web/webchuck/js/webchuck.wasm \
 	Release Debug
-	@echo "removing generated ckdoc files..."
-	@rm -f scripts/ckdoc/*.css scripts/ckdoc/*.html
-	@echo "removing generated test files..."
-	@rm -f test/03-Modules/01-file-io.bin test/03-Modules/08-write-read-op.txt \
-	test/03-Modules/09-write-output.txt test/03-Modules/file.bin \
-	@echo "removing compiled host-examples files..."
-	@make -C host-examples clean
 
+.PHONY: clean
+clean: clean-src
+	@make -C scripts/ckdoc clean
+	@make -C host-examples clean
+	@make -C test clean

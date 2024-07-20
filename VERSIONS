@@ -85,7 +85,7 @@ ChucK VERSIONS log
 - (fixed) local non-control structure local scope Objects now correctly cleaned
           up at the end of local scope
 - (updated) more and clearer error messages when initializing real-time audio
-- (developer) clean up makefile `clean` target
+- (developer) streamline makefile targets 'test' 'doc' 'clean'
 
 
 1.5.2.4 (April 2024)

@@ -168,5 +168,8 @@ doc.addGroup(
 // generate
 doc.outputToDir( ".", "ChucK Class Library Reference" );
 
+// print
+<<< "API reference files generated in 'src/scripts/ckdoc/'", "" >>>;
+
 // TODO: print what was generated (or add option to)
 // TODO: print what types are in the type system but wasn't documented
