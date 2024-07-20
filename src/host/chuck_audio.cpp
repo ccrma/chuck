@@ -785,6 +785,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     bool useDefaultOut = ( m_dac_n == 0 );
     // check input device number; 0 means "default"
     bool useDefaultIn = ( m_adc_n == 0 );
+    // total number of audio devices (input and output)
+    unsigned int num_devices = 0;
 
     // log
     EM_log( CK_LOG_FINE, "initializing RtAudio..." );
@@ -801,6 +803,9 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         // error reported above
         goto error; // to clean up
     }
+
+    // get number of audio devices
+    num_devices = m_rtaudio->getDeviceCount();
 
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
     // note: this is to preserve previous devices numbering after RtAudio change
@@ -829,7 +834,6 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
             {
                 // find first device with at least the requested channel count
                 m_dac_n = -1;
-                int num_devices = m_rtaudio->getDeviceCount();
                 for( int i = 0; i < num_devices; i++ )
                 {
                     device_info = m_rtaudio->getDeviceInfo(i);
@@ -1027,7 +1031,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                     // flag this for expansion in the callback
                     m_expand_in_mono2stereo = TRUE;
                     // log
-                    EM_log( CK_LOG_INFO, "using 1-channel default input audio device (instead of requested 2-channel)..." );
+                    EM_log( CK_LOG_INFO, "using 1-channel default input device (instead of requested 2-channel)..." );
                     EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
                 }
             }
@@ -1037,6 +1041,21 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
             // offset to 0-index device number
             m_adc_n -= 1;
         }
+    }
+
+    // the dac and adc devices we've chosen to initialize | 1.5.0.0 (ge)
+    if( m_num_channels_out > 0 && m_dac_n < num_devices )
+    {
+        // get device info
+        dac_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
+        // copy names (if valid)
+        if( dac_info.probed ) m_dac_name = dac_info.name;
+    }
+    if( m_num_channels_in > 0 && m_adc_n < num_devices )
+    {
+        // get device info
+        adc_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
+        if( adc_info.probed ) m_adc_name = adc_info.name;
     }
 
     // open device
@@ -1086,15 +1105,6 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         EM_log( CK_LOG_HERALD, "new buffer size: %d -> %i", m_buffer_size, bufsize );
         m_buffer_size = bufsize;
     }
-
-    // the dac and adc devices we ended up initializing | 1.5.0.0 (ge)
-    if( m_num_channels_out > 0 )
-        dac_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
-    if( m_num_channels_in > 0 )
-        adc_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-    // copy names
-    m_dac_name = dac_info.name;
-    m_adc_name = adc_info.name;
 
     // pop indent
     EM_poplog();

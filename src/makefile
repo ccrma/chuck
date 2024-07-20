@@ -313,11 +313,18 @@ endif
 
 ############################## CLEAN UP #######################################
 clean:
-	@echo "removing generated files..."
+	@echo "removing compiled output..."
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} \
 	$(OBJS) $(patsubst %.o,%.d,$(OBJS))*~ $(CK_CORE_DIR)/chuck.output \
 	$(CK_CORE_DIR)/chuck.tab.h $(CK_CORE_DIR)/chuck.tab.c $(CK_CORE_DIR)/chuck.yy.c \
 	$(DIST_ROOT)/$(DIST_DIR) $(DIST_ROOT)/$(DIST_DIR){,.tgz,.zip} \
 	host-web/webchuck/js/webchuck.js host-web/webchuck/js/webchuck.wasm \
 	Release Debug
+	@echo "removing generated ckdoc files..."
+	@rm -f scripts/ckdoc/*.css scripts/ckdoc/*.html
+	@echo "removing generated test files..."
+	@rm -f test/03-Modules/01-file-io.bin test/03-Modules/08-write-read-op.txt \
+	test/03-Modules/09-write-output.txt test/03-Modules/file.bin \
+	@echo "removing compiled host-examples files..."
+	@make -C host-examples clean
 

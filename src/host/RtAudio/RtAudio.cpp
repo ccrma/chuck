@@ -689,7 +689,7 @@ RtAudio::DeviceInfo RtApiCore :: getDeviceInfo( unsigned int device )
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiCore::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiCore::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -991,7 +991,7 @@ bool RtApiCore :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
   if ( device >= nDevices ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiCore::probeDeviceOpen: device ID is invalid!";
+    errorText_ = "RtApiCore::probeDeviceOpen: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     return FAILURE;
   }
 
@@ -2197,7 +2197,7 @@ RtAudio::DeviceInfo RtApiJack :: getDeviceInfo( unsigned int device )
 
   if ( device >= nDevices ) {
     jack_client_close( client );
-    errorText_ = "RtApiJack::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiJack::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -2352,7 +2352,7 @@ bool RtApiJack :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiJack::probeDeviceOpen: device ID is invalid!";
+    errorText_ = "RtApiJack::probeDeviceOpen: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     return FAILURE;
   }
 
@@ -2957,7 +2957,7 @@ RtAudio::DeviceInfo RtApiAsio :: getDeviceInfo( unsigned int device )
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiAsio::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiAsio::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -5806,7 +5806,7 @@ RtAudio::DeviceInfo RtApiDs :: getDeviceInfo( unsigned int device )
   }
 
   if ( device >= dsDevices.size() ) {
-    errorText_ = "RtApiDs::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiDs::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -5988,7 +5988,7 @@ bool RtApiDs :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned 
 
   if ( device >= nDevices ) {
     // This should not happen because a check is made before this function is called.
-    errorText_ = "RtApiDs::probeDeviceOpen: device ID is invalid!";
+    errorText_ = "RtApiDs::probeDeviceOpen: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     return FAILURE;
   }
 
@@ -7421,7 +7421,7 @@ RtAudio::DeviceInfo RtApiAlsa :: getDeviceInfo( unsigned int device )
   }
 
   if ( device >= nDevices ) {
-    errorText_ = "RtApiAlsa::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiAlsa::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -7734,7 +7734,7 @@ bool RtApiAlsa :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigne
 
     if ( device >= nDevices ) {
       // This should not happen because a check is made before this function is called.
-      errorText_ = "RtApiAlsa::probeDeviceOpen: device ID is invalid!";
+      errorText_ = "RtApiAlsa::probeDeviceOpen: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
       return FAILURE;
     }
   }
@@ -9497,7 +9497,7 @@ RtAudio::DeviceInfo RtApiOss :: getDeviceInfo( unsigned int device )
 
   if ( device >= nDevices ) {
     close( mixerfd );
-    errorText_ = "RtApiOss::getDeviceInfo: device ID is invalid!";
+    errorText_ = "RtApiOss::getDeviceInfo: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     error( RTAUDIO_INVALID_USE );
     return info;
   }
@@ -9616,7 +9616,7 @@ bool RtApiOss :: probeDeviceOpen( unsigned int device, StreamMode mode, unsigned
   if ( device >= nDevices ) {
     // This should not happen because a check is made before this function is called.
     close( mixerfd );
-    errorText_ = "RtApiOss::probeDeviceOpen: device ID is invalid!";
+    errorText_ = "RtApiOss::probeDeviceOpen: device " + std::to_string(device) + " (probed ID:" + std::to_string(device+1) + ") is invalid."; // 1.5.2.5 (ge) add device #
     return FAILURE;
   }
 

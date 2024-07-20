@@ -84,6 +84,8 @@ ChucK VERSIONS log
 - (fixed) STK Moog parameters now consistent (should sound more Moog-y)
 - (fixed) local non-control structure local scope Objects now correctly cleaned
           up at the end of local scope
+- (updated) more and clearer error messages when initializing real-time audio
+- (developer) clean up makefile `clean` target
 
 
 1.5.2.4 (April 2024)
