@@ -5,11 +5,12 @@
 # ChucK website: https://chuck.stanford.edu/
 # source repository: https://github.com/ccrma/chuck/
 ###############################################################################
-
+.PHONY: all
 all: test
 
 
 ############################## RUN UNIT TEST ##################################
+.PHONY: test
 test:
 ifneq (,$(wildcard ../chuck ../chuck.exe))
 	./test.py ../chuck .
@@ -19,6 +20,7 @@ endif
 
 
 ############################## CLEAN UP #######################################
+.PHONY: clean
 clean:
 	@echo "removing generated test files..."
 	@rm -f 03-Modules/01-file-io.bin 03-Modules/08-write-read-op.txt \
