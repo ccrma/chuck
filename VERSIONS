@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.2.5
+1.5.2.5 (July 2024)
 =======
 - (updated) chugin API version from 10.1 to 10.2
 - (added) chugin API for callback on shutdown
@@ -41,10 +41,10 @@ ChucK VERSIONS log
         the given duration.
 ==================
 - (added) examples/basic/envelope2.ck -- to show Envelope.ramp() in action
-- (added) new MIDI message voice message convenience functions (thanks @cviejo;
-    previously these are possible only through `MidiOut.send( MidiMsg msg )`:
+- (added) new MidiOut message voice message convenience functions (thanks @cviejo;
+        previously these are possible only through `MidiOut.send( MidiMsg msg )`:
 ==================
-    int MidiOut.send( int status, int data1, int data2 );
+    int send( int status, int data1, int data2 );
         Send out a MIDI message consisting of one status byte and two data bytes.
     int channelPressure(int channel, int pressure)
         Send out a channelPressure message.
