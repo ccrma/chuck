@@ -162,8 +162,14 @@ doc.addGroup(
     "Base chugins library offering unit generators and utilities."
 );
 
+// to generate JSON
+// doc.outputFormat(CKDoc.JSON);
+
 // generate
 doc.outputToDir( ".", "ChucK Class Library Reference" );
+
+// print
+<<< "API reference files generated in 'src/scripts/ckdoc/'", "" >>>;
 
 // TODO: print what was generated (or add option to)
 // TODO: print what types are in the type system but wasn't documented

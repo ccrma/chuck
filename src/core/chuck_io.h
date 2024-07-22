@@ -542,6 +542,15 @@ CK_DLL_MFUN( MidiOut_num );
 CK_DLL_MFUN( MidiOut_name );
 CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
+CK_DLL_MFUN( MidiOut_send_msg );
+CK_DLL_MFUN( MidiOut_noteOn );
+CK_DLL_MFUN( MidiOut_noteOff );
+CK_DLL_MFUN( MidiOut_controlChange );
+CK_DLL_MFUN( MidiOut_programChange );
+CK_DLL_MFUN( MidiOut_pitchBend );
+CK_DLL_MFUN( MidiOut_pitchBend_fine );
+CK_DLL_MFUN( MidiOut_polyPressure );
+CK_DLL_MFUN( MidiOut_channelPressure );
 #endif // __DISABLE_MIDI__
 
 

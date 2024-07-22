@@ -112,6 +112,7 @@ public:
     t_CKUINT ctrlchange( t_CKUINT  channel, t_CKUINT  ctrl_num, t_CKUINT  ctrl_val );
     t_CKUINT progchange( t_CKUINT  channel, t_CKUINT  patch );
     t_CKUINT chanpress( t_CKUINT  channel, t_CKUINT  pressure );
+    t_CKUINT pitchbendFine( t_CKUINT  channel, t_CKUINT  lsb, t_CKUINT  msb );
     t_CKUINT pitchbend( t_CKUINT  channel, t_CKUINT  bend_val );
     t_CKUINT allnotesoff( t_CKUINT  channel );
 

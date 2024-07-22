@@ -11802,7 +11802,7 @@ Moog :: Moog()
   adsr->setAllTimes((MY_FLOAT) 0.001,(MY_FLOAT) 1.5,(MY_FLOAT) 0.6,(MY_FLOAT) 0.250);
   filterQ = (MY_FLOAT) 0.85;
   filterRate = (MY_FLOAT) 0.0001;
-  filterStartFreq = (MY_FLOAT) 0.0;
+  filterStartFreq = (MY_FLOAT) 2000.0; // 1.5.2.5 (prc) updated to 2000.0; was 0.0;
   modDepth = (MY_FLOAT) 0.0;
 
   // chuck
@@ -11916,7 +11916,7 @@ void Moog :: controlChange(int number, MY_FLOAT value)
   if (number == __SK_FilterQ_) // 2
     filterQ = 0.80 + ( 0.1 * norm );
   else if (number == __SK_FilterSweepRate_) // 4
-    filterRate = norm * 0.002; // 1.4.1.0 (prc) was .0002
+    filterRate = norm * 0.0002; // 1.5.2.5 (prc) was .002 // 1.4.1.0 (prc) was .0002
   else if (number == __SK_ModFrequency_) { // 11
      this->setModulationSpeed( norm * 12.0 );
      }

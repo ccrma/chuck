@@ -1070,8 +1070,8 @@ DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
     std::string doc;
     Chuck_DL_Func * func = NULL;
 
-    doc = "ported from rtcmix. See <a href=\"http://www.music.columbia.edu/cmix/makegens.html\">\
-    http://www.music.columbia.edu/cmix/makegens.html</a> \
+    doc = "ported from rtcmix. See <a href=\"https://web.archive.org/web/20160628032324/http://www.music.columbia.edu/cmix/makegens.html\">\
+    makegens documentation</a> \
     for more information on the GenX family of UGens. Currently coefficients past \
     the 100th are ignored.\
     \

@@ -825,7 +825,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     type_engine_import_class_end( env );
 
     // doc string
-    doc = "Class for sending out Midi messages.";
+    doc = "Class for sending out MIDI messages. Note that channel numbers are 0-based.";
     // init base class
     if( !type_engine_import_class_begin( env, "MidiOut", "Object",
                                          env->global(), MidiOut_ctor, MidiOut_dtor, doc.c_str() ) )
@@ -864,14 +864,84 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->doc = "Set error printing (1 for on, 0 for off). On by default.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add send()
+    // add send() | 1.5.2.5 (ge) added
     func = make_new_mfun( "int", "send", MidiOut_send );
+    func->add_arg( "int", "status" );
+    func->add_arg( "int", "data1" );
+    func->add_arg( "int", "data2" );
+    func->doc = "Send out a MIDI message consisting of one status byte and two data bytes.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add send()
+    func = make_new_mfun( "int", "send", MidiOut_send_msg );
     func->add_arg( "MidiMsg", "msg" );
-    func->doc = "Send out a MidiMsg message.";
+    func->doc = "Send out a MIDI message using a MidiMsg.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add noteOn() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "noteOn", MidiOut_noteOn );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "note" );
+    func->add_arg( "int", "velocity" );
+    func->doc = "Send out a noteOn message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add noteOff() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "noteOff", MidiOut_noteOff );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "note" );
+    func->add_arg( "int", "velocity" );
+    func->doc = "Send out a noteOff message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add controlChange() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "controlChange", MidiOut_controlChange );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "controller" );
+    func->add_arg( "int", "value" );
+    func->doc = "Send out a controlChange message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add programChange() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "programChange", MidiOut_programChange );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "program" );
+    func->doc = "Send out a programChange message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add pitchBend() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "pitchBend", MidiOut_pitchBend );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "value" );
+    func->doc = "Send out a pitchBend message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add pitchBend() - fine resolution | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "pitchBend", MidiOut_pitchBend_fine );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "lsb" );
+    func->add_arg( "int", "msb" );
+    func->doc = "Send out a pitchBend message with fine and coarse values.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add polyPressure() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "polyPressure", MidiOut_polyPressure );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "note" );
+    func->add_arg( "int", "pressure" );
+    func->doc = "Send out a polyPressure message.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add channelPressure() | 1.5.2.5 (cviejo) added
+    func = make_new_mfun( "int", "channelPressure", MidiOut_channelPressure );
+    func->add_arg( "int", "channel" );
+    func->add_arg( "int", "pressure" );
+    func->doc = "Send out a channelPressure message.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "midi/midiout.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "midi/midiout2.ck" ) ) goto error;
 
     // add member variable
     MidiOut_offset_data = type_engine_import_mvar( env, "int", "@MidiOut_data", FALSE );
@@ -2417,7 +2487,16 @@ CK_DLL_MFUN( MidiOut_printerr )
     mout->set_suppress( !print_or_not );
 }
 
-CK_DLL_MFUN( MidiOut_send )
+CK_DLL_MFUN( MidiOut_send ) // 1.5.2.5 | (ge) added
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKBYTE status = (t_CKBYTE)GET_NEXT_INT(ARGS);
+    t_CKBYTE data1 = (t_CKBYTE)GET_NEXT_INT(ARGS);
+    t_CKBYTE data2 = (t_CKBYTE)GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->send( status, data1, data2 );
+}
+
+CK_DLL_MFUN( MidiOut_send_msg )
 {
     MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
@@ -2426,6 +2505,75 @@ CK_DLL_MFUN( MidiOut_send )
     the_msg.data[1] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2);
     the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
+}
+
+CK_DLL_MFUN( MidiOut_noteOn ) // 1.5.2.5 (cviejo) added
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT note = GET_NEXT_INT(ARGS);
+    t_CKINT velocity = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->noteon( channel, note, velocity );
+}
+
+CK_DLL_MFUN( MidiOut_noteOff )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT note = GET_NEXT_INT(ARGS);
+    t_CKINT velocity = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->noteoff( channel, note, velocity );
+}
+
+CK_DLL_MFUN( MidiOut_controlChange )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT control = GET_NEXT_INT(ARGS);
+    t_CKINT value = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->ctrlchange( channel, control, value );
+}
+
+CK_DLL_MFUN( MidiOut_programChange )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT program = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->progchange( channel, program );
+}
+
+CK_DLL_MFUN( MidiOut_pitchBend )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT value = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->pitchbend( channel, value );
+}
+
+CK_DLL_MFUN( MidiOut_pitchBend_fine )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT lsb = GET_NEXT_INT(ARGS);
+    t_CKINT msb = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->pitchbendFine( channel, lsb, msb );
+}
+
+CK_DLL_MFUN( MidiOut_polyPressure )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT note = GET_NEXT_INT(ARGS);
+    t_CKINT pressure = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->polypress( channel, note, pressure );
+}
+
+CK_DLL_MFUN( MidiOut_channelPressure )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    t_CKINT channel = GET_NEXT_INT(ARGS);
+    t_CKINT pressure = GET_NEXT_INT(ARGS);
+    RETURN->v_int = mout->chanpress( channel, pressure );
 }
 
 #endif // __DISABLE_MIDI__

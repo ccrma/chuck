@@ -269,8 +269,15 @@ $(CXXOBJS_HOST): %.o: %.cpp
 
 
 ############################## RUN UNIT TEST ##################################
+.PHONY: test
 test:
-	(cd test && ./test.py ../chuck .)
+	@make -C test
+
+
+####################### GENERATE API DOCUMENTATION ############################
+.PHONY: doc ckdoc
+doc ckdoc:
+	@make -C scripts/ckdoc
 
 
 ############################### DISTRIBUTION ##################################
@@ -312,8 +319,9 @@ endif
 
 
 ############################## CLEAN UP #######################################
-clean:
-	@echo "removing generated files..."
+.PHONY: clean-src
+clean-src:
+	@echo "removing compiled output..."
 	@rm -rf $(wildcard chuck chuck.exe) *.o *.d */*.{o,d} */*/*.{o,d} \
 	$(OBJS) $(patsubst %.o,%.d,$(OBJS))*~ $(CK_CORE_DIR)/chuck.output \
 	$(CK_CORE_DIR)/chuck.tab.h $(CK_CORE_DIR)/chuck.tab.c $(CK_CORE_DIR)/chuck.yy.c \
@@ -321,3 +329,8 @@ clean:
 	host-web/webchuck/js/webchuck.js host-web/webchuck/js/webchuck.wasm \
 	Release Debug
 
+.PHONY: clean
+clean: clean-src
+	@make -C scripts/ckdoc clean
+	@make -C host-examples clean
+	@make -C test clean
