@@ -63,7 +63,7 @@
 #define CK_DLL_VERSION_MAJOR (10)
 // minor API version: revisions
 // minor API version of chuck must >= API version of chugin
-#define CK_DLL_VERSION_MINOR (1)
+#define CK_DLL_VERSION_MINOR (2)
 #define CK_DLL_VERSION_MAKE(maj,min) ((t_CKUINT)(((maj) << 16) | (min)))
 #define CK_DLL_VERSION_GETMAJOR(v) (((v) >> 16) & 0xFFFF)
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
