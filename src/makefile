@@ -16,7 +16,7 @@ CK_HOST_DIR=host
 # where to find RtAudio
 RTAUDIO_DIR=RtAudio
 # chuck version
-CK_VERSION=1.5.2.5-dev
+CK_VERSION=1.5.2.5
 
 
 ########################## DEFAULT MAKE TARGET ################################
