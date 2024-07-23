@@ -26923,7 +26923,9 @@ CK_DLL_CTRL( Mandolin_ctrl_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
-    m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
+    if( str != NULL ) {
+        m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
+    }
     RETURN->v_string = str;
 }
 

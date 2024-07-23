@@ -83,6 +83,7 @@ CK_DLL_TICK( noise_tick );
 
 // cnoise
 CK_DLL_CTOR( cnoise_ctor );
+CK_DLL_CTOR( cnoise_ctor_mode );
 CK_DLL_DTOR( cnoise_dtor );
 CK_DLL_TICK( cnoise_tick );
 CK_DLL_CTRL( cnoise_ctrl_mode );
