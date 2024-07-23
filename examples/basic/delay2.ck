@@ -1,5 +1,6 @@
 // name: delay2.ck
 // desc: example of modulating delay using DelayL
+// requires: 1.5.2.5 or higher
 
 // patch
 SndBuf doh("special:doh") => DelayL delay(.25::second, 1::second) => dac;

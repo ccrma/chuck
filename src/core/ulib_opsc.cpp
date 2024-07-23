@@ -1684,6 +1684,7 @@ DLL_QUERY opensoundcontrol_query( Chuck_DL_Query * query )
     // add examples | 1.5.0.0 (ge) added
     query->add_ex( query, "osc/s.ck" );
     query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/r2.ck" );
     query->add_ex( query, "osc/osc-dump.ck" );
 
     query->end_class( query );
@@ -1735,6 +1736,7 @@ DLL_QUERY opensoundcontrol_query( Chuck_DL_Query * query )
 
     // add examples | 1.5.0.0 (ge) added
     query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/r2.ck" );
     query->add_ex( query, "osc/s.ck" );
     query->add_ex( query, "osc/osc-dump.ck" );
     query->add_ex( query, "osc/multi-msg/r-multi-msg.ck" );
@@ -1785,6 +1787,7 @@ DLL_QUERY opensoundcontrol_query( Chuck_DL_Query * query )
 
     // add examples | 1.5.0.0 (ge) added
     query->add_ex( query, "osc/r.ck" );
+    query->add_ex( query, "osc/r2.ck" );
     query->add_ex( query, "osc/s.ck" );
     query->add_ex( query, "osc/osc-dump.ck" );
     query->add_ex( query, "osc/multi-msg/r-multi-msg.ck" );
