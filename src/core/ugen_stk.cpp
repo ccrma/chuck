@@ -210,9 +210,12 @@ CK_DLL_CGET( Chorus_cget_mix );
 
 // Delay
 CK_DLL_CTOR( Delay_ctor );
+CK_DLL_CTOR( Delay_ctor_delay );
+CK_DLL_CTOR( Delay_ctor_delay_max );
 CK_DLL_DTOR( Delay_dtor );
 CK_DLL_TICK( Delay_tick );
 CK_DLL_PMSG( Delay_pmsg );
+CK_DLL_CTRL( Delay_ctrl_set );
 CK_DLL_CTRL( Delay_ctrl_delay );
 CK_DLL_CTRL( Delay_ctrl_max );
 CK_DLL_CGET( Delay_cget_delay );
@@ -221,9 +224,12 @@ CK_DLL_CGET( Delay_clear );
 
 // DelayA
 CK_DLL_CTOR( DelayA_ctor );
+CK_DLL_CTOR( DelayA_ctor_delay );
+CK_DLL_CTOR( DelayA_ctor_delay_max );
 CK_DLL_DTOR( DelayA_dtor );
 CK_DLL_TICK( DelayA_tick );
 CK_DLL_PMSG( DelayA_pmsg );
+CK_DLL_CTRL( DelayA_ctrl_set );
 CK_DLL_CTRL( DelayA_ctrl_delay );
 CK_DLL_CTRL( DelayA_ctrl_max );
 CK_DLL_CGET( DelayA_cget_delay );
@@ -232,9 +238,12 @@ CK_DLL_CGET( DelayA_clear );
 
 // DelayL
 CK_DLL_CTOR( DelayL_ctor );
+CK_DLL_CTOR( DelayL_ctor_delay );
+CK_DLL_CTOR( DelayL_ctor_delay_max );
 CK_DLL_DTOR( DelayL_dtor );
 CK_DLL_TICK( DelayL_tick );
 CK_DLL_PMSG( DelayL_pmsg );
+CK_DLL_CTRL( DelayL_ctrl_set );
 CK_DLL_CTRL( DelayL_ctrl_delay );
 CK_DLL_CTRL( DelayL_ctrl_max );
 CK_DLL_CGET( DelayL_cget_delay );
@@ -243,9 +252,12 @@ CK_DLL_CGET( DelayL_clear );
 
 // Echo
 CK_DLL_CTOR( Echo_ctor );
+CK_DLL_CTOR( Echo_ctor_delay );
+CK_DLL_CTOR( Echo_ctor_delay_max );
 CK_DLL_DTOR( Echo_dtor );
 CK_DLL_TICK( Echo_tick );
 CK_DLL_PMSG( Echo_pmsg );
+CK_DLL_CTRL( Echo_ctrl_set );
 CK_DLL_CTRL( Echo_ctrl_delay );
 CK_DLL_CTRL( Echo_ctrl_max );
 CK_DLL_CTRL( Echo_ctrl_mix );
@@ -3524,6 +3536,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // member variable
     Delay_offset_data = type_engine_import_mvar ( env, "int", "@Delay_data", FALSE );
     if( Delay_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add ctor( dur delay )
+    func = make_new_ctor( Delay_ctor_delay );
+    func->add_arg( "dur", "delay" );
+    func->doc = "construct a Delay with delay length and, implicitly, delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( Delay_ctor_delay_max );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "construct a Delay with delay length and delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "void", "set", Delay_ctrl_set );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "set delay length and delay max; delay should be <= max";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "dur", "delay", Delay_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
     func->doc = "set length of delay.";
@@ -3565,12 +3596,30 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ugen_begin( env, "DelayA", "UGen", env->global(),
                         DelayA_ctor, DelayA_dtor,
                         DelayA_tick, DelayA_pmsg, doc.c_str() ) ) return FALSE;
+    // add examples
+    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
+
     // member variable
     DelayA_offset_data = type_engine_import_mvar ( env, "int", "@DelayA_data", FALSE );
     if( DelayA_offset_data == CK_INVALID_OFFSET ) goto error;
 
-    // add examples
-    if( !type_engine_import_add_ex( env, "deep/ks-chord.ck" ) ) goto error;
+    // add ctor( dur delay )
+    func = make_new_ctor( DelayA_ctor_delay );
+    func->add_arg( "dur", "delay" );
+    func->doc = "construct a DelayA with delay length and, implicitly, delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( DelayA_ctor_delay_max );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "construct a DelayA with delay length and delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "void", "set", DelayA_ctrl_set );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "set delay length and delay max; delay should be <= max";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "dur", "delay", DelayA_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
@@ -3614,6 +3663,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         DelayL_tick, DelayL_pmsg, doc.c_str() ) ) return FALSE;
 
     type_engine_import_add_ex(env, "basic/delay.ck");
+    type_engine_import_add_ex(env, "basic/delay2.ck");
     type_engine_import_add_ex(env, "basic/i-robot.ck");
     type_engine_import_add_ex(env, "multi/we-robot.ck");
     type_engine_import_add_ex(env, "analysis/xcorr.ck");
@@ -3622,6 +3672,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     // member variable
     DelayL_offset_data = type_engine_import_mvar ( env, "int", "@DelayL_data", FALSE );
     if( DelayL_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add ctor( dur delay )
+    func = make_new_ctor( DelayL_ctor_delay );
+    func->add_arg( "dur", "delay" );
+    func->doc = "construct a DelayL with delay length and, implicitly, delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( DelayL_ctor_delay_max );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "construct a DelayL with delay length and delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "void", "set", DelayL_ctrl_set );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "set delay length and delay max; delay should be <= max";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "dur", "delay", DelayL_ctrl_delay ); //! length of delay
     func->add_arg( "dur", "value" );
     func->doc = "set length of delay.";
@@ -3668,6 +3737,25 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     Echo_offset_data = type_engine_import_mvar ( env, "int", "@Echo_data", FALSE );
     if( Echo_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // add ctor( dur delay )
+    func = make_new_ctor( Echo_ctor_delay );
+    func->add_arg( "dur", "delay" );
+    func->doc = "construct an Echo with delay length and, implicitly, delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( Echo_ctor_delay_max );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "construct an Echo with delay length and delay max";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "void", "set", Echo_ctrl_set );
+    func->add_arg( "dur", "delay" );
+    func->add_arg( "dur", "max" );
+    func->doc = "set delay length and delay max; delay should be <= max";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     func = make_new_mfun( "dur", "delay", Echo_ctrl_delay ); //! length of echo
     func->add_arg( "dur", "value" );
     func->doc = "set length of echo.";
@@ -23637,6 +23725,38 @@ CK_DLL_CTOR( Delay_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: Delay_ctor_delay()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Delay_ctor_delay )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(delay+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Delay_ctor_delay_max()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Delay_ctor_delay_max )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(max+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
 // name: Delay_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -23644,6 +23764,23 @@ CK_DLL_DTOR( Delay_dtor )
 {
     delete (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
     OBJ_MEMBER_UINT(SELF, Delay_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Delay_ctrl_set()
+// desc: set function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( Delay_ctrl_set )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // get the object
+    DelayBase * d = (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    // set it
+    d->set( (long)(delay+.5), (long)(max+.5) );
 }
 
 
@@ -23738,6 +23875,38 @@ CK_DLL_CTOR( DelayA_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: DelayA_ctor_delay()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( DelayA_ctor_delay )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayA * d = new DelayA( (long)(delay+.5), (long)(delay+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayA_ctor_delay_max()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( DelayA_ctor_delay_max )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayA * d = new DelayA( (long)(delay+.5), (long)(max+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
 // name: DelayA_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -23745,6 +23914,23 @@ CK_DLL_DTOR( DelayA_dtor )
 {
     delete (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
     OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayA_ctrl_set()
+// desc: set function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( DelayA_ctrl_set )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // get the object
+    DelayA * d = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    // set it
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -23835,6 +24021,55 @@ CK_DLL_CGET( DelayA_clear )
 CK_DLL_CTOR( DelayL_ctor )
 {
     OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)new DelayL;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayL_ctor_delay()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( DelayL_ctor_delay )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayL * d = new DelayL( (long)(delay+.5), (long)(delay+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayL_ctor_delay_max()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( DelayL_ctor_delay_max )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // instantiate
+    DelayL * d = new DelayL( (long)(delay+.5), (long)(max+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: DelayL_ctrl_set()
+// desc: set function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( DelayL_ctrl_set )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // get the object
+    DelayL * d = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    // set it
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -23941,6 +24176,42 @@ CK_DLL_CTOR( Echo_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: Echo_ctor_delay()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Echo_ctor_delay )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // instantiate
+    Echo * d = new Echo( (long)(delay+.5) );
+    // set delay
+    d->setDelay( (long)(delay+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Echo_ctor_delay_max()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Echo_ctor_delay_max )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // instantiate
+    Echo * d = new Echo( (long)(max+.5) );
+    // set delay
+    d->setDelay( (long)(delay+.5) );
+    // set pointer as member
+    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+}
+
+
+//-----------------------------------------------------------------------------
 // name: Echo_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -23948,6 +24219,25 @@ CK_DLL_DTOR( Echo_dtor )
 {
     delete (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
     OBJ_MEMBER_UINT(SELF, Echo_offset_data) = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Echo_ctrl_set()
+// desc: set function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( Echo_ctrl_set )
+{
+    // get delay
+    t_CKDUR delay = GET_NEXT_DUR(ARGS);
+    // get delay max
+    t_CKDUR max = GET_NEXT_DUR(ARGS);
+    // get the object
+    Echo * d = (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
+    // set max
+    d->set( (long)(max+.5) );
+    // set delay
+    d->setDelay( delay );
 }
 
 
@@ -26633,7 +26923,9 @@ CK_DLL_CTRL( Mandolin_ctrl_bodyIR )
 {
     Mandolin * m = (Mandolin *)OBJ_MEMBER_UINT(SELF, Instrmnt_offset_data);
     Chuck_String * str = GET_NEXT_STRING(ARGS);
-    m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
+    if( str != NULL ) {
+        m->setBodyIR( str->str().c_str(), strstr(str->str().c_str(), ".raw") != NULL );
+    }
     RETURN->v_string = str;
 }
 

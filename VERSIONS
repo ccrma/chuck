@@ -22,14 +22,34 @@ ChucK VERSIONS log
         Construct an Envelope with duration (in seconds) to reach target;
         FYI this does not start the Envelope until .keyOn() is called.
 
-    ADSR(dur attack, dur decay, float sustain, dur release)
+    ADSR( dur attack, dur decay, float sustain, dur release )
         Construct an ADSR with attack, decay, sustain, and release values. Attack, 
         decay, and release values are durations; sustain is a float value typically 
         between 0 and 1.
-    ADSR(float attack, float decay, float sustain, float release)
+    ADSR( float attack, float decay, float sustain, float release )
         Construct an ADSR with attack, decay, sustain, and release values. Attack, 
         decay, and release values are in seconds; sustain is a float value 
         typically between 0 and 1.
+
+    Delay( dur delay, dur max )
+        Construct a Delay with delay length and delay max.
+    Delay( dur delay )
+        Construct a Delay with delay length and, implicitly, delay max.
+
+    DelayA( dur delay, dur max )
+        Construct a DelayA with delay length and delay max.
+    DelayA( dur delay )
+        Construct a DelayA with delay length and, implicitly, delay max.
+
+    DelayL( dur delay, dur max )
+        Construct a DelayL with delay length and delay max.
+    DelayL( dur delay )
+        Construct a DelayL with delay length and, implicitly, delay max.
+
+    Echo( dur delay, dur max )
+        Construct an Echo with delay length and delay max.
+    Echo( dur delay )
+        Construct an Echo with delay length and, implicitly, delay max.
 ==================
 - (added) new member functions
 ==================
@@ -39,6 +59,18 @@ ChucK VERSIONS log
     dur Envelope.ramp( float secondsToTarget, float target );
         Over the given duration (in seconds), ramp toward the specified target; returns
         the given duration.
+
+    void Delay.set( dur delay, dur max )
+        Set delay length and delay max; delay should be <= max.
+
+    void DelayA.set( dur delay, dur max )
+        Set delay length and delay max; delay should be <= max.
+
+    void DelayL.set( dur delay, dur max )
+        Set delay length and delay max; delay should be <= max.
+
+    void Echo.set( dur delay, dur max )
+        Set delay length and delay max; delay should be <= max.
 ==================
 - (added) examples/basic/envelope2.ck -- to show Envelope.ramp() in action
 - (added) new MidiOut message voice message convenience functions (thanks @cviejo;
@@ -68,6 +100,8 @@ ChucK VERSIONS log
 - (added) examples/deep/smb.ck -- a ChucK rendition of Super Mario Bros.
           original theme by Koji Kondo; (meticulously) modeled in ChucK by 
           Wesley Burchell in 2017
+- (added) examples/basic/delay2.ck -- example showing DelayL constructor
+          and modulating delay line length
 - (added) examples/basic/blit3.ck -- lounge blit; made for svork concert
           lounge music for premiere in May 2024
 - (added) examples/special/scream-o-matic/scream-o-matic.ck -- using 

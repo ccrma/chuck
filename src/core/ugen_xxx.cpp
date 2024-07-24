@@ -42,6 +42,7 @@
 #include "chuck_instr.h"
 #include "util_math.h"
 #include "util_raw.h"
+#include "util_string.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -418,10 +419,16 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     cnoise_offset_data = type_engine_import_mvar( env, "int", "@cnoise_data", FALSE );
     if( cnoise_offset_data == CK_INVALID_OFFSET ) goto error;
 
+    // add ctor( string mode ) | 1.5.2.5 (ge) added
+    func = make_new_ctor( cnoise_ctor_mode );
+    func->add_arg( "string", "mode" );
+    func->doc = "Construct a CNoise with synthesis mode. Supported modes are \"white\", \"pink\", \"flip\", and \"xor\".";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add ctrl: mode
     func = make_new_mfun( "string", "mode", cnoise_ctrl_mode );
     func->add_arg( "string", "mode" );
-    func->doc = "Noise synthesis mode. Supported modes are &quot;white&quot;, &quot;pink&quot;, &quot;flip&quot;, and &quot;xor&quot;.";
+    func->doc = "Noise synthesis mode. Supported modes are \"white\", \"pink\", \"flip\", and \"xor\".";
     if( !type_engine_import_mfun( env, func ) ) goto error;
     // add cget: mode
     //func = make_new_mfun( "string", "mode", cnoise_cget_mode );
@@ -2040,7 +2047,7 @@ public:
     pink_rand = false;
     t_CKINT randt = CK_RANDOM_MAX;
     rand_bits = 0;
-    fprob = (t_CKINT)( (double)CK_RANDOM_MAX * 1.0 / 32.0 );
+    fprob = (t_CKINT)(CK_RANDOM_MAX/32.0);
     while ( randt > 0 ) {
       rand_bits++;
       randt = randt >> 1;
@@ -2056,7 +2063,7 @@ public:
   t_CKINT fprob;
   t_CKUINT mode;
   void tick( t_CKTIME now, SAMPLE * out );
-  void setMode( const char * c );
+  void setMode( const std::string & mode );
 
   t_CKINT pink_tick( SAMPLE * out);
   t_CKINT brown_tick( SAMPLE * out);
@@ -2070,6 +2077,18 @@ CK_DLL_CTOR( cnoise_ctor )
 {
     OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)new CNoise_Data;
 }
+
+CK_DLL_CTOR( cnoise_ctor_mode )
+{
+    // create cnoise internal object
+    CNoise_Data * n = new CNoise_Data;
+    OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)n;
+    // get arg
+    Chuck_String * ckstr = GET_NEXT_STRING(ARGS);
+    // set
+    n->setMode( ckstr ? ckstr->str() : "" );
+}
+
 
 CK_DLL_DTOR( cnoise_dtor )
 {
@@ -2172,59 +2191,75 @@ CNoise_Data::fbm_tick( SAMPLE * out ) {
 }
 
 void
-CNoise_Data::setMode( const char * c ) {
+CNoise_Data::setMode( const std::string & name ) {
+  // process
+  std::string str = tolower(trim(name));
+  // c string (pointer valid only in this function)
+  const char * c = str.c_str();
+
   if ( strcmp ( c, "white" ) == 0 ) {
     // CK_FPRINTF_STDERR( "white noise\n" );
     mode = NOISE_WHITE;
     scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "pink" ) == 0 ) {
+  else if ( strcmp ( c, "pink" ) == 0 ) {
     // CK_FPRINTF_STDERR( "pink noise\n" );
     mode = NOISE_PINK;
     scale = 2.0 / (double)(CK_RANDOM_MAX  * ( pink_depth + 1 ) );
     bias = -1.0;
   }
-  if ( strcmp ( c, "flip" ) == 0) {
+  else if ( strcmp ( c, "flip" ) == 0) {
     // CK_FPRINTF_STDERR( "bitflip noise\n" );
     mode = NOISE_FLIP;
     scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "xor" ) == 0) {
+  else if ( strcmp ( c, "xor" ) == 0) {
     // CK_FPRINTF_STDERR( "xor noise\n" );
     mode = NOISE_XOR;
     scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "brown" ) == 0) {
+  else if ( strcmp ( c, "brown" ) == 0) {
     // CK_FPRINTF_STDERR( "brownian noise\n" );
     mode = NOISE_BROWN;
     scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
-  if ( strcmp ( c, "fbm" ) == 0) {
+  else if ( strcmp ( c, "fbm" ) == 0) {
     // CK_FPRINTF_STDERR( "fbm noise\n" );
     mode = NOISE_FBM;
     scale = 2.0 / (t_CKFLOAT)CK_RANDOM_MAX;
     bias = -1.0;
   }
-
+  else
+  {
+      // default pink
+      mode = NOISE_PINK;
+      // error message if mode string non-empty
+      if( strlen(c) > 0 )
+          EM_error2b( 0, "unrecognized CNoise mode '%s'; defaulting to 'pink'...", c );
+  }
 }
 
 CK_DLL_CTRL( cnoise_ctrl_mode )
 {
     CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
-    //const char * mode= (const char *)*(char **)GET_CK_STRING(ARGS);
-    const char * mode= GET_NEXT_STRING(ARGS)->str().c_str();
-    d->setMode(mode);
+    // get arg
+    Chuck_String * ckstr = GET_NEXT_STRING(ARGS);
+    // set
+    d->setMode( ckstr ? ckstr->str() : "" );
+    // pass through
+    RETURN->v_string = ckstr;
 }
 
 CK_DLL_CTRL( cnoise_ctrl_fprob )
 {
-    CNoise_Data * d = ( CNoise_Data * )OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
-    t_CKFLOAT p= GET_CK_FLOAT(ARGS);
-    d->fprob = (t_CKINT) ( (double)CK_RANDOM_MAX * p );
+    CNoise_Data * d = (CNoise_Data *)OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
+    t_CKFLOAT p = GET_CK_FLOAT(ARGS);
+    d->fprob = (t_CKINT)(p*CK_RANDOM_MAX);
+    RETURN->v_float = p;
 }
 
 
