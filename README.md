@@ -71,6 +71,13 @@ This process should build a `chuck` executable in `chuck/src`.
 ### Windows
 To build chuck using Visual Studio (2019 or later recommended), navigate to `chuck\src\visual-studio`, open `chuck.sln`, and build.
 
+### Web
+First, build and install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html), and then run `make`:
+
+```
+cd chuck/src
+make linux-all
+```
 
 ## Contributing to ChucK
 Here are the source repositories maintained by the ChucK Team. _Developers wanted!_
