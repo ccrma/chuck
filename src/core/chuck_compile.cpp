@@ -1160,6 +1160,8 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
     {
         // get chugin name
         std::string & dl_path = *i_dl;
+        // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
+        dl_path = expand_filepath(dl_path);
         // check extension, append if no match
         if( !extension_matches(dl_path.c_str(), extension) )
             dl_path += extension;
@@ -1171,8 +1173,10 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const char * extension,
     for( std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
+        // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
+        string dl_path = expand_filepath(*i_sp);
         // search directory and load contents
-        load_external_modules_in_directory( this, (*i_sp).c_str(), extension, recursiveSearch );
+        load_external_modules_in_directory( this, dl_path.c_str(), extension, recursiveSearch );
     }
 
     // clear context
@@ -1358,6 +1362,8 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
     {
         // get chugin name
         std::string & dl_path = *i_dl;
+        // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
+        dl_path = expand_filepath(dl_path);
         // check extension, append if no match
         if( !extension_matches(dl_path.c_str(), extension) )
             dl_path += extension;
@@ -1380,8 +1386,10 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const char * extension,
     for( std::list<std::string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
+        // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
+        string dl_path = expand_filepath(*i_sp);
         // search directory and load contents
-        probe_external_modules_in_directory( (*i_sp).c_str(), extension, recursiveSearch, ck_libs );
+        probe_external_modules_in_directory( dl_path.c_str(), extension, recursiveSearch, ck_libs );
     }
 
     // pop
