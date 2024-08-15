@@ -1338,6 +1338,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     ck_api = ck_get_api;
     setname = ck_setname;
     setinfo = ck_setinfo;
+    getinfo = ck_getinfo;
     begin_class = ck_begin_class;
     add_ctor = ck_add_ctor;
     add_dtor = ck_add_dtor;
