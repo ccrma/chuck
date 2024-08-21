@@ -653,6 +653,10 @@ class ChuckNode extends AudioWorkletProcessor
                 this.Module.FS_createDataFile( '/' + event.data.directory, 
                     event.data.filename, event.data.data, true, true, true );
                 break;
+            case 'createDirectory':
+                 this.Module.FS_createPath( '/' + event.data.parent,
+                    event.data.name, true, true );
+                 break;
         // ================== Run / Compile ================== //
             case 'runChuckCode':
                 var shredID = runChuckCode( this.myID, event.data.code );
