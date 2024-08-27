@@ -71,6 +71,21 @@ This process should build a `chuck` executable in `chuck/src`.
 ### Windows
 To build chuck using Visual Studio (2019 or later recommended), navigate to `chuck\src\visual-studio`, open `chuck.sln`, and build.
 
+### Web
+To compile ChucK to WebAssembly (WASM):
+
+* install the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html) (and activate the SDK version, as instructed in the link)
+* before building, enable Emscripten paths and environment variables (e.g., from the `emsdk` directory):
+```
+source ./emsdk_env.sh
+```
+* navigate to the `chuck/src/` directory, and run `make web`:
+```
+cd chuck/src
+make web
+```
+This should create `webchuck.wasm` and `webchuck.js` in the `chuck/src/host-web/webchuck/js` directory. (Also see: [WebChucK](https://github.com/ccrma/webchuck))
+
 
 ## Contributing to ChucK
 Here are the source repositories maintained by the ChucK Team. _Developers wanted!_

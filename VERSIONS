@@ -2,6 +2,17 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.2.6
+=======
+- (added, macOS and Linux) --chugin: and --chugin-path:
+    flags now expands '~' in filepath
+- (developer) fixed QUERY->getinfo(); previously the function pointer was
+    NULL and would caused a crash if called
+- (developer) updated set/getParam() key names:
+  was: CHUCK_PARAM_USER_CHUGINS now: CHUCK_PARAM_CHUGIN_LIST_USER
+  was: CHUCK_PARAM_USER_CHUGIN_DIRECTORIES now: CHUCK_PARAM_CHUGIN_LIST_USER_DIR
+
+
 1.5.2.5 (July 2024)
 =======
 - (updated) chugin API version from 10.1 to 10.2

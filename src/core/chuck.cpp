@@ -87,8 +87,12 @@
 #define CHUCK_PARAM_AUTO_DEPEND_DEFAULT            "0"
 #define CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT        "1"
 #define CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT      ""
-#define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
 #define CHUCK_PARAM_IS_REALTIME_AUDIO_HINT_DEFAULT "0"
+#define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT "1"
+#define CHUCK_PARAM_TTY_COLOR_DEFAULT              "0"
+#define CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT         "80"
+// chugin-relate param defaults
+#define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
 #ifndef __PLATFORM_WINDOWS__
 // 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
 // redundant with g_default_chugin_path, which already contains
@@ -98,11 +102,8 @@
 // redundant with g_default_chugin_path, which already contains
 #define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
 #endif // __PLATFORM_WINDOWS__
-#define CHUCK_PARAM_USER_CHUGINS_DEFAULT        std::list<std::string>()
-#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT std::list<std::string>()
-#define CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT "1"
-#define CHUCK_PARAM_TTY_COLOR_DEFAULT              "0"
-#define CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT         "80"
+#define CHUCK_PARAM_CHUGIN_LIST_USER_DEFAULT       std::list<std::string>()
+#define CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT   std::list<std::string>()
 
 
 
@@ -212,10 +213,10 @@ void ChucK::initDefaultParams()
     initParam( CHUCK_PARAM_TTY_WIDTH_HINT, CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT, ck_param_int );
 
     // initialize list params manually (take care to use tolower())
-    m_listParams[tolower(CHUCK_PARAM_USER_CHUGINS)]             = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_USER_CHUGINS)]            = ck_param_string_list;
-    m_listParams[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)]  = CHUCK_PARAM_USER_CHUGIN_DIRECTORIES_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_USER_CHUGIN_DIRECTORIES)] = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]      = CHUCK_PARAM_CHUGIN_LIST_USER_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]     = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_USER_DIR)]  = CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_USER_DIR)] = ck_param_string_list;
 }
 
 
@@ -704,13 +705,13 @@ t_CKBOOL ChucK::initChugins()
         // chugin dur
         std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
         // list of search pathes (added 1.3.0.0)
-        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER_DIR );
         if( chuginDir != std::string("") )
         {
             dl_search_path.push_back( chuginDir );
         }
         // list of individually named chug-ins (added 1.3.0.0)
-        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER );
 
         EM_pushlog();
         // print host version
@@ -850,14 +851,14 @@ void ChucK::probeChugins()
     // chugin dur
     std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES );
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER_DIR );
     if( chuginDir != "" )
     {
         // add to search path
         dl_search_path.push_back( chuginDir );
     }
     // list of individually named chug-ins (added 1.3.0.0)
-    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER );
 
     // log
     EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
