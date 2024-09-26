@@ -394,6 +394,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     if( !type_engine_import_add_ex( env, "basic/wind.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/smb.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "shred/powerup.ck" ) ) goto error;
 
     // end import

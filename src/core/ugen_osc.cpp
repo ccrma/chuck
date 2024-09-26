@@ -238,6 +238,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // add examples
     if( !type_engine_import_add_ex( env, "basic/oscillatronx.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "deep/shepard.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/smb.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -348,6 +349,7 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 
     // add examples
     if( !type_engine_import_add_ex( env, "basic/oscillatronx.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "deep/smb.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "filter/brf.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "filter/rlpf.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "filter/rhpf.ck" ) ) goto error;
