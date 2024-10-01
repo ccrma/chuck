@@ -48,7 +48,7 @@
 // 1.5.0.0 (ge) | moved to chuck.h for at-a-glance visibility
 // 1.5.2.0 (ge) | moved to chuck_def.h for chugins headers streamlining
 //-----------------------------------------------------------------------------
-#define CHUCK_VERSION_STRING        "1.5.3.0 (chai)"
+#define CHUCK_VERSION_STRING        "1.5.3.1-dev (chai)"
 //-----------------------------------------------------------------------------
 
 
