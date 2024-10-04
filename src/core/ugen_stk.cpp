@@ -3936,7 +3936,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     type_engine_import_add_ex(env, "basic/blit2.ck");
 
     // add construtor ADSR( dur attack, dur decay, float sustain, dur release ) | 1.5.2.5 (added) ge & eito
-    func = make_new_ctor( ADSR_ctor_floats );
+    func = make_new_ctor( ADSR_ctor_durs );
     func->add_arg( "dur", "attack" );
     func->add_arg( "dur", "decay" );
     func->add_arg( "float", "sustain" );
@@ -3945,7 +3945,7 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add constructor ADSR( float attack, float decay, float sustain, float release ) | 1.5.2.5 (added) ge & eito
-    func = make_new_ctor( ADSR_ctor_durs );
+    func = make_new_ctor( ADSR_ctor_floats );
     func->add_arg( "float", "attack" );
     func->add_arg( "float", "decay" );
     func->add_arg( "float", "sustain" );
