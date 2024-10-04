@@ -145,16 +145,28 @@ static IntList intList( t_CKINT i, IntList rest )
 void EM_newline( t_CKINT pos, t_CKINT lineNum )
 {
     // debug print
-    // cerr << "pos: " << pos << " lineNum: " << lineNum << " EM_lineNum: " << EM_lineNum << endl;
+    // cerr << "pos: " << pos << " lineNum: " << lineNum
+    //      << " EM_lineNum: " << EM_lineNum << endl;
 
-    // HACK: this is specifically for multi-line strings
-    // for( int i = EM_lineNum; i < lineNum; i++ )
-    //     the_linePos = intList( pos, the_linePos );
-
-    // set to new line num
-    EM_lineNum++;
-    // add to linked list
-    the_linePos = intList( pos, the_linePos );
+    // line num progress
+    t_CKINT diff = lineNum - EM_lineNum;
+    // this could happen, apparently, with single-line comments...
+    if( diff < 1 )
+    {
+        // increment line num
+        EM_lineNum++;
+        // add to linked list
+        the_linePos = intList( pos, the_linePos );
+    }
+    else // diff == 1 (another line of code) or...
+         // diff > 1 (multi-line string literal, does not call EM_newline until the end)
+    {
+        // create nodes for one or more lines
+        for( int i = EM_lineNum; i < lineNum; i++ )
+             the_linePos = intList( pos, the_linePos );
+        // set to new line num
+        EM_lineNum = lineNum;
+    }
 }
 
 
