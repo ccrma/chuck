@@ -136,12 +136,8 @@ const char * mini_type( const char * str );
 extern t_CKINT EM_tokPos;
 extern t_CKINT EM_lineNum;
 
-// EM_extLineNum is synced with EM_lineNum in lexer/parser phase, then synced
-// with scanner/typechecker (EM_lineNum is not synced with scanner/typechecker)
-extern t_CKINT EM_extLineNum;
-
 // advance state when new line is encountered
-void EM_newline( t_CKINT pos );
+void EM_newline( t_CKINT pos, t_CKINT line );
 
 
 //-----------------------------------------------------------------------------
