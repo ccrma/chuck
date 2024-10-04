@@ -8,8 +8,10 @@ ChucK VERSIONS log
     now prints a warning with a hint to call GG.nextFrame()
 - (fixed) CPU and memory spikes when minimizing a ChuGL window
 - (fixed) crash caused by immediately disconnecting GGen after -->
-*** language maintenance ***
+  *****************************
 - (fixed) ADSR constructors now work correctly
+- (fixed) compiler now reports line numbers and caret position correctly after
+    a multi-line string literal
 
 
 1.5.3.0 (September 2024)
