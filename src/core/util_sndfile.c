@@ -8008,7 +8008,7 @@ psf_fopen (SF_PRIVATE *psf, const char *pathname, int open_mode)
 				return psf->error ;
 		} ;
 
-	handle = CreateFile (
+	handle = CreateFileA (              /* (ge & eito) explicitly use ANSI version of CreateFile | 1.5.3.2 */
 			pathname,					/* pointer to name of the file */
 			dwDesiredAccess,			/* access (read-write) mode */
 			dwShareMode,				/* share mode */
