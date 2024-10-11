@@ -2,6 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.3.2
+=======
+- (fixed, windows) SndBuf issue when compiled with UNICODE (FYI SndBuf is still ANSI,
+    but this averts an error due to char width mismatch)
+
+
 1.5.3.1 (October 2024)
 *** ChuGL maintanance patch ***
 - (fixed) crash caused by calling UI functions before calling GG.nextFrame();
