@@ -509,8 +509,18 @@ class ChuckNode extends AudioWorkletProcessor
                 {
                     return function()
                     {
-                        // Create a directory for chugins
-                        Module["FS_createPath"]("/", "chugins", true, true);
+                        // Create directories required to load filesToPreload
+                        const dirs = filesToPreload.map((f) => {
+                            const path = f.filename.split("/");
+                            return path.slice(0, path.length - 1);
+                        });
+
+                        dirs.forEach((dir) =>
+                            dir.reduce((parent, name) => {
+                                Module["FS_createPath"](parent, name, true, true);
+                                return parent + "/" + name;
+                            }, '/')
+                        );
 
                         // Preload files into the file system
                         for( var i = 0; i < filesToPreload.length; i++ )
@@ -653,6 +663,10 @@ class ChuckNode extends AudioWorkletProcessor
                 this.Module.FS_createDataFile( '/' + event.data.directory, 
                     event.data.filename, event.data.data, true, true, true );
                 break;
+            case 'createDirectory':
+                 this.Module.FS_createPath( '/' + event.data.parent,
+                    event.data.name, true, true );
+                 break;
         // ================== Run / Compile ================== //
             case 'runChuckCode':
                 var shredID = runChuckCode( this.myID, event.data.code );

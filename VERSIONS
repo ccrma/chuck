@@ -2,8 +2,27 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.2.6
+1.5.3.1 (October 2024)
+*** ChuGL maintanance patch ***
+- (fixed) crash caused by calling UI functions before calling GG.nextFrame();
+    now prints a warning with a hint to call GG.nextFrame()
+- (fixed) CPU and memory spikes when minimizing a ChuGL window
+- (fixed) crash caused by immediately disconnecting GGen after -->
+  *****************************
+- (fixed) ADSR constructors now work correctly
+- (fixed) compiler now reports line numbers and caret position correctly after
+    a multi-line string literal
+
+
+1.5.3.0 (September 2024)
 =======
+- (major update) ****** ChuGL.chug v0.2.0 (alpha) ******
+    * complete under-the-hood engine rewrite
+    * now uses WebGPU instead of OpenGL as the core graphic library
+    * some minor API changes, see: https://chuck.stanford.edu/chugl/api/
+    * new and updated examples, see: https://chuck.stanford.edu/chugl/examples/
+    * for more information, visit: https://chuck.stanford.edu/chugl/
+  *********************************************
 - (added, macOS and Linux) --chugin: and --chugin-path:
     flags now expands '~' in filepath
 - (developer) fixed QUERY->getinfo(); previously the function pointer was

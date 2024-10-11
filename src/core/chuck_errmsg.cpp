@@ -53,12 +53,9 @@ using namespace std;
 // global
 t_CKINT EM_tokPos = 0;
 t_CKINT EM_lineNum = 1;
-t_CKINT EM_extLineNum = 1;
 
 // current filename
 static const char * the_filename = "";
-// current line number
-static t_CKINT the_lineNum = 1;
 // current chuck
 static ChucK * the_chuck = NULL;
 
@@ -108,7 +105,7 @@ static const char * g_str[] = {
     "FINE!!",       // 7
     "FINER!",       // 8
     "FINEST",       // 9
-    "ALL!!"           // 10
+    "ALL!!!"        // 10
 };
 
 
@@ -145,15 +142,31 @@ static IntList intList( t_CKINT i, IntList rest )
 // called by lexer on new line
 // 1.5.0.5 (ge) updated to take a pos argument
 //-----------------------------------------------------------------------------
-void EM_newline( t_CKINT pos )
+void EM_newline( t_CKINT pos, t_CKINT lineNum )
 {
-    the_lineNum++;
-    EM_lineNum++;
-    EM_extLineNum++;
-    the_linePos = intList( pos, the_linePos );
-
     // debug print
-    // cerr << "line: " << EM_lineNum << " pos: " << pos << endl;
+    // cerr << "pos: " << pos << " lineNum: " << lineNum
+    //      << " EM_lineNum: " << EM_lineNum << endl;
+
+    // line num progress
+    t_CKINT diff = lineNum - EM_lineNum;
+    // this could happen, apparently, with single-line comments...
+    if( diff < 1 )
+    {
+        // increment line num
+        EM_lineNum++;
+        // add to linked list
+        the_linePos = intList( pos, the_linePos );
+    }
+    else // diff == 1 (another line of code) or...
+         // diff > 1 (multi-line string literal, does not call EM_newline until the end)
+    {
+        // create nodes for one or more lines
+        for( int i = EM_lineNum; i < lineNum; i++ )
+             the_linePos = intList( pos, the_linePos );
+        // set to new line num
+        EM_lineNum = lineNum;
+    }
 }
 
 
@@ -427,7 +440,7 @@ void EM_error( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
     IntList lines = the_linePos;
-    t_CKINT line = the_lineNum;
+    t_CKINT line = EM_lineNum;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -493,7 +506,7 @@ void EM_error2( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
     IntList lines = the_linePos;
-    t_CKINT line = the_lineNum;
+    t_CKINT line = EM_lineNum;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -512,8 +525,6 @@ void EM_error2( t_CKINT pos, const char * message, ... )
         if( lines ) actualPos = pos - lines->i;
     }
 
-    // save
-    EM_extLineNum = line;
     // separate errmsgs with newlines
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
@@ -577,8 +588,6 @@ void EM_error2b( t_CKINT line, const char * message, ... )
 {
     va_list ap;
 
-    EM_extLineNum = line;
-
     // separate errmsgs with newlines
     if( g_lasterror != "" ) lastErrorCat( "\n" );
 
@@ -621,7 +630,7 @@ const char * EM_error2str( t_CKINT pos, t_CKBOOL outputPrefix, const char * mess
 {
     va_list ap;
     IntList lines = the_linePos;
-    t_CKINT line = the_lineNum;
+    t_CKINT line = EM_lineNum;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -1025,9 +1034,7 @@ void EM_poplog()
 void EM_start_filename( const char * fname )
 {
     the_filename = fname ? fname : (c_str)"";
-    the_lineNum = 1;
     EM_lineNum = 1;
-    EM_extLineNum = 1;
 
     // free the intList
     IntList curr = NULL;
@@ -1055,9 +1062,7 @@ void EM_reset_filename()
     // set
     the_filename = (c_str)"";
     // more set
-    the_lineNum = 0;
     EM_lineNum = 0;
-    EM_extLineNum = 0;
 }
 
 

@@ -249,6 +249,7 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     // add examples
     type_engine_import_add_ex(env, "filter/lpf.ck");
     type_engine_import_add_ex(env, "filter/rlpf.ck");
+    type_engine_import_add_ex(env, "deep/smb.ck");
 
     // freq
     func = make_new_mfun( "float", "freq", RLPF_ctrl_freq );

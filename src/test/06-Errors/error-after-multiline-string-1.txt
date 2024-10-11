@@ -1,0 +1,6 @@
+error-after-multiline-string-1.ck:10:9: error: cannot resolve operator '=>' on types 'int[]' and 'int[]'...
+[10] [1,2,3] => int bar[]; // syntax error
+             ^
+error-after-multiline-string-1.ck:10:9: error: ...(note: use '@=>' for object reference assignment)
+[10] [1,2,3] => int bar[]; // syntax error
+             ^
