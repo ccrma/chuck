@@ -4,6 +4,13 @@ ChucK VERSIONS log
 
 1.5.3.2
 =======
+- (added) MidiFileIn.bpm()
+    "Same as beatsPerMinute()."
+- (added) MidiFileIn.ticksPerQuarter();
+- (added) MidiFileIn.tpq();
+    "Get the ticks per quarter (TPQ) value from the MIDI file header."
+- (fixed) documentation for MidiMsg.when:
+    "Duration since the last MidiMsg (only valid for MidiFileIn)."
 - (fixed, windows) SndBuf issue when compiled with UNICODE (FYI SndBuf is still ANSI,
     but this averts an error due to char width mismatch)
 
