@@ -13,6 +13,8 @@ ChucK VERSIONS log
     "Duration since the last MidiMsg (only valid for MidiFileIn)."
 - (fixed, windows) SndBuf issue when compiled with UNICODE (FYI SndBuf is still ANSI,
     but this averts an error due to char width mismatch)
+- (changed, developer) chuck global manager getGlobalUGenSamples() now handles multi-channel
+    implications for Chunity support for stereo
 
 
 1.5.3.1 (October 2024)

@@ -1340,7 +1340,9 @@ Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( const std::strin
 // desc: get buffer samples
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
-                                                      SAMPLE * buffer, int numFrames )
+                                                      SAMPLE * buffer,
+                                                      int numFrames,
+                                                      int numChannels )
 {
     // if hasn't been init, or it has been init and hasn't been constructed,
     if( m_global_ugens.count( name ) == 0 ||
@@ -1350,8 +1352,35 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
         return FALSE;
     }
 
-    // else, fill (if the ugen isn't buffered, then it will fill with zeroes)
-    m_global_ugens[name]->val->get_buffer( buffer, numFrames );
+    // get the UGen
+    Chuck_UGen * ugen =  m_global_ugens[name]->val;
+    // get number of channels
+    t_CKINT multichans = ugen->m_multi_chan_size;
+
+    // check that # of channels match
+    if( multichans != numChannels )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+
+    // if > mono
+    if( multichans )
+    {
+        // loop over channel
+        for( t_CKINT c = 0; c < multichans; c++ )
+        {
+            // copy in chunk (non-interleaved)
+            ugen->m_multi_chan[c]->get_buffer( buffer, numFrames );
+            // advance buffer pointer
+            buffer += numFrames;
+        }
+    }
+    else // mono
+    {
+        // fill (if the ugen isn't buffered, then it will fill with zeroes)
+        ugen->get_buffer( buffer, numFrames );
+    }
 
     return TRUE;
 }
