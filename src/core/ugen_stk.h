@@ -6752,6 +6752,12 @@ public:
      */
     double getBPM();
 
+    //! ge & alex & kiran: get the ticks per beat/quarter (TPQ)
+    /*!
+    this is only valid if NOT using SMPTE time codes
+     */
+    double getTPQ();
+
 protected:
 
     // This protected class function is used for reading variable-length
@@ -6773,6 +6779,8 @@ protected:
     std::vector<char> trackStatus_;
     // ge:
     double bpm_;
+    // ge & alex & kiran
+    double tpq_; // ticks per quarter | 1.5.3.2
 
     // This structure and the following variables are used to save and
     // keep track of a format 1 tempo map (and the initial tickSeconds

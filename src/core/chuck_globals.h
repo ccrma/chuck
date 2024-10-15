@@ -243,7 +243,8 @@ public:
     t_CKBOOL stopListeningForGlobalEvent( const char * name, void (*callback)(const char*) );
     t_CKBOOL stopListeningForGlobalEvent( const char * name, t_CKINT callbackID, void (*callback)(t_CKINT) );
 
-    t_CKBOOL getGlobalUGenSamples( const char * name, SAMPLE* buffer, int numFrames );
+    t_CKBOOL getGlobalUGenSamples( const char * name, SAMPLE * buffer, int numFrames );
+    t_CKBOOL getGlobalUGenSamplesMulti( const char * name, SAMPLE * buffer, int numFrames, int numChannels );
 
     t_CKBOOL setGlobalIntArray( const char * name, t_CKINT arrayValues[], t_CKUINT numValues );
     t_CKBOOL getGlobalIntArray( const char * name, void (*callback)(t_CKINT[], t_CKUINT) );

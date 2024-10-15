@@ -1,15 +1,15 @@
-// name: hevymetl-acoustic-algo3.ck
-// desc: how to turn HnkyTonk (Algorithm 3) into an acoustic guitar!!
+// name: nylon-guitar-algo1.ck
+// desc: how to turn HnkyTonk (Algorithm 1) into an acoustic guitar!!
 //       now you can transcribe almost directly from a TX81 Patch!!!
 //
 // author: Perry R. Cook
 // date: June 2021, for REPAIRATHON 2021
 //       needs chuck 1.4.1.0 or above
 
-HnkyTonk g; // instance for shorthand, you'll see...
+NRev r => dac;  // reverb is output mixer
+HnkyTonk g => r; // instance for shorthand (you'll see...) , and solo
 HnkyTonk guit[6];
-NRev r => dac;  
-0.15 => r.gain; 0.07 => r.mix;
+0.1 => r.gain; 0.08 => r.mix;
 
 [0,0,0,0] @=> int waveForms[];
 [97,71,77,81] @=> int opGains[];
@@ -32,9 +32,17 @@ for( int i; i < 6; i++ )
                             g.getFMTableSusLevel(sustains[op]),
                             g.getFMTableTime(releases[op]) );
         guit[i].opRatio( op,ratios[op] );    
-        guit[i].lfoDepth( 0.0 );
+        g.opWave(op,1); // we do this 6 times, but it's easier
+        g.opGain( op,g.getFMTableGain(opGains[op]) );
+        g.opADSR( op,	g.getFMTableTime(attacks[op]),
+                            g.getFMTableTime(decays[op]),
+                            g.getFMTableSusLevel(sustains[op]),
+                            g.getFMTableTime(releases[op]) );
+        g.opRatio( op,ratios[op] );    
     }
+    guit[i].lfoDepth( 0.0 );
 }
+g.lfoDepth( 0.0 );
 
 [38,45,50,55,59,64] @=> int DTuning[];
 [38,45,50,57,62,66] @=> int DMaj[];
@@ -46,8 +54,12 @@ allOff();
 second/2 => now;
 
 0.2::second => dur E;
-for( int i; i < 4; i++ )
+
+spork ~ solo();
+
+for( int i; i < 2; i++ )
 {
+    <<< now/second >>>;
     spork ~ fastStrum(Emi,1.0); 2*E => now;
     fastUp(Emi,0.95); E/4 => now; allOff(); 3*E/4 => now; 
     spork ~ fastStrum(Emi,0.97); 2*E => now;
@@ -64,6 +76,8 @@ for( int i; i < 4; i++ )
 }
 
 slowStrum(Emi,0.8);
+Std.mtof(76) => g.freq;
+1 => g.noteOn;
 2*second => now;
 allOff();
 second => now;
@@ -84,7 +98,7 @@ fun void fastStrum( int chord[], float vel) {
     for (int i; i < 6; i++) {
         Std.mtof(chord[i]) => guit[i].freq;
         vel => guit[i].noteOn;
-        Math.random2f(0.005,0.02)::second => now;
+        Math.random2f(0.005,0.03)::second => now;
     }
 }
 
@@ -92,7 +106,31 @@ fun void fastUp( int chord[], float vel) {
     for (int i; i < 6; i++) {
         Std.mtof(chord[5-i]) => guit[5-i].freq;
         vel => guit[5-i].noteOn;
-        // Math.random2f(0.001,0.005)::second => now;
+        Math.random2f(0.001,0.01)::second => now;
     }
 }
 
+fun void solo()  {
+    [71, 69, 71] @=> int solo1[];
+    [71, 72, 74, 72, 71] @=> int solo2[];
+    2*E => now;
+    Std.mtof(solo1[0]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo1[1]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo1[2]) => g.freq; 1 => g.noteOn;
+    0.8::second => now;
+    1 => g.noteOff;
+    2::second => now;
+    Std.mtof(solo2[0]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo2[1]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo2[2]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo2[3]) => g.freq; 1 => g.noteOn;
+    E/2 => now;
+    Std.mtof(solo2[4]) => g.freq; 1 => g.noteOn;
+    1::second => now;
+    1 => g.noteOff;
+}

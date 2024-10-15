@@ -1290,6 +1290,8 @@ CK_DLL_DTOR( MidiFileIn_dtor );
 CK_DLL_MFUN( MidiFileIn_open );
 CK_DLL_MFUN( MidiFileIn_close );
 CK_DLL_MFUN( MidiFileIn_numTracks );
+CK_DLL_MFUN( MidiFileIn_ticksPerQuarter );
+CK_DLL_MFUN( MidiFileIn_beatsPerMinute );
 CK_DLL_MFUN( MidiFileIn_read );
 CK_DLL_MFUN( MidiFileIn_readTrack );
 CK_DLL_MFUN( MidiFileIn_rewind );
@@ -3284,7 +3286,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     // add examples
     if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo1.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/nylon-guitar-algo1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/jacobass-algo1.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -5229,6 +5232,22 @@ Modified algorithm code by Gary Scavone, 2005.";
 
     func = make_new_mfun( "int", "numTracks", MidiFileIn_numTracks );
     func->doc = "Get the number of tracks in the open MIDI file.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "ticksPerQuarter", MidiFileIn_ticksPerQuarter );
+    func->doc = "Get the ticks per quarter (TPQ) value from the MIDI file header.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "tpq", MidiFileIn_ticksPerQuarter );
+    func->doc = "Same as ticksPerQuarter().";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "beatsPerMinute", MidiFileIn_beatsPerMinute );
+    func->doc = "Get the beats per minute (BPM) value from the MIDI file header.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "bpm", MidiFileIn_beatsPerMinute );
+    func->doc = "Same as beatsPerMinute().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "void", "rewind", MidiFileIn_rewind );
@@ -20156,6 +20175,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
 {
     // ge: initialize
     bpm_ = 0;
+    // ge & alex & kiran
+    tpq_ = 0;
     // 1.4.1.1 (ge) string buffer for error message
     std::stringstream msg;
     // 1.5.0.4 (ge) add initialization
@@ -20228,6 +20249,8 @@ MidiFileIn :: MidiFileIn( std::string fileName )
     }
     else {
         tickrate = (double) (*data & 0x7FFF); // ticks per quarter note
+        // save for lookup later | (ge & alex & kiran) 1.5.3.2
+        tpq_ = tickrate;
     }
 
     // Now locate the track offsets and lengths. If not using time
@@ -20352,6 +20375,12 @@ double MidiFileIn :: getTickSeconds( unsigned int track )
 double MidiFileIn :: getBPM()
 {
     return bpm_;
+}
+
+// ge & alex & kiran: implemented 1.5.3.2
+double MidiFileIn :: getTPQ()
+{
+    return tpq_;
 }
 
 unsigned long MidiFileIn :: getNextEvent( std::vector<unsigned char> *event, unsigned int track )
@@ -29227,6 +29256,26 @@ CK_DLL_MFUN( MidiFileIn_numTracks )
 
     if(f)
         RETURN->v_int = f->getNumberOfTracks();
+    else
+        RETURN->v_int = 0;
+}
+
+CK_DLL_MFUN( MidiFileIn_beatsPerMinute )
+{
+    stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
+
+    if(f)
+        RETURN->v_float = f->getBPM();
+    else
+        RETURN->v_float = 0;
+}
+
+CK_DLL_MFUN( MidiFileIn_ticksPerQuarter )
+{
+    stk::MidiFileIn *f = (stk::MidiFileIn *) OBJ_MEMBER_UINT(SELF, MidiFileIn_offset_data);
+
+    if(f)
+        RETURN->v_int = f->getTPQ();
     else
         RETURN->v_int = 0;
 }

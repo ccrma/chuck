@@ -25,7 +25,9 @@ if( !min.open(filename) ) me.exit();
 cherr <= "----------" <= IO.newline();
 cherr <= "MIDI file: " <= IO.newline()
       <= " |- " <= filename <= IO.newline()
-      <= " |- contains " <= min.numTracks() <= " tracks" <= IO.newline();
+      <= " |- contains " <= min.numTracks() <= " tracks" <= IO.newline()
+      <= " |- TPQ: " <= min.tpq() <= IO.newline()
+      <= " |- BPM: " <= min.bpm() <= IO.newline();
 // print
 cherr <= "----------" <= IO.newline();
 cherr <= "playing..." <= IO.newline();
@@ -82,7 +84,7 @@ fun void doTrack( int track, float speed )
             (v+1)%s.size() => v;
 
             // log
-            cherr <= "NOTE ON track:" <= track <= " pitch:" <= msg.data2 <=" velocity:" <= msg.data3 <= IO.newline(); 
+            cherr <= "NOTE ON track:" <= track <= " pitch:" <= msg.data2 <=" velocity:" <= msg.data3 <= " when: " <= msg.when/ms <= IO.newline(); 
         }
         // other messages
         else

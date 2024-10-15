@@ -1360,6 +1360,59 @@ t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
 
 
 //-----------------------------------------------------------------------------
+// name: getGlobalUGenSamplesMulti()
+// desc: get buffer samples, multichannel edition | 1.5.3.2 (eito, nick, ge)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamplesMulti( const char * name,
+                                                           SAMPLE * buffer,
+                                                           int numFrames,
+                                                           int numChannels )
+{
+    // if hasn't been init, or it has been init and hasn't been constructed,
+    if( m_global_ugens.count( name ) == 0 ||
+       should_call_global_ctor( name, te_globalUGen ) )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+
+    // get the UGen
+    Chuck_UGen * ugen =  m_global_ugens[name]->val;
+    // get number of channels
+    t_CKINT multichans = ugen->m_multi_chan_size;
+
+    // check that # of channels match
+    if( multichans != numChannels )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+
+    // if > mono
+    if( multichans )
+    {
+        // loop over channel
+        for( t_CKINT c = 0; c < multichans; c++ )
+        {
+            // copy in chunk (non-interleaved)
+            ugen->m_multi_chan[c]->get_buffer( buffer, numFrames );
+            // advance buffer pointer
+            buffer += numFrames;
+        }
+    }
+    else // mono
+    {
+        // fill (if the ugen isn't buffered, then it will fill with zeroes)
+        ugen->get_buffer( buffer, numFrames );
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: init_global_ugen()
 // desc: tell the vm that a global ugen is now available
 //-----------------------------------------------------------------------------

@@ -2,19 +2,46 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.3.2
+1.5.3.2 (October 2024)
 =======
+*** ChuGL maintanance patch ***
+- (updated) backend WebGPU version to wgpu-22.1.0.5
+- (added) OpenGL fallback on machines where modern graphics APIs (vulkan, metal, direct3d)
+  are not supported
+- (fixed) shreds can now exit a GG.nextFrame() loop without hanging the window
+- (added) GG.unregisterShred() to manually unregister a graphics shred
+- (added) new examples
+  - deep/particles.ck : musical partical system
+  - deep/sprite_animation.ck : sprite animation via sprite sheets
+- (fixed) race condition on window resize
+*******************************
+- (added) MidiFileIn.bpm()
+    "Same as beatsPerMinute()."
+- (added) MidiFileIn.ticksPerQuarter();
+    "Get the ticks per quarter (TPQ) value from the MIDI file header."
+- (added) MidiFileIn.tpq();
+    "Same as ticksPerQuarter()."
+- (fixed) documentation for MidiMsg.when:
+    "Duration since the last MidiMsg (only valid for MidiFileIn)."
 - (fixed, windows) SndBuf issue when compiled with UNICODE (FYI SndBuf is still ANSI,
     but this averts an error due to char width mismatch)
+- (changed, developer) chuck global manager getGlobalUGenSamples() now handles multi-channel
+    implications for Chunity support for stereo
+- (added) new examples (FM Synthesis)
+    examples/stk/jacobass-algo1.ck
+      (such groove, much Algorithm 1)
+    examples/stk/nylon-guitar-algo1.ck
+      (updated/renamed from honkeytonk-algo3.ck)
 
 
 1.5.3.1 (October 2024)
+=======
 *** ChuGL maintanance patch ***
 - (fixed) crash caused by calling UI functions before calling GG.nextFrame();
     now prints a warning with a hint to call GG.nextFrame()
 - (fixed) CPU and memory spikes when minimizing a ChuGL window
 - (fixed) crash caused by immediately disconnecting GGen after -->
-  *****************************
+*******************************
 - (fixed) ADSR constructors now work correctly
 - (fixed) compiler now reports line numbers and caret position correctly after
     a multi-line string literal
