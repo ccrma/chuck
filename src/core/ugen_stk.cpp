@@ -3286,7 +3286,8 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
 
     // add examples
     if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo1.ck" ) ) goto error;
-    if( !type_engine_import_add_ex( env, "stk/honkeytonk-algo3.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/nylon-guitar-algo1.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "stk/jacobass-algo1.ck" ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
