@@ -54,10 +54,15 @@ using namespace std;
 t_CKINT EM_tokPos = 0;
 t_CKINT EM_lineNum = 1;
 
+// current per-file error message context | 1.5.3.5 (ge)
+static Chuck_CompileTarget * the_compileTarget = NULL;
 // current filename
 static const char * the_filename = "";
-// current chuck
-static ChucK * the_chuck = NULL;
+
+// file source info (for better error reporting) | 1.5.0.5 (ge)
+// static CompileFileSource g_currentFile;
+// whether to highlight | 1.5.0.5 (ge)
+static t_CKBOOL g_highlight_on_error = TRUE;
 
 // a local global string buffer for snprintf
 #define CK_ERR_BUF_LENGTH 2048
@@ -88,11 +93,6 @@ static char g_buffer2[g_buffer2_size] = "";
 void (*g_stdout_callback)(const char *) = NULL;
 void (*g_stderr_callback)(const char *) = NULL;
 
-// file info | 1.5.0.5 (ge)
-static CompileFileSource g_currentFile;
-// whether to highlight
-static t_CKBOOL g_highlight_on_error = TRUE;
-
 // name
 static const char * g_str[] = {
     "NONE",         // 0
@@ -112,33 +112,6 @@ static const char * g_str[] = {
 
 
 //-----------------------------------------------------------------------------
-// name: EM_set_current_chuck()
-// desc: set current ChucK; used to query current params
-//-----------------------------------------------------------------------------
-void EM_set_current_chuck( ChucK * ck )
-{
-    // set as current chuck
-    the_chuck = ck;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: intList
-// desc: a linked list of token positions by line
-//-----------------------------------------------------------------------------
-typedef struct intList { t_CKINT i; struct intList *rest; } *IntList;
-// for the current file
-static IntList the_linePos = NULL;
-// constructor
-static IntList intList( t_CKINT i, IntList rest )
-{
-    IntList l = (IntList)checked_malloc(sizeof *l);
-    l->i=i; l->rest=rest;
-    return l;
-}
-//-----------------------------------------------------------------------------
 // called by lexer on new line
 // 1.5.0.5 (ge) updated to take a pos argument
 //-----------------------------------------------------------------------------
@@ -154,18 +127,18 @@ void EM_newline( t_CKINT pos, t_CKINT lineNum )
     if( diff < 1 )
     {
         // increment line num
-        EM_lineNum++;
+        EM_lineNum++; the_compileTarget->lineNum++;
         // add to linked list
-        the_linePos = intList( pos, the_linePos );
+        the_compileTarget->the_linePos = intList( pos, the_compileTarget->the_linePos );
     }
     else // diff == 1 (another line of code) or...
          // diff > 1 (multi-line string literal, does not call EM_newline until the end)
     {
         // create nodes for one or more lines
         for( int i = EM_lineNum; i < lineNum; i++ )
-             the_linePos = intList( pos, the_linePos );
+             the_compileTarget->the_linePos = intList( pos, the_compileTarget->the_linePos );
         // set to new line num
-        EM_lineNum = lineNum;
+        EM_lineNum = the_compileTarget->lineNum = lineNum;
     }
 }
 
@@ -233,10 +206,10 @@ void EM_reset_msg()
 t_CKBOOL EM_highlight_on_error()
 {
     // if we have a chuck reference
-    if( the_chuck )
+    if( the_compileTarget && the_compileTarget->the_chuck )
     {
         // update
-        g_highlight_on_error = the_chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR );
+        g_highlight_on_error = the_compileTarget->the_chuck->getParamInt( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR );
     }
 
     // return
@@ -252,6 +225,9 @@ t_CKBOOL EM_highlight_on_error()
 //-----------------------------------------------------------------------------
 const char * EM_outputLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
 {
+    // check
+    if( the_compileTarget == NULL ) return "";
+
     // clear
     g_codestr = "";
 
@@ -259,7 +235,7 @@ const char * EM_outputLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
     if( !EM_highlight_on_error() || lineNumber <= 0 ) return "";
 
     // get error line
-    std::string line = g_currentFile.getLine(lineNumber);
+    std::string line = the_compileTarget->fileSource.getLine(lineNumber);
 
     // detect empty file
     if( lineNumber == 1 && trim(line) == "" )
@@ -296,10 +272,10 @@ const char * EM_outputLineInCode( t_CKINT lineNumber, t_CKINT charNumber )
             // base defaults
             WIDTH = 80; CARET_POS = 28;
             // check if update
-            if( the_chuck )
+            if( the_compileTarget && the_compileTarget->the_chuck )
             {
                 // get params stored in chuck; could have been set from host
-                WIDTH = the_chuck->getParamInt( CHUCK_PARAM_TTY_WIDTH_HINT );
+                WIDTH = the_compileTarget->the_chuck->getParamInt( CHUCK_PARAM_TTY_WIDTH_HINT );
                 CARET_POS = (t_CKUINT)(WIDTH/3.0);
             }
         }
@@ -439,8 +415,8 @@ static void EM_error_prefix_end( t_CKBOOL colorTTY = TRUE, t_CKBOOL bold = FALSE
 void EM_error( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
-    IntList lines = the_linePos;
-    t_CKINT line = EM_lineNum;
+    IntList lines = pos ? the_compileTarget->the_linePos : NULL;
+    t_CKINT line = pos ? the_compileTarget->lineNum : 0;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -505,8 +481,8 @@ void EM_error( t_CKINT pos, const char * message, ... )
 void EM_error2( t_CKINT pos, const char * message, ... )
 {
     va_list ap;
-    IntList lines = the_linePos;
-    t_CKINT line = EM_lineNum;
+    IntList lines = pos ? the_compileTarget->the_linePos : NULL;
+    t_CKINT line = pos ? the_compileTarget->lineNum : 0;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -629,8 +605,8 @@ void EM_error2b( t_CKINT line, const char * message, ... )
 const char * EM_error2str( t_CKINT pos, t_CKBOOL outputPrefix, const char * message, ... )
 {
     va_list ap;
-    IntList lines = the_linePos;
-    t_CKINT line = EM_lineNum;
+    IntList lines = pos ? the_compileTarget->the_linePos : NULL;
+    t_CKINT line = pos ? the_compileTarget->lineNum : 0;
     t_CKINT actualPos = -1;
     t_CKBOOL bold = TRUE;
     // declare each time to pick up any TC state
@@ -1035,19 +1011,6 @@ void EM_start_filename( const char * fname )
 {
     the_filename = fname ? fname : (c_str)"";
     EM_lineNum = 1;
-
-    // free the intList
-    IntList curr = NULL;
-    while( the_linePos )
-    {
-        curr = the_linePos;
-        the_linePos = the_linePos->rest;
-        // free
-        free( curr );
-    }
-
-    // make new intList
-    the_linePos = intList( 0, NULL );
 }
 
 
@@ -1081,14 +1044,43 @@ const char * EM_lasterror()
 
 
 //-----------------------------------------------------------------------------
+// name: EM_setCurrentTarget()
+// desc: set current compile compilation target | 1.5.3.5 (ge)
+//-----------------------------------------------------------------------------
+void EM_setCurrentTarget( Chuck_CompileTarget * target )
+{
+    // set
+    the_compileTarget = target;
+
+    // if target
+    if( target != NULL )
+    {
+        // load in the information
+        EM_lineNum = target->lineNum;
+        the_filename = target->filename.c_str();
+    }
+    else
+    {
+        // reset
+        EM_lineNum = 0;
+        the_filename = (c_str)"";
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: EM_setCurrentFileSource()
 // desc: set where current file being compile comes from; used for highlighting
 //       code to go with compiler error messages
 //-----------------------------------------------------------------------------
 void EM_setCurrentFileSource( const CompileFileSource & source )
 {
+    // check (ignore if NULL)
+    if( the_compileTarget == NULL ) return;
     // set
-    g_currentFile = source;
+    the_compileTarget->fileSource = source;
 }
 
 
@@ -1100,7 +1092,10 @@ void EM_setCurrentFileSource( const CompileFileSource & source )
 //-----------------------------------------------------------------------------
 void EM_cleanupCurrentFileSource()
 {
-    g_currentFile.reset();
+    // check
+    if( the_compileTarget == NULL ) return;
+    // reset
+    the_compileTarget->fileSource.reset();
 }
 
 

@@ -178,11 +178,13 @@ extern "C++"
 {
 #include <sstream>
 
-// forward reference | 1.5.0.5 (ge) added
+// class forward reference | 1.5.0.5 (ge) added
 class ChucK;
+// struct forward reference | 1.5.3.5 (ge) added
+struct Chuck_CompileTarget;
 
-// set current ChucK; used to query params | 1.5.0.5
-void EM_set_current_chuck( ChucK * ck );
+// set current compile compilation target; used for state | 1.5.3.5 (ge)
+void EM_setCurrentTarget( Chuck_CompileTarget * target );
 
 
 
@@ -291,6 +293,8 @@ struct CompileFileSource
 // set
 void EM_setCurrentFileSource( const CompileFileSource & info );
 void EM_cleanupCurrentFileSource();
+
+
 
 
 //-----------------------------------------------------------------------------

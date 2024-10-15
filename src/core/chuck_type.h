@@ -79,11 +79,11 @@ typedef enum { te_globalTypeNone,
 //-----------------------------------------------------------------------------
 typedef enum {
     te_do_all = 0,
-    te_do_import_only, // 1.5.2.5 (ge) added for import mechanic
-    te_skip_import
+    te_do_import_only, // attend only to things to be imported | 1.5.3.5 (ge)
+    te_skip_import, // do everything except things to be imported | 1.5.3.5 (ge)
 } te_HowMuch;
 
-// function to test for the critica
+// function to if a function matches a particular criteria
 t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Func_Def func_def );
 t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Class_Def class_def );
 

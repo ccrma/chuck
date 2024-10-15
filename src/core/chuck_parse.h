@@ -58,14 +58,12 @@ typedef yy_buffer_state * YY_BUFFER_STATE;
 extern "C" YY_BUFFER_STATE yy_scan_string( const char * );
 extern "C" void yy_delete_buffer( YY_BUFFER_STATE );
 
-
-// parse ck file into abstract syntax tree (root at 'a_Program g_program')
-t_CKBOOL chuck_parse( const std::string & filename, const std::string & code = "" );
+// forward reference
+struct Chuck_CompileTarget;
+// parse ck file into abstract syntax tree
+t_CKBOOL chuck_parse( Chuck_CompileTarget * target );
 // reset the parser
 void reset_parse();
-// set an open FILE descriptor to be parsed ONLY by the next call to chuck_parse()
-// `fd` will be closed using fclose(), if autoClose is set to true
-void fd2parse_set( FILE * fd, t_CKBOOL autoClose );
 
 // convert abstract syntax stmt to string
 std::string absyn2str( a_Stmt stmt );

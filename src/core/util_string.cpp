@@ -884,6 +884,38 @@ std::string extract_filepath_file( const std::string & filepath )
 
 
 
+//-----------------------------------------------------------------------------
+// name: transplant_filepath()
+// desc: synthesize absolute path using existing filepath and incoming path
+// EG: existing == "foo/bar.ck", incoming == "thing/poo.ck" => returns foo/thing/poo.ck
+// NOTE: if incoming is detected as absolute path, incoming is returned without change
+// (intended for use with import paths being relative to the file importing them)
+//-----------------------------------------------------------------------------
+std::string transplant_filepath( const std::string & existing, const std::string & incoming )
+{
+    // expand e.g., ~
+    std::string base = expand_filepath( existing );
+    std::string inc = expand_filepath( incoming );
+    std::string ret = "";
+
+    // check if already absolute path
+    if( is_absolute_path(inc) )
+    {
+        // return inc
+        ret = inc;
+    }
+    else // if not absolute path
+    {
+        // generate absolute path relative to target that is importing it
+        ret = extract_filepath_dir(existing) + inc;
+    }
+
+    // get_full_path() will also resolve symlinks . and ..
+    return get_full_path(ret);
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // file: dir_go_up()
@@ -1154,6 +1186,29 @@ std::string autoFilename( const std::string & prefix, const std::string & fileEx
     strcat( buffer, fileExt.c_str() );
     // return
     return buffer;
+}
+
+
+
+
+#ifdef WIN32
+  #define stat _stat
+#endif
+//-----------------------------------------------------------------------------
+// name: file_last_write_time()
+// desc: unformatted last-write timestamp of a file | 1.5.3.5 (ge)
+//-----------------------------------------------------------------------------
+time_t file_last_write_time( const std::string & filename )
+{
+    struct stat result;
+    if( stat( filename.c_str(), &result ) == 0 )
+    {
+        // return result
+        return result.st_mtime;
+    }
+
+    // stat encountered an error, e.g., couldn't open file
+    return 0;
 }
 
 

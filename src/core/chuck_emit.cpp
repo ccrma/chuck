@@ -554,7 +554,8 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
         }
 
         case ae_stmt_import: // 1.5.2.5 (ge) added
-            // do nothing here
+            // do nothing here (return true to bypass)
+            ret = TRUE;
             break;
 
         case ae_stmt_if:  // if statement

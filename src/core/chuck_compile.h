@@ -27,7 +27,7 @@
 // desc: chuck compile system unifying parser, type checker, and emitter
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
-// date: Autumn 2005 - original
+// date: Autumn 2005 - riginal
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_COMPILE_H__
 #define __CHUCK_COMPILE_H__
@@ -39,10 +39,169 @@
 #include "chuck_emit.h"
 #include "chuck_vm.h"
 #include <list>
+#include <set>
 
 
+
+
+//-----------------------------------------------------------------------------
 // forward reference
+//-----------------------------------------------------------------------------
 struct Chuck_DLL;
+
+
+
+
+//-----------------------------------------------------------------------------
+// compilation state, e.g., for compile targets
+//-----------------------------------------------------------------------------
+enum te_CompileState
+{
+    te_compile_inprogress,
+    te_compile_complete
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: intList
+// desc: a linked list of token positions by line | moved from errmsg
+//-----------------------------------------------------------------------------
+typedef struct intList { t_CKINT i; struct intList *rest; } *IntList;
+// constructor
+static IntList intList( t_CKINT i, IntList rest )
+{
+    IntList l = (IntList)checked_malloc(sizeof *l);
+    l->i=i; l->rest=rest;
+    return l;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_CompileTarget
+// desc: an compilation target
+//-----------------------------------------------------------------------------
+struct Chuck_CompileTarget
+{
+public:
+    // constructor
+    Chuck_CompileTarget( te_HowMuch extent = te_do_all )
+        : state(te_compile_inprogress),
+          howMuch(extent), timestamp(0), fd2parse(NULL),
+          lineNum(1), tokPos(0), AST(NULL),
+          the_chuck(NULL)
+    {
+        // initialize
+        the_linePos = intList( 0, NULL );
+    }
+
+    // destructor
+    virtual ~Chuck_CompileTarget()
+    { cleanup(); CK_SAFE_FREE( the_linePos ); }
+
+    // performs cleanup (e.g., close file desriptors and reclaims AST)
+    // post-parser prep for target to be archived in registry
+    void cleanup();
+    // clean up AST
+    void cleanupAST();
+
+public:
+    // resolve and set filename and absolutePath for a compile target
+    // * set as filename (possibly with modifications, e.g., with .ck appended)
+    // * if `transplantPath` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
+    // * if file is unresolved locally and `expandSearchToGlobal` is true, expand search to global search paths
+    // * the file is resolved this will open a FILE descriptor in fd2parse
+    t_CKBOOL resolveFilename( const std::string & theFilename,
+                              const std::string & transplantPath,
+                              t_CKBOOL expandSearchToGlobal );
+    // get filename
+    std::string getFilename() const { return filename; }
+    // set absolute path
+    void setAbsolutePath( const std::string & fullpath ) { absolutePath = fullpath; }
+    // get absolute path
+    std::string getAbsolutePath() const { return absolutePath; }
+    // hash key
+    std::string key() const { return absolutePath; }
+
+public:
+    // filename for reading from file
+    std::string filename;
+    // this should be unique; also key for import hash
+    std::string absolutePath;
+
+public:
+    // state
+    te_CompileState state;
+    // all or import-only or no-import
+    te_HowMuch howMuch;
+    // code literal (alternative to reading from file)
+    std::string codeLiteral;
+
+    // line number (should be at end of file; used for error reporting)
+    t_CKINT lineNum;
+    // token position (used for error reporting)
+    t_CKINT tokPos;
+    // file descriptor to parse
+    FILE * fd2parse;
+    // file source info (for better error reporting)
+    CompileFileSource fileSource;
+    // pointer to abstract syntax tree
+    a_Program AST;
+    // for the current file
+    IntList the_linePos;
+
+    // targets this target depends on
+    std::vector<Chuck_CompileTarget *> dependencies;
+    // timestamp of target file when target was compiled
+    // used to detect and potentially warn of modified files
+    time_t timestamp;
+
+    // reference to ChucK instance
+    ChucK * the_chuck;
+
+public: // ONLY USED for topology
+    t_CKBOOL mark;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_ImportRegistry
+// desc: registry of import targets
+//-----------------------------------------------------------------------------
+struct Chuck_ImportRegistry
+{
+public:
+    // constructor
+    Chuck_ImportRegistry();
+    virtual ~Chuck_ImportRegistry() { clearAll(); }
+
+public:
+    // clear in-progress list
+    void clearInProgress();
+    // clear all contents (in-progress and done); this is for when VM is cleared
+    void clearAll();
+
+public:
+    // look up a compile target by path
+    Chuck_CompileTarget * lookup( const std::string & path, Chuck_CompileTarget * relativeTo = NULL );
+    // add a compile target to in-progress list
+    t_CKBOOL addInProgress( Chuck_CompileTarget * target );
+    // remove a compile target by path
+    t_CKBOOL remove( const std::string & path );
+    // mark a target as complete
+    void markComplete( Chuck_CompileTarget * target );
+
+protected:
+    // map of targets being compiled (not yet completed)
+    std::map<std::string, Chuck_CompileTarget *> m_inProgress;
+    // map of successfully compiled targets
+    std::map<std::string, Chuck_CompileTarget *> m_done;
+};
 
 
 
@@ -64,6 +223,8 @@ public: // get protected data
     Chuck_VM * vm() const { return m_carrier->vm; }
     // REFACTOR-2017: get associated, per-compiler carrier
     Chuck_Carrier * carrier() const { return m_carrier; }
+    // get import registry | 1.5.3.5 (ge)
+    Chuck_ImportRegistry * imports() { return &m_importRegistry; }
     // set carrier
     t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
 
@@ -73,6 +234,8 @@ public: // data
     // generated code
     Chuck_VM_Code * code;
 
+    // import registry
+    Chuck_ImportRegistry m_importRegistry;
     // auto-depend flag
     t_CKBOOL m_auto_depend;
     // recent map
@@ -106,26 +269,18 @@ public: // additional binding
 public: // compile
     // set auto depend
     void set_auto_depend( t_CKBOOL v );
-    // parse, type-check, and emit a program
-    t_CKBOOL go( const std::string & filename,
-                 const std::string & full_path = "",
-                 const std::string & codeLiteral = "" );
+    // parse, type-check, and emit a program from file
+    t_CKBOOL compileFile( const std::string & filename );
+    // parse, type-check, and emit a program from code string
+    t_CKBOOL compileCode( const std::string & codeLiteral );
+    // compile a target | 1.5.3.5 (ge)
+    // NOTE: this function will memory-manage `target`
+    //       (do not access or delete `target` afterwards)
+    t_CKBOOL compile( Chuck_CompileTarget * target );
     // resolve a type automatically, if auto_depend is on
     t_CKBOOL resolve( const std::string & type );
-    // get the code generated from the last go()
+    // get the code generated from the last compile()
     Chuck_VM_Code * output( );
-
-public: // special FILE input mode | added 1.5.0.5 (ge)
-    // set an already open FILE descriptor `fd` for one time use
-    // by the next call to go(), which will use `fd` as the input
-    // to the parser (NOTE in any invocation of go(), `codeLiteral`
-    // and `fd` should not both be non-empty, otherwise a warning
-    // will be output and the `codeLiteral` will take precedence
-    // and the `fd` will be cleaned up and skipped
-    // MEMORY: if `autoClose` is true, the compiler will automatically
-    // call fclose() on `fd` on the next call to go(), regardless of
-    // the aforementioned conflict with `codeLiteral`
-    void set_file2parse( FILE * fd, t_CKBOOL autoClose );
 
 public: // replace-dac | added 1.4.1.0 (jack)
     // sets a "replacement dac": one global UGen is secretly used
@@ -169,24 +324,32 @@ public:
     static t_CKBOOL probe_external_chugin( const std::string & path, const std::string & name = "" );
 
 protected: // internal
-    // normal compile
-    t_CKBOOL do_normal_depend( const std::string & path,
-                               const std::string & codeLiteral = "",
-                               const std::string & full_path = "" );
-    // auto-depend compile
-    t_CKBOOL do_auto_depend( const std::string & path,
-                             const std::string & codeLiteral = "",
-                             const std::string & full_path = "" );
+    // compile a single target
+    t_CKBOOL compile_single( Chuck_CompileTarget * target );
     // compile entire file
-    t_CKBOOL do_entire_file( Chuck_Context * context );
+    t_CKBOOL compile_entire_file( Chuck_Context * context );
     // import only: public definitions (e.g., classes and operator overloads)
-    t_CKBOOL do_import_only( Chuck_Context * context ); // 1.5.2.5 (ge) added
+    t_CKBOOL compile_import_only( Chuck_Context * context ); // 1.5.2.5 (ge) added
     // all except import
-    t_CKBOOL do_all_except_import( Chuck_Context * context );
+    t_CKBOOL compile_all_except_import( Chuck_Context * context );
+
+protected: // internal import dependency helpers
+    // produce a compilation sequences of targets from a import dependency graph
+    static t_CKBOOL generate_compile_sequence( Chuck_CompileTarget * head,
+                                               std::vector<Chuck_CompileTarget *> & sequence,
+                                               std::vector<Chuck_CompileTarget *> & problems );
+    // visit
+    static t_CKBOOL visit( Chuck_CompileTarget * node,
+                           std::vector<Chuck_CompileTarget *> & sequence,
+                           std::set<Chuck_CompileTarget *> & permanent,
+                           std::set<Chuck_CompileTarget *> & temporary,
+                           std::vector<Chuck_CompileTarget *> & problems );
 
 public: // import
+    // scan for @import statements; builds a list of dependencies in the target
+    t_CKBOOL scan_imports( Chuck_CompileTarget * target );
     // scan for @import statements, and return a list of resulting import targets
-    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_Context * context, std::vector<std::string> & targets );
+    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target, Chuck_ImportRegistry * registery );
 
     // add import path
     t_CKBOOL add_import_path( const std::string & path, Chuck_Context * context );
@@ -196,16 +359,6 @@ public: // import
     Chuck_Context * find_import_type( const std::string & type );
 };
 
-
-
-
-//-----------------------------------------------------------------------------
-// name: struct Chuck_ParseContext
-// desc: per-file parser context; associated with a Chuck_Context
-//-----------------------------------------------------------------------------
-struct Chuck_ParseContext
-{
-};
 
 
 

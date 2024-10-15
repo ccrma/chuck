@@ -194,7 +194,7 @@ t_CKBOOL emit_engine_shutdown( Chuck_Emitter *& emit );
 // emit a program into vm code
 Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit,
                                        a_Program prog,
-                                       te_HowMuch how_much = te_do_all );
+                                       te_HowMuch how_much );
 // helper function to emit code
 Chuck_VM_Code * emit_to_code( Chuck_Code * in,
                               Chuck_VM_Code * out = NULL,

@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 #include "chuck_parse.h"
 #include "chuck_errmsg.h"
+#include "chuck_compile.h"
 #include "util_string.h"
 #include "util_platforms.h"
 
@@ -44,18 +45,12 @@
 #include <string>
 using namespace std;
 
-// global
-static std::string g_filename;
-// file to parse
-static FILE * g_fd2parse = NULL;
-// whether to auto close
-static t_CKBOOL g_fd2autoClose = FALSE;
-// separate file to close
-static FILE * g_fd2close = NULL;
-// clean up function
-static void fd2parse_cleanup();
 
+
+
+//-----------------------------------------------------------------------------
 // external from lexer
+//-----------------------------------------------------------------------------
 extern "C" {
     extern FILE * yyin;
 }
@@ -88,60 +83,42 @@ static void cleanup_AST()
 // desc: INPUT: chuck code (either from file or actual code) to be parsed
 //       OUTPUT: abstract syntax tree representation of the code
 //-----------------------------------------------------------------------------
-t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral )
+t_CKBOOL chuck_parse( Chuck_CompileTarget * target )
 {
     // return value
     t_CKBOOL ret = FALSE;
-    // file descriptor | normally NULL unless g_fd2parse is set
-    FILE * fd = g_fd2parse;
+    // file descriptor (should be open if compiling from file)
+    FILE * fd = target->fd2parse;
     // our own lexer/parser buffer
     YY_BUFFER_STATE yyCodeBuffer = NULL;
     // where the code is coming from
     CompileFileSource source;
 
     // check for conflict
-    if( fd && codeLiteral != "" )
+    if( fd && target->codeLiteral != "" )
     {
         CK_FPRINTF_STDERR( "[chuck](parser): (internal) code and FILE descriptor both present!\n" );
         CK_FPRINTF_STDERR( "[chuck](parser):  |- ignoring FILE descriptor...\n" );
     }
 
-    // copy it
-    g_filename = fname;
-
     // if actual code was passed in
-    if( codeLiteral != "" )
+    if( target->codeLiteral != "" )
     {
         // clean lexer
         yyrestart( NULL );
         // set to initial condition | 1.5.2.4 (ge) added
         yyinitial();
         // load string (yy_scan_string will copy the C string)
-        yyCodeBuffer = yy_scan_string( codeLiteral.c_str() );
-        // if could load
+        yyCodeBuffer = yy_scan_string( target->codeLiteral.c_str() );
+        // if could not load
         if( !yyCodeBuffer ) goto cleanup;
         // set source
-        source.setCode( codeLiteral.c_str() );
+        source.setCode( target->codeLiteral.c_str() );
     }
-    else
+    else if( fd != NULL )
     {
-        // test it
-        if( !fd )
-        {
-            // open, could potentially change g_filename
-            fd = ck_openFileAutoExt( g_filename, ".ck" );
-            // check file open result
-            if( !fd ) // if couldn't open
-            { g_filename = fname; } // revert filename
-            else if( ck_isdir(g_filename) ) // check for directory; if so, clean up
-            { EM_error2( 0, "cannot parse file: '%s' is a directory", mini(g_filename.c_str()) ); goto cleanup; }
-        }
-
-        // if still none
-        if( !fd ) { EM_error2( 0, "no such file: '%s'", mini(fname.c_str()) ); goto cleanup; }
-        // set to beginning0
-        else fseek( fd, 0, SEEK_SET );
-
+        // set to beginning
+        fseek( fd, 0, SEEK_SET );
         // reset yyin to fd
         yyrestart( fd );
         // set to initial condition | 1.5.0.5 (ge) added
@@ -153,14 +130,20 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
         // set source
         source.setFile( fd );
     }
+    else
+    {
+        CK_FPRINTF_STDERR( "[chuck](parser): (internal) code and FILE descriptor both NULL!\n" );
+        CK_FPRINTF_STDERR( "[chuck](parser):  |- bailing out...\n" );
+        return FALSE;
+    }
 
     // start error message for new filename
-    EM_start_filename( g_filename.c_str() );
+    EM_start_filename( target->filename.c_str() );
     // set current input source
     EM_setCurrentFileSource( source );
 
     // ensure abstract syntax tree is clean | 1.5.0.5 (ge) added, finally
-    cleanup_AST();
+    target->cleanupAST();
 
     // parse
     if( !(yyparse() == 0) ) goto cleanup;
@@ -169,10 +152,6 @@ t_CKBOOL chuck_parse( const std::string & fname, const std::string & codeLiteral
     ret = TRUE;
 
 cleanup:
-
-    // defer some clean up to reset_parse(), since later passes
-    // could use current file source / file descriptor; copy
-    g_fd2close = fd;
 
     // flush
     // yyflush();
@@ -191,82 +170,15 @@ cleanup:
 
 
 //------------------------------------------------------------------------------
-// name: fd2parse_cleanup()
-// desc: clean up fd2parse
-//------------------------------------------------------------------------------
-void fd2parse_cleanup()
-{
-    // check
-    if( g_fd2parse && g_fd2autoClose )
-    {
-        // log
-        EM_log( CK_LOG_FINEST, "fd2parse_clean() closing FILE descriptor [0x%x]...", (t_CKUINT)g_fd2parse );
-        fclose( g_fd2parse );
-    }
-
-    // reset
-    g_fd2parse = NULL;
-    g_fd2autoClose = FALSE;
-}
-
-
-
-
-//------------------------------------------------------------------------------
-// name: fd2parse_set()
-// desc: special FILE input mode | added 1.5.0.5 (ge)
-// set an already open FILE descriptor `fd` for one time use
-// by the next call to go(), which will use `fd` as the input
-// to the parser (NOTE in any invocation of go(), `codeLiteral`
-// and `fd` should not both be non-empty, otherwise a warning
-// will be output and the `codeLiteral` will take precedence
-// and the `fd` will be cleaned up and skipped
-// MEMORY: if `autoClose` is true, the compiler will automatically
-// call fclose() on `fd` on the next call to go(), regardless of
-// the aforementioned conflict with `codeLiteral`
-//------------------------------------------------------------------------------
-void fd2parse_set( FILE * fd, t_CKBOOL autoClose )
-{
-    // clean up
-    fd2parse_cleanup();
-
-    // copy
-    g_fd2parse = fd;
-    g_fd2autoClose = autoClose;
-}
-
-
-
-
-//------------------------------------------------------------------------------
 // name: reset_parse()
 // desc: reset parse after a parse
 //------------------------------------------------------------------------------
 void reset_parse( )
 {
-    // reset the current input source
-    EM_cleanupCurrentFileSource();
-
-    // clean up the file descriptor
-    if( g_fd2close )
-    {
-        // check fd2parse (could be the same)
-        if( g_fd2parse ) { fd2parse_cleanup(); }
-        else { fclose( g_fd2close ); }
-        // zero out either way
-        g_fd2close = NULL;
-    }
-
     // empty file name
     EM_reset_filename();
-    // clear current ChucK pointer; no dangling references
-    EM_set_current_chuck( NULL );
-
-    // clean up the AST
-    cleanup_AST();
-    // NB for normal compilation cycles, the AST is now cleaned up on a
-    // per-context basis, due to the need to keep potentially multiple ASTs
-    // around for import purposes | 1.5.2.5 (ge)
+    // unset target
+    EM_setCurrentTarget( NULL );
 }
 
 

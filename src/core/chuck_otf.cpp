@@ -212,10 +212,16 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // (added 1.3.5.2)
         std::string full_path = get_full_path( msg->buffer );
 
-        // special FILE descriptor mode; set autoClose to FALSE ('cleanup' will close fd)
-        compiler->set_file2parse( fd, FALSE );
-        // parse, type-check, and emit
-        if( !compiler->go( msg->buffer, full_path ) )
+        // construct a target to be compiled | 1.5.3.5 (ge)
+        Chuck_CompileTarget * target = new Chuck_CompileTarget();
+        // set file descriptor
+        target->fd2parse = fd;
+        // set fields
+        target->filename = msg->buffer;
+        target->absolutePath = full_path;
+
+        // parse, type-check, and emit; compiler will memory-manage target (no need to delete here)
+        if( !compiler->compile( target ) )
         {
             CK_SAFE_DELETE(cmd);
             goto cleanup;
@@ -333,19 +339,28 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
         return FALSE;
     }
 
+    // make a target
+    Chuck_CompileTarget * target = new Chuck_CompileTarget();
+    target->fd2parse = fd;
+    target->filename = filename;
+
     // check to see if at least parses
-    if( !chuck_parse( filename ) )
+    if( !chuck_parse( target ) )
     {
         // error message
         EM_error2( 0, "(parse error) skipping file '%s' for [%s]...", filename.c_str(), op );
-        // reset parser (clean up) | 1.5.1.5
-        reset_parse();
         // close file descriptor
         fclose( fd );
+        // reset parser (clean up) | 1.5.1.5
+        reset_parse();
+        // clean up target
+        CK_SAFE_DELETE( target );
         return FALSE;
     }
     // reset parser (clean up) | 1.5.1.5
     reset_parse();
+    // clean up target
+    CK_SAFE_DELETE( target );
 
     // stat it
     memset( &fs, 0, sizeof(fs) );

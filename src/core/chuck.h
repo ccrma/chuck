@@ -110,6 +110,9 @@
 #define CHUCK_PARAM_USER_CHUGINS                CHUCK_PARAM_CHUGIN_LIST_USER
 #define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES     CHUCK_PARAM_CHUGIN_LIST_USER_DIR
 
+// code literal signifier
+#define CHUCK_CODE_LITERAL_SIGNIFIER            "<compiled.code>"
+
 
 
 

@@ -1061,7 +1061,8 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
     switch( stmt->s_type )
     {
         case ae_stmt_import: // 1.5.2.5 (ge) added
-            // do nothing here
+            // do nothing here (return true to bypass)
+            ret = TRUE;
             break;
 
         case ae_stmt_if:
