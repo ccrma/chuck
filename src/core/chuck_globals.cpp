@@ -1340,9 +1340,33 @@ Chuck_Event * * Chuck_Globals_Manager::get_ptr_to_global_event( const std::strin
 // desc: get buffer samples
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamples( const char * name,
-                                                      SAMPLE * buffer,
-                                                      int numFrames,
-                                                      int numChannels )
+                                                      SAMPLE * buffer, int numFrames )
+{
+    // if hasn't been init, or it has been init and hasn't been constructed,
+    if( m_global_ugens.count( name ) == 0 ||
+       should_call_global_ctor( name, te_globalUGen ) )
+    {
+        // fail without doing anything
+        return FALSE;
+    }
+
+    // else, fill (if the ugen isn't buffered, then it will fill with zeroes)
+    m_global_ugens[name]->val->get_buffer( buffer, numFrames );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getGlobalUGenSamplesMulti()
+// desc: get buffer samples, multichannel edition | 1.5.3.2 (eito, nick, ge)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Globals_Manager::getGlobalUGenSamplesMulti( const char * name,
+                                                           SAMPLE * buffer,
+                                                           int numFrames,
+                                                           int numChannels )
 {
     // if hasn't been init, or it has been init and hasn't been constructed,
     if( m_global_ugens.count( name ) == 0 ||
