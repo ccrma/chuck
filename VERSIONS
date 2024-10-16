@@ -2,6 +2,11 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.3.3
+=======
+- (fixed) specific internal UGen connection error now handled without exiting
+
+
 1.5.3.2 (October 2024)
 =======
 *** ChuGL maintanance patch ***
