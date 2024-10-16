@@ -376,7 +376,7 @@ selection_statement
         | IF LPAREN expression RPAREN statement ELSE statement
             { $$ = new_stmt_from_if( $3, $5, $7, @1.first_line, @1.first_column ); }
         ;
-        
+
 loop_statement
         : WHILE LPAREN expression RPAREN statement
             { $$ = new_stmt_from_while( $3, $5, @1.first_line, @1.first_column ); }
@@ -402,7 +402,7 @@ code_segment
         ;
 
 import_statement
-        : AT_IMPORT import_target SEMICOLON   { $$ = new_stmt_from_import( $2, @1.first_line, @1.first_column );}
+        : AT_IMPORT import_target           { $$ = new_stmt_from_import( $2, @1.first_line, @1.first_column );}
         | AT_IMPORT LBRACE import_list RBRACE { $$ = new_stmt_from_import( $3, @1.first_line, @1.first_column );}
         ;
 
@@ -412,7 +412,7 @@ import_list
 
 import_target
         : STRING_LIT                        { $$ = new_import( $1, NULL, @1.first_line, @1.first_column ); }
-        | id_dot                            { $$ = new_import( NULL, $1, @1.first_line, @1.first_column ); }
+        // | id_dot                            { $$ = new_import( NULL, $1, @1.first_line, @1.first_column ); }
         ;
 
 expression_statement
