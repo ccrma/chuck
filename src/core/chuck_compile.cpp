@@ -297,7 +297,7 @@ t_CKBOOL Chuck_Compiler::compileFile( const string & filename )
     Chuck_CompileTarget * target = new Chuck_CompileTarget( te_do_all );
 
     // resolve filename locally
-    if( !target->resolveFilename( filename, "", FALSE ) )
+    if( !target->resolveFilename( filename, NULL, FALSE ) )
     {
         // delete target
         CK_SAFE_DELETE( target );
@@ -343,50 +343,63 @@ t_CKBOOL Chuck_Compiler::compileCode( const string & codeLiteral )
 t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
 {
     // hold return value
-    t_CKBOOL ret = FALSE;
+    t_CKBOOL ret = TRUE;
+    // compilation sequence
+    std::vector<Chuck_CompileTarget *> sequence;
+    // if cycle encountered, this returns cycle path
+    std::vector<Chuck_CompileTarget *> problems;
+
     // set the chuck
     target->the_chuck = this->carrier()->chuck;
-
     // clear in-progress
     this->imports()->clearInProgress();
     // add current target to registry to avoid cycles
     this->imports()->addInProgress( target );
     // scan for imports
-    this->scan_imports( target );
-
-    // compilation sequence
-    std::vector<Chuck_CompileTarget *> sequence;
-    // if cycle encountered, this returns cycle path
-    std::vector<Chuck_CompileTarget *> problems;
-    // topological sort for serial compilation
-    ret = this->generate_compile_sequence( target, sequence, problems );
-    // check return
-    if( !ret )
+    if( !this->scan_imports( target ) )
     {
+        // error encountered
+        ret = FALSE;
+        // clean up
+        goto cleanup;
+    }
+
+    // topological sort for serial compilation
+    if( !this->generate_compile_sequence( target, sequence, problems ) )
+    {
+        // error encountered
+        ret = FALSE;
         // TODO: report cycle error
         goto cleanup;
     }
 
-    // iterator over sequence (except last one, which should be the base file being compiled)
-    for( t_CKINT i = 0; i < sequence.size()-1; i++ )
+    // iterator over sequence
+    // NOTE: the base target should be the last one in the sequence
+    for( t_CKINT i = 0; i < sequence.size(); i++ )
     {
         // log
         EM_log( CK_LOG_FINER, "compiling import target '%s'...", target->filename.c_str() );
+
         // compile dependency (import only)
         ret = compile_single( sequence[i] );
         if( !ret )
         {
             // error (should already be reported)
             // TODO: report container .ck file "e.g., ... in imported file contained in XXX.ck"
+
+            // error encountered
+            ret = FALSE;
+            // clean up
             goto cleanup;
         }
 
-        // mark target as complete in registry
-        this->imports()->markComplete( sequence[i] );
+        // if target was an import (i.e., don't do this with the base target)
+        if( sequence[i]->howMuch == te_do_import_only )
+        {
+            // mark target as complete in registry
+            this->imports()->markComplete( sequence[i] );
+        }
     }
-
-    // compile the base target
-    ret = this->compile_single( target );
 
 cleanup:
     // 1.4.1.0 (ge) | added to unset the fileName reference, which determines
@@ -636,15 +649,22 @@ t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list,
             // loop over import list
             while( import )
             {
-                // results.push_back( import->what );
                 // lookup to see there is already a target
                 Chuck_CompileTarget * t = registry->lookup( import->what, target );
                 if( !t )
                 {
+                    // TODO: look at extension to 1) diff between .ck and .chug
+                    // TODO: if not extension, default to .ck
                     // make new target with import only
                     t = new Chuck_CompileTarget( te_do_import_only );
                     // set filename, with transplant path, expand search if necessary
-                    t->resolveFilename( import->what, target->absolutePath, TRUE );
+                    if( !t->resolveFilename( import->what, target, TRUE, import->where ) )
+                    {
+                        // clean up
+                        CK_SAFE_DELETE( t );
+                        // error encountered, bailing out
+                        return FALSE;
+                    }
                     // add to registry's in-progress list
                     registry->addInProgress( t );
                 }
@@ -741,23 +761,36 @@ t_CKBOOL Chuck_Compiler::scan_imports( Chuck_Env * env,
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::scan_imports( Chuck_CompileTarget * target )
 {
+    // return value
+    t_CKBOOL ret = TRUE;
+
     // set as current target
     EM_setCurrentTarget( target );
 
     // parse the code
     if( !chuck_parse( target ) )
-        return FALSE;
+    {
+        // error encountered
+        ret = FALSE;
+        // clean up
+        goto cleanup;
+    }
 
     // set the AST
     target->AST = g_program;
 
     // log
-    EM_log( CK_LOG_FINER, "scanning for @import on target '%s'...", target->filename.c_str() );
+    EM_log( CK_LOG_FINER, "@import scanning within target '%s'...", target->filename.c_str() );
 
     // add the current file name to targets (to avoid duplicates/cycles)
     // scan for @import statements
     if( !scan_imports( env(), target, this->imports() ) )
-        return FALSE;
+    {
+        // error encountered
+        ret = FALSE;
+        // bail out
+        goto cleanup;
+    }
 
     // push log
     EM_pushlog();
@@ -772,17 +805,24 @@ t_CKBOOL Chuck_Compiler::scan_imports( Chuck_CompileTarget * target )
             // log
             EM_log( CK_LOG_FINER, "dependency found: '%s'", target->dependencies[i]->absolutePath.c_str() );
             // parse for scan import on imported file
-            scan_imports( t );
+            if( !scan_imports( t ) )
+            {
+                // error encountered
+                ret = FALSE;
+                // bail out; break here to make sure poplog() is run
+                break;
+            }
         }
     }
     // pop log
     EM_poplog();
 
+cleanup:
     // null current target
     EM_setCurrentTarget( NULL );
 
     // done
-    return TRUE;
+    return ret;
 }
 
 
@@ -1702,27 +1742,59 @@ Chuck_ImportRegistry::Chuck_ImportRegistry()
 Chuck_CompileTarget * Chuck_ImportRegistry::lookup( const std::string & path,
                                                     Chuck_CompileTarget * importer )
 {
+    // return value
+    Chuck_CompileTarget * ret = NULL;
     // search path
     std::string key = expand_filepath(path);
     // if importer file exist
     if( importer )
     {
-        // transplant to absolute path, resolves to realpath
-        key = transplant_filepath( importer->absolutePath, key );
+        // log
+        EM_log( CK_LOG_FINER, "@import registery search: '%s' ", path.c_str() );
+
+        // if importer is a file
+        if( importer->filename != CHUCK_CODE_LITERAL_SIGNIFIER )
+        {
+            // transplant to absolute path, resolves to realpath
+            key = transplant_filepath( importer->absolutePath, key );
+        }
+        else // if not, importer is code
+        {
+            // if not an absolute path
+            if( !is_absolute_path(key) )
+            {
+                // use the current working directory
+                key = importer->the_chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY ) + path;
+            }
+        }
+        // push log
+        EM_pushlog();
     }
 
     // attempt to find in done list
     map<string, Chuck_CompileTarget *>::iterator it = m_done.find( key );
     // if not found
-    if( it != m_done.end() ) return it->second;
+    if( it != m_done.end() ) ret = it->second;
+    // log
+    if( importer && ret ) EM_log( CK_LOG_FINER, "found (compiled): '%s'", key.c_str() );
 
-    // attempt to find in in-progress list
-    it = m_inProgress.find( key );
     // if not found
-    if( it != m_inProgress.end() ) return it->second;
+    if( !ret )
+    {
+        // attempt to find in in-progress list
+        it = m_inProgress.find( key );
+        // if not found
+        if( it != m_inProgress.end() ) return it->second;
+    }
+    // log
+    if( importer && ret ) EM_log( CK_LOG_FINER, "found (compiled): '%s'", key.c_str() );
+    else if( importer ) EM_log( CK_LOG_FINER, "(not found)" );
 
-    // found
-    return NULL;
+    // pop log
+    EM_poplog();
+
+    // return findings
+    return ret;
 }
 
 
@@ -1892,8 +1964,9 @@ void Chuck_CompileTarget::cleanup()
 //   * the file is resolved this will open a FILE descriptor in fd2parse
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_CompileTarget::resolveFilename( const std::string & theFilename,
-                                               const std::string & transplantPath,
-                                               t_CKBOOL expandSearchToGlobal )
+                                               Chuck_CompileTarget * importer,
+                                               t_CKBOOL expandSearchToGlobal,
+                                               t_CKINT wherePos )
 {
     // clean up
     cleanup();
@@ -1905,8 +1978,21 @@ t_CKBOOL Chuck_CompileTarget::resolveFilename( const std::string & theFilename,
 
     // expand and trim
     string fname = expand_filepath(trim(theFilename));
-    // transplate if needed
-    if( transplantPath != "" ) fname = transplant_filepath( transplantPath, fname );
+    // if this is part of an @import
+    if( importer != NULL )
+    {
+        // if the importer is a file
+        if( importer->filename != CHUCK_CODE_LITERAL_SIGNIFIER )
+        {
+            // transplant filename
+            fname = transplant_filepath( importer->absolutePath, fname );
+        }
+        else // otherwise, importer is code
+        {
+            // use current working directory
+            fname = importer->the_chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY ) + fname;
+        }
+    }
     // set filename tentatively
     this->filename = fname;
 
@@ -1921,7 +2007,7 @@ t_CKBOOL Chuck_CompileTarget::resolveFilename( const std::string & theFilename,
     else if( ck_isdir( filename ) ) // check for directory
     {
         // print error
-        EM_error2( 0, "cannot parse file: '%s' is a directory", mini( filename.c_str() ) );
+        EM_error2( wherePos, "cannot parse file: '%s' is a directory", mini( filename.c_str() ) );
         // done
         return FALSE;
     }
@@ -1936,7 +2022,7 @@ t_CKBOOL Chuck_CompileTarget::resolveFilename( const std::string & theFilename,
     if( !fd2parse )
     {
         // print error
-        EM_error2( 0, "no such file: '%s'", mini( filename.c_str() ) );
+        EM_error2( wherePos, "no such file: '%s'", mini( filename.c_str() ) );
         // done
         return FALSE;
     }

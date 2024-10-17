@@ -1259,7 +1259,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     EM_pushlog();
 
     // falsify filename / path for various logs
-    std::string theThing = "compiled.code:" + argsTogether;
+    std::string theThing = string(CHUCK_CODE_LITERAL_SIGNIFIER) + ":" + argsTogether;
     std::string fakefakeFilename = "<result file name goes here>";
 
     // parse out command line arguments
@@ -1278,7 +1278,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     // get the code
     vm_code = m_carrier->compiler->output();
     // (re) name it (no path to append) | 1.5.0.5 (ge) update from '+=' to '='
-    vm_code->name = "compiled.code";
+    vm_code->name = CHUCK_CODE_LITERAL_SIGNIFIER;
 
     // log
     EM_log( CK_LOG_FINE, "sporking %d %s...", count,

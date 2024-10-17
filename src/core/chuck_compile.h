@@ -111,12 +111,14 @@ public:
 public:
     // resolve and set filename and absolutePath for a compile target
     // * set as filename (possibly with modifications, e.g., with .ck appended)
-    // * if `transplantPath` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
+    // * if `importer` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
     // * if file is unresolved locally and `expandSearchToGlobal` is true, expand search to global search paths
     // * the file is resolved this will open a FILE descriptor in fd2parse
+    // * wherePos can be provided to indiciate parser position in containing file (e.g., @import)
     t_CKBOOL resolveFilename( const std::string & theFilename,
-                              const std::string & transplantPath,
-                              t_CKBOOL expandSearchToGlobal );
+                              Chuck_CompileTarget * importer,
+                              t_CKBOOL expandSearchToGlobal,
+                              t_CKINT wherePos = 0 );
     // get filename
     std::string getFilename() const { return filename; }
     // set absolute path
