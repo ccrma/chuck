@@ -370,14 +370,14 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         // cycle detected
         EM_error2( 0, "@import error -- cycle detected:" );
         // print head of cycle
-        EM_error2( 0, " |- file '%s' is imported by...", problems[0]->filename.c_str() );
+        EM_error2( 0, " |- '%s' is imported by...", problems[0]->filename.c_str() );
         for( t_CKINT i = 1; i < problems.size()-1; i++ )
         {
             // print middle of cycle
-            EM_error2( 0, " |- file '%s' is imported by...", problems[i]->filename.c_str() );
+            EM_error2( 0, " |- '%s' is imported by...", problems[i]->filename.c_str() );
         }
         // print origin of cycle
-        EM_error2( 0, " |- file '%s'", problems.back()->filename.c_str() );
+        EM_error2( 0, " |- '%s' (originating file)", problems.back()->filename.c_str() );
         // error encountered
         ret = FALSE;
         // TODO: report cycle error
