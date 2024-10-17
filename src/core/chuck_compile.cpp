@@ -367,6 +367,17 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
     // topological sort for serial compilation
     if( !this->generate_compile_sequence( target, sequence, problems ) )
     {
+        // cycle detected
+        EM_error2( 0, "@import error -- cycle detected:" );
+        // print head of cycle
+        EM_error2( 0, " |- file '%s' is imported by...", problems[0]->filename.c_str() );
+        for( t_CKINT i = 1; i < problems.size()-1; i++ )
+        {
+            // print middle of cycle
+            EM_error2( 0, " |- file '%s' is imported by...", problems[i]->filename.c_str() );
+        }
+        // print origin of cycle
+        EM_error2( 0, " |- file '%s'", problems.back()->filename.c_str() );
         // error encountered
         ret = FALSE;
         // TODO: report cycle error
@@ -384,9 +395,16 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         ret = compile_single( sequence[i] );
         if( !ret )
         {
-            // error (should already be reported)
-            // TODO: report container .ck file "e.g., ... in imported file contained in XXX.ck"
-
+            // if there is a container
+            if( sequence[i]->howMuch == te_do_import_only && sequence[i] != target )
+            {
+                // set target for error reporting
+                EM_setCurrentTarget( target );
+                // report container
+                EM_error2( 0, "...in imported file '%s', originating from '%s'...", sequence[i]->filename.c_str(), target->filename.c_str() );
+                // unset target
+                EM_setCurrentTarget( NULL );
+            }
             // error encountered
             ret = FALSE;
             // clean up
@@ -873,6 +891,9 @@ t_CKBOOL Chuck_Compiler::compile_single( Chuck_CompileTarget * target )
     }
 
 cleanup:
+
+    // make the target current in the parser
+    EM_setCurrentTarget( NULL );
 
     // commit
     if( ret ) env()->global()->commit();
