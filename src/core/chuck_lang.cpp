@@ -194,6 +194,11 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     func->doc = "return true if this UGen's output is connected to the input of rhs; if either this UGen or rhs has more than one channel, this function returns true if any connections exist between the channels; return false if there are no connections.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add connectsTo
+    func = make_new_mfun( "UGen[]", "goesTo", ugen_goes_to );
+    func->doc = "returns a list of UGens that this UGen connects to; if this UGen has more than one channel, this function returns any UGen that is connected to any channgel. Return an empty list if there are no connections.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add buffered
     func = make_new_mfun( "int", "buffered", ugen_buffered );
     func->add_arg( "int", "val" );
@@ -1779,6 +1784,28 @@ CK_DLL_CTRL( ugen_chan )
     else
         RETURN->v_object = NULL;
 }
+
+CK_DLL_CTRL( ugen_goes_to )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+
+    Chuck_UGen ** ugen_dest_list = ugen->m_dest_list;
+
+    t_CKINT size = ugen->m_num_dest;
+
+    // allocate array object
+    Chuck_ArrayInt * arr_dest_list = new Chuck_ArrayInt(FALSE, size);
+    // initialize with trappings of Object
+    initialize_object(arr_dest_list, SHRED->vm_ref->env()->ckt_array, SHRED, SHRED->vm_ref);
+
+    for (t_CKINT i = 0; i < size; i++) {
+      arr_dest_list->set(i, (t_CKINT)ugen_dest_list[i]);
+    }
+
+    RETURN->v_object = arr_dest_list;
+}
+
 
 CK_DLL_CTRL( ugen_connected )
 {
