@@ -1259,7 +1259,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     EM_pushlog();
 
     // falsify filename / path for various logs
-    std::string theThing = string(CHUCK_CODE_LITERAL_SIGNIFIER) + ":" + argsTogether;
+    std::string theThing = std::string(CHUCK_CODE_LITERAL_SIGNIFIER) + ":" + argsTogether;
     std::string fakefakeFilename = "<result file name goes here>";
 
     // parse out command line arguments
