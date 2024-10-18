@@ -309,6 +309,20 @@ t_CKBOOL ck_isdir( const std::string & path )
 
 
 
+//-----------------------------------------------------------------------------
+// name: ck_fileexists()
+// desc: check if file exists
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_fileexists( const std::string & path )
+{
+    // shuttle
+    struct stat fs;
+    // stat the path; 0 means success
+    return ( stat( path.c_str(), &fs ) == 0 );
+}
+
+
+
 #ifdef __PLATFORM_WINDOWS__
 //-----------------------------------------------------------------------------
 // name: win32_getline()

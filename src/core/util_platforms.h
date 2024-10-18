@@ -48,6 +48,8 @@ FILE * ck_tmpfile();
 
 // check if is dir
 t_CKBOOL ck_isdir( const std::string & path );
+// check if file exists
+t_CKBOOL ck_fileexists( const std::string & path );
 
 // do any platform-specific setup to enable ANSI escape codes
 t_CKBOOL ck_configANSI_ESCcodes();

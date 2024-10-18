@@ -31,6 +31,7 @@
 // date: Summer 2005
 //-----------------------------------------------------------------------------
 #include "util_string.h"
+#include "util_platforms.h"
 #include "chuck_errmsg.h"
 
 #ifdef __PLATFORM_WINDOWS__
@@ -772,7 +773,7 @@ std::string get_full_path( const std::string & fp )
     if( result == NULL && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
-    if(result == NULL)
+    if( result == NULL )
         return fp;
     else
         return buf;
@@ -787,6 +788,13 @@ std::string get_full_path( const std::string & fp )
     DWORD result = GetFullPathNameA(fp.c_str(), MAX_PATH, buf, NULL);
 #endif
 
+    // if successful
+    if( result )
+    {
+        // check if file exists; if not reset result
+        result = ck_fileexists( fp ) ? result : 0;
+    }
+
     // try with .ck extension
     if( result == 0 && !extension_matches(fp, ".ck") )
     {
@@ -798,7 +806,7 @@ std::string get_full_path( const std::string & fp )
 #endif
     }
 
-    if(result == 0)
+    if( result == 0 )
         return fp;
     else
         return normalize_directory_separator(buf);
