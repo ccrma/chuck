@@ -1773,41 +1773,45 @@ Chuck_ImportRegistry::Chuck_ImportRegistry()
 Chuck_CompileTarget * Chuck_ImportRegistry::lookup( const std::string & path,
                                                     Chuck_CompileTarget * importer )
 {
+    // ignore if not importing
+    if( !importer ) return NULL;
+
     // return value
     Chuck_CompileTarget * ret = NULL;
     // search path
-    std::string key = expand_filepath(path);
-    // if importer file exist
-    if( importer )
-    {
-        // log
-        EM_log( CK_LOG_FINER, "@import registery search: '%s' ", path.c_str() );
+    std::string key = expand_filepath( path );
 
-        // if importer is a file
-        if( importer->filename != CHUCK_CODE_LITERAL_SIGNIFIER )
-        {
-            // transplant to absolute path, resolves to realpath
-            key = transplant_filepath( importer->absolutePath, key );
-        }
-        else // if not, importer is code
-        {
-            // if not an absolute path
-            if( !is_absolute_path(key) )
-            {
-                // use the current working directory
-                key = importer->the_chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY ) + path;
-            }
-        }
-        // push log
-        EM_pushlog();
+    // log
+    EM_log( CK_LOG_FINER, "@import registery search: '%s' ", path.c_str() );
+
+    // if importer is a file
+    if( importer->filename != CHUCK_CODE_LITERAL_SIGNIFIER )
+    {
+        // transplant to absolute path, resolves to realpath
+        key = transplant_filepath( importer->absolutePath, key );
     }
+    else // if not, importer is code
+    {
+        // if not an absolute path
+        if( !is_absolute_path( key ) )
+        {
+            // use the current working directory
+            key = importer->the_chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY ) + path;
+        }
+    }
+
+    // push log
+    EM_pushlog();
 
     // attempt to find in done list
     map<string, Chuck_CompileTarget *>::iterator it = m_done.find( key );
     // if not found
-    if( it != m_done.end() ) ret = it->second;
-    // log
-    if( importer && ret ) EM_log( CK_LOG_FINER, "found (compiled): '%s'", key.c_str() );
+    if( it != m_done.end() )
+    {
+        ret = it->second;
+        // log (if import only)
+        EM_log( CK_LOG_FINER, "found (compiled): '%s'", key.c_str() );
+    }
 
     // if not found
     if( !ret )
@@ -1815,13 +1819,19 @@ Chuck_CompileTarget * Chuck_ImportRegistry::lookup( const std::string & path,
         // attempt to find in in-progress list
         it = m_inProgress.find( key );
         // if not found
-        if( it != m_inProgress.end() ) return it->second;
+        if( it != m_inProgress.end() )
+        {
+            ret = it->second;
+            // log
+            EM_log( CK_LOG_FINER, "found (in-progress): '%s'", key.c_str() );
+        }
     }
-    // log
-    if( importer && ret ) EM_log( CK_LOG_FINER, "found (compiled): '%s'", key.c_str() );
-    else if( importer ) EM_log( CK_LOG_FINER, "(not found)" );
 
-    // pop log
+    // if still not found
+    if( !ret )
+    { EM_log( CK_LOG_FINER, "(not found)" ); }
+
+    // pop log (if import only)
     EM_poplog();
 
     // return findings
@@ -1841,10 +1851,11 @@ t_CKBOOL Chuck_ImportRegistry::addInProgress( Chuck_CompileTarget * target )
     if( !target ) return FALSE;
 
     // cannot add if key already exists
-    if( lookup(target->key()) != NULL )
+    if( m_inProgress.find( target->key() ) != m_inProgress.end() )
     {
         // internal error; should have been verified before calling this function
-        EM_error2( 0, "(internal) cannot add target; '%s' already in registry...");
+        EM_error2( 0, "(import registry) cannot add target to in-progress list..." );
+        EM_error2( 0, " |- '%s' already present...", target->key().c_str() );
         return FALSE;
     }
 

@@ -403,7 +403,7 @@ t_CKBOOL extract_args( const string & token,
     // copy and trim
     string s = trim( token );
 
-    // ignore second character as arg separator if its : on Windows
+    // ignore second character as arg separator if its : on Windows (e.g., for C:\)
     t_CKBOOL ignoreSecond = FALSE;
 #ifdef __PLATFORM_WINDOWS__
     ignoreSecond = TRUE;
@@ -413,6 +413,7 @@ t_CKBOOL extract_args( const string & token,
     t_CKBOOL scan = FALSE;
     t_CKBOOL ret = TRUE;
     t_CKBOOL ignoreNext = FALSE;
+
     char * mask = NULL;
     for( i = 0; i < s.length(); i++ )
         if( s[i] == '\\' )
@@ -476,8 +477,8 @@ t_CKBOOL extract_args( const string & token,
             continue;
         }
 
-        // look for :
-        if( !ignoreNext && s[i] == ':' && !(ignoreSecond && i == 1))
+        // look for : (also test for windows drive letter, e.g., X:\ or X:/)
+        if( !ignoreNext && s[i] == ':' && !(ignoreSecond && i == 1 && s.length() > 2 && ( s[2] == '\\' || s[2] == '/' ) ) )
         {
             // sanity
             if( i == 0 )
