@@ -930,14 +930,14 @@ extern "C"
         return 0;
     }
 
-    // chugin load/import API
-    t_CKBOOL EMSCRIPTEN_KEEPALIVE importChugin( unsigned int chuckID, const char * path )
+    // runtime import API (TBD)
+    t_CKBOOL EMSCRIPTEN_KEEPALIVE importModule( unsigned int chuckID, const char * path )
     {
         // check
         if( chuck_instances.count( chuckID ) > 0 )
         {
             // call
-            return chuck_instances[chuckID]->compiler()->load_external_module( path );
+            // return chuck_instances[chuckID]->compiler()->loadModule( path );
         }
         return FALSE;
     }
