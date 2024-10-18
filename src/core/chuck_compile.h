@@ -48,6 +48,7 @@
 // forward reference
 //-----------------------------------------------------------------------------
 struct Chuck_DLL;
+struct Chuck_CompileTarget;
 
 
 
@@ -76,6 +77,23 @@ static IntList intList( t_CKINT i, IntList rest )
     l->i=i; l->rest=rest;
     return l;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct ImportTargetNode
+// desc: a specific import node, corresponding to a particular @import
+//-----------------------------------------------------------------------------
+struct ImportTargetNode
+{
+    Chuck_CompileTarget * target; // actual target
+    t_CKINT where; // pos
+    t_CKINT line; // line
+
+    ImportTargetNode( Chuck_CompileTarget * t = NULL, t_CKINT wh = 0, t_CKINT ln = 0 )
+        : target( t ), where( wh ), line( ln ) { }
+};
 
 
 
@@ -156,7 +174,7 @@ public:
     IntList the_linePos;
 
     // targets this target depends on
-    std::vector<Chuck_CompileTarget *> dependencies;
+    std::vector<ImportTargetNode> dependencies;
     // timestamp of target file when target was compiled
     // used to detect and potentially warn of modified files
     time_t timestamp;
@@ -337,15 +355,15 @@ protected: // internal
 
 protected: // internal import dependency helpers
     // produce a compilation sequences of targets from a import dependency graph
-    static t_CKBOOL generate_compile_sequence( Chuck_CompileTarget * head,
-                                               std::vector<Chuck_CompileTarget *> & sequence,
-                                               std::vector<Chuck_CompileTarget *> & problems );
+    static t_CKBOOL generate_compile_sequence( ImportTargetNode * head,
+                                               std::vector<ImportTargetNode *> & sequence,
+                                               std::vector<ImportTargetNode *> & problems );
     // visit
-    static t_CKBOOL visit( Chuck_CompileTarget * node,
-                           std::vector<Chuck_CompileTarget *> & sequence,
+    static t_CKBOOL visit( ImportTargetNode * node,
+                           std::vector<ImportTargetNode *> & sequence,
                            std::set<Chuck_CompileTarget *> & permanent,
                            std::set<Chuck_CompileTarget *> & temporary,
-                           std::vector<Chuck_CompileTarget *> & problems );
+                           std::vector<ImportTargetNode *> & problems );
 
 public: // import
     // scan for @import statements; builds a list of dependencies in the target

@@ -345,9 +345,11 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
     // hold return value
     t_CKBOOL ret = TRUE;
     // compilation sequence
-    std::vector<Chuck_CompileTarget *> sequence;
+    std::vector<ImportTargetNode *> sequence;
     // if cycle encountered, this returns cycle path
-    std::vector<Chuck_CompileTarget *> problems;
+    std::vector<ImportTargetNode *> problems;
+    // local import target node
+    ImportTargetNode node( target, 0, 0 );
 
     // set the chuck
     target->the_chuck = this->carrier()->chuck;
@@ -365,19 +367,19 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
     }
 
     // topological sort for serial compilation
-    if( !this->generate_compile_sequence( target, sequence, problems ) )
+    if( !this->generate_compile_sequence( &node, sequence, problems ) )
     {
         // cycle detected
         EM_error2( 0, "@import error -- cycle detected:" );
         // print head of cycle
-        EM_error2( 0, " |- '%s' is imported by...", problems[0]->filename.c_str() );
+        EM_error2( 0, " |- '%s' is imported by...", problems[0]->target->filename.c_str() );
         for( t_CKINT i = 1; i < problems.size()-1; i++ )
         {
             // print middle of cycle
-            EM_error2( 0, " |- '%s' is imported by...", problems[i]->filename.c_str() );
+            EM_error2( 0, " |- '%s' is imported by...", problems[i]->target->filename.c_str() );
         }
         // print origin of cycle
-        EM_error2( 0, " |- '%s' (originating file)", problems.back()->filename.c_str() );
+        EM_error2( 0, " |- '%s' (originating file)", problems.back()->target->filename.c_str() );
         // error encountered
         ret = FALSE;
         // TODO: report cycle error
@@ -392,16 +394,16 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         EM_log( CK_LOG_FINER, "compiling import target '%s'...", target->filename.c_str() );
 
         // compile dependency (import only)
-        ret = compile_single( sequence[i] );
+        ret = compile_single( sequence[i]->target );
         if( !ret )
         {
             // if there is a container
-            if( sequence[i]->howMuch == te_do_import_only && sequence[i] != target )
+            if( sequence[i]->target->howMuch == te_do_import_only && sequence[i]->target != target )
             {
                 // set target for error reporting
                 EM_setCurrentTarget( target );
                 // report container
-                EM_error2( 0, "...in imported file '%s', originating from '%s'...", sequence[i]->filename.c_str(), target->filename.c_str() );
+                EM_error2( 0, "...in imported file '%s', originating from '%s'...", sequence[i]->target->filename.c_str(), target->filename.c_str() );
                 // unset target
                 EM_setCurrentTarget( NULL );
             }
@@ -412,10 +414,10 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         }
 
         // if target was an import (i.e., don't do this with the base target)
-        if( sequence[i]->howMuch == te_do_import_only )
+        if( sequence[i]->target->howMuch == te_do_import_only )
         {
             // mark target as complete in registry
-            this->imports()->markComplete( sequence[i] );
+            this->imports()->markComplete( sequence[i]->target );
         }
     }
 
@@ -439,9 +441,9 @@ cleanup:
 // name: generate_compile_sequence()
 // desc: produce a compilation sequences of targets from a import dependency graph
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::generate_compile_sequence( Chuck_CompileTarget * head,
-                                                    std::vector<Chuck_CompileTarget *> & sequence,
-                                                    std::vector<Chuck_CompileTarget *> & problems )
+t_CKBOOL Chuck_Compiler::generate_compile_sequence( ImportTargetNode * head,
+                                                    std::vector<ImportTargetNode *> & sequence,
+                                                    std::vector<ImportTargetNode *> & problems )
 {
     // clear return vector
     sequence.clear();
@@ -469,36 +471,40 @@ t_CKBOOL Chuck_Compiler::generate_compile_sequence( Chuck_CompileTarget * head,
 // name: visit()
 // desc: recursive componet of topological sort function
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::visit( Chuck_CompileTarget * node, std::vector<Chuck_CompileTarget *> & sequence,
-                std::set<Chuck_CompileTarget *> & permanent, std::set<Chuck_CompileTarget *> & temporary,
-                std::vector<Chuck_CompileTarget *> & problems )
+t_CKBOOL Chuck_Compiler::visit( ImportTargetNode * node,
+                                std::vector<ImportTargetNode *> & sequence,
+                                std::set<Chuck_CompileTarget *> & permanent,
+                                std::set<Chuck_CompileTarget *> & temporary,
+                                std::vector<ImportTargetNode *> & problems )
 {
     // cycle
     t_CKBOOL acyclic = TRUE;
+    // the target
+    Chuck_CompileTarget * target = node->target;
 
     // if node already complete, can safely ignore
-    if( node->state == te_compile_complete ) return TRUE;
+    if( target->state == te_compile_complete ) return TRUE;
     // is node marked permanent?
-    if( permanent.find(node) != permanent.end() ) return TRUE;
+    if( permanent.find(target) != permanent.end() ) return TRUE;
     // is node marked temporary? if so, CYCLE detected
-    if( temporary.find(node) != temporary.end() )
+    if( temporary.find(target) != temporary.end() )
     { problems.push_back(node); return FALSE; }
 
     // add node to temporary
-    temporary.insert(node);
+    temporary.insert(target);
 
     // loop over dependencies
-    for( t_CKINT i = 0; i < node->dependencies.size(); i++ )
+    for( t_CKINT i = 0; i < target->dependencies.size(); i++ )
     {
         // visit dependency
-        acyclic = visit( node->dependencies[i], sequence, permanent, temporary, problems );
+        acyclic = visit( &(target->dependencies[i]), sequence, permanent, temporary, problems );
         // if cycle detected
         if( !acyclic )
         { problems.push_back(node); return FALSE; }
     }
 
     // add
-    permanent.insert(node);
+    permanent.insert(target);
     // append node (should be prepend, but we will reverse later)
     sequence.push_back(node);
 
@@ -521,8 +527,6 @@ t_CKBOOL Chuck_Compiler::resolve( const string & type )
         return FALSE;
 
     // look up if name is already parsed
-
-
 
     return ret;
 }
@@ -687,7 +691,7 @@ t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list,
                     registry->addInProgress( t );
                 }
                 // add to target
-                target->dependencies.push_back( t );
+                target->dependencies.push_back( ImportTargetNode( t, import->where, import->line ) );
                 // next in list
                 import = import->next;
             }
@@ -816,12 +820,12 @@ t_CKBOOL Chuck_Compiler::scan_imports( Chuck_CompileTarget * target )
     for( int i = 0; i < target->dependencies.size(); i++ )
     {
         // current dependency
-        Chuck_CompileTarget * t = target->dependencies[i];
+        Chuck_CompileTarget * t = target->dependencies[i].target;
         // check if we have already parsed
         if( t->AST == NULL )
         {
             // log
-            EM_log( CK_LOG_FINER, "dependency found: '%s'", target->dependencies[i]->absolutePath.c_str() );
+            EM_log( CK_LOG_FINER, "dependency found: '%s'", t->absolutePath.c_str() );
             // parse for scan import on imported file
             if( !scan_imports( t ) )
             {
