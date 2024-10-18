@@ -930,4 +930,16 @@ extern "C"
         return 0;
     }
 
+    // runtime import API (TBD)
+    t_CKBOOL EMSCRIPTEN_KEEPALIVE importModule( unsigned int chuckID, const char * path )
+    {
+        // check
+        if( chuck_instances.count( chuckID ) > 0 )
+        {
+            // call
+            // return chuck_instances[chuckID]->compiler()->loadModule( path );
+        }
+        return FALSE;
+    }
+
 } // extern "C"

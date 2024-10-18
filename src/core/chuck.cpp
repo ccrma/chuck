@@ -764,11 +764,9 @@ t_CKBOOL ChucK::initChugins()
             // push indent
             EM_pushlog();
 
-            // SPENCERTODO: what to do for full path
-            std::string full_path = filename;
-
             // parse, type-check, and emit
-            if( compiler()->go( filename, full_path ) )
+            // NOTE: filename here should already be a fullpath
+            if( compiler()->compileFile( filename ) )
             {
                 // preserve op overloads | 1.5.1.5
                 compiler()->env()->op_registry.preserve();
@@ -1167,12 +1165,8 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
         goto error;
     }
 
-    // construct full path to be associated with the file so me.sourceDir() works
-    // (added 1.3.0.0)
-    full_path = get_full_path(filename);
-
     // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_carrier->compiler->go( filename, full_path ) )
+    if( !m_carrier->compiler->compileFile( filename ) )
         goto error;
 
     // get the code
@@ -1265,7 +1259,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     EM_pushlog();
 
     // falsify filename / path for various logs
-    std::string theThing = "compiled.code:" + argsTogether;
+    std::string theThing = std::string(CHUCK_CODE_LITERAL_SIGNIFIER) + ":" + argsTogether;
     std::string fakefakeFilename = "<result file name goes here>";
 
     // parse out command line arguments
@@ -1277,22 +1271,14 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
         goto error;
     }
 
-    // working directory
-    workingDir = getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
-
-    // construct full path to be associated with the file so me.sourceDir() works
-    full_path = workingDir + "/compiled.code";
-    // log
-    EM_log( CK_LOG_FINE, "full path: %s...", full_path.c_str() );
-
-    // parse, type-check, and emit (full_path added 1.3.0.0)
-    if( !m_carrier->compiler->go( "<compiled.code>", full_path, code ) )
+    // parse, type-check, and emit
+    if( !m_carrier->compiler->compileCode( code ) )
        goto error;
 
     // get the code
     vm_code = m_carrier->compiler->output();
     // (re) name it (no path to append) | 1.5.0.5 (ge) update from '+=' to '='
-    vm_code->name = "compiled.code";
+    vm_code->name = CHUCK_CODE_LITERAL_SIGNIFIER;
 
     // log
     EM_log( CK_LOG_FINE, "sporking %d %s...", count,

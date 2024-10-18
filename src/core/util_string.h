@@ -37,6 +37,13 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifndef WIN32
+  #include <unistd.h>
+#endif
+
+
 
 
 // int to ascii
@@ -103,6 +110,12 @@ std::string extract_filepath_dir( const std::string & filepath );
 // get filename portion of a filepath (minus the directory portion) | 1.5.2.5 (ge) added
 std::string extract_filepath_file( const std::string & filepath );
 
+// desc: create absolute path using existing filepath and incoming path
+// EG: existing == "foo/bar.ck", incoming == "thing/poo.ck" => returns foo/thing/poo.ck
+// NOTE: if incoming is detected as absolute path, incoming is returned without change
+// (intended for use with import paths being relative to the file importing them)
+std::string transplant_filepath( const std::string & existing, const std::string & incoming );
+
 // convert \ to / (on Windows)
 std::string normalize_directory_separator( const std::string & filepath );
 
@@ -138,6 +151,9 @@ t_CKBOOL subdir_ok2recurse( const std::string & dirName,
 
 // get formatted timestamp of current system time; no new line
 std::string timestamp_formatted(); // e.g., "Sat Jun 24 04:18:42 2023"
+
+// unformatted last-write timestamp of a file | 1.5.3.5 (ge)
+time_t file_last_write_time( const std::string & filename );
 
 // tokenize a string into a vector of strings, by delimiters
 void tokenize( const std::string & str, std::vector<std::string> & tokens, const std::string & delimiters );

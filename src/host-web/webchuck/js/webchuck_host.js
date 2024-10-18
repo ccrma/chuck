@@ -718,6 +718,17 @@ var createAChuck = function( chuckID, initPromise )
         {
             self.port.postMessage( { type: 'clearGlobals' } );
         }
+        // ================= chugin import API ====================== //
+        self.now = function( path )
+        {
+            var callbackID = self.nextDeferID();
+            self.port.postMessage( {
+                type: 'importChugin',
+                path: path,
+                callback: callbackID
+            } );
+            return self.deferredPromises[callbackID];
+        }
         
     })( aChuck );
     

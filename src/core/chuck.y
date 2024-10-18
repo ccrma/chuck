@@ -98,6 +98,7 @@ a_Program g_program = NULL;
     a_Complex complex_exp;
     a_Polar polar_exp;
     a_Vec vec_exp; // ge: added 1.3.5.3
+    a_Import import; // 1.5.2.5 (ge) added
 };
 
 // expect shift/reduce conflicts
@@ -107,7 +108,8 @@ a_Program g_program = NULL;
 // 1.4.0.0: changed to 41 for global keyword
 // 1.4.0.1: changed to 79 for left recursion
 // 1.5.1.1: changed to 80 for trailing comma in array literals
-%expect 82
+// 1.5.2.5: changed to 84 for @import statements
+%expect 84
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> INT_VAL
@@ -135,7 +137,7 @@ a_Program g_program = NULL;
   PUBLIC PROTECTED PRIVATE STATIC ABSTRACT CONST 
   SPORK ARROW_RIGHT ARROW_LEFT L_HACK R_HACK
   GRUCK_RIGHT GRUCK_LEFT UNGRUCK_RIGHT UNGRUCK_LEFT
-  AT_OP AT_CTOR AT_DTOR
+  AT_OP AT_CTOR AT_DTOR AT_IMPORT
 
 
 %type <program> program
@@ -156,6 +158,7 @@ a_Program g_program = NULL;
 %type <stmt> selection_statement
 %type <stmt> jump_statement
 %type <stmt> expression_statement
+%type <stmt> import_statement
 %type <exp> expression
 %type <exp> chuck_expression
 %type <exp> arrow_expression
@@ -197,6 +200,8 @@ a_Program g_program = NULL;
 %type <complex_exp> complex_exp
 %type <polar_exp> polar_exp
 %type <vec_exp> vec_exp // ge: added 1.3.5.3
+%type <import> import_target // 1.5.2.5 (ge) added
+%type <import> import_list // 1.5.2.5 (ge) added
 
 %start program
 
@@ -355,6 +360,7 @@ statement
         | jump_statement                    { $$ = $1; }
         // | label_statement                   { }
         | code_segment                      { $$ = $1; }
+        | import_statement                  { $$ = $1; }
         ;
 
 jump_statement
@@ -370,7 +376,7 @@ selection_statement
         | IF LPAREN expression RPAREN statement ELSE statement
             { $$ = new_stmt_from_if( $3, $5, $7, @1.first_line, @1.first_column ); }
         ;
-        
+
 loop_statement
         : WHILE LPAREN expression RPAREN statement
             { $$ = new_stmt_from_while( $3, $5, @1.first_line, @1.first_column ); }
@@ -394,7 +400,21 @@ code_segment
         : LBRACE RBRACE                     { $$ = new_stmt_from_code( NULL, @1.first_line, @1.first_column ); }
         | LBRACE statement_list RBRACE      { $$ = new_stmt_from_code( $2, @1.first_line, @1.first_column ); }
         ;
-        
+
+import_statement
+        : AT_IMPORT import_target           { $$ = new_stmt_from_import( $2, @1.first_line, @1.first_column );}
+        | AT_IMPORT LBRACE import_list RBRACE { $$ = new_stmt_from_import( $3, @1.first_line, @1.first_column );}
+        ;
+
+import_list
+        : import_target                     { $$ = $1; }
+        | import_target COMMA import_list   { $$ = prepend_import( $1, $3, @1.first_line, @1.first_column ); }
+
+import_target
+        : STRING_LIT                        { $$ = new_import( $1, NULL, @1.first_line, @1.first_column ); }
+        // | id_dot                            { $$ = new_import( NULL, $1, @1.first_line, @1.first_column ); }
+        ;
+
 expression_statement
         : SEMICOLON                         { $$ = NULL; }
         | expression SEMICOLON              { $$ = new_stmt_from_expression( $1, @1.first_line, @1.first_column ); }
@@ -402,11 +422,11 @@ expression_statement
         
 expression
         : chuck_expression                  { $$ = $1; }
-        | expression COMMA chuck_expression  { $$ = append_expression( $1, $3, @1.first_line, @1.first_column ); }
+        | expression COMMA chuck_expression { $$ = append_expression( $1, $3, @1.first_line, @1.first_column ); }
         ;
 
 chuck_expression
-        : arrow_expression                   { $$ = $1; }
+        : arrow_expression                  { $$ = $1; }
         | chuck_expression chuck_operator arrow_expression
             { $$ = new_exp_from_binary( $1, $2, $3, @2.first_line, @2.first_column ); }
         ;

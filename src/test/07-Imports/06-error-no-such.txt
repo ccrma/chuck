@@ -1,0 +1,3 @@
+06-error-no-such.ck:2:9: error: no such file: 'no-such-file.ck'
+[2] @import "no-such-file.ck"
+            ^

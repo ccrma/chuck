@@ -1,0 +1,3 @@
+[chuck]: @import error -- cycle detected:
+[chuck]:  |- '07-error-self-import.ck' is imported from...
+[chuck]:  |- '07-error-self-import.ck':[line 1] (this is the originating file)

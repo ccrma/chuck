@@ -379,6 +379,7 @@ global                  { adjust(); return GLOBAL; }
 "@operator"             { adjust(); return AT_OP; }
 "@construct"            { adjust(); return AT_CTOR; }
 "@destruct"             { adjust(); return AT_DTOR; }
+"@import"               { adjust(); return AT_IMPORT; }
 "->"                    { adjust(); return ARROW_RIGHT; }
 "<-"                    { adjust(); return ARROW_LEFT; }
 "-->"                   { adjust(); return GRUCK_RIGHT; }

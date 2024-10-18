@@ -31,6 +31,7 @@
 // date: Summer 2005
 //-----------------------------------------------------------------------------
 #include "util_string.h"
+#include "util_platforms.h"
 #include "chuck_errmsg.h"
 
 #ifdef __PLATFORM_WINDOWS__
@@ -403,7 +404,7 @@ t_CKBOOL extract_args( const string & token,
     // copy and trim
     string s = trim( token );
 
-    // ignore second character as arg separator if its : on Windows
+    // ignore second character as arg separator if its : on Windows (e.g., for C:\)
     t_CKBOOL ignoreSecond = FALSE;
 #ifdef __PLATFORM_WINDOWS__
     ignoreSecond = TRUE;
@@ -413,6 +414,7 @@ t_CKBOOL extract_args( const string & token,
     t_CKBOOL scan = FALSE;
     t_CKBOOL ret = TRUE;
     t_CKBOOL ignoreNext = FALSE;
+
     char * mask = NULL;
     for( i = 0; i < s.length(); i++ )
         if( s[i] == '\\' )
@@ -476,8 +478,8 @@ t_CKBOOL extract_args( const string & token,
             continue;
         }
 
-        // look for :
-        if( !ignoreNext && s[i] == ':' && !(ignoreSecond && i == 1))
+        // look for : (also test for windows drive letter, e.g., X:\ or X:/)
+        if( !ignoreNext && s[i] == ':' && !(ignoreSecond && i == 1 && s.length() > 2 && ( s[2] == '\\' || s[2] == '/' ) ) )
         {
             // sanity
             if( i == 0 )
@@ -771,7 +773,7 @@ std::string get_full_path( const std::string & fp )
     if( result == NULL && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
-    if(result == NULL)
+    if( result == NULL )
         return fp;
     else
         return buf;
@@ -786,6 +788,13 @@ std::string get_full_path( const std::string & fp )
     DWORD result = GetFullPathNameA(fp.c_str(), MAX_PATH, buf, NULL);
 #endif
 
+    // if successful
+    if( result )
+    {
+        // check if file exists; if not reset result
+        result = ck_fileexists( fp ) ? result : 0;
+    }
+
     // try with .ck extension
     if( result == 0 && !extension_matches(fp, ".ck") )
     {
@@ -797,7 +806,7 @@ std::string get_full_path( const std::string & fp )
 #endif
     }
 
-    if(result == 0)
+    if( result == 0 )
         return fp;
     else
         return normalize_directory_separator(buf);
@@ -881,6 +890,38 @@ std::string extract_filepath_file( const std::string & filepath )
     return std::string( filepath, i+1, filepath.length()-i );
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: transplant_filepath()
+// desc: synthesize absolute path using existing filepath and incoming path
+// EG: existing == "foo/bar.ck", incoming == "thing/poo.ck" => returns foo/thing/poo.ck
+// NOTE: if incoming is detected as absolute path, incoming is returned without change
+// (intended for use with import paths being relative to the file importing them)
+//-----------------------------------------------------------------------------
+std::string transplant_filepath( const std::string & existing, const std::string & incoming )
+{
+    // expand e.g., ~
+    std::string base = expand_filepath( existing );
+    std::string inc = expand_filepath( incoming );
+    std::string ret = "";
+
+    // check if already absolute path
+    if( is_absolute_path(inc) )
+    {
+        // return inc
+        ret = inc;
+    }
+    else // if not absolute path
+    {
+        // generate absolute path relative to target that is importing it
+        ret = extract_filepath_dir(existing) + inc;
+    }
+
+    // get_full_path() will also resolve symlinks . and ..
+    return get_full_path(ret);
+}
 
 
 
@@ -1154,6 +1195,29 @@ std::string autoFilename( const std::string & prefix, const std::string & fileEx
     strcat( buffer, fileExt.c_str() );
     // return
     return buffer;
+}
+
+
+
+
+#ifdef WIN32
+  #define stat _stat
+#endif
+//-----------------------------------------------------------------------------
+// name: file_last_write_time()
+// desc: unformatted last-write timestamp of a file | 1.5.3.5 (ge)
+//-----------------------------------------------------------------------------
+time_t file_last_write_time( const std::string & filename )
+{
+    struct stat result;
+    if( stat( filename.c_str(), &result ) == 0 )
+    {
+        // return result
+        return result.st_mtime;
+    }
+
+    // stat encountered an error, e.g., couldn't open file
+    return 0;
 }
 
 
