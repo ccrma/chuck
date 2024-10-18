@@ -27,7 +27,10 @@
 // desc: chuck compile system unifying parser, type checker, and emitter
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
-// date: Autumn 2005 - riginal
+//   date: Autumn 2005 - original
+//         Autumn 2017 - major refactor (with Jack Atherton)
+//         Summer 2023 - major update to error reporting
+//         Autumn 2024 - import system (with Nick Shaheed)
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_COMPILE_H__
 #define __CHUCK_COMPILE_H__
@@ -321,8 +324,6 @@ public:
     t_CKBOOL load_external_modules_in_directory( const std::string & directory,
                                                  const std::string & extension,
                                                  t_CKBOOL recursiveSearch );
-    // load an external module by path and extension | 1.5.2.5 (ge) added
-    t_CKBOOL load_external_module( const std::string & path, const std::string & name = "" );
     // load a chugin by path | 1.5.2.5 (ge) exposed API for more dynamic loading
     t_CKBOOL load_external_chugin( const std::string & path, const std::string & name = "" );
     // load a ck module by file path | 1.5.2.5 (ge) exposed API for more dynamic loading
@@ -353,6 +354,12 @@ protected: // internal
     // all except import
     t_CKBOOL compile_all_except_import( Chuck_Context * context );
 
+public: // import
+    // scan for @import statements; builds a list of dependencies in the target
+    t_CKBOOL scan_imports( Chuck_CompileTarget * target );
+    // scan for @import statements, and return a list of resulting import targets
+    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target, Chuck_ImportRegistry * registery );
+
 protected: // internal import dependency helpers
     // produce a compilation sequences of targets from a import dependency graph
     static t_CKBOOL generate_compile_sequence( ImportTargetNode * head,
@@ -364,19 +371,6 @@ protected: // internal import dependency helpers
                            std::set<Chuck_CompileTarget *> & permanent,
                            std::set<Chuck_CompileTarget *> & temporary,
                            std::vector<ImportTargetNode *> & problems );
-
-public: // import
-    // scan for @import statements; builds a list of dependencies in the target
-    t_CKBOOL scan_imports( Chuck_CompileTarget * target );
-    // scan for @import statements, and return a list of resulting import targets
-    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target, Chuck_ImportRegistry * registery );
-
-    // add import path
-    t_CKBOOL add_import_path( const std::string & path, Chuck_Context * context );
-    // look up in recent
-    Chuck_Context * find_import_path( const std::string & path );
-    // look up in recent
-    Chuck_Context * find_import_type( const std::string & type );
 };
 
 
