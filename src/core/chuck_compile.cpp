@@ -372,14 +372,16 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         // cycle detected
         EM_error2( 0, "@import error -- cycle detected:" );
         // print head of cycle
-        EM_error2( 0, " |- '%s' is imported by...", problems[0]->target->filename.c_str() );
+        EM_error2( 0, " |- '%s' is imported from...", problems[0]->target->filename.c_str() );
         for( t_CKINT i = 1; i < problems.size()-1; i++ )
         {
             // print middle of cycle
-            EM_error2( 0, " |- '%s' is imported by...", problems[i]->target->filename.c_str() );
+            EM_error2( 0, " |- '%s':[line %d], which is imported from...", problems[i]->target->filename.c_str(), problems[i-1]->line );
+            // log for more detail
+            EM_log_opts( CK_LOG_INFO, EM_LOG_NO_PREFIX, "[chuck]:  |- (full path: '%s')", problems[i]->target->absolutePath.c_str() );
         }
         // print origin of cycle
-        EM_error2( 0, " |- '%s' (originating file)", problems.back()->target->filename.c_str() );
+        EM_error2( 0, " |- '%s':[line %d] (this is the originating file)", problems.back()->target->filename.c_str(), problems[problems.size()-2]->line );
         // error encountered
         ret = FALSE;
         // TODO: report cycle error
@@ -400,10 +402,14 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
             // if there is a container
             if( sequence[i]->target->howMuch == te_do_import_only && sequence[i]->target != target )
             {
-                // set target for error reporting
+                // set target for printing filename where error is
+                EM_setCurrentTarget( sequence[i]->target );
+                EM_error2( 0, "...in file '%s'", sequence[i]->target->absolutePath.c_str() );
+                // set target for error reporting for the originating file
                 EM_setCurrentTarget( target );
                 // report container
-                EM_error2( 0, "...in imported file '%s', originating from '%s'...", sequence[i]->target->filename.c_str(), target->filename.c_str() );
+                EM_error2( 0, "(hint: this an imported file that '%s' depends on...", target->filename.c_str() );
+                EM_error2( 0, "...in other words, '%s' directly or indirectly imports '%s')", target->filename.c_str(), sequence[i]->target->filename.c_str() );
                 // unset target
                 EM_setCurrentTarget( NULL );
             }

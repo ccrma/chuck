@@ -57,7 +57,8 @@ enum em_LogOpts
 {
     EM_LOG_NONE = 0,
     EM_LOG_NO_NEWLINE = 0x1,
-    EM_LOG_NO_PREFIX = 0x10
+    EM_LOG_NO_PREFIX = 0x10,
+    EM_LOG_NO_INDENT = 0x100
 };
 
 // C linkage

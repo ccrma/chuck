@@ -923,6 +923,8 @@ void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, 
     t_CKBOOL prefix = !(options & EM_LOG_NO_PREFIX);
     // whether to print newline at end
     t_CKBOOL nl = !(options & EM_LOG_NO_NEWLINE);
+    // whether to indent
+    t_CKBOOL indent = !(options & EM_LOG_NO_INDENT);
 
     #ifndef __DISABLE_THREADS__
     g_logmutex.acquire();
@@ -939,8 +941,8 @@ void EM_log_opts( t_CKINT level, enum em_LogOpts options, const char * message, 
         TC::on();
 
         // if( g_logstack ) CK_FPRINTF_STDERR( " " );
-        for( int i = 0; i < g_logstack; i++ )
-            CK_FPRINTF_STDERR( " | " );
+        if( indent )
+        { for( int i = 0; i < g_logstack; i++ ) CK_FPRINTF_STDERR( " | " ); }
     }
 
     va_start( ap, message );
