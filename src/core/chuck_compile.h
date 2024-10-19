@@ -110,9 +110,8 @@ struct Chuck_CompileTarget
 public:
     // constructor
     Chuck_CompileTarget( te_HowMuch extent = te_do_all )
-        : state(te_compile_inprogress),
-          howMuch(extent), timestamp(0), fd2parse(NULL),
-          lineNum(1), tokPos(0), AST(NULL),
+        : state(te_compile_inprogress), howMuch(extent), isSystemImport(FALSE),
+          timestamp(0), fd2parse(NULL), lineNum(1), tokPos(0), AST(NULL),
           the_chuck(NULL)
     {
         // initialize
@@ -160,15 +159,17 @@ public:
     te_CompileState state;
     // all or import-only or no-import
     te_HowMuch howMuch;
+    // is this a system or user import?
+    t_CKBOOL isSystemImport;
+
+    // file descriptor to parse
+    FILE * fd2parse;
     // code literal (alternative to reading from file)
     std::string codeLiteral;
-
     // line number (should be at end of file; used for error reporting)
     t_CKINT lineNum;
     // token position (used for error reporting)
     t_CKINT tokPos;
-    // file descriptor to parse
-    FILE * fd2parse;
     // file source info (for better error reporting)
     CompileFileSource fileSource;
     // pointer to abstract syntax tree
@@ -178,15 +179,12 @@ public:
 
     // targets this target depends on
     std::vector<ImportTargetNode> dependencies;
+
     // timestamp of target file when target was compiled
     // used to detect and potentially warn of modified files
     time_t timestamp;
-
     // reference to ChucK instance
     ChucK * the_chuck;
-
-public: // ONLY USED for topology
-    t_CKBOOL mark;
 };
 
 
@@ -201,13 +199,15 @@ struct Chuck_ImportRegistry
 public:
     // constructor
     Chuck_ImportRegistry();
-    virtual ~Chuck_ImportRegistry() { clearAll(); }
+    virtual ~Chuck_ImportRegistry() { shutdown(); }
 
 public:
     // clear in-progress list
     void clearInProgress();
-    // clear all contents (in-progress and done); this is for when VM is cleared
-    void clearAll();
+    // clear all user-imported contents (in-progress and imported)
+    // NOTE: system-imports are not removed; chugin imports are all system-level
+    // NOTE: this is for when VM is cleared
+    void clearAllUserImports();
 
 public:
     // look up a compile target by path
@@ -216,14 +216,22 @@ public:
     t_CKBOOL addInProgress( Chuck_CompileTarget * target );
     // remove a compile target by path
     t_CKBOOL remove( const std::string & path );
-    // mark a target as complete
-    void markComplete( Chuck_CompileTarget * target );
+    // move target from in progress to imported list
+    void commit( Chuck_CompileTarget * target );
+    // add a chugin
+    void commit( Chuck_DLL * chugin );
+
+protected:
+    // clear everything (system and user)
+    void shutdown();
 
 protected:
     // map of targets being compiled (not yet completed)
-    std::map<std::string, Chuck_CompileTarget *> m_inProgress;
-    // map of successfully compiled targets
-    std::map<std::string, Chuck_CompileTarget *> m_done;
+    std::map<std::string, Chuck_CompileTarget *> m_inProgressCKFiles;
+    // map of successfully compiled (ck) targets
+    std::map<std::string, Chuck_CompileTarget *> m_importedCKFiles;
+    // map of successfully imported chugins
+    std::map<std::string, Chuck_DLL *> m_importedChugins;
 };
 
 
@@ -264,11 +272,8 @@ public: // data
     // recent map
     std::map<std::string, Chuck_Context *> m_recent;
 
-    // chugins
-    std::list<Chuck_DLL *> m_dlls;
     // libraries (ck code) to import
     std::list<std::string> m_cklibs_to_preload;
-
     // origin hint; this flag is set to different ckte_Origin values
     // to denote where new entities originate | 1.5.0.0 (ge) added
     ckte_Origin m_originHint;

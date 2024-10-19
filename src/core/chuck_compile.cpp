@@ -187,16 +187,6 @@ void Chuck_Compiler::shutdown()
     m_auto_depend = FALSE;
     m_recent.clear();
 
-    // clean up DLLs
-    list<Chuck_DLL *>::iterator iter;
-    for( iter = m_dlls.begin(); iter != m_dlls.end(); iter++ )
-    {
-        // delete each DLL
-        CK_SAFE_DELETE( *iter );
-    }
-    // clear the list
-    m_dlls.clear();
-
     // log | 1.5.1.8
     EM_log( CK_LOG_SYSTEM, "compiler shutown complete." ) ;
     // pop indent
@@ -422,8 +412,8 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
         // if target was an import (i.e., don't do this with the base target)
         if( sequence[i]->target->howMuch == te_do_import_only )
         {
-            // mark target as complete in registry
-            this->imports()->markComplete( sequence[i]->target );
+            // move target from in-progress to imported in registry
+            this->imports()->commit( sequence[i]->target );
         }
     }
 
@@ -1332,8 +1322,8 @@ t_CKBOOL Chuck_Compiler::load_external_chugin( const string & path, const string
     logChuginLoad( name, CK_LOG_HERALD );
     // print success status
     EM_log_opts( CK_LOG_HERALD, EM_LOG_NO_PREFIX, "[%s]", TC::green("OK",true).c_str() );
-    // add to compiler
-    m_dlls.push_back(dll);
+    // add to registry
+    m_importRegistry.commit( dll );
     // commit operator overloads | 1.5.1.5
     env->op_registry.preserve();
     // return home successful
@@ -1751,9 +1741,9 @@ Chuck_CompileTarget * Chuck_ImportRegistry::lookup( const std::string & path,
     EM_pushlog();
 
     // attempt to find in done list
-    map<string, Chuck_CompileTarget *>::iterator it = m_done.find( key );
+    map<string, Chuck_CompileTarget *>::iterator it = m_importedCKFiles.find( key );
     // if not found
-    if( it != m_done.end() )
+    if( it != m_importedCKFiles.end() )
     {
         ret = it->second;
         // log (if import only)
@@ -1764,9 +1754,9 @@ Chuck_CompileTarget * Chuck_ImportRegistry::lookup( const std::string & path,
     if( !ret )
     {
         // attempt to find in in-progress list
-        it = m_inProgress.find( key );
+        it = m_inProgressCKFiles.find( key );
         // if not found
-        if( it != m_inProgress.end() )
+        if( it != m_inProgressCKFiles.end() )
         {
             ret = it->second;
             // log
@@ -1798,7 +1788,7 @@ t_CKBOOL Chuck_ImportRegistry::addInProgress( Chuck_CompileTarget * target )
     if( !target ) return FALSE;
 
     // cannot add if key already exists
-    if( m_inProgress.find( target->key() ) != m_inProgress.end() )
+    if( m_inProgressCKFiles.find( target->key() ) != m_inProgressCKFiles.end() )
     {
         // internal error; should have been verified before calling this function
         EM_error2( 0, "(import registry) cannot add target to in-progress list..." );
@@ -1807,7 +1797,7 @@ t_CKBOOL Chuck_ImportRegistry::addInProgress( Chuck_CompileTarget * target )
     }
 
     // insert
-    m_inProgress[target->key()] = target;
+    m_inProgressCKFiles[target->key()] = target;
     // return
     return TRUE;
 }
@@ -1816,10 +1806,10 @@ t_CKBOOL Chuck_ImportRegistry::addInProgress( Chuck_CompileTarget * target )
 
 
 //-----------------------------------------------------------------------------
-// name: markComplete()
-// desc: mark a target as complete
+// name: commit()
+// desc: move target from in progress to imported list
 //-----------------------------------------------------------------------------
-void Chuck_ImportRegistry::markComplete( Chuck_CompileTarget * target )
+void Chuck_ImportRegistry::commit( Chuck_CompileTarget * target )
 {
     // check
     if( !target ) return;
@@ -1830,20 +1820,46 @@ void Chuck_ImportRegistry::markComplete( Chuck_CompileTarget * target )
     string key = target->key();
 
     // remove from in-progress list
-    m_inProgress.erase( key );
+    m_inProgressCKFiles.erase( key );
 
     // check if in map
-    if( m_done.find( key ) != m_done.end() )
+    if( m_importedCKFiles.find( key ) != m_importedCKFiles.end() )
     {
         // warn
-        EM_log( CK_LOG_WARNING, "import registry duplicate complete target: '%s'", key.c_str() );
+        EM_log( CK_LOG_WARNING, "import registry duplicate imported target: '%s'", key.c_str() );
     }
 
     // should be safe to cleanup AST and close any file handles
     target->cleanup();
 
-    // insert into done map
-    m_done[key] = target;
+    // insert into imported map
+    m_importedCKFiles[key] = target;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: commit()
+// desc: add a chugin to the imported list
+//-----------------------------------------------------------------------------
+void Chuck_ImportRegistry::commit( Chuck_DLL * chugin )
+{
+    // check
+    if( !chugin ) return;
+
+    // get key
+    string key = chugin->filepath();
+
+    // check if in map
+    if( m_importedChugins.find( key ) != m_importedChugins.end() )
+    {
+        // warn
+        EM_log( CK_LOG_WARNING, "import registry duplicate imported chugin: '%s'", key.c_str() );
+    }
+
+    // insert into chugin map
+    m_importedChugins[key] = chugin;
 }
 
 
@@ -1858,27 +1874,82 @@ void Chuck_ImportRegistry::clearInProgress()
     // iterator
     map<string, Chuck_CompileTarget *>::iterator it;
     // iterate
-    for( it = m_inProgress.begin(); it != m_inProgress.end(); it++ )
+    for( it = m_inProgressCKFiles.begin(); it != m_inProgressCKFiles.end(); it++ )
     {
         // delete the target
         CK_SAFE_DELETE( it->second );
     }
     // clear map
-    m_inProgress.clear();
+    m_inProgressCKFiles.clear();
 }
 
 
 
 
 //-----------------------------------------------------------------------------
-// name: clearAll()
-// desc: remove all targets
+// name: clearAllUserImports()
+// desc: remove all user imports (system imports unaffected)
 //-----------------------------------------------------------------------------
-void Chuck_ImportRegistry::clearAll()
+void Chuck_ImportRegistry::clearAllUserImports()
 {
-    // clear maps
-    m_done.clear();
-    m_inProgress.clear();
+    // clear in progress
+    clearInProgress();
+
+    // list of iterators to erase after iterating
+    vector<string> itersToErase;
+
+    // clear imported CK Files
+    map<std::string, Chuck_CompileTarget *>::iterator iterT;
+    for( iterT = m_importedCKFiles.begin(); iterT != m_importedCKFiles.end(); iterT++ )
+    {
+        if( iterT->second->isSystemImport == FALSE )
+        {
+            // delete each imported CK file
+            CK_SAFE_DELETE( iterT->second );
+            // add key to list to be erased after this loop
+            itersToErase.push_back( iterT->first );
+        }
+    }
+
+    // erase entries from map
+    for( t_CKINT i = 0; i < itersToErase.size(); i++ )
+    {
+        // erase each entry by key
+        m_importedCKFiles.erase( itersToErase[i] );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shutdown()
+// desc: remove all imports (system and user)
+//-----------------------------------------------------------------------------
+void Chuck_ImportRegistry::shutdown()
+{
+    // clear in progress
+    clearInProgress();
+
+    // clear imported CK Files
+    map<std::string, Chuck_CompileTarget *>::iterator iterT;
+    for( iterT = m_importedCKFiles.begin(); iterT != m_importedCKFiles.end(); iterT++ )
+    {
+        // delete each DLL
+        CK_SAFE_DELETE( iterT->second );
+    }
+    // clear the map
+    m_importedCKFiles.clear();
+
+    // clean up imported chugins
+    map<std::string, Chuck_DLL *>::iterator iterC;
+    for( iterC = m_importedChugins.begin(); iterC != m_importedChugins.end(); iterC++ )
+    {
+        // delete each DLL
+        CK_SAFE_DELETE( iterC->second );
+    }
+    // clear the list
+    m_importedChugins.clear();
 }
 
 
