@@ -289,35 +289,27 @@ public: // to all
     // shutdown
     void shutdown();
 
-public: // additional binding
-    // bind a new type system module, via query function
-    t_CKBOOL bind( f_ck_query query_func, const std::string & name,
-                   const std::string & nspc = "global" );
-
-public: // compile
-    // set auto depend
-    void set_auto_depend( t_CKBOOL v );
+public: // compile from file or code
     // parse, type-check, and emit a program from file
     t_CKBOOL compileFile( const std::string & filename );
     // parse, type-check, and emit a program from code string
     t_CKBOOL compileCode( const std::string & codeLiteral );
-    // compile a target | 1.5.3.5 (ge)
-    // NOTE: this function will memory-manage `target`
-    //       (do not access or delete `target` afterwards)
-    t_CKBOOL compile( Chuck_CompileTarget * target );
-    // resolve a type automatically, if auto_depend is on
-    t_CKBOOL resolve( const std::string & type );
     // get the code generated from the last compile()
     Chuck_VM_Code * output( );
 
-public: // replace-dac | added 1.4.1.0 (jack)
-    // sets a "replacement dac": one global UGen is secretly used
-    // as a stand-in for "dac" for this compilation;
-    // for example, ChuckSubInstances in Chunity use a global Gain as a
-    // replacement dac, then use the global getUGenSamples() function to
-    // get the samples of the gain. this enables the creation
-    // of a new sample sucker.
-    void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
+public: // import while observing semantics of chuck @import
+    // import a .ck module by file path
+    t_CKBOOL importFile( const std::string & filename );
+    // import from ChucK code
+    t_CKBOOL importCode( const std::string & codeLiteral );
+    // import a chugin by path (and optional short-hand name)
+    t_CKBOOL importChugin( const std::string & path, const std::string & name = "" );
+
+public:
+    // compile a target | 1.5.3.5 (ge)
+    // NOTE: this function will memory-manage `target`
+    // (do not access or delete `target` after function call)
+    t_CKBOOL compile( Chuck_CompileTarget * target );
 
 public:
     // .chug and .ck modules pre-load sequence | 1.4.1.0 (ge) refactored
@@ -329,10 +321,6 @@ public:
     t_CKBOOL load_external_modules_in_directory( const std::string & directory,
                                                  const std::string & extension,
                                                  t_CKBOOL recursiveSearch );
-    // load a chugin by path | 1.5.2.5 (ge) exposed API for more dynamic loading
-    t_CKBOOL load_external_chugin( const std::string & path, const std::string & name = "" );
-    // load a ck module by file path | 1.5.2.5 (ge) exposed API for more dynamic loading
-    t_CKBOOL load_external_cklib( const std::string & path, const std::string & name = "" );
 
 public:
     // chugin probe | 1.5.0.4 (ge) added
@@ -349,7 +337,31 @@ public:
     // probe external chugin by file path
     static t_CKBOOL probe_external_chugin( const std::string & path, const std::string & name = "" );
 
+public: // built-in binding mechanism
+    // bind a new type system module, via query function
+    t_CKBOOL bind( f_ck_query query_func, const std::string & name,
+                   const std::string & nspc = "global" );
+
+public: // replace-dac | added 1.4.1.0 (jack)
+    // sets a "replacement dac": one global UGen is secretly used
+    // as a stand-in for "dac" for this compilation;
+    // for example, ChuckSubInstances in Chunity use a global Gain as a
+    // replacement dac, then use the global getUGenSamples() function to
+    // get the samples of the gain. this enables the creation
+    // of a new sample sucker.
+    void setReplaceDac( t_CKBOOL shouldReplaceDac, const std::string & replacement );
+
+public: // un-used / un-implemented auto-depend stubs
+    // set auto depend
+    void setAutoDepend( t_CKBOOL v );
+    // resolve a type automatically, if auto_depend is on
+    t_CKBOOL resolve( const std::string & type );
+
 protected: // internal
+    // parse, type-check, and emit a program from file (with option on extent)
+    t_CKBOOL compile_file_opt( const std::string & filename, te_HowMuch extent );
+    // parse, type-check, and emit a program from code string (with option on extent)
+    t_CKBOOL compile_code_opt( const std::string & codeLiteral, te_HowMuch extent );
     // compile a single target
     t_CKBOOL compile_single( Chuck_CompileTarget * target );
     // compile entire file
@@ -359,18 +371,20 @@ protected: // internal
     // all except import
     t_CKBOOL compile_all_except_import( Chuck_Context * context );
 
-public: // import
+protected: // import
     // scan for @import statements; builds a list of dependencies in the target
     t_CKBOOL scan_imports( Chuck_CompileTarget * target );
     // scan for @import statements, and return a list of resulting import targets
     t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target, Chuck_ImportRegistry * registery );
+    // import chugin
+    t_CKBOOL import_chugin_opt( const std::string & path, const std::string & name );
 
 protected: // internal import dependency helpers
     // produce a compilation sequences of targets from a import dependency graph
     static t_CKBOOL generate_compile_sequence( ImportTargetNode * head,
                                                std::vector<ImportTargetNode *> & sequence,
                                                std::vector<ImportTargetNode *> & problems );
-    // visit
+    // visit -- recursive function as part of topological sort for dependency serialization
     static t_CKBOOL visit( ImportTargetNode * node,
                            std::vector<ImportTargetNode *> & sequence,
                            std::set<Chuck_CompileTarget *> & permanent,

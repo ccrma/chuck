@@ -585,7 +585,7 @@ t_CKBOOL ChucK::initCompiler()
     // set dump flag
     m_carrier->compiler->emitter->dump = dump;
     // set auto depend flag (for type checker) | currently must be FALSE
-    m_carrier->compiler->set_auto_depend( auto_depend );
+    m_carrier->compiler->setAutoDepend( auto_depend );
     // set deprecation level
     m_carrier->env->deprecate_level = deprecate;
 

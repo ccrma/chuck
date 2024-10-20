@@ -73,7 +73,9 @@ using namespace std;
 
 
 
+//-----------------------------------------------------------------------------
 // function prototypes
+//-----------------------------------------------------------------------------
 t_CKBOOL load_internal_modules( Chuck_Compiler * compiler );
 t_CKBOOL load_external_modules( Chuck_Compiler * compiler,
                                 const char * extension,
@@ -207,85 +209,79 @@ void Chuck_Compiler::shutdown()
 
 
 
-
-//-----------------------------------------------------------------------------
-// name: bind()
-// desc: bind a new type system module, via query function
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const string & name,
-                               const string & nspc )
-{
-    // log
-    EM_log( CK_LOG_SYSTEM, "on-demand binding compiler module '%s'...",
-            name.c_str() );
-    // push indent level
-    EM_pushlog();
-
-    // get env
-    Chuck_Env * env = this->env();
-    // make context
-    Chuck_Context * context = type_engine_make_context(
-        NULL, string("@[bind:") + name + string("]") );
-    // reset env - not needed since we just created the env
-    env->reset();
-    // load it
-    type_engine_load_context( env, context );
-
-    // do it
-    if( !load_module( this, env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
-
-    // clear context
-    type_engine_unload_context( env );
-
-    // commit what is in the type checker at this point
-    env->global()->commit();
-
-    // pop indent level
-    EM_poplog();
-
-    return TRUE;
-
-error:
-
-    // probably dangerous: rollback
-    env->global()->rollback();
-
-    // clear context
-    type_engine_unload_context( env );
-
-    // pop indent level
-    EM_poplog();
-
-    return FALSE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: set_auto_depend()
-// desc: auto dependency resolve for types
-//-----------------------------------------------------------------------------
-void Chuck_Compiler::set_auto_depend( t_CKBOOL v )
-{
-    // log
-    EM_log( CK_LOG_SYSTEM, "type dependency resolution: %s",
-            v ? "AUTO" : "MANUAL" );
-    m_auto_depend = v;
-}
-
-
-
-
 //-----------------------------------------------------------------------------
 // name: compileFile()
-// desc: parse, type-check, and emit a program
+// desc: parse, type-check, and emit a program from file
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::compileFile( const string & filename )
 {
-    // create a compile target
-    Chuck_CompileTarget * target = new Chuck_CompileTarget( te_do_all );
+    // call internal compile file with option
+    return this->compile_file_opt( filename, te_do_all );
+}
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: compileCode()
+// desc: parse, type-check, and emit a program from code
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::compileCode( const string & codeLiteral )
+{
+    // call internal compile file with option
+    return this->compile_code_opt( codeLiteral, te_do_all );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: importFile()
+// desc: import a CK file, observing the semantics of chuck @import
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::importFile( const string & filename )
+{
+    // call internal compile file with option
+    return this->compile_file_opt( filename, te_do_import_only );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: importCode()
+// desc: import from code, observing the semantics of chuck @import
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::importCode( const string & codeLiteral )
+{
+    // call internal compile file with option
+    return this->compile_code_opt( codeLiteral, te_do_import_only );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: importChugin()
+// desc: import a chugin by path (and optional short-hand name)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::importChugin( const string & path, const string & name )
+{
+    // call internal import chugin with option
+    return this->import_chugin_opt( path, name );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: compile_file_opt()
+// desc: parse, type-check, and emit a program, with option for how much to compile
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::compile_file_opt( const string & filename, te_HowMuch extent )
+{
+    // create a compile target
+    Chuck_CompileTarget * target = new Chuck_CompileTarget( extent );
     // resolve filename locally
     if( !target->resolveFilename( filename, NULL, FALSE ) )
     {
@@ -301,15 +297,15 @@ t_CKBOOL Chuck_Compiler::compileFile( const string & filename )
 
 
 
+
 //-----------------------------------------------------------------------------
-// name: compileCode()
-// desc: parse, type-check, and emit a program
+// name: compile_code_opt()
+// desc: parse, type-check, and emit a program, with option for how much to compile
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::compileCode( const string & codeLiteral )
+t_CKBOOL Chuck_Compiler::compile_code_opt( const string & codeLiteral, te_HowMuch extent )
 {
     // create a compile target
-    Chuck_CompileTarget * target = new Chuck_CompileTarget( te_do_all );
-
+    Chuck_CompileTarget * target = new Chuck_CompileTarget( extent );
     // set filename to code literal constant
     target->filename = CHUCK_CODE_LITERAL_SIGNIFIER;
     // get working directory
@@ -501,41 +497,6 @@ t_CKBOOL Chuck_Compiler::visit( ImportTargetNode * node,
     sequence.push_back(node);
 
     return TRUE;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: resolve()
-// desc: resolve type automatically - if auto_depend is off, return FALSE
-//-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::resolve( const string & type )
-{
-    t_CKBOOL ret = TRUE;
-
-    // check auto_depend
-    if( !m_auto_depend )
-        return FALSE;
-
-    // look up if name is already parsed
-
-    return ret;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: setReplaceDac()
-// desc: tell the compiler whether dac should be replaced in scripts
-//       with the name of an external UGen, and if so which one
-//-----------------------------------------------------------------------------
-void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
-    const string & replacement )
-{
-    emitter->should_replace_dac = shouldReplaceDac;
-    emitter->dac_replacement = replacement;
 }
 
 
@@ -922,6 +883,74 @@ Chuck_VM_Code * Chuck_Compiler::output()
 
 
 //-----------------------------------------------------------------------------
+// name: setReplaceDac()
+// desc: tell the compiler whether dac should be replaced in scripts
+//       with the name of an external UGen, and if so which one
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::setReplaceDac( t_CKBOOL shouldReplaceDac,
+                                    const string & replacement )
+{
+    emitter->should_replace_dac = shouldReplaceDac;
+    emitter->dac_replacement = replacement;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: bind()
+// desc: bind a new type system module, via query function
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const string & name,
+                               const string & nspc )
+{
+    // log
+    EM_log( CK_LOG_SYSTEM, "on-demand binding compiler module '%s'...",
+            name.c_str() );
+    // push indent level
+    EM_pushlog();
+
+    // get env
+    Chuck_Env * env = this->env();
+    // make context
+    Chuck_Context * context = type_engine_make_context(
+        NULL, string("@[bind:") + name + string("]") );
+    // reset env - not needed since we just created the env
+    env->reset();
+    // load it
+    type_engine_load_context( env, context );
+
+    // do it
+    if( !load_module( this, env, query_func, name.c_str(), nspc.c_str() ) ) goto error;
+
+    // clear context
+    type_engine_unload_context( env );
+
+    // commit what is in the type checker at this point
+    env->global()->commit();
+
+    // pop indent level
+    EM_poplog();
+
+    return TRUE;
+
+error:
+
+    // probably dangerous: rollback
+    env->global()->rollback();
+
+    // clear context
+    type_engine_unload_context( env );
+
+    // pop indent level
+    EM_poplog();
+
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: load_module()
 // desc: load a dll and add it
 //-----------------------------------------------------------------------------
@@ -1247,10 +1276,10 @@ static void logChuginLoad( const string & name, t_CKINT logLevel )
 
 
 //-----------------------------------------------------------------------------
-// name: load_external_chugin()
-// desc: load chugin module by path
+// name: import_chugin_opt()
+// desc: load chugin module by path, with options
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::load_external_chugin( const string & path, const string & name )
+t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & name )
 {
     // get env
     Chuck_Env * env = this->env();
@@ -1381,8 +1410,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules_in_directory(
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL loaded = this->load_external_chugin( 
-            chugins2load[i].path, chugins2load[i].filename );
+        t_CKBOOL loaded = this->importChugin( chugins2load[i].path, chugins2load[i].filename );
         // if no error
         if( chugins2load[i].isBundle && loaded) {
             // log
@@ -1448,7 +1476,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         if( !extension_matches(dl_path, extension) )
             dl_path += extension;
         // load the module
-        load_external_chugin( dl_path );
+        this->importChugin( dl_path );
     }
 
     // now recurse through search paths and load any DLs or .ck files found
@@ -1688,6 +1716,41 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
     EM_poplog();
 
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setAutoDepend()
+// desc: auto dependency resolve for types
+//-----------------------------------------------------------------------------
+void Chuck_Compiler::setAutoDepend( t_CKBOOL v )
+{
+    // log
+    EM_log( CK_LOG_SYSTEM, "type dependency resolution: %s",
+            v ? "AUTO" : "MANUAL" );
+    m_auto_depend = v;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: resolve()
+// desc: resolve type automatically - if auto_depend is off, return FALSE
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Compiler::resolve( const string & type )
+{
+    t_CKBOOL ret = TRUE;
+
+    // check auto_depend
+    if( !m_auto_depend )
+        return FALSE;
+
+    // look up if name is already parsed
+
+    return ret;
 }
 
 
