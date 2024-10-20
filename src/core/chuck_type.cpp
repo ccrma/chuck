@@ -11429,6 +11429,7 @@ t_CKBOOL howMuch_criteria_match( te_HowMuch criteria, a_Func_Def func_def )
         case te_do_all:
             // categorically true
             return TRUE;
+            break;
         case te_do_import_only:
             // check if 1) func def is public and 2) is an operator overload
             if( func_def->func_decl == ae_key_public && func_def->op2overload != ae_op_none ) return TRUE;

@@ -75,7 +75,7 @@ typedef enum { te_globalTypeNone,
 
 //-----------------------------------------------------------------------------
 // name: enum te_HowMuch
-// desc: how much to scan/type check/emit
+// desc: how much to scan/type-check/emit
 //-----------------------------------------------------------------------------
 typedef enum {
     te_do_all = 0,
