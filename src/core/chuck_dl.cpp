@@ -971,7 +971,7 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
     }
 
     // save the filename
-    m_filename = filename;
+    m_filename = normalize_directory_separator(filename);
     m_done_query = FALSE;
     m_func = func;
 

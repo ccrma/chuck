@@ -894,6 +894,37 @@ std::string extract_filepath_file( const std::string & filepath )
 
 
 //-----------------------------------------------------------------------------
+// name: extract_filepath_ext() | 1.5.3.5 (ge) added
+// desc: return the extension portion of a file path, including the .
+//-----------------------------------------------------------------------------
+std::string extract_filepath_ext( const std::string & filepath )
+{
+    // normalized internal file path separator
+    char path_separator = '/';
+    // extension separator
+    char ext_separator = '.';
+
+    // normalize for searching, e.g., \ replaced with /
+    string normalize = normalize_directory_separator( trim(filepath) );
+
+    // look for ext separator from the right
+    size_t extPos = normalize.rfind( ext_separator );
+    // if no ext separator found
+    if( extPos == std::string::npos ) return "";
+
+    // look for separator from the right
+    size_t pathPos = normalize.rfind( path_separator );
+    // if path separator found after the rightmost ext separator
+    if( pathPos > extPos ) return "";
+
+    // substring after the rightmost ext separator
+    return std::string( filepath, extPos );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: transplant_filepath()
 // desc: synthesize absolute path using existing filepath and incoming path
 // EG: existing == "foo/bar.ck", incoming == "thing/poo.ck" => returns foo/thing/poo.ck
@@ -992,11 +1023,13 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
     while( last < str.size() &&
           ( i = str.find( separator, last ) ) != std::string::npos )
     {
-        lst.push_back( str.substr( last, i - last ) );
+        // add to list
+        lst.push_back( normalize_directory_name(str.substr(last,i-last)) );
         last = i + 1;
     }
 
-    lst.push_back( str.substr( last, str.size() - last ) );
+    // push the final path
+    lst.push_back( normalize_directory_name(str.substr(last,str.size()-last)) );
 }
 
 
@@ -1007,27 +1040,54 @@ void parse_path_list( std::string & str, std::list<std::string> & lst )
 // desc: unify directory separator to be consistent across platforms;
 //       inside chuck, we are going with the single forward slash '/'
 //       as the generic directory separator; other separators will
-//       be converted to it
+//       be converted to it, including multiple consecutive ///
 //-----------------------------------------------------------------------------
 std::string normalize_directory_separator( const std::string & filepath )
 {
-#ifdef __PLATFORM_WINDOWS__
     // make a copy
     std::string new_filepath = filepath;
     // string length
     size_t len = new_filepath.size();
+
+#ifdef __PLATFORM_WINDOWS__
     // iterate over characters
     for( long i = 0; i < len; i++ )
     {
         // replace \ with /
         if( new_filepath[i] == '\\' ) new_filepath[i] = '/';
     }
-    // return potentially modified copy
-    return new_filepath;
-#else
-    // return unchanged path
-    return filepath;
-#endif // __PLATFORM_WINDOWS__
+#endif
+
+    // result
+    std::string pruned;
+    // state
+    char lastChar = 0;
+    // iterate over characters
+    for( long i = 0; i < len; i++ )
+    {
+        // append everything that is not a consecutive /
+        if( new_filepath[i] != '/' || lastChar != '/' ) pruned += new_filepath[i];
+        // set last char
+        lastChar = new_filepath[i];
+    }
+
+    // return
+    return pruned;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: normalize_directory_name()
+// desc: normalize directory name (including always with trailing /)
+//-----------------------------------------------------------------------------
+std::string normalize_directory_name( const std::string & dir )
+{
+    // add trailing / (if extraneous, will be pruned by normalize below)
+    std::string dirname = trim(dir) + '/';
+    // normalize
+    return normalize_directory_separator( dirname );
 }
 
 

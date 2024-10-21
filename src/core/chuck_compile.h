@@ -111,8 +111,8 @@ public:
     // constructor
     Chuck_CompileTarget( te_HowMuch extent = te_do_all )
         : state(te_compile_inprogress), howMuch(extent), isSystemImport(FALSE),
-          timestamp(0), fd2parse(NULL), lineNum(1), tokPos(0), AST(NULL),
-          the_chuck(NULL)
+          timestamp(0), fd2parse(NULL), chugin(NULL), lineNum(1), tokPos(0),
+          AST(NULL), the_chuck(NULL)
     {
         // initialize
         the_linePos = intList( 0, NULL );
@@ -129,16 +129,6 @@ public:
     void cleanupAST();
 
 public:
-    // resolve and set filename and absolutePath for a compile target
-    // * set as filename (possibly with modifications, e.g., with .ck appended)
-    // * if `importer` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
-    // * if file is unresolved locally and `expandSearchToGlobal` is true, expand search to global search paths
-    // * the file is resolved this will open a FILE descriptor in fd2parse
-    // * wherePos can be provided to indiciate parser position in containing file (e.g., @import)
-    t_CKBOOL resolveFilename( const std::string & theFilename,
-                              Chuck_CompileTarget * importer,
-                              t_CKBOOL expandSearchToGlobal,
-                              t_CKINT wherePos = 0 );
     // get filename
     std::string getFilename() const { return filename; }
     // set absolute path
@@ -147,6 +137,8 @@ public:
     std::string getAbsolutePath() const { return absolutePath; }
     // hash key
     std::string key() const { return absolutePath; }
+    // is chugin?
+    t_CKBOOL isChugin() const { return chugin != NULL; }
 
 public:
     // filename for reading from file
@@ -166,6 +158,9 @@ public:
     FILE * fd2parse;
     // code literal (alternative to reading from file)
     std::string codeLiteral;
+    // loaded chugin
+    Chuck_DLL * chugin;
+
     // line number (should be at end of file; used for error reporting)
     t_CKINT lineNum;
     // token position (used for error reporting)
@@ -219,7 +214,7 @@ public:
     // move target from in progress to imported list
     void commit( Chuck_CompileTarget * target );
     // add a chugin
-    void commit( Chuck_DLL * chugin );
+    Chuck_CompileTarget * commit( Chuck_DLL * chugin );
 
 protected:
     // clear everything (system and user)
@@ -229,7 +224,7 @@ protected:
     // map of targets being compiled (not yet completed)
     std::map<std::string, Chuck_CompileTarget *> m_inProgressCKFiles;
     // map of successfully compiled (ck) targets
-    std::map<std::string, Chuck_CompileTarget *> m_importedCKFiles;
+    std::map<std::string, Chuck_CompileTarget *> m_importedTargets;
     // map of successfully imported chugins
     std::map<std::string, Chuck_DLL *> m_importedChugins;
 };
@@ -295,7 +290,7 @@ public: // compile from file or code
     // parse, type-check, and emit a program from code string
     t_CKBOOL compileCode( const std::string & codeLiteral );
     // get the code generated from the last compile()
-    Chuck_VM_Code * output( );
+    Chuck_VM_Code * output();
 
 public: // import while observing semantics of chuck @import
     // import a .ck module by file path
@@ -310,6 +305,27 @@ public:
     // NOTE: this function will memory-manage `target`
     // (do not access or delete `target` after function call)
     t_CKBOOL compile( Chuck_CompileTarget * target );
+
+public:
+    // opens file for compilation...
+    // * resolves and set filename and absolutePath for a compile target
+    // * set as filename (possibly with modifications, e.g., with .ck appended)
+    // * if `importer` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
+    // * if file is unresolved locally and `expandSearchToGlobal` is true, expand search to global search paths
+    // * the file is resolved this will open a FILE descriptor in fd2parse
+    // * wherePos can be provided to indiciate parser position in containing file (e.g., @import)
+    t_CKBOOL openFile( Chuck_CompileTarget * target,
+                       const std::string & theFilename,
+                       Chuck_CompileTarget * importer,
+                       t_CKBOOL expandSearchToGlobal,
+                       t_CKINT wherePos = 0 );
+    // resolve filename into absolute path...
+    // * possibly with modifications, e.g., with .ck appended)
+    // * if `importerAbsolutePath` is non-empty, will use it as the base of the filename (unless filename is already an absolute path)
+    // * if file is unresolved locally and `expandSearchToGlobal` is true, expand search to global search paths
+    std::string resolveFilename( const std::string & filename,
+                                 const std::string & importerAbsolutePath,
+                                 t_CKBOOL expandSearchToGlobal );
 
 public:
     // .chug and .ck modules pre-load sequence | 1.4.1.0 (ge) refactored
@@ -375,7 +391,7 @@ protected: // import
     // scan for @import statements; builds a list of dependencies in the target
     t_CKBOOL scan_imports( Chuck_CompileTarget * target );
     // scan for @import statements, and return a list of resulting import targets
-    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target, Chuck_ImportRegistry * registery );
+    t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target );
     // import chugin
     t_CKBOOL import_chugin_opt( const std::string & path, const std::string & name );
 

@@ -110,6 +110,9 @@ std::string extract_filepath_dir( const std::string & filepath );
 // get filename portion of a filepath (minus the directory portion) | 1.5.2.5 (ge) added
 std::string extract_filepath_file( const std::string & filepath );
 
+// get extension portion of a filepath (minus the directory and file portions) | 1.5.3.5 (ge) added
+std::string extract_filepath_ext( const std::string & filepath );
+
 // desc: create absolute path using existing filepath and incoming path
 // EG: existing == "foo/bar.ck", incoming == "thing/poo.ck" => returns foo/thing/poo.ck
 // NOTE: if incoming is detected as absolute path, incoming is returned without change
@@ -118,6 +121,9 @@ std::string transplant_filepath( const std::string & existing, const std::string
 
 // convert \ to / (on Windows)
 std::string normalize_directory_separator( const std::string & filepath );
+
+// normalize directory name (including always with trailing /)
+std::string normalize_directory_name( const std::string & dir );
 
 // check if path is absolute on the underlying platform
 t_CKBOOL is_absolute_path( const std::string & path );

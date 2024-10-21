@@ -4,6 +4,42 @@ ChucK VERSIONS log
 
 1.5.3.3
 =======
+***************** new language feature ***************
+- (added) chuck @import system for .ck and .chug files
+- for language specification and examples regarding @import, see:
+  ***************************************************
+  https://chuck.stanford.edu/doc/language/import.html
+  ***************************************************
+- the @import mechanism imports classes and operator overloads from another .ck file, or from a 
+  chugin; it is designed to faciliate creating, using, and distributing multi-file programs
+  and libraries
+- @import SYNTAX:
+    @import "Foo.ck" // import Foo.ck
+    @import "Bar.chug" // import Bar.chug chugin
+    @import { "AAA.ck", "BBB.chug", "CCC" } // multiple imports on one line
+    @import "/Users/ge/chuck/examples/import/foo-user.ck" // absolute path
+    @import "../dir/Blarg.ck" // relative path
+    @import "Foo" // can use implicit filename; @import will search and match for
+      .ck, .chug, and .chug.wasm, in each directory in the chugin/import search paths
+- @import picks up all (and only) *public* definitions (classes and operator overloads);
+  -- this implies that @import will only add new definitions to the type system, but will
+  NEVER automatically run any code; client code must first instantiate class or use an operator
+  to execute the contents of imported files
+  -- this behavior  makes it possible to write unit test code for public classes in the same 
+  file in which it is defined; any code outside of public class/operator definition will NOT be 
+  type-checked or run (this code will only scanned for syntax)
+- @import is resolved at compile-time, before the rest of the file is evaluated; this makes it
+  possible for a .ck file to @import one of more files AND use their contents from the same
+  .ck file (this capability make @import more powerful than Machine.add() for dependency
+  management; as noted above, @import will only )
+- @import can work recursively; can @import files that @import other files
+- @import has built-in cycle-detection; if an @import cycle is detected, a compiler error
+  will be issued and that compilation will be failed 
+- (updated behavior) .ck files found in chugin/import search paths (e.g., ~/.chuck/lib) NO 
+  LONGER automatically loads; instead these now must be explicitly @imported to be used (FYI 
+  just the file name will suffice, assuming there are no filename conflicts elsewhere in the 
+  import paths)
+******************************************************
 - (fixed) specific internal UGen connection error now handled without exiting
 - (fixed, windows) single letter filenames without extensions (e.g., "A") now
     are distinguished from windows drive letters (e.g., "A:\")

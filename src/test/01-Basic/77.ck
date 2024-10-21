@@ -11,25 +11,26 @@ me.dir(3) => string meDir3;
 
 if(meDir1 + "01-Basic/" != meDir)
 {
-    <<< "failure", meDir1, "!=", meDir >>>;
+    <<< "failure 1", meDir1+"01-Basic/", "!=", meDir >>>;
     me.exit();
 }
 
 if(meDir2 + "test/01-Basic/" != meDir)
 {
-    <<< "failure", meDir2, "!=", meDir >>>;
+    <<< "failure 2", meDir2+"test/01-Basic/", "!=", meDir >>>;
     me.exit();
 }
 
 if(meDir3 + "src/test/01-Basic/" != meDir)
 {
-    <<< "failure", meDir3, "!=", meDir >>>;
+    <<< "failure 3", meDir3+"src/test/01-Basic/", "!=", meDir >>>;
     me.exit();
 }
 
 if(num > 0)
 {
     me.dir(-1)+"/01-Basic/77.ck:"+(num-1) => string add;
+    // <<< "ADDING:", add >>>;
     Machine.add(add);
 }
 else

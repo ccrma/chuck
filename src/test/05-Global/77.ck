@@ -29,7 +29,7 @@ if(meDir3 + "src/test/05-Global/" != meDir)
 
 if(num > 0)
 {
-    me.dir(-1)+"/05-Global/77.ck:"+(num-1) => string add;
+    me.dir(-1)+"05-Global/77.ck:"+(num-1) => string add;
     Machine.add(add);
 }
 else

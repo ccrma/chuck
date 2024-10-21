@@ -215,8 +215,8 @@ void ChucK::initDefaultParams()
     // initialize list params manually (take care to use tolower())
     m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]      = CHUCK_PARAM_CHUGIN_LIST_USER_DEFAULT;
     m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]     = ck_param_string_list;
-    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_USER_DIR)]  = CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_USER_DIR)] = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS)]  = CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS)] = ck_param_string_list;
 }
 
 
@@ -705,7 +705,7 @@ t_CKBOOL ChucK::initChugins()
         // chugin dur
         std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
         // list of search pathes (added 1.3.0.0)
-        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER_DIR );
+        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
         if( chuginDir != std::string("") )
         {
             dl_search_path.push_back( chuginDir );
@@ -724,8 +724,6 @@ t_CKBOOL ChucK::initChugins()
         //---------------------------------------------------------------------
         // log
         EM_log( CK_LOG_SYSTEM, "loading chugins..." );
-        // push indent level
-        // EM_pushlog();
 
         // chugin extension
         std::string extension = ".chug";
@@ -740,9 +738,7 @@ t_CKBOOL ChucK::initChugins()
             goto error;
         }
 
-        // pop log
-        // EM_poplog();
-
+        /*
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = ckte_origin_IMPORT;
@@ -793,6 +789,7 @@ t_CKBOOL ChucK::initChugins()
 
         // pop log
         EM_poplog();
+        */
 
         return true;
     }
@@ -849,7 +846,7 @@ void ChucK::probeChugins()
     // chugin dur
     std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER_DIR );
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
     if( chuginDir != "" )
     {
         // add to search path

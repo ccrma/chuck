@@ -1241,7 +1241,7 @@ t_CKBOOL go( int argc, const char ** argv )
     // set chugins parameters
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_LIST_USER, named_dls );
-    the_chuck->setParam( CHUCK_PARAM_CHUGIN_LIST_USER_DIR, dl_search_path );
+    the_chuck->setParam( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS, dl_search_path );
 
     //-----------------------------------------------------------------
     // probe chugins | 1.5.0.4 (ge) added
