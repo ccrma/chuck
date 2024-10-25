@@ -661,11 +661,10 @@ struct Chuck_ArrayTypeKey
     Chuck_Type * array_parent;
     t_CKUINT depth;
     Chuck_Type * base_type;
-    Chuck_Namespace * owner_nspc;
 
     // constructor
-    Chuck_ArrayTypeKey( Chuck_Type * p, t_CKUINT d, Chuck_Type * t, Chuck_Namespace * n )
-    : array_parent(p), depth(d), base_type(t), owner_nspc(n) { }
+    Chuck_ArrayTypeKey( Chuck_Type * p, t_CKUINT d, Chuck_Type * t )
+    : array_parent(p), depth(d), base_type(t) { }
 
     // comparator
     bool operator<( const Chuck_ArrayTypeKey & rhs ) const;
@@ -694,8 +693,7 @@ public:
     Chuck_Type * getOrCreate( Chuck_Env * env,
                               Chuck_Type * array_parent,
                               t_CKUINT depth,
-                              Chuck_Type * base_type,
-                              Chuck_Namespace * owner_nspc );
+                              Chuck_Type * base_type );
 
 protected:
     // the cache
@@ -750,8 +748,8 @@ public:
 public:
     // retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
     Chuck_Type * get_array_type( Chuck_Type * array_parent,
-                                 t_CKUINT depth, Chuck_Type * base_type,
-                                 Chuck_Namespace * owner_nspc );
+                                 t_CKUINT depth, Chuck_Type * base_type /*,
+                                 Chuck_Namespace * owner_nspc */ );
 
 protected:
     Chuck_Carrier * m_carrier;
@@ -978,7 +976,7 @@ struct Chuck_Type : public Chuck_Object
     // size (in bytes)
     t_CKUINT size;
     // owner of the type
-    Chuck_Namespace * owner;
+    // Chuck_Namespace * owner;
     // array type
     union { Chuck_Type * array_type; Chuck_Type * actual_type; };
     // array size (equals 0 means not array, else dimension of array)

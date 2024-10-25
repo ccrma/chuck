@@ -112,8 +112,8 @@ a_Func_Def partial_deep_copy_fn( a_Func_Def f );
 a_Arg_List partial_deep_copy_args( a_Arg_List args );
 // create new array type
 Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
-                                    t_CKUINT depth, Chuck_Type * base_type,
-                                    Chuck_Namespace * owner_nspc );
+                                    t_CKUINT depth, Chuck_Type * base_type
+                                    /*, Chuck_Namespace * owner_nspc*/ );
 
 // helper macros
 #define CK_LR( L, R )      if( (left->xid == L) && (right->xid == R) )
@@ -3181,8 +3181,8 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 t = env->get_array_type(
                     env->ckt_array,  // the array base class, usually env->ckt_array
                     unary->array->depth,  // the depth of the new type
-                    t,  // the 'array_type'
-                    env->curr  // the owner namespace
+                    t  // the 'array_type'
+                    // env->curr  // the owner namespace
                 );
 
                 // TODO: ref?
@@ -3649,8 +3649,8 @@ t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
     t = env->get_array_type(
         env->ckt_array,  // the array base class, usually env->ckt_array
         type->array_depth + 1,  // the depth of the new type
-        type->array_depth ? type->array_type : type,  // the 'array_type'
-        env->curr  // the owner namespace
+        type->array_depth ? type->array_type : type  // the 'array_type'
+        // env->curr  // the owner namespace
     );
 
     return t;
@@ -5607,7 +5607,7 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
         // base type
         Chuck_Type * baseT = t;
         // get (or create) matching array type
-        t = baseT->env()->get_array_type( baseT->env()->ckt_array, depth, baseT, baseT->env()->curr );
+        t = baseT->env()->get_array_type( baseT->env()->ckt_array, depth, baseT /*, baseT->env()->curr */ );
     }
 
     // return t
@@ -5740,7 +5740,7 @@ t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs )
         // check name
         if( lhs.base_name != rhs.base_name ) return FALSE;
         // check owner
-        if( lhs.owner != rhs.owner ) return FALSE;
+        // if( lhs.owner != rhs.owner ) return FALSE;
     }
 
     return TRUE;
@@ -6689,7 +6689,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     }
 
     // set the owner namespace
-    type->owner = where; CK_SAFE_ADD_REF(type->owner);
+    // type->owner = where; CK_SAFE_ADD_REF(type->owner);
     // check if primitive
     if( !isprim( env, type ) ) // 1.3.5.3 (primitives already have size!)
     {
@@ -7927,11 +7927,11 @@ Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 // desc: retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
 //-----------------------------------------------------------------------------
 Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
-                                        t_CKUINT depth, Chuck_Type * base_type,
-                                        Chuck_Namespace * owner_nspc )
+                                        t_CKUINT depth, Chuck_Type * base_type /*,
+                                        Chuck_Namespace * owner_nspc*/ )
 {
     // call through
-    return array_types.getOrCreate( this, array_parent, depth, base_type, owner_nspc );
+    return array_types.getOrCreate( this, array_parent, depth, base_type );
 }
 
 
@@ -7943,18 +7943,15 @@ Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
 bool Chuck_ArrayTypeKeyCmp::operator()( const Chuck_ArrayTypeKey & a, const Chuck_ArrayTypeKey & b ) const
 {
     // tadaaaa! well this doesn't seem to work with map.find()
-    return a.array_parent < b.array_parent ||
-        a.depth < b.depth ||
-        a.base_type < b.base_type ||
-        a.owner_nspc < b.owner_nspc;
+    return a < b;
 }
-bool Chuck_ArrayTypeKey::operator <( const Chuck_ArrayTypeKey & rhs ) const
+// comparator
+bool Chuck_ArrayTypeKey::operator<( const Chuck_ArrayTypeKey & rhs ) const
 {
-    // tadaaaa! well this doesn't seem to work either with map.find()
-    return array_parent < rhs.array_parent ||
-        depth < rhs.depth ||
-        base_type < rhs.base_type ||
-        owner_nspc < rhs.owner_nspc;
+    // tadaaaa, hopefully
+    if( array_parent != rhs.array_parent ) return array_parent < rhs.array_parent;
+    if( depth != rhs.depth ) return depth < rhs.depth;
+    return base_type < rhs.base_type;
 }
 
 
@@ -7990,26 +7987,31 @@ void Chuck_ArrayTypeCache::clear()
 Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
                                                 Chuck_Type * array_parent,
                                                 t_CKUINT depth,
-                                                Chuck_Type * base_type,
-                                                Chuck_Namespace * owner_nspc )
+                                                Chuck_Type * base_type /* ,
+                                                Chuck_Namespace * owner_nspc */ )
 {
     // return value
     Chuck_Type * type = NULL;
 
-    // if found (.find() for some reason always returns end()...)
-    if( cache.count( Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc) ) )
+    // look for key
+    std::map<Chuck_ArrayTypeKey, Chuck_Type *, Chuck_ArrayTypeKeyCmp>::iterator it = cache.find(Chuck_ArrayTypeKey(array_parent,depth,base_type));
+    // if found
+    if( false ) // disabled for now, iuntil
+    // if( it != cache.end() )
+    // if( cache.count( Chuck_ArrayTypeKey(array_parent, depth, base_type) ) )
     {
         // get the value from cache
-        type = cache[Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc)];
+        type = it->second;
+        // type = cache[Chuck_ArrayTypeKey(array_parent, depth, base_type)];
     }
     else // not found
     {
         // make new array type
         type = create_new_array_type( env, array_parent,
-                                      depth, base_type,
-                                      owner_nspc );
+                                      depth, base_type /*,
+                                      owner_nspc */ );
         // insert into cache
-        cache[Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc)] = type;
+        cache[Chuck_ArrayTypeKey(array_parent, depth, base_type)] = type;
         // add reference count
         CK_SAFE_ADD_REF( type );
     }
@@ -8026,8 +8028,7 @@ Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
 // desc: instantiate new chuck type for some kind of array
 //-----------------------------------------------------------------------------
 Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
-                             t_CKUINT depth, Chuck_Type * base_type,
-                             Chuck_Namespace * owner_nspc )
+                                    t_CKUINT depth, Chuck_Type * base_type /*, Chuck_Namespace * owner_nspc*/ )
 {
     // make new type
     Chuck_Type * t = env->context->new_Chuck_Type( env );
@@ -8062,7 +8063,7 @@ Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // add reference
     CK_SAFE_ADD_REF(t->info);
     // set owner
-    t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
+    // t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
 
     // return the type
     return t;
@@ -9595,7 +9596,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     base_name = _n;
     parent = _p; CK_SAFE_ADD_REF( parent );
     size = _s;
-    owner = NULL;
+    // owner = NULL;
     array_type = NULL;
     array_depth = 0;
     obj_size = 0;
@@ -9653,7 +9654,7 @@ void Chuck_Type::reset()
     {
         // release references
         CK_SAFE_RELEASE( info );
-        CK_SAFE_RELEASE( owner );
+        // CK_SAFE_RELEASE( owner );
         CK_SAFE_RELEASE( ctors_all ); // 1.5.2.0 (ge) added
         CK_SAFE_RELEASE( ctor_default ); // 1.5.2.0 (ge) added
         CK_SAFE_RELEASE( dtor_the ); // 1.5.2.0 (ge) added
@@ -9691,7 +9692,7 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     this->array_type = rhs.array_type; CK_SAFE_ADD_REF(this->array_type);
     this->func = rhs.func; CK_SAFE_ADD_REF(this->func);
     this->info = rhs.info; CK_SAFE_ADD_REF(this->info);
-    this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
+    // this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
 
     return *this;
 }
