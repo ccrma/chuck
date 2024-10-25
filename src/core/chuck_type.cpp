@@ -5806,6 +5806,23 @@ t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & 
     // check to see if type L == type R
     if( lhs == rhs ) return TRUE;
 
+    // if lhs is null and rhs isa Object
+    if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
+    //--------------------------------------------
+    // all arrays isa base @array type | 1.5.3.5 (ge & nick) added
+    if( lhs.array_depth > 0 && (rhs == *(rhs.env()->ckt_array) ) ) return TRUE;
+    // all arrays or base @array type isa Object
+    if( (lhs.array_depth > 0 || (lhs == *(lhs.env()->ckt_array))) && (rhs == *(rhs.env()->ckt_object) ) ) return TRUE;
+    // the above are special base cases; now can check for array depth mismatch
+    if( lhs.array_depth != rhs.array_depth ) return FALSE;
+    // if array?
+    if( lhs.array_depth > 0 )
+    {
+        // cancel out one level of the array dimension in the type
+        return isa_levels( *lhs.array_type, *rhs.array_type, levels );
+    }
+    //--------------------------------------------
+
     // if lhs is a child of rhs
     const Chuck_Type * curr = lhs.parent;
     while( curr )
@@ -5817,8 +5834,6 @@ t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & 
 
     // back to 0
     levels = 0;
-    // if lhs is null and rhs is a object | removed 1.5.1.7?
-    if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
 
     return FALSE;
 }
@@ -7922,25 +7937,14 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // set the name
     t->base_name = base_type->base_name;
 
-    // add entire type heirarchy to t
-    Chuck_Type * base_curr = base_type->parent;
-
     // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
     // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
-    Chuck_Type * t_curr = t;
-    while( base_curr != NULL )
-    {
-        Chuck_Type * new_parent = new_array_element_type( env, base_curr, depth, owner_nspc );
-        t_curr->parent = new_parent;
-        CK_SAFE_ADD_REF(t_curr->parent );
+    // 1.5.3.5 (ge & nick) this is now handled in isa_levels()
 
-        base_curr = base_curr->parent;
-        t_curr = t_curr->parent;
-    }
-    // ???
-    t_curr->parent = array_parent;
+    // parent type
+    t->parent = array_parent;
     // add reference
-    CK_SAFE_ADD_REF(t_curr->parent);
+    CK_SAFE_ADD_REF(t->parent);
 
     // is a ref
     t->size = array_parent->size;
@@ -7956,46 +7960,6 @@ Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     t->info = array_parent->info;
     // add reference
     CK_SAFE_ADD_REF(t->info);
-    // set owner
-    t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
-
-    // return the type
-    return t;
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: new_array_element_type()
-// desc: instantiate new chuck type for use in arrays (nshaheed) added
-//-----------------------------------------------------------------------------
-Chuck_Type * new_array_element_type( Chuck_Env * env, Chuck_Type * base_type,
-                                     t_CKUINT depth, Chuck_Namespace * owner_nspc)
-{
-    // make new type
-    Chuck_Type * t = env->context->new_Chuck_Type( env );
-
-    // set the id
-    t->xid = te_array;
-    // set the name
-    t->base_name = base_type->base_name;
-    // set the size
-    t->size = base_type->size;
-    // set the array depth
-    t->array_depth = depth;
-    // set actual type (for equality checking)
-    t->actual_type = base_type;
-    // set the array type
-    if (base_type->array_type != NULL) {
-      t->array_type = base_type->array_type;
-      CK_SAFE_ADD_REF(t->array_type);
-    }
-    // set the namespace
-    if (base_type->info != NULL) {
-      t->info = base_type->info;
-      CK_SAFE_ADD_REF(t->info);
-    }
     // set owner
     t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
 
