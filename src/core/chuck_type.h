@@ -653,6 +653,59 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_ArrayTypeKey
+// desc: a 4-tuple key | 1.5.3.5 (ge & nick) added
+//-----------------------------------------------------------------------------
+struct Chuck_ArrayTypeKey
+{
+    Chuck_Type * array_parent;
+    t_CKUINT depth;
+    Chuck_Type * base_type;
+    Chuck_Namespace * owner_nspc;
+
+    // constructor
+    Chuck_ArrayTypeKey( Chuck_Type * p, t_CKUINT d, Chuck_Type * t, Chuck_Namespace * n )
+    : array_parent(p), depth(d), base_type(t), owner_nspc(n) { }
+
+    // comparator
+    bool operator<( const Chuck_ArrayTypeKey & rhs ) const;
+};
+struct Chuck_ArrayTypeKeyCmp
+{
+    // operator overload (for map)
+    bool operator()( const Chuck_ArrayTypeKey & a, const Chuck_ArrayTypeKey & b ) const;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_ArrayTypeCache
+// desc: cache for array types | 1.5.3.5 (ge & nick & andrew) added
+//-----------------------------------------------------------------------------
+struct Chuck_ArrayTypeCache
+{
+public:
+    // destructor
+    virtual ~Chuck_ArrayTypeCache() { clear(); }
+    // clear it
+    void clear();
+    // lookup an array type; if not already cached, create and insert
+    Chuck_Type * getOrCreate( Chuck_Env * env,
+                              Chuck_Type * array_parent,
+                              t_CKUINT depth,
+                              Chuck_Type * base_type,
+                              Chuck_Namespace * owner_nspc );
+
+protected:
+    // the cache
+    std::map<Chuck_ArrayTypeKey, Chuck_Type *, Chuck_ArrayTypeKeyCmp> cache;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Env
 // desc: chuck type environment; one per VM instance
 //-----------------------------------------------------------------------------
@@ -694,6 +747,12 @@ public:
     Chuck_VM * vm() const { return m_carrier ? m_carrier->vm : NULL; }
     Chuck_Compiler * compiler() const { return m_carrier ? m_carrier->compiler : NULL; }
 
+public:
+    // retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
+    Chuck_Type * get_array_type( Chuck_Type * array_parent,
+                                 t_CKUINT depth, Chuck_Type * base_type,
+                                 Chuck_Namespace * owner_nspc );
+
 protected:
     Chuck_Carrier * m_carrier;
 
@@ -704,6 +763,9 @@ protected:
     Chuck_Context global_context;
     // user-global namespace
     Chuck_Namespace * user_nspc;
+    // cache of various array types, which are created as needed by the type system
+    // e.g., int[] or float[][] or UGen[]; this cache reuses
+    Chuck_ArrayTypeCache array_types;
 
 public:
     // namespace stack
@@ -1352,10 +1414,6 @@ t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type );
 t_CKUINT type_engine_next_offset( t_CKUINT current_offset, Chuck_Type * type );
 // array verify
 t_CKBOOL verify_array( a_Array_Sub array );
-// make array type
-Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
-                             t_CKUINT depth, Chuck_Type * base_type,
-                             Chuck_Namespace * owner_nspc );
 
 
 //-----------------------------------------------------------------------------

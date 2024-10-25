@@ -110,6 +110,10 @@ a_Func_Def make_dll_as_fun( Chuck_DL_Func * dl_fun, t_CKBOOL is_static, t_CKBOOL
 // make a partial deep copy, to separate type systems from AST
 a_Func_Def partial_deep_copy_fn( a_Func_Def f );
 a_Arg_List partial_deep_copy_args( a_Arg_List args );
+// create new array type
+Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
+                                    t_CKUINT depth, Chuck_Type * base_type,
+                                    Chuck_Namespace * owner_nspc );
 
 // helper macros
 #define CK_LR( L, R )      if( (left->xid == L) && (right->xid == R) )
@@ -3173,9 +3177,8 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 if( !type_engine_check_array_subscripts( env, unary->array->exp_list ) )
                     return NULL;
 
-                // create the new array type, replace t
-                t = new_array_type(
-                    env,  // the env
+                // get (or create) matching array type; replace t
+                t = env->get_array_type(
                     env->ckt_array,  // the array base class, usually env->ckt_array
                     unary->array->depth,  // the depth of the new type
                     t,  // the 'array_type'
@@ -3642,9 +3645,8 @@ t_CKTYPE type_engine_check_exp_array_lit( Chuck_Env * env, a_Exp_Primary exp )
     // treat static and dynamic separately
     // exp->array->is_dynamic = !is_static_array_lit( env, exp->array->exp_list );
 
-    // create the new array type
-    t = new_array_type(
-        env,  // the env
+    // get (or create) matching array type
+    t = env->get_array_type(
         env->ckt_array,  // the array base class, usually env->ckt_array
         type->array_depth + 1,  // the depth of the new type
         type->array_depth ? type->array_type : type,  // the 'array_type'
@@ -5604,8 +5606,8 @@ Chuck_Type * Chuck_Namespace::lookup_type( S_Symbol theName, t_CKINT climb,
     {
         // base type
         Chuck_Type * baseT = t;
-        // new array type
-        t = new_array_type(baseT->env(), baseT->env()->ckt_array, depth, baseT, baseT->env()->curr);
+        // get (or create) matching array type
+        t = baseT->env()->get_array_type( baseT->env()->ckt_array, depth, baseT, baseT->env()->curr );
     }
 
     // return t
@@ -7921,10 +7923,109 @@ Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 
 
 //-----------------------------------------------------------------------------
-// name: new_array_type()
+// name: get_array_type()
+// desc: retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
+                                        t_CKUINT depth, Chuck_Type * base_type,
+                                        Chuck_Namespace * owner_nspc )
+{
+    // call through
+    return array_types.getOrCreate( this, array_parent, depth, base_type, owner_nspc );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// operator overload (for map)
+//-----------------------------------------------------------------------------
+bool Chuck_ArrayTypeKeyCmp::operator()( const Chuck_ArrayTypeKey & a, const Chuck_ArrayTypeKey & b ) const
+{
+    // tadaaaa! well this doesn't seem to work with map.find()
+    return a.array_parent < b.array_parent ||
+        a.depth < b.depth ||
+        a.base_type < b.base_type ||
+        a.owner_nspc < b.owner_nspc;
+}
+bool Chuck_ArrayTypeKey::operator <( const Chuck_ArrayTypeKey & rhs ) const
+{
+    // tadaaaa! well this doesn't seem to work either with map.find()
+    return array_parent < rhs.array_parent ||
+        depth < rhs.depth ||
+        base_type < rhs.base_type ||
+        owner_nspc < rhs.owner_nspc;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: clear()
+// desc: clear the cache
+//-----------------------------------------------------------------------------
+void Chuck_ArrayTypeCache::clear()
+{
+    // look up (FYI: for some reasons find() doesn't seem to work)
+    std::map<Chuck_ArrayTypeKey, Chuck_Type *, Chuck_ArrayTypeKeyCmp>::iterator it;
+
+    // iterate
+    for( it = cache.begin(); it != cache.end(); it++ )
+    {
+        // release
+        CK_SAFE_RELEASE( it->second );
+    }
+
+    // clear the cache
+    cache.clear();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: getOrCreate() | 1.5.3.5 (ge, nick, andrew) added
+// desc: lookup an array type; if not already cached, create and insert
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
+                                                Chuck_Type * array_parent,
+                                                t_CKUINT depth,
+                                                Chuck_Type * base_type,
+                                                Chuck_Namespace * owner_nspc )
+{
+    // return value
+    Chuck_Type * type = NULL;
+
+    // if found (.find() for some reason always returns end()...)
+    if( cache.count( Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc) ) )
+    {
+        // get the value from cache
+        type = cache[Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc)];
+    }
+    else // not found
+    {
+        // make new array type
+        type = create_new_array_type( env, array_parent,
+                                      depth, base_type,
+                                      owner_nspc );
+        // insert into cache
+        cache[Chuck_ArrayTypeKey(array_parent, depth, base_type, owner_nspc)] = type;
+        // add reference count
+        CK_SAFE_ADD_REF( type );
+    }
+
+    // done
+    return type;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: create_new_array_type()
 // desc: instantiate new chuck type for some kind of array
 //-----------------------------------------------------------------------------
-Chuck_Type * new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
+Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
                              t_CKUINT depth, Chuck_Type * base_type,
                              Chuck_Namespace * owner_nspc )
 {
