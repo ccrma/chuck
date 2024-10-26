@@ -558,6 +558,9 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     EM_log( CK_LOG_HERALD, "adding base classes..." );
     EM_pushlog();
 
+    //-------------------------
+    // disable array type cache until ckt_array is initialized | 1.5.3.5 (ge) added
+    env->arrayTypeCache()->enable( FALSE );
     // special: Object and Type, whose initializations mutually depend
     init_class_object( env, env->ckt_object );
     // special: @array and Type, whose initializations mutually depend
@@ -567,6 +570,9 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // initialize of Object's and @array's Type objects are deferred until after init_class_type()
     type_engine_init_special( env, env->ckt_object );
     type_engine_init_special( env, env->ckt_array );
+    // enable array type cache now that ckt_array is initialized | 1.5.3.5 (ge) added
+    env->arrayTypeCache()->enable( TRUE );
+    //-------------------------
 
     // initialize the remaining internal classes
     init_class_string( env, env->ckt_string );
@@ -7990,19 +7996,23 @@ Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
                                                 Chuck_Type * base_type /* ,
                                                 Chuck_Namespace * owner_nspc */ )
 {
+    // if cache not enabled
+    if( !m_enabled )
+    {
+        // create and return
+        return create_new_array_type( env, array_parent, depth, base_type );
+    }
+
     // return value
     Chuck_Type * type = NULL;
-
     // look for key
     std::map<Chuck_ArrayTypeKey, Chuck_Type *, Chuck_ArrayTypeKeyCmp>::iterator it = cache.find(Chuck_ArrayTypeKey(array_parent,depth,base_type));
+
     // if found
-    if( false ) // disabled for now, iuntil
-    // if( it != cache.end() )
-    // if( cache.count( Chuck_ArrayTypeKey(array_parent, depth, base_type) ) )
+    if( it != cache.end() )
     {
         // get the value from cache
         type = it->second;
-        // type = cache[Chuck_ArrayTypeKey(array_parent, depth, base_type)];
     }
     else // not found
     {

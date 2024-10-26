@@ -685,10 +685,16 @@ struct Chuck_ArrayTypeKeyCmp
 struct Chuck_ArrayTypeCache
 {
 public:
+    // constructor
+    Chuck_ArrayTypeCache() : m_enabled(FALSE) { }
     // destructor
     virtual ~Chuck_ArrayTypeCache() { clear(); }
     // clear it
     void clear();
+    // enable or disable
+    void enable( t_CKBOOL yesOrNo ) { m_enabled = yesOrNo; }
+    // get whether enabled
+    t_CKBOOL isEnabled() const { return m_enabled; }
     // lookup an array type; if not already cached, create and insert
     Chuck_Type * getOrCreate( Chuck_Env * env,
                               Chuck_Type * array_parent,
@@ -698,6 +704,8 @@ public:
 protected:
     // the cache
     std::map<Chuck_ArrayTypeKey, Chuck_Type *, Chuck_ArrayTypeKeyCmp> cache;
+    // is the cache currently enabled?
+    t_CKBOOL m_enabled;
 };
 
 
@@ -746,6 +754,8 @@ public:
     Chuck_Compiler * compiler() const { return m_carrier ? m_carrier->compiler : NULL; }
 
 public:
+    // array type cache
+    Chuck_ArrayTypeCache * arrayTypeCache() { return &array_types; }
     // retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
     Chuck_Type * get_array_type( Chuck_Type * array_parent,
                                  t_CKUINT depth, Chuck_Type * base_type /*,
