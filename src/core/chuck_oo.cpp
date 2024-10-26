@@ -924,16 +924,55 @@ static bool ck_compare_sint( t_CKUINT lhs, t_CKUINT rhs )
     // sort by 2-norm / magnitude
     return (t_CKINT)lhs < (t_CKINT)rhs;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_compare_string()
+// desc: compare function for sorting uints as chuck strings
+//-----------------------------------------------------------------------------
+static bool ck_compare_string( t_CKUINT lhs, t_CKUINT rhs )
+{
+    const std::string& lhs_str = ((Chuck_String*)lhs)->str();
+    const std::string& rhs_str = ((Chuck_String*)rhs)->str();
+
+    return lhs_str.compare(rhs_str) < 0;
+}
+
+
+
+
 //-----------------------------------------------------------------------------
 // name: sort()
 // desc: sort the array in ascending order
 //-----------------------------------------------------------------------------
 void Chuck_ArrayInt::sort()
 {
-    // if object references sort as unsigned
-    if( m_is_obj ) std::sort( m_vector.begin(), m_vector.end() );
-    // if not object references, sort as signed ints
-    else std::sort( m_vector.begin(), m_vector.end(), ck_compare_sint );
+    // check size
+    if( size() == 0 ) return;
+
+    // if object references | 1.5.3.5 (azaday) added
+    if( m_is_obj )
+    {
+        // if this is a string[]
+        if( this->type_ref->array_depth == 1 && this->type_ref->base_name == "string" )
+        {
+            // sort as string array
+            std::sort( m_vector.begin(), m_vector.end(), ck_compare_string );
+        }
+        else // not string object array
+        {
+            // sort object pointers as unsigned ints
+            std::sort( m_vector.begin(), m_vector.end() );
+        }
+    }
+    // if not object references
+    else
+    {
+        // sort as signed ints
+        std::sort( m_vector.begin(), m_vector.end(), ck_compare_sint );
+    }
 }
 
 

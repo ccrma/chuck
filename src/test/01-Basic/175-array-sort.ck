@@ -63,3 +63,12 @@ for( auto x : arrayVec3 ) { cherr <= x <= " "; } cherr <= IO.nl();
 arrayVec4.sort();
 // print
 for( auto x : arrayVec4 ) { cherr <= x <= " "; } cherr <= IO.nl();
+
+//-----------------------------------------------------------------------------
+// string array: sort alphabetically
+//-----------------------------------------------------------------------------
+[ "ge", "andrew", "nick", ] @=> string arrString[];
+// sort by ascending value
+arrString.sort();
+// print
+for( auto x : arrString ) { cherr <= x <= " "; } cherr <= IO.nl();
