@@ -10,7 +10,6 @@ ChucK VERSIONS log
   ***************************************************
   https://chuck.stanford.edu/doc/language/import.html
   ***************************************************
-
 - the @import system imports classes and operator overloads from another .ck file, or from a 
   chugin; it is designed to faciliate creating, using, and distributing multi-file programs
   and libraries
@@ -44,6 +43,10 @@ ChucK VERSIONS log
 - (fixed) specific internal UGen connection error now handled without exiting
 - (fixed, windows) single letter filenames without extensions (e.g., "A") now
     are distinguished from windows drive letters (e.g., "A:\")
+- (fixed) Type.of() now reports more specific array type (e.g., `string[]`) instead of
+    generic `@array`
+- (updated, internal) dynamic array types are now cached and reused, preventing potential
+    memory build-up across compilations
 
 
 1.5.3.2 (October 2024)

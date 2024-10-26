@@ -260,7 +260,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // set the fields
     the_class->xid = te_user;
     the_class->base_name = S_name(class_def->name->xid);
-    the_class->owner = env->curr; CK_SAFE_ADD_REF(the_class->owner);
+    // the_class->owner = env->curr; CK_SAFE_ADD_REF(the_class->owner);
     the_class->array_depth = 0;
     the_class->size = sizeof(void *);
     the_class->obj_size = 0;  // TODO:
@@ -1582,13 +1582,12 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
             return FALSE;
         }
 
-        // create the new array type
-        t = new_array_type(
-            env,  // the env
+        // get (or create) matching array type
+        t = env->get_array_type(
             env->ckt_array,  // the array base class
             f->type_decl->array->depth,  // the depth of the new type
-            t2,  // the 'array_type'
-            env->curr  // the owner namespace
+            t2  // the 'array_type'
+            // env->curr  // the owner namespace
         );
 
         // TODO: verify
@@ -2602,13 +2601,12 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
             // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
             Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
 
-            // create the new array type
-            type = new_array_type(
-                env,  // the env
+            // get (or create) matching array type
+            type = env->get_array_type(
                 env->ckt_array,  // the array base class
                 var_decl->array->depth,  // the depth of the new type
-                t2,  // the 'array_type'
-                env->curr  // the owner namespace
+                t2  // the 'array_type'
+                // env->curr  // the owner namespace
             );
 
             // 1.4.2.0 (ge) | assign new array type to current var decl
@@ -3172,13 +3170,12 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
                 goto error; // return FALSE;
             }
 
-            // create the new array type
-            t = new_array_type(
-                env,  // the env
+            // get (or create) matching array type
+            t = env->get_array_type(
                 env->ckt_array,  // the array base class
                 arg_list->var_decl->array->depth,  // the depth of the new type
-                t2,  // the 'array_type'
-                env->curr  // the owner namespace
+                t2  // the 'array_type'
+                // env->curr  // the owner namespace
             );
 
             // set ref

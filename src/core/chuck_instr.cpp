@@ -6269,6 +6269,9 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // reg stack pointer
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
+    // almagamating array type | 1.5.3.5 (ge, nick, andrew) added after a wild yak hunt
+    Chuck_Type * arrayType = vm->env()->get_array_type( vm->env()->ckt_array, m_type_ref->array_depth+1, m_type_ref );
+
     // allocate the array
     // 1.4.2.0 (ge) | added: check for float explicitly
     if( m_type_ref->size == sz_INT && !m_is_float ) // ISSUE: 64-bit (fixed 1.3.1.0)
@@ -6280,9 +6283,13 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         Chuck_ArrayInt * array = new Chuck_ArrayInt( m_is_obj, m_length );
         // problem
         if( !array ) goto out_of_memory;
+
         // initialize object
-        // TODO: should it be this??? initialize_object( array, m_type_ref );
-        initialize_object( array, vm->env()->ckt_array, shred, vm );
+        // should it be this??? initialize_object( array, m_type_ref );
+        // should it be this??? initialize_object( array, vm->env()->ckt_array, shred, vm );
+        // neither! behold -- the almagamated array type... | 1.5.3.5 (ge, nick, andrew)
+        initialize_object( array, arrayType, shred, vm );
+
         // set size
         array->set_size( m_length );
         // fill array
@@ -6302,7 +6309,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKFLOAT * sp = (t_CKFLOAT *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array, shred, vm );
+        initialize_object( array, arrayType, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -6322,7 +6329,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKVEC2 * sp = (t_CKVEC2 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array, shred, vm );
+        initialize_object( array, arrayType, shred, vm );
         // differentiate between complex and polar | 1.5.1.0 (ge) added, used for sorting Array16s
         if( isa(m_type_ref, vm->env()->ckt_polar) ) array->m_isPolarType = TRUE;
         // set size
@@ -6344,7 +6351,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKVEC3 * sp = (t_CKVEC3 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array, shred, vm );
+        initialize_object( array, arrayType, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
@@ -6364,7 +6371,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // fill array
         t_CKVEC4 * sp = (t_CKVEC4 *)reg_sp;
         // intialize object
-        initialize_object( array, vm->env()->ckt_array, shred, vm );
+        initialize_object( array, arrayType, shred, vm );
         // set size
         array->set_size( m_length );
         // fill array
