@@ -776,7 +776,7 @@ t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list,
                     // get extension
                     string ext = tolower(extract_filepath_ext(abs));
                     // test extension
-                    if( ext == ".chug" || ext == ".chug.wasm" )
+                    if( ext == ".chug" || ext == ".wasm" )
                     {
                         // load the chugin
                         if( !compiler->importChugin( abs, theFile ) )
