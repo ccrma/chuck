@@ -212,7 +212,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
         // (added 1.3.5.2)
         std::string full_path = get_full_path( msg->buffer );
 
-        // construct a target to be compiled | 1.5.3.5 (ge)
+        // construct a target to be compiled | 1.5.4.0 (ge)
         Chuck_CompileTarget * target = new Chuck_CompileTarget();
         // set file descriptor
         target->fd2parse = fd;

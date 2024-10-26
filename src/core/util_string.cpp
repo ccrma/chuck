@@ -894,7 +894,7 @@ std::string extract_filepath_file( const std::string & filepath )
 
 
 //-----------------------------------------------------------------------------
-// name: extract_filepath_ext() | 1.5.3.5 (ge) added
+// name: extract_filepath_ext() | 1.5.4.0 (ge) added
 // desc: return the extension portion of a file path, including the .
 //-----------------------------------------------------------------------------
 std::string extract_filepath_ext( const std::string & filepath )
@@ -1265,7 +1265,7 @@ std::string autoFilename( const std::string & prefix, const std::string & fileEx
 #endif
 //-----------------------------------------------------------------------------
 // name: file_last_write_time()
-// desc: unformatted last-write timestamp of a file | 1.5.3.5 (ge)
+// desc: unformatted last-write timestamp of a file | 1.5.4.0 (ge)
 //-----------------------------------------------------------------------------
 time_t file_last_write_time( const std::string & filename )
 {

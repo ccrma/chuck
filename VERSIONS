@@ -2,11 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.3.3
+1.5.4.0 (October 2024)
 =======
-***************** new language feature ***************
-- (added) chuck @import system for .ck and .chug files
-- for language specification and examples regarding @import, see:
+********** new language feature ************
+@import system for .ck and .chug files
+********************************************
+- for language specification and examples regarding @import:
   ***************************************************
   https://chuck.stanford.edu/doc/language/import.html
   ***************************************************
@@ -35,6 +36,11 @@ ChucK VERSIONS log
 - @import can work recursively; can @import files that @import other files
 - @import has built-in cycle-detection; if an @import cycle is detected, a compiler error
   will be issued and that compilation will be failed 
+******************************************************
+- (updated behavior) the one-public-class-per-file restriction has been lifted; i.e., it is
+  now possible to define more than one public class in a single .ck file; this update is
+  intended to give programmers and library creators more flexibility in organizing their
+  public class definiition
 - (updated behavior) .ck files found in chugin/import search paths (e.g., ~/.chuck/lib) NO 
   LONGER automatically loads; instead these now must be explicitly @imported to be used (FYI 
   just the file name will suffice, assuming there are no filename conflicts elsewhere in the 

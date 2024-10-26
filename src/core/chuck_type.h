@@ -79,8 +79,8 @@ typedef enum { te_globalTypeNone,
 //-----------------------------------------------------------------------------
 typedef enum {
     te_do_all = 0,
-    te_do_import_only, // attend only to things to be imported | 1.5.3.5 (ge)
-    te_skip_import, // do everything except things to be imported | 1.5.3.5 (ge)
+    te_do_import_only, // attend only to things to be imported | 1.5.4.0 (ge)
+    te_skip_import, // do everything except things to be imported | 1.5.4.0 (ge)
 } te_HowMuch;
 
 // function to if a function matches a particular criteria
@@ -651,7 +651,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_ArrayTypeKey
-// desc: a 4-tuple key | 1.5.3.5 (ge & nick) added
+// desc: a 4-tuple key | 1.5.4.0 (ge & nick) added
 //-----------------------------------------------------------------------------
 struct Chuck_ArrayTypeKey
 {
@@ -677,7 +677,7 @@ struct Chuck_ArrayTypeKeyCmp
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_ArrayTypeCache
-// desc: cache for array types | 1.5.3.5 (ge & nick & andrew) added
+// desc: cache for array types | 1.5.4.0 (ge & nick & andrew) added
 //-----------------------------------------------------------------------------
 struct Chuck_ArrayTypeCache
 {
@@ -753,7 +753,7 @@ public:
 public:
     // array type cache
     Chuck_ArrayTypeCache * arrayTypeCache() { return &array_types; }
-    // retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
+    // retrieve array type based on parameters | 1.5.4.0 (ge, nick, andrew) added
     Chuck_Type * get_array_type( Chuck_Type * array_parent,
                                  t_CKUINT depth, Chuck_Type * base_type /*,
                                  Chuck_Namespace * owner_nspc */ );
@@ -996,7 +996,7 @@ struct Chuck_Type : public Chuck_Object
     Chuck_Func * func;
     // ugen
     Chuck_UGen_Info * ugen_info;
-    // is public class | 1.5.3.5 (ge) added
+    // is public class | 1.5.4.0 (ge) added
     t_CKBOOL is_public;
     // copy
     t_CKBOOL is_copy;

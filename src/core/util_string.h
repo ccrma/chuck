@@ -110,7 +110,7 @@ std::string extract_filepath_dir( const std::string & filepath );
 // get filename portion of a filepath (minus the directory portion) | 1.5.2.5 (ge) added
 std::string extract_filepath_file( const std::string & filepath );
 
-// get extension portion of a filepath (minus the directory and file portions) | 1.5.3.5 (ge) added
+// get extension portion of a filepath (minus the directory and file portions) | 1.5.4.0 (ge) added
 std::string extract_filepath_ext( const std::string & filepath );
 
 // desc: create absolute path using existing filepath and incoming path
@@ -158,7 +158,7 @@ t_CKBOOL subdir_ok2recurse( const std::string & dirName,
 // get formatted timestamp of current system time; no new line
 std::string timestamp_formatted(); // e.g., "Sat Jun 24 04:18:42 2023"
 
-// unformatted last-write timestamp of a file | 1.5.3.5 (ge)
+// unformatted last-write timestamp of a file | 1.5.4.0 (ge)
 time_t file_last_write_time( const std::string & filename );
 
 // tokenize a string into a vector of strings, by delimiters

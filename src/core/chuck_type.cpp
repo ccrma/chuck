@@ -559,7 +559,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     EM_pushlog();
 
     //-------------------------
-    // disable array type cache until ckt_array is initialized | 1.5.3.5 (ge) added
+    // disable array type cache until ckt_array is initialized | 1.5.4.0 (ge) added
     env->arrayTypeCache()->enable( FALSE );
     // special: Object and Type, whose initializations mutually depend
     init_class_object( env, env->ckt_object );
@@ -570,7 +570,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // initialize of Object's and @array's Type objects are deferred until after init_class_type()
     type_engine_init_special( env, env->ckt_object );
     type_engine_init_special( env, env->ckt_array );
-    // enable array type cache now that ckt_array is initialized | 1.5.3.5 (ge) added
+    // enable array type cache now that ckt_array is initialized | 1.5.4.0 (ge) added
     env->arrayTypeCache()->enable( TRUE );
     //-------------------------
 
@@ -898,7 +898,7 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
         case ae_section_class:
             // 1.5.2.5 (ge) check the compilation criteria
             // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
-            // 1.5.3.5 (ge) commented out (see type_engine_prog0_scan() for explanation)
+            // 1.5.4.0 (ge) commented out (see type_engine_prog0_scan() for explanation)
 
             // check the class definition
             ret = type_engine_check_class_def( env, prog->section->class_def );
@@ -3445,7 +3445,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                                 "undefined variable/function '%s' in class/namespace '%s'",
                                 S_name(exp->var), env->class_def->base_name.c_str() );
 
-                            // check if we are being imported | 1.5.3.5 (ge) added
+                            // check if we are being imported | 1.5.4.0 (ge) added
                             if( env->context->progress == Chuck_Context::P_IMPORTING )
                             {
                                 // more info / a hint
@@ -5824,7 +5824,7 @@ t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & 
     // if lhs is null and rhs isa Object
     if( (lhs == *(lhs.env()->ckt_null)) && (rhs <= *(rhs.env()->ckt_object)) ) return TRUE;
     //--------------------------------------------
-    // all arrays isa base @array type | 1.5.3.5 (ge & nick) added
+    // all arrays isa base @array type | 1.5.4.0 (ge & nick) added
     if( lhs.array_depth > 0 && (rhs == *(rhs.env()->ckt_array) ) ) return TRUE;
     // all arrays or base @array type isa Object
     if( (lhs.array_depth > 0 || (lhs == *(lhs.env()->ckt_array))) && (rhs == *(rhs.env()->ckt_object) ) ) return TRUE;
@@ -7937,7 +7937,7 @@ Chuck_Namespace * Chuck_Context::new_Chuck_Namespace()
 
 //-----------------------------------------------------------------------------
 // name: get_array_type()
-// desc: retrieve array type based on parameters | 1.5.3.5 (ge, nick, andrew) added
+// desc: retrieve array type based on parameters | 1.5.4.0 (ge, nick, andrew) added
 //-----------------------------------------------------------------------------
 Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
                                         t_CKUINT depth, Chuck_Type * base_type /*,
@@ -7994,7 +7994,7 @@ void Chuck_ArrayTypeCache::clear()
 
 
 //-----------------------------------------------------------------------------
-// name: getOrCreate() | 1.5.3.5 (ge, nick, andrew) added
+// name: getOrCreate() | 1.5.4.0 (ge, nick, andrew) added
 // desc: lookup an array type; if not already cached, create and insert
 //-----------------------------------------------------------------------------
 Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
@@ -8058,7 +8058,7 @@ Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
 
     // 1.4.1.1 (nshaheed) added to allow declaring arrays with subclasses as elements (PR #211)
     // example: [ new SinOsc, new Sinosc ] @=> Osc arr[]; // this previously would fail type check
-    // 1.5.3.5 (ge & nick) this is now handled in isa_levels()
+    // 1.5.4.0 (ge & nick) this is now handled in isa_levels()
 
     // parent type
     t->parent = array_parent;

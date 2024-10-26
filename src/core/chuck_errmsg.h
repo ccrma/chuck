@@ -181,10 +181,10 @@ extern "C++"
 
 // class forward reference | 1.5.0.5 (ge) added
 class ChucK;
-// struct forward reference | 1.5.3.5 (ge) added
+// struct forward reference | 1.5.4.0 (ge) added
 struct Chuck_CompileTarget;
 
-// set current compile compilation target; used for state | 1.5.3.5 (ge)
+// set current compile compilation target; used for state | 1.5.4.0 (ge)
 void EM_setCurrentTarget( Chuck_CompileTarget * target );
 
 

@@ -164,7 +164,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             // 1.5.2.5 (ge) check the compilation criteria
             // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // -----------------------------------------
-            // 1.5.3.5 (ge) commented out above howMuch_criteria_match()
+            // 1.5.4.0 (ge) commented out above howMuch_criteria_match()
             // * go ahead and compile all classes (public or non-public) even if import_only
             //   ...there is logic within to further sort out public vs. non-public classes
             // * this is needed because public classes could make use of non-public classes
@@ -174,7 +174,7 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
             // make global, if marked public
             if( prog->section->class_def->decl == ae_key_public )
             {
-                // 1.5.3.5 (ge) removing restriction of one public class per file
+                // 1.5.4.0 (ge) removing restriction of one public class per file
                 // ---------------- legacy note ------------
                 // make sure the context has no public class
                 // if( env->context->public_class_def != NULL )
@@ -279,7 +279,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     the_class->info = env->context->new_Chuck_Namespace();
     CK_SAFE_ADD_REF( the_class->info );
     the_class->info->name = the_class->base_name;
-    // public? | 1.5.3.5 (ge) added
+    // public? | 1.5.4.0 (ge) added
     the_class->is_public = (class_def->decl == ae_key_public);
     // if public class, then set parent to context
     // ... allowing the class to address current context
@@ -323,7 +323,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
             break;
 
         case ae_section_class:
-            // check for public | 1.5.3.5 (ge) added
+            // check for public | 1.5.4.0 (ge) added
             if( body->section->class_def->decl == ae_key_public )
             {
                 EM_error2( class_def->where,
@@ -437,7 +437,7 @@ t_CKBOOL type_engine_scan1_prog( Chuck_Env * env, a_Program prog,
         case ae_section_class:
             // 1.5.2.5 (ge) check the compilation criteria
             // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
-            // 1.5.3.5 (ge) commented out (see type_engine_prog0_scan() for explanation)
+            // 1.5.4.0 (ge) commented out (see type_engine_prog0_scan() for explanation)
 
             // scan the class definition
             ret = type_engine_scan1_class_def( env, prog->section->class_def );
@@ -1708,7 +1708,7 @@ t_CKBOOL type_engine_scan2_prog( Chuck_Env * env, a_Program prog,
         case ae_section_class:
             // 1.5.2.5 (ge) check the compilation criteria
             // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
-            // 1.5.3.5 (ge) commented out (see type_engine_prog0_scan() for explanation)
+            // 1.5.4.0 (ge) commented out (see type_engine_prog0_scan() for explanation)
 
             // scan the class definition
             ret = type_engine_scan2_class_def( env, prog->section->class_def );

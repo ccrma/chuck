@@ -6269,7 +6269,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // reg stack pointer
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
-    // amalgamating array type | 1.5.3.5 (ge, nick, andrew) added after a wild yak hunt
+    // amalgamating array type | 1.5.4.0 (ge, nick, andrew) added after a wild yak hunt
     Chuck_Type * arrayType = vm->env()->get_array_type( vm->env()->ckt_array, m_type_ref->array_depth+1, m_type_ref );
 
     // allocate the array
@@ -6287,7 +6287,7 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
         // initialize object
         // should it be this??? initialize_object( array, m_type_ref );
         // should it be this??? initialize_object( array, vm->env()->ckt_array, shred, vm );
-        // neither! behold -- the amalgamated array type... | 1.5.3.5 (ge, nick, andrew)
+        // neither! behold -- the amalgamated array type... | 1.5.4.0 (ge, nick, andrew)
         initialize_object( array, arrayType, shred, vm );
 
         // set size

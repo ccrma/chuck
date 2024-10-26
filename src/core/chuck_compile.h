@@ -249,7 +249,7 @@ public: // get protected data
     Chuck_VM * vm() const { return m_carrier->vm; }
     // REFACTOR-2017: get associated, per-compiler carrier
     Chuck_Carrier * carrier() const { return m_carrier; }
-    // get import registry | 1.5.3.5 (ge)
+    // get import registry | 1.5.4.0 (ge)
     Chuck_ImportRegistry * imports() { return &m_importRegistry; }
     // set carrier
     t_CKBOOL setCarrier( Chuck_Carrier * c ) { m_carrier = c; return TRUE; }
@@ -301,7 +301,7 @@ public: // import while observing semantics of chuck @import
     t_CKBOOL importChugin( const std::string & path, const std::string & name = "" );
 
 public:
-    // compile a target | 1.5.3.5 (ge)
+    // compile a target | 1.5.4.0 (ge)
     // NOTE: this function will memory-manage `target`
     // (do not access or delete `target` after function call)
     t_CKBOOL compile( Chuck_CompileTarget * target );

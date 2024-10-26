@@ -952,7 +952,7 @@ void Chuck_ArrayInt::sort()
     // check size
     if( size() == 0 ) return;
 
-    // if object references | 1.5.3.5 (azaday) added
+    // if object references | 1.5.4.0 (azaday) added
     if( m_is_obj )
     {
         // if this is a string[]

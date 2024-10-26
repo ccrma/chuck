@@ -97,7 +97,7 @@ t_CKBOOL chuck_parse( Chuck_CompileTarget * target )
     // check for conflict
     if( fd && target->codeLiteral != "" )
     {
-        // no warning... quietly let the code literal take precedence | 1.5.3.5 (ge)
+        // no warning... quietly let the code literal take precedence | 1.5.4.0 (ge)
         // CK_FPRINTF_STDERR( "[chuck](parser): (internal) code and FILE descriptor both present!\n" );
         // CK_FPRINTF_STDERR( "[chuck](parser):  |- ignoring FILE descriptor...\n" );
     }

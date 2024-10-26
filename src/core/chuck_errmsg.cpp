@@ -54,7 +54,7 @@ using namespace std;
 t_CKINT EM_tokPos = 0;
 t_CKINT EM_lineNum = 1;
 
-// current per-file error message context | 1.5.3.5 (ge)
+// current per-file error message context | 1.5.4.0 (ge)
 static Chuck_CompileTarget * the_compileTarget = NULL;
 // current filename
 static const char * the_filename = "";
@@ -1047,7 +1047,7 @@ const char * EM_lasterror()
 
 //-----------------------------------------------------------------------------
 // name: EM_setCurrentTarget()
-// desc: set current compile compilation target | 1.5.3.5 (ge)
+// desc: set current compile compilation target | 1.5.4.0 (ge)
 //-----------------------------------------------------------------------------
 void EM_setCurrentTarget( Chuck_CompileTarget * target )
 {
