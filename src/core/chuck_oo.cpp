@@ -949,26 +949,30 @@ static bool ck_compare_string( t_CKUINT lhs, t_CKUINT rhs )
 //-----------------------------------------------------------------------------
 void Chuck_ArrayInt::sort()
 {
-    if (size() == 0) return;
+    // check size
+    if( size() == 0 ) return;
 
-    // if object references
-    if( m_is_obj ) {
-        // azaday 10/24/2024
-        // HACK: 
-        // Chuck Type system reports all object arrays are of type @array
-        // Somehow this diverges from .typeOf(), which correctly returns "string[]"
-        // instead we try dynamic_casting the first element to Chuck_String 
-        // to determine if this is a string array
-        // if this is a string array, sort as strings
-        if( dynamic_cast<Chuck_String*>((Chuck_Object*)m_vector[0]) ) {
+    // if object references | 1.5.3.5 (azaday) added
+    if( m_is_obj )
+    {
+        // if this is a string[]
+        if( this->type_ref->array_depth == 1 && this->type_ref->base_name == "string" )
+        {
+            // sort as string array
             std::sort( m_vector.begin(), m_vector.end(), ck_compare_string );
-        } else {
+        }
+        else // not string object array
+        {
             // sort object pointers as unsigned ints
             std::sort( m_vector.begin(), m_vector.end() );
         }
     }
-    // if not object references, sort as signed ints
-    else std::sort( m_vector.begin(), m_vector.end(), ck_compare_sint );
+    // if not object references
+    else
+    {
+        // sort as signed ints
+        std::sort( m_vector.begin(), m_vector.end(), ck_compare_sint );
+    }
 }
 
 
