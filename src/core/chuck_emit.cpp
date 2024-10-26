@@ -225,9 +225,11 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
             break;
 
         case ae_section_class: // class definition
-            // check the compilation criteria | 1.5.2.5 (ge) added
-            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
-            // check class definition
+            // 1.5.2.5 (ge) check the compilation criteria
+            // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
+            // 1.5.3.5 (ge) commented out (see type_engine_prog0_scan() for explanation)
+
+            // emit class definition
             ret = emit_engine_emit_class_def( emit, prog->section->class_def );
             break;
 

@@ -394,7 +394,7 @@ t_CKBOOL Chuck_Compiler::compile( Chuck_CompileTarget * target )
                 // set target for error reporting for the originating file
                 EM_setCurrentTarget( target );
                 // report container
-                EM_error2( 0, "(hint: this an imported file that '%s' depends on...", target->filename.c_str() );
+                EM_error2( 0, "(error originates in an imported file that '%s' depends on...", target->filename.c_str() );
                 EM_error2( 0, "...i.e., '%s' directly or indirectly imports '%s')", target->filename.c_str(), sequence[i]->target->filename.c_str() );
                 // unset target
                 EM_setCurrentTarget( NULL );
@@ -672,6 +672,9 @@ t_CKBOOL Chuck_Compiler::compile_entire_file( Chuck_Context * context )
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_Compiler::compile_import_only( Chuck_Context * context )
 {
+    // set the state of the context to done
+    context->progress = Chuck_Context::P_IMPORTING;
+
     // 0th-scan (pass 0)
     if( !type_engine_scan0_prog( env(), context->parse_tree, te_do_import_only ) )
          return FALSE;

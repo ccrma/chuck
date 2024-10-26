@@ -4207,7 +4207,7 @@ std::string Chuck_VM_Debug::info_context( Chuck_Context * context )
     // return string
     string s = string("'") + context->filename + "' ";
     // public class def set?
-    s += string("public-class-def: ") + (context->public_class_def ? "SET" : "EMPTY");
+    // s += string("public-class-def: ") + (context->public_class_def ? "SET" : "EMPTY");
 
     return s;
 

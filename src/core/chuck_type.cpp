@@ -896,8 +896,10 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
             break;
 
         case ae_section_class:
-            // check the compilation criteria | 1.5.2.5 (ge) added
-            if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
+            // 1.5.2.5 (ge) check the compilation criteria
+            // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
+            // 1.5.3.5 (ge) commented out (see type_engine_prog0_scan() for explanation)
+
             // check the class definition
             ret = type_engine_check_class_def( env, prog->section->class_def );
             break;
@@ -998,9 +1000,6 @@ t_CKBOOL type_engine_unload_context( Chuck_Env * env )
     // removing reference to AST tree, which is cleaned up elsewhere
     // see cleanup_AST() in the parser | 1.5.0.5 (ge) added
     env->context->parse_tree = NULL;
-    // removing reference to public_class_def
-    // this should only be used during compilation | 1.5.0.5 (ge) added
-    env->context->public_class_def = NULL;
 
     // log
     EM_log( CK_LOG_FINER, "restoring context '%s'...", env->contexts.back()->filename.c_str() );
@@ -3373,8 +3372,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         // file-context-global-scope (v->is_context_global)
                         // AND non-explictly-global !(v->is_global) variables
                         if( v && v->is_context_global && !v->is_global
-                              && env->class_def && env->context->public_class_def
-                              && env->context->public_class_def->decl == ae_key_public )
+                              && env->class_def && env->class_def->is_public )
                         {
                             if( v->func_ref )
                             {
@@ -3435,15 +3433,24 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         // checking for class scope incorrect (thanks Robin Davies)
                         if( !env->class_def /* || env->class_scope > 0 */ )
                         {
+                            // error message
                             EM_error2( exp->where,
                                 "undefined variable '%s'", S_name(exp->var) );
                             return NULL;
                         }
                         else
                         {
+                            // error message
                             EM_error2( exp->where,
-                                "undefined variable/member '%s' in class/namespace '%s'",
+                                "undefined variable/function '%s' in class/namespace '%s'",
                                 S_name(exp->var), env->class_def->base_name.c_str() );
+
+                            // check if we are being imported | 1.5.3.5 (ge) added
+                            if( env->context->progress == Chuck_Context::P_IMPORTING )
+                            {
+                                // more info / a hint
+                                EM_error2( 0, "(hint: classes in imported files cannot access local variables/functions)");
+                            }
                             return NULL;
                         }
                     }
@@ -9612,6 +9619,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     obj_size = 0;
     info = NULL;
     func = NULL; /* def = NULL; */
+    is_public = FALSE;
     is_copy = FALSE;
     ugen_info = NULL;
     is_complete = TRUE;
@@ -9658,6 +9666,8 @@ void Chuck_Type::reset()
     xid = te_void;
     size = array_depth = obj_size = 0;
     is_copy = FALSE;
+    is_public = FALSE;
+    is_complete = FALSE;
 
     // free only if not locked: to prevent garbage collection after exit
     if( !this->m_locked )

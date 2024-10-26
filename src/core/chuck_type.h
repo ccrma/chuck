@@ -374,13 +374,11 @@ struct Chuck_Context : public Chuck_VM_Object
 
     // AST (does not persist past context unloading)
     a_Program parse_tree;
-    // AST public class def if any (does not persist past context unloading)
-    a_Class_Def public_class_def;
 
     // progress
-    enum { P_NONE = 0, P_IMPORTED, P_ALL_DONE };
+    enum ContextProgress { P_NONE = 0, P_IMPORTING, P_IMPORTED, P_ALL_DONE };
     // progress in scan / type check / emit
-    t_CKUINT progress;
+    ContextProgress progress;
 
     // things to release with the context
     std::vector<Chuck_VM_Object *> new_types;
@@ -396,8 +394,7 @@ public:
 public:
     // constructor
     Chuck_Context() { parse_tree = NULL; nspc = new Chuck_Namespace;
-                      public_class_def = NULL; has_error = FALSE;
-                      progress = P_NONE; }
+                      has_error = FALSE; progress = P_NONE; }
     // destructor
     virtual ~Chuck_Context();
 
@@ -999,6 +996,8 @@ struct Chuck_Type : public Chuck_Object
     Chuck_Func * func;
     // ugen
     Chuck_UGen_Info * ugen_info;
+    // is public class | 1.5.3.5 (ge) added
+    t_CKBOOL is_public;
     // copy
     t_CKBOOL is_copy;
     // defined

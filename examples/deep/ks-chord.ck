@@ -86,7 +86,7 @@ class KS extends Chugraph
 }
 
 // chord class for KS
-class KSChord extends Chugraph
+public class KSChord extends Chugraph
 {
     // array of KS objects    
     KS chordArray[4];
