@@ -167,8 +167,10 @@ public:
     // if `shredIDS` is not NULL, it will be filled with the ID(s) of the new resulting shreds
     // returns TRUE if compilation successful (even if count == 0)
     // returns FALSE if compilation unsuccessful
+    // 'optFilepath' optionally specifies a file (name, or path ending in '/') as basis for path-related operations, e.g., @import
     t_CKBOOL compileCode( const std::string & code, const std::string & argsTogether = "",
-                          t_CKUINT count = 1, t_CKBOOL immediate = FALSE, std::vector<t_CKUINT> * shredIDs = NULL );
+                          t_CKUINT count = 1, t_CKBOOL immediate = FALSE, std::vector<t_CKUINT> * shredIDs = NULL,
+                          const std::string & optFilepath = "" );
 
 public:
     // run ChucK and synthesize audio for `numFrames`...

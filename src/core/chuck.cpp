@@ -1222,11 +1222,14 @@ error: // 1.5.0.0 (ge) added
 //           the next time step (on the VM compute/audio thread)
 //       returns TRUE if compilation successful (even if count == 0)
 //       returns FALSE if compilation unsuccessful
+//       'optFilepath' optionally specifies a file (name, or path ending in '/')
+//           as basis for path-related operations, e.g., @import
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::compileCode( const std::string & code,
                              const std::string & argsTogether,
                              t_CKUINT count, t_CKBOOL immediate,
-                             std::vector<t_CKUINT> * shredIDs )
+                             std::vector<t_CKUINT> * shredIDs,
+                             const std::string & optFilepath )
 {
     // clear | 1.5.0.8
     if( shredIDs ) shredIDs->clear();
@@ -1269,7 +1272,7 @@ t_CKBOOL ChucK::compileCode( const std::string & code,
     }
 
     // parse, type-check, and emit
-    if( !m_carrier->compiler->compileCode( code ) )
+    if( !m_carrier->compiler->compileCode( code, optFilepath ) )
        goto error;
 
     // get the code

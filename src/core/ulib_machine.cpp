@@ -342,9 +342,12 @@ t_CKUINT machine_eval( Chuck_String * codeStr, Chuck_String * argsTogether,
     string code = codeStr->str();
     // get args, if there
     string args = argsTogether ? argsTogether->str() : "";
+    // get filepath to use as optional filepath
+    // (e.g., for @import statements in the eval'ed code)
+    string optFilepath = evaluator->code ? evaluator->code->filename : "";
 
     // compile and spork | 1.5.0.5 (ge) immediate=TRUE
-    t_CKUINT retval = chuck->compileCode( code, args, count, TRUE );
+    t_CKUINT retval = chuck->compileCode( code, args, count, TRUE, NULL, optFilepath );
     // automatically yield current shred to let new code run | 1.5.0.5 (ge)
     evaluator->yield();
 

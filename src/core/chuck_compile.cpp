@@ -226,10 +226,11 @@ t_CKBOOL Chuck_Compiler::compileFile( const string & filename )
 // name: compileCode()
 // desc: parse, type-check, and emit a program from code
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::compileCode( const string & codeLiteral )
+t_CKBOOL Chuck_Compiler::compileCode( const string & codeLiteral,
+                                      const string & optFilepath )
 {
     // call internal compile file with option
-    return this->compile_code_opt( codeLiteral, te_do_all );
+    return this->compile_code_opt( codeLiteral, optFilepath, te_do_all );
 }
 
 
@@ -252,10 +253,11 @@ t_CKBOOL Chuck_Compiler::importFile( const string & filename )
 // name: importCode()
 // desc: import from code, observing the semantics of chuck @import
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::importCode( const string & codeLiteral )
+t_CKBOOL Chuck_Compiler::importCode( const string & codeLiteral,
+                                     const string & optFilepath )
 {
     // call internal compile file with option
-    return this->compile_code_opt( codeLiteral, te_do_import_only );
+    return this->compile_code_opt( codeLiteral, optFilepath, te_do_import_only );
 }
 
 
@@ -300,18 +302,36 @@ t_CKBOOL Chuck_Compiler::compile_file_opt( const string & filename, te_HowMuch e
 
 //-----------------------------------------------------------------------------
 // name: compile_code_opt()
-// desc: parse, type-check, and emit a program, with option for how much to compile
+// desc: parse, type-check, and emit a program, with options for filepath
+//       and for how much to compile
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::compile_code_opt( const string & codeLiteral, te_HowMuch extent )
+t_CKBOOL Chuck_Compiler::compile_code_opt( const string & codeLiteral,
+                                           const string & optFilepath,
+                                           te_HowMuch extent )
 {
     // create a compile target
     Chuck_CompileTarget * target = new Chuck_CompileTarget( extent );
     // set filename to code literal constant
     target->filename = CHUCK_CODE_LITERAL_SIGNIFIER;
-    // get working directory
-    string workingDir = this->carrier()->chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
+    // check for optional filename
+    string opt = trim(optFilepath);
+    // the path base (e.g., for import path)
+    string pathBase;
+    // is it empty?
+    if( opt == "" )
+    {
+        // get working directory
+        pathBase = this->carrier()->chuck->getParamString( CHUCK_PARAM_WORKING_DIRECTORY );
+    }
+    else // not empty
+    {
+        // use the optionally provided path, make into full path if not already
+        opt = get_full_path( opt );
+        // get the path portion of the optionally provide path
+        pathBase = extract_filepath_dir( opt );
+    }
     // construct full path to be associated with the file so me.sourceDir() works
-    target->absolutePath = workingDir + target->filename;
+    target->absolutePath = pathBase + target->filename;
     // set code literal
     target->codeLiteral = codeLiteral;
 
