@@ -344,23 +344,22 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     target->fd2parse = fd;
     target->filename = filename;
 
+    // set current target
+    EM_setCurrentTarget( target );
+
     // check to see if at least parses
     if( !chuck_parse( target ) )
     {
         // error message
         EM_error2( 0, "(parse error) skipping file '%s' for [%s]...", filename.c_str(), op );
-        // close file descriptor
-        fclose( fd );
         // reset parser (clean up) | 1.5.1.5
         reset_parse();
-        // clean up target
+        // clean up target, including closing the fd
         CK_SAFE_DELETE( target );
         return FALSE;
     }
     // reset parser (clean up) | 1.5.1.5
     reset_parse();
-    // clean up target
-    CK_SAFE_DELETE( target );
 
     // stat it
     memset( &fs, 0, sizeof(fs) );
@@ -422,8 +421,8 @@ t_CKINT otf_send_file( const char * fname, OTF_Net_Msg & msg, const char * op,
     // pop log
     EM_poplog();
 
-    // close
-    fclose( fd );
+    // clean up target, including closing the fd
+    CK_SAFE_DELETE( target );
 
     return TRUE;
 }
