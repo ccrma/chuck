@@ -508,8 +508,8 @@ t_CKBOOL Chuck_Compiler::visit( ImportTargetNode * node,
 //       this function updates 'filename' with the first match
 //-----------------------------------------------------------------------------
 static t_CKBOOL matchFilename( std::string & filename,
-                              const std::string & ext,
-                              const std::vector<std::string> & extensions )
+                               const std::string & ext,
+                               const std::vector<std::string> & extensions )
 {
     // test filename as is
     if( ck_fileexists( filename ) && !ck_isdir( filename ) ) return TRUE;

@@ -915,10 +915,10 @@ std::string extract_filepath_ext( const std::string & filepath )
     // look for separator from the right
     size_t pathPos = normalize.rfind( path_separator );
     // if path separator found after the rightmost ext separator
-    if( pathPos > extPos ) return "";
+    if( (pathPos != std::string::npos) && (pathPos > extPos) ) return "";
 
     // substring after the rightmost ext separator
-    return std::string( filepath, extPos );
+    return std::string( normalize, extPos );
 }
 
 
