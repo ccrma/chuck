@@ -51,6 +51,8 @@ ChucK VERSIONS log
     are distinguished from windows drive letters (e.g., "A:\")
 - (fixed) Type.of() now reports more specific array type (e.g., `string[]`) instead of
     generic `@array`
+- (fixed) modulo `%` by zero (int or float) now throws an exception; previously this would
+    either produce an incorrect result or cause a crash
 - (updated) .sort() a string array will now sort alphabetically (instead of by Object refs)
 - (updated, internal) dynamic array types are now cached and reused, preventing potential
     memory build-up across compilations
