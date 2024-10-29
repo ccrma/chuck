@@ -294,13 +294,28 @@ void Chuck_Instr_Complement_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: module two ints
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp+1) == 0 ) goto mod_zero;
     push_( sp, val_(sp) % val_(sp+1) );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -308,13 +323,28 @@ void Chuck_Instr_Mod_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: module two ints (in reverse)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto mod_zero;
     push_( sp, val_(sp+1) % val_(sp) );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -507,13 +537,28 @@ void Chuck_Instr_Divide_double_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred *
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: modulo two floats
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp+1) == 0 ) goto mod_zero;
     push_( sp, ::fmod( val_(sp), val_(sp+1) ) );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -521,13 +566,28 @@ void Chuck_Instr_Mod_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: modulo two floats (in reverse)
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_double_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto mod_zero;
     push_( sp, ::fmod( val_(sp+1), val_(sp) ) );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -1239,14 +1299,29 @@ void Chuck_Instr_Add_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: modulo assign two ints
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKINT temp, *& sp = (t_CKINT *&)shred->reg->sp;
     pop_( sp, 2 );
+    if( val_(sp) == 0 ) goto mod_zero;
     temp = **(t_CKINT **)(sp+1) %= val_(sp);
     push_( sp, temp );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -1388,7 +1463,7 @@ void Chuck_Instr_Divide_double_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * 
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: modulo assign two doubles
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Mod_double_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -1396,11 +1471,27 @@ void Chuck_Instr_Mod_double_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     t_CKBYTE *& sp = (t_CKBYTE *&)shred->reg->sp;
     // pop value + pointer
     pop_( sp, sz_FLOAT + sz_UINT );
+
+    if( val_((t_CKFLOAT *&)sp) == 0 ) goto mod_zero;
     // assign
     temp = ::fmod( **(t_CKFLOAT **)(sp+sz_FLOAT), val_((t_CKFLOAT *&)sp) );
     **(t_CKFLOAT **)(sp+sz_FLOAT) = temp;
     // push result
     push_( (t_CKFLOAT *&)sp, temp );
+
+    return;
+
+ mod_zero:
+    // we have a problem
+    EM_exception(
+        "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str());
+    goto done;
+
+ done:
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
 }
 
 
@@ -8719,7 +8810,7 @@ void Chuck_Instr_ForEach_Inc_And_Branch::execute( Chuck_VM * vm, Chuck_VM_Shred 
                 if( arr->contains_objects() && *pVar)
                 {
                     // add ref, as this will be cleaned up at end of scope, hopefully
-                    ((Chuck_VM_Object *)(*pVar))->add_ref(); 
+                    ((Chuck_VM_Object *)(*pVar))->add_ref();
                 }
                 break;
             }
