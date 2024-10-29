@@ -630,6 +630,9 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
     // need for expanded search
     if( !isAlreadyAbsolutePath && !hasMatch && expandSearchToGlobal )
     {
+        // TODO: possible caching -- search for match first in registry
+        // match-right between each entry and fname; if found, return entry absolute path
+
         // get search paths
         list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
         // go over paths
