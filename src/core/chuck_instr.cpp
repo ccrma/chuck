@@ -306,7 +306,7 @@ void Chuck_Instr_Mod_int::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     return;
 
  mod_zero:
-    // we have a problem
+    // we have a problem | 1.5.4.0 (nshaheed) throw exception
     EM_exception(
         "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
         m_linepos, shred->xid, shred->name.c_str());
@@ -335,7 +335,7 @@ void Chuck_Instr_Mod_int_Reverse::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     return;
 
  mod_zero:
-    // we have a problem
+    // we have a problem | 1.5.4.0 (nshaheed) throw exception
     EM_exception(
         "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
         m_linepos, shred->xid, shred->name.c_str());
@@ -549,7 +549,7 @@ void Chuck_Instr_Mod_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
     return;
 
  mod_zero:
-    // we have a problem
+    // we have a problem | 1.5.4.0 (nshaheed) throw exception
     EM_exception(
         "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
         m_linepos, shred->xid, shred->name.c_str());
@@ -1312,7 +1312,7 @@ void Chuck_Instr_Mod_int_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shred 
     return;
 
  mod_zero:
-    // we have a problem
+    // we have a problem | 1.5.4.0 (nshaheed) throw exception
     EM_exception(
         "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
         m_linepos, shred->xid, shred->name.c_str());
@@ -1482,7 +1482,7 @@ void Chuck_Instr_Mod_double_Assign::execute( Chuck_VM * vm, Chuck_VM_Shred * shr
     return;
 
  mod_zero:
-    // we have a problem
+    // we have a problem | 1.5.4.0 (nshaheed) throw exception
     EM_exception(
         "ModuloByZero: on line[%lu] in shred[id=%lu:%s]",
         m_linepos, shred->xid, shred->name.c_str());
