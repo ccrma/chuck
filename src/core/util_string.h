@@ -129,7 +129,8 @@ std::string normalize_directory_name( const std::string & dir );
 t_CKBOOL is_absolute_path( const std::string & path );
 
 // split "x:y:z"-style path list into {"x","y","z"}
-void parse_path_list( std::string & str, std::list<std::string> & lst );
+void parse_path_list( const std::string & str, std::list<std::string> & lst );
+// append list to list
 
 // generate auto filename (usually with date-time) with file prefix and extension
 std::string autoFilename( const std::string & prefix, const std::string & extension );

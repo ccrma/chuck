@@ -633,8 +633,8 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         // TODO: possible caching -- search for match first in registry
         // match-right between each entry and fname; if found, return entry absolute path
 
-        // get search paths
-        list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
+        // get search paths; order: system, user, packages
+        list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
         // go over paths
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {

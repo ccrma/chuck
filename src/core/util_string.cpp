@@ -1010,9 +1010,9 @@ string dir_go_up( const string & dir, t_CKINT numUp )
 
 //-----------------------------------------------------------------------------
 // name: parse_path_list()
-// desc: split "x:y:z"-style path list into {"x","y","z"}
+// desc: split "x:y:z"-style path list into {"x","y","z"}, with trailing '/'
 //-----------------------------------------------------------------------------
-void parse_path_list( std::string & str, std::list<std::string> & lst )
+void parse_path_list( const std::string & str, std::list<std::string> & lst )
 {
 #if defined(__PLATFORM_WINDOWS__)
     const char separator = ';';

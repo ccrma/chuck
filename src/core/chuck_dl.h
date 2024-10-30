@@ -69,11 +69,16 @@
 #define CK_DLL_VERSION_GETMINOR(v) ((v) & 0xFFFF)
 #define CK_DLL_VERSION (CK_DLL_VERSION_MAKE(CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR))
 
-
-// string literal containing default chugin path (platform-specific)
-extern char g_default_chugin_path[];
-// string literal containing environment variable for chugin search path
-extern char g_chugin_path_envvar[];
+// string literal containing default chugin paths (platform-specific)
+extern char g_default_path_system[];
+extern char g_default_path_user[];
+extern char g_default_path_packages[];
+// string literal containing environment variable names for import search path
+extern char g_envvar_path_system[];
+extern char g_envvar_path_user[];
+extern char g_envvar_path_packages[];
+// contains deprecated env var name
+extern char g_envvar_path_deprecated[];
 
 
 // DL forward references

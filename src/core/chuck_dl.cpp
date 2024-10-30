@@ -54,30 +54,30 @@ using namespace std;
 //   contents persists across clearVM
 // * user paths: not automatically loaded on startup; @import on demand
 //   contents removed by clearVM
-// * chump path; packages installed and managed by ChuMP; @import on demand
+// * package path; packages installed and managed by ChuMP; @import on demand
 //   contents removed by clearVM | 1.5.4.0 (ge & nshaheed)
 //   (=v ChuMP =v ChucK Manager of Packages)
 //-----------------------------------------------------------------------------
 #if defined(__PLATFORM_APPLE__)
-char g_default_system_path[] = "/usr/local/lib/chuck/:/Library/Application Support/ChucK/chugins/";
-char g_default_user_path[] = "~/Library/Application Support/ChucK/chugins~/.chuck/lib";
-char g_default_chump_path[] = "~/.chuck/chump";
+char g_default_path_system[] = "/usr/local/lib/chuck:/Library/Application Support/ChucK/chugins";
+char g_default_path_user[] = "~/Library/Application Support/ChucK/chugins~/.chuck/lib";
+char g_default_path_packages[] = "~/.chuck/chump";
 #elif defined(__PLATFORM_WINDOWS__)
-char g_default_system_path[] = "C:\\Windows\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins;C:\\Program Files (x86)\\ChucK\\chugins;";
-char g_default_user_path[] = "C:\\Users\\%USERNAME%\\Documents\\ChucK\\chugins";
-char g_default_chump_path[] = "~C:\\Users\\%USERNAME%\\Documents\\ChucK\\chump";
+char g_default_path_system[] = "C:\\Windows\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins;C:\\Program Files (x86)\\ChucK\\chugins;";
+char g_default_path_user[] = "C:\\Users\\%USERNAME%\\Documents\\ChucK\\chugins";
+char g_default_path_packages[] = "~C:\\Users\\%USERNAME%\\Documents\\ChucK\\chump";
 #else // Linux / Cygwin
-char g_default_system_path[] = "/usr/local/lib/chuck";
-char g_default_user_path[] = "~/.chuck/lib";
-char g_default_chump_path[] = "~/.chuck/chump";
+char g_default_path_system[] = "/usr/local/lib/chuck";
+char g_default_path_user[] = "~/.chuck/lib";
+char g_default_path_packages[] = "~/.chuck/chump";
 #endif
 
 // environment variables
-char g_chugin_path_envvar_system[] = "CHUCK_CHUGIN_PATH_SYSTEM";
-char g_chugin_path_envvar_user[] = "CHUCK_CHUGIN_PATH_USER";
-char g_chugin_path_envvar_chump[] = "CHUCK_CHUGIN_PATH_CHUMP";
+char g_envvar_paths_system[] = "CHUCK_IMPORT_PATH_SYSTEM";
+char g_envvar_paths_user[] = "CHUCK_IMPORT_PATH_USER";
+char g_envvar_paths_packages[] = "CHUCK_IMPORT_PATH_PACKAGES";
 // deprecated; should use the above
-char g_chugin_path_envvar_deprecated[] = "CHUCK_CHUGIN_PATH";
+char g_envvar_paths_deprecated[] = "CHUCK_CHUGIN_PATH";
 
 
 

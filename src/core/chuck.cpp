@@ -843,7 +843,7 @@ void ChucK::probeChugins()
     // pop
     EM_poplog();
 
-    // chugin dur
+    // chugin dir
     std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
