@@ -302,7 +302,9 @@ public: // import while observing semantics of chuck @import
     t_CKBOOL importCode( const std::string & codeLiteral,
                          const std::string & optFilepath );
     // import a chugin by path (and optional short-hand name)
-    t_CKBOOL importChugin( const std::string & path, const std::string & name = "" );
+    t_CKBOOL importChugin( const std::string & path,
+                           t_CKBOOL createNamespace,
+                           const std::string & name = "" );
 
 public:
     // compile a target | 1.5.4.0 (ge)

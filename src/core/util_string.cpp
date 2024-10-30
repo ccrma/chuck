@@ -1036,6 +1036,26 @@ void parse_path_list( const std::string & str, std::list<std::string> & lst )
 
 
 //-----------------------------------------------------------------------------
+// name: append_path_list()
+// desc: append a list (appendThis) to a list (list)
+//-----------------------------------------------------------------------------
+void append_path_list( std::list<std::string> & list,
+                       const std::list<std::string> & appendMe )
+{
+    // first
+    std::list<std::string>::const_iterator it = appendMe.begin();
+    // iterate
+    for( ; it != appendMe.end(); it ++ )
+    {
+        // append element
+        list.push_back( *it );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: normalize_directory_separator()
 // desc: unify directory separator to be consistent across platforms;
 //       inside chuck, we are going with the single forward slash '/'

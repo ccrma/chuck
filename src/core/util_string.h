@@ -131,6 +131,8 @@ t_CKBOOL is_absolute_path( const std::string & path );
 // split "x:y:z"-style path list into {"x","y","z"}
 void parse_path_list( const std::string & str, std::list<std::string> & lst );
 // append list to list
+void append_path_list( std::list<std::string> & list,
+                       const std::list<std::string> & appendMe );
 
 // generate auto filename (usually with date-time) with file prefix and extension
 std::string autoFilename( const std::string & prefix, const std::string & extension );

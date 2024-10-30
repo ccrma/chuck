@@ -679,6 +679,7 @@ t_CKBOOL go( int argc, const char ** argv )
     // test for deprecation
     if( getenv( g_envvar_path_deprecated ) )
     {
+        // issue warning
         EM_error2( 0, "(warning) environment variable '%s' is deprecated", g_envvar_path_deprecated );
         EM_error2( 0, "...please use '%s' '%s' '%s' to set import search paths",
                    g_envvar_path_user, g_envvar_path_system, g_envvar_path_packages );
@@ -916,13 +917,13 @@ t_CKBOOL go( int argc, const char ** argv )
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
                 // get the rest
-                dl_search_path_user.push_back( argv[i]+sizeof("--chugin-path:")-1 );
+                dl_search_path_system.push_back( argv[i]+sizeof("--chugin-path:")-1 );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
                 // get the rest
-                dl_search_path_user.push_back( argv[i]+sizeof("-G")-1 );
+                dl_search_path_system.push_back( argv[i]+sizeof("-G")-1 );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )
@@ -1253,7 +1254,7 @@ t_CKBOOL go( int argc, const char ** argv )
     //-------------------- VIRTUAL MACHINE SETUP (PART 1) ---------------------
     // set chugins parameters
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
-    the_chuck->setParam( CHUCK_PARAM_CHUGIN_LIST_USER, named_dls );
+    the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_SYSTEM, dl_search_path_system );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_USER, dl_search_path_user );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_PACKAGES, dl_search_path_packages );

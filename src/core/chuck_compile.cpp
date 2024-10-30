@@ -267,10 +267,31 @@ t_CKBOOL Chuck_Compiler::importCode( const string & codeLiteral,
 // name: importChugin()
 // desc: import a chugin by path (and optional short-hand name)
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::importChugin( const string & path, const string & name )
+t_CKBOOL Chuck_Compiler::importChugin( const string & path,
+                                       t_CKBOOL createNamespace, const string & name )
 {
-    // call internal import chugin with option
-    return this->import_chugin_opt( path, name );
+    // check if this import should be in its namespace | 1.5.4.0 (ge) added
+    if( createNamespace )
+    {
+        // make context for this chugin import and load it
+        // this is necessary to make sure the chugin is imported into its own
+        // namespace, to avoid being imported into say a host namespace -- e.g.,
+        // a chuck file that @import this chugin
+        type_engine_load_context( this->carrier()->env, type_engine_make_context( NULL, "@[chugin-import]" ) );
+    }
+
+    // call internal import chugin
+    t_CKBOOL ret = this->import_chugin_opt( path, name );
+
+    // if create namespace
+    if( createNamespace )
+    {
+        // unload the context
+        type_engine_unload_context( this->carrier()->env );
+    }
+
+    // done
+    return ret;
 }
 
 
@@ -635,6 +656,8 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
 
         // get search paths; order: system, user, packages
         list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
+        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER ) );
+        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES ) );
         // go over paths
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {
@@ -801,8 +824,8 @@ t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list,
                     // test extension
                     if( ext == ".chug" || ext == ".wasm" )
                     {
-                        // load the chugin
-                        if( !compiler->importChugin( abs, theFile ) )
+                        // load the chugin, in its own namespace == TRUE
+                        if( !compiler->importChugin( abs, TRUE, theFile ) )
                         {
                             // print error (chugin loading only prints to log)
                             EM_error2( import->where, "cannot load chugin: '%s'...", theFile.c_str() );
@@ -1608,7 +1631,9 @@ t_CKBOOL Chuck_Compiler::load_external_modules_in_directory(
     for( t_CKINT i = 0; i < chugins2load.size(); i++ )
     {
         // load module
-        t_CKBOOL loaded = this->importChugin( chugins2load[i].path, chugins2load[i].filename );
+        // ...in its own namespace == FALSE | 1.5.4.0 (ge) added
+        // ...since already in namespace (e.g., @[external]) from load_external_modules()
+        t_CKBOOL loaded = this->importChugin( chugins2load[i].path, FALSE, chugins2load[i].filename );
         // if no error
         if( chugins2load[i].isBundle && loaded) {
             // log
@@ -1673,8 +1698,8 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         // check extension, append if no match
         if( !extension_matches(dl_path, extension) )
             dl_path += extension;
-        // load the module
-        this->importChugin( dl_path );
+        // load the module, in its own namespace == FALSE
+        this->importChugin( dl_path, FALSE );
     }
 
     // now recurse through search paths and load any DLs or .ck files found

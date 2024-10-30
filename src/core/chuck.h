@@ -101,7 +101,7 @@
 #define CHUCK_PARAM_TTY_WIDTH_HINT              "TTY_WIDTH_HINT"
 // chugin-relate param names
 #define CHUCK_PARAM_CHUGIN_ENABLE               "CHUGIN_ENABLE"
-#define CHUCK_PARAM_CHUGIN_LIST_USER            "CHUGIN_LIST_USER"
+#define CHUCK_PARAM_USER_CHUGINS                "USER_CHUGINS"
 // import paths
 #define CHUCK_PARAM_IMPORT_PATH_SYSTEM          "IMPORT_PATH_SYSTEM"
 #define CHUCK_PARAM_IMPORT_PATH_USER            "IMPORT_PATH_USER"

@@ -60,7 +60,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 #if defined(__PLATFORM_APPLE__)
 char g_default_path_system[] = "/usr/local/lib/chuck:/Library/Application Support/ChucK/chugins";
-char g_default_path_user[] = "~/Library/Application Support/ChucK/chugins~/.chuck/lib";
+char g_default_path_user[] = "~/.chuck/lib:~/Library/Application Support/ChucK/chugins";
 char g_default_path_packages[] = "~/.chuck/chump";
 #elif defined(__PLATFORM_WINDOWS__)
 char g_default_path_system[] = "C:\\Windows\\system32\\ChucK;C:\\Program Files\\ChucK\\chugins;C:\\Program Files (x86)\\ChucK\\chugins;";
@@ -73,11 +73,11 @@ char g_default_path_packages[] = "~/.chuck/chump";
 #endif
 
 // environment variables
-char g_envvar_paths_system[] = "CHUCK_IMPORT_PATH_SYSTEM";
-char g_envvar_paths_user[] = "CHUCK_IMPORT_PATH_USER";
-char g_envvar_paths_packages[] = "CHUCK_IMPORT_PATH_PACKAGES";
+char g_envvar_path_system[] = "CHUCK_IMPORT_PATH_SYSTEM";
+char g_envvar_path_user[] = "CHUCK_IMPORT_PATH_USER";
+char g_envvar_path_packages[] = "CHUCK_IMPORT_PATH_PACKAGES";
 // deprecated; should use the above
-char g_envvar_paths_deprecated[] = "CHUCK_CHUGIN_PATH";
+char g_envvar_path_deprecated[] = "CHUCK_CHUGIN_PATH";
 
 
 
