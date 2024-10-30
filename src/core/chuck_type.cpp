@@ -4696,7 +4696,8 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
 
     // if sporking, then don't track dependencies...
     // up to the programmer to ensure correctness across spork and time
-    if( !env->sporking )
+    // 1.5.4.0 (ge) treat spork as immediate function
+    // if( !env->sporking )
     {
         // if in a function definition
         if( env->func )

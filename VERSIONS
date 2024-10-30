@@ -11,51 +11,112 @@ ChucK VERSIONS log
   ***************************************************
   https://chuck.stanford.edu/doc/language/import.html
   ***************************************************
-- the @import system imports classes and operator overloads from another .ck file, or from a 
-  chugin; it is designed to faciliate creating, using, and distributing multi-file programs
-  and libraries
+
+- the @import system imports classes and operator overloads from another 
+    .ck file, or from a chugin; it is designed to faciliate creating, 
+    using, and distributing multi-file programs and libraries
 - @import SYNTAX:
     @import "Foo.ck" // import Foo.ck
     @import "Bar.chug" // import Bar.chug chugin
     @import { "AAA.ck", "BBB.chug", "CCC" } // multiple imports on one line
     @import "/Users/ge/chuck/examples/import/foo-user.ck" // absolute path
     @import "../dir/Blarg.ck" // relative path
-    @import "Foo" // can use implicit filename; @import will search and match for
-      .ck, .chug, and .chug.wasm, in each directory in the chugin/import search paths
-- @import picks up all (and only) *public* definitions (classes and operator overloads);
-  -- this implies that @import will only add new definitions to the type system, but will
-  NEVER automatically run any code; client code must first instantiate class or use an operator
-  to execute the contents of imported files
-  -- this makes it possible to write unit-test code for public classes in the same file in
-  which it is defined; any code outside of public class/operator definition will NOT be
-  type-checked or run (this code will only scanned for syntax)
-- @imports are resolved at compile-time, before the rest of the host file is evaluated; this
-  makes it possible for a a host .ck file to @import one or more files and make use of their
-  contents immediately (when it comes to dependency management, this compile-time import 
-  mechanism is more powerful than the run-time Machine.add()).
-- @import can work recursively; can @import files that @import other files
-- @import has built-in cycle-detection; if an @import cycle is detected, a compiler error
-  will be issued and that compilation will be failed 
+    @import "Foo" // can use implicit filename; @import will search and 
+      match for .ck, .chug, and .chug.wasm, in each directory in the 
+      chugin/import search paths
+- @import picks up all (and only) *public* definitions (classes and 
+    operator overloads);
+    -- this implies that @import will only add new definitions to the type 
+       system, but will NEVER automatically run any code; client code must 
+       first instantiate class or use an operator to execute the contents 
+       of imported files
+    -- this makes it possible to write unit-test code for public classes 
+       in the same file in which it is defined; any code outside of public 
+       class/operator definition will NOT be type-checked or run (this 
+       code will only scanned for syntax)
+- @imports are resolved at compile-time, before the rest of the host file
+    is evaluated; this makes it possible for a a host .ck file to @import 
+    one or more files and make use of their contents immediately (when it 
+    comes to dependency management, this compile-time import mechanism is 
+    more powerful than the run-time Machine.add()).
+- @import can work recursively; can @import files that @import other 
+    files
+- @import has built-in cycle-detection; if an @import cycle is detected, 
+    a compiler error will be issued and that compilation will be failed 
 ******************************************************
-- (updated behavior) the one-public-class-per-file restriction has been lifted; i.e., it is
-  now possible to define more than one public class in a single .ck file; this update is
-  intended to give programmers and library creators more flexibility in organizing their
-  public class definiition
-- (updated behavior) .ck files found in chugin/import search paths (e.g., ~/.chuck/lib) NO 
-  LONGER automatically loads; instead these now must be explicitly @imported to be used (FYI 
-  just the file name will suffice, assuming there are no filename conflicts elsewhere in the 
-  import paths)
+- (updated behavior) the one-public-class-per-file restriction has been 
+    lifted; i.e., it is now possible to define more than one public class 
+    in a single .ck file; this update is intended to give programmers and 
+    library creators more flexibility in organizing their public class 
+    definiition
+- (updated behavior) .ck files found in chugin/import search paths (e.g., 
+    ~/.chuck/lib) NO LONGER automatically loads; instead these now must 
+    be explicitly @imported to be used (FYI just the file name will 
+    suffice, assuming there are no filename conflicts elsewhere in the 
+    import paths)
 ******************************************************
-- (fixed) specific internal UGen connection error now handled without exiting
-- (fixed, windows) single letter filenames without extensions (e.g., "A") now
-    are distinguished from windows drive letters (e.g., "A:\")
-- (fixed) Type.of() now reports more specific array type (e.g., `string[]`) instead of
-    generic `@array`
-- (fixed) modulo `%` by zero (int or float) now throws an exception; previously this would
-    either produce an incorrect result or cause a crash
-- (updated) .sort() a string array will now sort alphabetically (instead of by Object refs)
-- (updated, internal) dynamic array types are now cached and reused, preventing potential
-    memory build-up across compilations
+- (fixed) specific internal UGen connection error now handled without 
+    exiting
+- (fixed, windows) single letter filenames without extensions (e.g., "A") 
+    now are distinguished from windows drive letters (e.g., "A:\")
+- (fixed) Type.of() now reports more specific array type (e.g., 
+    `string[]`) instead ofgeneric `@array`
+- (fixed) modulo `%` by zero (int or float) now throws an exception; 
+    previously this would either produce an incorrect result or cause a 
+    crash
+- (updated) .sort() a string array will now sort alphabetically (instead 
+    of by Object refs)
+- (updated, internal) dynamic array types are now cached and reused,
+    preventing potential memory build-up across compilations
+- (updated) variable dependency check now treats sporked functions same 
+    as function calls; unfulfilled dependencies will result in a compiler 
+    error; previously, correctness in this regard was left to the 
+    programmer but could cause a crash. this update is more stringent than 
+    is always necessary (due to spork being parallel and the timing 
+    behavior, the dependency sometimes are resolved in actuality. 
+    however, ChucK team deems potentially over-aggressive dependency 
+    checking  for sporked functions is preferrable to unexpected and 
+    hard-to-debug crashes.
+============
+For example:
+============
+```
+// spork a function (that depends on foo)
+spork ~ printArray();
+
+// initialize foo
+5 => int foo;
+
+// function that needs foo
+fun void printArray()
+{
+    // need 'foo' initialized here
+    if( foo == 5 ) <<< "success" >>>;
+}
+
+// give the sporked shred a chance to run
+me.yield();
+```
+===============
+compiler error:
+===============
+error: sporking 'printArray()' at this point potentially skips 
+initialization of a needed variable:
+
+  [9] spork ~ printArray();
+              ^
+error: ...(note: this skipped variable initialization is needed by 'fun 
+void printArray()')
+
+  [12] 5 => int foo;
+                ^
+error: ...(note: this is where the variable is used within 'fun void 
+printArray()' or its subsidiaries)
+
+  [18]     if( foo == 5 ) <<< "success" >>>;
+               ^
+...(hint: try calling 'printArray()' after the variable initialization)
+==============
 
 
 1.5.3.2 (October 2024)

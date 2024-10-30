@@ -4277,7 +4277,11 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // only check dependency violations if we are at a context-top-level
     // or class-top-level scope, i.e., not in a function definition
     // also, once sporked, it will be up the programmer to ensure intention
-    if( !emit->env->func && !spork )
+    // -------
+    // 1.5.4.0 (ge) sporked function calls now subject to same dependency verification
+    // this may be more stringent (due to potential timing behavior) but
+    // should help prevent confusing crashes; removing check for spork
+    if( !emit->env->func /* && !spork */ )
     {
         // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
         // NOTE if func originates from another file, this should behave correctly and return NULL | 1.5.1.1 (ge) fixed
@@ -4287,8 +4291,8 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         if( unfulfilled )
         {
             EM_error2( where,
-                      "calling '%s()' at this point skips initialization of a needed variable:",
-                      func->base_name.c_str() );
+                      "%s '%s()' at this point %sskips initialization of a needed variable:",
+                      spork ? "sporking" : "calling", func->base_name.c_str(), spork ? "potentially " : "" );
             EM_error2( unfulfilled->where,
                       "...(note: this skipped variable initialization is needed by '%s')",
                       func->signature().c_str() );

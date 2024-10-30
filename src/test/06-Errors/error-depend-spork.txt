@@ -1,0 +1,10 @@
+error-depend-spork.ck:9:9: error: sporking 'printArray()' at this point potentially skips initialization of a needed variable:
+[9] spork ~ printArray();
+            ^
+error-depend-spork.ck:12:10: error: ...(note: this skipped variable initialization is needed by 'fun void printArray()')
+[12] 5 => int foo;
+              ^
+error-depend-spork.ck:18:9: error: ...(note: this is where the variable is used within 'fun void printArray()' or its subsidiaries)
+[18]     if( foo == 5 ) <<< "success" >>>;
+             ^
+error-depend-spork.ck: ...(hint: try calling 'printArray()' after the variable initialization)
