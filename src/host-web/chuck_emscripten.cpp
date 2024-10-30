@@ -714,7 +714,7 @@ extern "C"
             // chugin_search.push_back( chuck_global_data_dir + "/Chugins" );
             // chugin_search.push_back( chuck_global_data_dir + "/ChuGins" );
             chugin_search.push_back( chuck_global_data_dir + "chugins" );
-            chuck->setParam( CHUCK_PARAM_USER_CHUGIN_DIRECTORIES, chugin_search );
+            chuck->setParam( CHUCK_PARAM_IMPORT_PATH_SYSTEM, chugin_search );
  
             // default real-time audio is true | chuck-1.4.2.1 (ge) added
             // set hint, so internally can advise things like async data writes etc.
