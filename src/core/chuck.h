@@ -101,14 +101,11 @@
 #define CHUCK_PARAM_TTY_WIDTH_HINT              "TTY_WIDTH_HINT"
 // chugin-relate param names
 #define CHUCK_PARAM_CHUGIN_ENABLE               "CHUGIN_ENABLE"
-#define CHUCK_PARAM_CHUGIN_DIRECTORY            "CHUGIN_DIRECTORY"
-#define CHUCK_PARAM_CHUGIN_LIST_USER            "CHUGIN_LIST_USER"
-#define CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS    "CHUGIN_LIST_IMPORT_PATHS"
-
-// legacy compatibiity (new code should use newer version of these, on the right)
-#define CHUCK_PARAM_HINT_IS_REALTIME_AUDIO      CHUCK_PARAM_IS_REALTIME_AUDIO_HINT
-#define CHUCK_PARAM_USER_CHUGINS                CHUCK_PARAM_CHUGIN_LIST_USER
-#define CHUCK_PARAM_USER_CHUGIN_DIRECTORIES     CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS
+#define CHUCK_PARAM_USER_CHUGINS                "USER_CHUGINS"
+// import paths
+#define CHUCK_PARAM_IMPORT_PATH_SYSTEM          "IMPORT_PATH_SYSTEM"
+#define CHUCK_PARAM_IMPORT_PATH_USER            "IMPORT_PATH_USER"
+#define CHUCK_PARAM_IMPORT_PATH_PACKAGES        "IMPORT_PATH_PACKAGES"
 
 // code literal signifier
 #define CHUCK_CODE_LITERAL_SIGNIFIER            "<compiled.code>"
@@ -129,7 +126,7 @@ public:
     virtual ~ChucK();
 
 public:
-    // set parameter by name
+    // set parameter by name (CHUCK_PARAM_*)
     //   |- (in general, parameters have reasonable defaults)
     t_CKBOOL setParam( const std::string & name, t_CKINT value );
     t_CKBOOL setParamFloat( const std::string & name, t_CKFLOAT value );

@@ -93,18 +93,11 @@
 #define CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT         "80"
 // chugin-relate param defaults
 #define CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT          "1"
-#ifndef __PLATFORM_WINDOWS__
-// 1.4.1.0 (ge) changed to ""; was "/usr/local/lib/chuck"
-// redundant with g_default_chugin_path, which already contains
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
-#else // __PLATFORM_WINDOWS__
-// 1.4.1.0 (ge) changed to ""; "C:\\Program Files\\ChucK\\chugins"
-// redundant with g_default_chugin_path, which already contains
-#define CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT       ""
-#endif // __PLATFORM_WINDOWS__
-#define CHUCK_PARAM_CHUGIN_LIST_USER_DEFAULT       std::list<std::string>()
-#define CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT   std::list<std::string>()
-
+#define CHUCK_PARAM_USER_CHUGINS_DEFAULT           std::list<std::string>()
+// import search paths defaults
+#define CHUCK_PARAM_IMPORT_PATH_SYSTEM_DEFAULT     std::list<std::string>()
+#define CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT       std::list<std::string>()
+#define CHUCK_PARAM_IMPORT_PATH_PACKAGES_DEFAULT   std::list<std::string>()
 
 
 
@@ -205,7 +198,6 @@ void ChucK::initDefaultParams()
     initParam( CHUCK_PARAM_AUTO_DEPEND, CHUCK_PARAM_AUTO_DEPEND_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_DEPRECATE_LEVEL, CHUCK_PARAM_DEPRECATE_LEVEL_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_WORKING_DIRECTORY, CHUCK_PARAM_WORKING_DIRECTORY_DEFAULT, ck_param_string );
-    initParam( CHUCK_PARAM_CHUGIN_DIRECTORY, CHUCK_PARAM_CHUGIN_DIRECTORY_DEFAULT, ck_param_string );
     initParam( CHUCK_PARAM_CHUGIN_ENABLE, CHUCK_PARAM_CHUGIN_ENABLE_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_IS_REALTIME_AUDIO_HINT, CHUCK_PARAM_IS_REALTIME_AUDIO_HINT_DEFAULT, ck_param_int );
     initParam( CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR, CHUCK_PARAM_COMPILER_HIGHLIGHT_ON_ERROR_DEFAULT, ck_param_int );
@@ -213,10 +205,15 @@ void ChucK::initDefaultParams()
     initParam( CHUCK_PARAM_TTY_WIDTH_HINT, CHUCK_PARAM_TTY_WIDTH_HINT_DEFAULT, ck_param_int );
 
     // initialize list params manually (take care to use tolower())
-    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]      = CHUCK_PARAM_CHUGIN_LIST_USER_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_USER)]     = ck_param_string_list;
-    m_listParams[tolower(CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS)]  = CHUCK_PARAM_CHUGIN_LIST_USER_DIR_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS)] = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_USER_CHUGINS)]      = CHUCK_PARAM_USER_CHUGINS_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_USER_CHUGINS)]     = ck_param_string_list;
+    // import search paths
+    m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_SYSTEM)]    = CHUCK_PARAM_IMPORT_PATH_SYSTEM_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_SYSTEM)]     = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]    = CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]     = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_PACKAGES)]    = CHUCK_PARAM_IMPORT_PATH_PACKAGES_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_PACKAGES)]     = ck_param_string_list;
 }
 
 
@@ -693,8 +690,8 @@ t_CKBOOL ChucK::initCompiler()
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::initChugins()
 {
-    Chuck_VM_Code * code = NULL;
-    Chuck_VM_Shred * shred = NULL;
+    // Chuck_VM_Code * code = NULL;
+    // Chuck_VM_Shred * shred = NULL;
 
     // print whether chugins enabled
     EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
@@ -702,16 +699,10 @@ t_CKBOOL ChucK::initChugins()
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
     {
-        // chugin dur
-        std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
         // list of search pathes (added 1.3.0.0)
-        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
-        if( chuginDir != std::string("") )
-        {
-            dl_search_path.push_back( chuginDir );
-        }
+        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
         // list of individually named chug-ins (added 1.3.0.0)
-        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER );
+        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
         EM_pushlog();
         // print host version
@@ -738,7 +729,9 @@ t_CKBOOL ChucK::initChugins()
             goto error;
         }
 
-        /*
+        //---------------------------------------------------------------------
+        // 1.5.4.0 | .ck files are no longer auto compiled; need to be @import
+        /*---------------------------------------------------------------------
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = ckte_origin_IMPORT;
@@ -789,8 +782,7 @@ t_CKBOOL ChucK::initChugins()
 
         // pop log
         EM_poplog();
-        */
-
+        ---------------------------------------------------------------------*/
         return true;
     }
     else
@@ -843,17 +835,13 @@ void ChucK::probeChugins()
     // pop
     EM_poplog();
 
-    // chugin dur
-    std::string chuginDir = getParamString( CHUCK_PARAM_CHUGIN_DIRECTORY );
     // list of search pathes (added 1.3.0.0)
-    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_IMPORT_PATHS );
-    if( chuginDir != "" )
-    {
-        // add to search path
-        dl_search_path.push_back( chuginDir );
-    }
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
+    append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER) );
+    append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES) );
+
     // list of individually named chug-ins (added 1.3.0.0)
-    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_CHUGIN_LIST_USER );
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
     // log
     EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
@@ -876,6 +864,9 @@ void ChucK::probeChugins()
     // pop log
     // EM_poplog();
 
+    //-------------------------------------------------------------------------
+    // 1.5.4.0 | .ck files are no longer auto compiled; need to be @import
+    /*-------------------------------------------------------------------------
     // log
     EM_log( CK_LOG_SYSTEM, "probing auto-load chuck files (.ck)..." );
     EM_pushlog();
@@ -896,6 +887,7 @@ void ChucK::probeChugins()
 
     // pop log
     EM_poplog();
+    -------------------------------------------------------------------------*/
 }
 
 
