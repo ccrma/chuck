@@ -991,7 +991,7 @@ struct Chuck_Type : public Chuck_Object
     // object size (size in memory)
     t_CKUINT obj_size;
     // type info
-    Chuck_Namespace * info;
+    Chuck_Namespace * nspc;
     // func info
     Chuck_Func * func;
     // ugen

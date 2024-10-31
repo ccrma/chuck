@@ -452,7 +452,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
     initialize_object( objT, env->ckt_class, NULL, env->vm() );
 
     // ensure namespace allocation
-    if( objT->info == NULL )
+    if( objT->nspc == NULL )
     {
         EM_error3( "[chuck]: internal error initializing base class '%s'", objT->base_name.c_str() );
         return FALSE;
@@ -461,7 +461,7 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
     // vector of func
     vector<Chuck_Func *> funcs;
     // get funcs in Object (FALSE means don't include mangled duplicates)
-    objT->info->get_funcs( funcs, FALSE );
+    objT->nspc->get_funcs( funcs, FALSE );
     // iterate through
     for( t_CKINT i = 0; i < funcs.size(); i++ )
     {
@@ -4247,9 +4247,9 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             // flag
             value->is_static = TRUE;
             // offset
-            value->offset = env->class_def->info->class_data_size;
+            value->offset = env->class_def->nspc->class_data_size;
             // move the size
-            env->class_def->info->class_data_size += type->size;
+            env->class_def->nspc->class_data_size += type->size;
 
             // if this is an object
             if( is_obj && !is_ref )
@@ -4942,7 +4942,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     the_base = base_static ? member->t_base->actual_type : member->t_base;
 
     // have members?
-    if( !the_base->info )
+    if( !the_base->nspc )
     {
         // base type does not have members
         EM_error2( member->base->where,
@@ -5108,13 +5108,13 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     // NB the following should be done AFTER the parent is completely defined
     // --
     // set the beginning of data segment to after the parent
-    the_class->info->offset = the_class->parent->obj_size;
+    the_class->nspc->offset = the_class->parent->obj_size;
     // duplicate the parent's virtual table
-    the_class->info->obj_v_table = the_class->parent->info->obj_v_table;
+    the_class->nspc->obj_v_table = the_class->parent->nspc->obj_v_table;
 
     // set the new type as current
     env->nspc_stack.push_back( env->curr );
-    env->curr = the_class->info;
+    env->curr = the_class->nspc;
     // push the class def
     env->class_stack.push_back( env->class_def );
     env->class_def = the_class;
@@ -5162,7 +5162,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     if( ret )
     {
         // set the object size
-        the_class->obj_size = the_class->info->offset;
+        the_class->obj_size = the_class->nspc->offset;
         // set complete
         the_class->is_complete = TRUE;
     }
@@ -6368,7 +6368,7 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
         }
     }
     // start the namespace
-    Chuck_Namespace * theNpsc = type->info;
+    Chuck_Namespace * theNpsc = type->nspc;
     thePath = thePath->next;
 
     // loop
@@ -6381,7 +6381,7 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
         // look in parent
         while( !t && type && type->parent )
         {
-            t = type_engine_find_type( type->parent->info, xid );
+            t = type_engine_find_type( type->parent->nspc, xid );
             type = type->parent;
         }
         // can't find
@@ -6399,7 +6399,7 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
         // set the type
         type = t;
         // update nspc
-        if( type ) theNpsc = type->info;
+        if( type ) theNpsc = type->nspc;
         // advance
         thePath = thePath->next;
     }
@@ -6454,9 +6454,9 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const string & xid )
     Chuck_Value * value = NULL;
 
     if( !type ) return NULL;
-    if( !type->info ) return NULL;
+    if( !type->nspc ) return NULL;
     // -1 for base
-    value = type->info->lookup_value( xid, -1 );
+    value = type->nspc->lookup_value( xid, -1 );
     if( value ) return value;
     if( type->parent ) return type_engine_find_value( type->parent, xid );
 
@@ -6526,7 +6526,7 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List thePath )
     Chuck_Type * type = type_engine_find_type( env, thePath );
     if( type == NULL ) return NULL;
     // copy the nspc
-    theNpsc = type->info;
+    theNpsc = type->nspc;
     if( theNpsc == NULL )
     {
         // primitive
@@ -6631,7 +6631,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     Chuck_Type * type_type = NULL;
 
     // make sure there is not namesapce
-    if( type->info != NULL )
+    if( type->nspc != NULL )
     {
         // error
         EM_error2( 0, "during import: class '%s' already imported", type->c_name() );
@@ -6639,15 +6639,15 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     }
 
     // allocate namespace for type
-    type->info = new Chuck_Namespace;
+    type->nspc = new Chuck_Namespace;
     // add reference
-    CK_SAFE_ADD_REF(type->info);
+    CK_SAFE_ADD_REF(type->nspc);
     // name it
-    type->info->name = type->base_name;
+    type->nspc->name = type->base_name;
     // set the parent namespace
-    type->info->parent = where;
+    type->nspc->parent = where;
     // add reference
-    CK_SAFE_ADD_REF(type->info->parent);
+    CK_SAFE_ADD_REF(type->nspc->parent);
 
     // if pre constructor
     if( pre_ctor != 0 )
@@ -6655,19 +6655,19 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         // flag it
         type->has_pre_ctor = TRUE;
         // allocate vm code for (imported) pre_ctor
-        type->info->pre_ctor = new Chuck_VM_Code;
+        type->nspc->pre_ctor = new Chuck_VM_Code;
         // add ref | 1.5.2.0 (ge) added
-        CK_SAFE_ADD_REF( type->info->pre_ctor );
+        CK_SAFE_ADD_REF( type->nspc->pre_ctor );
         // add pre_ctor
-        type->info->pre_ctor->native_func = (t_CKUINT)pre_ctor;
+        type->nspc->pre_ctor->native_func = (t_CKUINT)pre_ctor;
         // mark type as ctor
-        type->info->pre_ctor->native_func_kind = ae_fp_ctor;
+        type->nspc->pre_ctor->native_func_kind = ae_fp_ctor;
         // specify that we need this
-        type->info->pre_ctor->need_this = TRUE;
+        type->nspc->pre_ctor->need_this = TRUE;
         // no arguments to preconstructor other than self
-        type->info->pre_ctor->stack_depth = sizeof(t_CKUINT);
+        type->nspc->pre_ctor->stack_depth = sizeof(t_CKUINT);
         // add name | 1.5.2.0 (ge) added
-        type->info->pre_ctor->name = string("class ") + type->base_name;
+        type->nspc->pre_ctor->name = string("class ") + type->base_name;
     }
 
     // if destructor
@@ -6676,19 +6676,19 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
         // flag it (needed since info could be shared with array types of this type, but this flag is only this type)
         type->has_pre_dtor = TRUE;
         // allocate vm code for dtor
-        type->info->pre_dtor = new Chuck_VM_Code;
+        type->nspc->pre_dtor = new Chuck_VM_Code;
         // add ref | 1.5.2.0 (ge) added
-        CK_SAFE_ADD_REF( type->info->pre_dtor );
+        CK_SAFE_ADD_REF( type->nspc->pre_dtor );
         // add dtor
-        type->info->pre_dtor->native_func = (t_CKUINT)dtor;
+        type->nspc->pre_dtor->native_func = (t_CKUINT)dtor;
         // mark type as dtor
-        type->info->pre_dtor->native_func_kind = ae_fp_dtor;
+        type->nspc->pre_dtor->native_func_kind = ae_fp_dtor;
         // specify that we need this
-        type->info->pre_dtor->need_this = TRUE;
+        type->nspc->pre_dtor->need_this = TRUE;
         // no arguments to destructor other than self
-        type->info->pre_dtor->stack_depth = sizeof(t_CKUINT);
+        type->nspc->pre_dtor->stack_depth = sizeof(t_CKUINT);
         // add name | 1.5.2.0 (ge) added
-        type->info->pre_dtor->name = string("class ") + type->base_name + string(" (destructor)");
+        type->nspc->pre_dtor->name = string("class ") + type->base_name + string(" (destructor)");
     }
 
     // clear the object size
@@ -6696,10 +6696,10 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // set the beginning of the data segment after parent
     if( type->parent )
     {
-        type->info->offset = type->parent->obj_size;
+        type->nspc->offset = type->parent->obj_size;
         // duplicate parent's virtual table
-        assert( type->parent->info != NULL );
-        type->info->obj_v_table = type->parent->info->obj_v_table;
+        assert( type->parent->nspc != NULL );
+        type->nspc->obj_v_table = type->parent->nspc->obj_v_table;
     }
 
     // set the owner namespace
@@ -6730,7 +6730,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
 
     // make the type current
     env->nspc_stack.push_back( env->curr );
-    env->curr = type->info;
+    env->curr = type->nspc;
     // push the class def
     env->class_stack.push_back( env->class_def );
     env->class_def = type;
@@ -6951,7 +6951,7 @@ t_CKBOOL type_engine_import_class_end( Chuck_Env * env )
     }
 
     // set the object size
-    env->class_def->obj_size = env->class_def->info->offset;
+    env->class_def->obj_size = env->class_def->nspc->offset;
 
     // for everything that's not the base Object type or arrays | 1.5.0.0
     // context: Object and Type mutually depend, so we will initialize
@@ -7868,7 +7868,7 @@ Chuck_Type * Chuck_Context::new_Chuck_Type( Chuck_Env * env )
     // which should only be for the base Object type, which needs to be
     // initialize before the Type type is initialize, becaues Type is
     // a subclass of Object | 1.5.0.0 (ge) brain is bad
-    if( env->ckt_class->info != NULL )
+    if( env->ckt_class->nspc != NULL )
     {
         // initialize it as Type object | 1.5.0.0 (ge) added
         initialize_object( theType, env->ckt_class, NULL, env->vm() );
@@ -8077,9 +8077,9 @@ Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // add reference
     CK_SAFE_ADD_REF(t->array_type);
     // set the namesapce
-    t->info = array_parent->info;
+    t->nspc = array_parent->nspc;
     // add reference
-    CK_SAFE_ADD_REF(t->info);
+    CK_SAFE_ADD_REF(t->nspc);
     // set owner
     // t->owner = owner_nspc; CK_SAFE_ADD_REF(t->owner);
 
@@ -9618,7 +9618,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     array_type = NULL;
     array_depth = 0;
     obj_size = 0;
-    info = NULL;
+    nspc = NULL;
     func = NULL; /* def = NULL; */
     is_public = FALSE;
     is_copy = FALSE;
@@ -9674,7 +9674,7 @@ void Chuck_Type::reset()
     if( !this->m_locked )
     {
         // release references
-        CK_SAFE_RELEASE( info );
+        CK_SAFE_RELEASE( nspc );
         // CK_SAFE_RELEASE( owner );
         CK_SAFE_RELEASE( ctors_all ); // 1.5.2.0 (ge) added
         CK_SAFE_RELEASE( ctor_default ); // 1.5.2.0 (ge) added
@@ -9712,7 +9712,7 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     this->array_depth = rhs.array_depth;
     this->array_type = rhs.array_type; CK_SAFE_ADD_REF(this->array_type);
     this->func = rhs.func; CK_SAFE_ADD_REF(this->func);
-    this->info = rhs.info; CK_SAFE_ADD_REF(this->info);
+    this->nspc = rhs.nspc; CK_SAFE_ADD_REF(this->nspc);
     // this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
 
     return *this;
@@ -9831,13 +9831,13 @@ t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type )
         }
 
         // check
-        if( type->info )
+        if( type->nspc )
         {
             // check for mfuns and mvars (if we get here, type->info cannot be NULL)
             vector<Chuck_Func *> fs;
-            type->info->get_funcs( fs );
+            type->nspc->get_funcs( fs );
             vector<Chuck_Value *> vs;
-            type->info->get_values( vs );
+            type->nspc->get_values( vs );
 
             // iterate over functions
             for( vector<Chuck_Func *>::iterator f = fs.begin(); f != fs.end(); f++ )
@@ -10184,12 +10184,12 @@ void Chuck_Type::apropos_funcs( std::string & output,
     ostringstream sout;
 
     // check type info
-    if( this->info )
+    if( this->nspc )
     {
         // vector of functions
         vector<Chuck_Func *> funcs;
         // retrieve functions in this type
-        this->info->get_funcs(funcs);
+        this->nspc->get_funcs(funcs);
 
         // constructors
         vector<Chuck_Func *> ctors;
@@ -10374,12 +10374,12 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
     ostringstream sout;
 
     // check type info
-    if( this->info )
+    if( this->nspc )
     {
         // vector of variables
         vector<Chuck_Value *> vars;
         // retrieve variables in this type
-        this->info->get_values(vars);
+        this->nspc->get_values(vars);
 
         // member variables
         vector<Chuck_Value *> mvars;
@@ -10711,6 +10711,8 @@ Chuck_Op_Semantics * Chuck_Op_Registry::lookup( ae_Operator op )
     // return
     return semantics;
 }
+
+
 
 
 //-----------------------------------------------------------------------------

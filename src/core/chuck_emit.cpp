@@ -4669,7 +4669,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     t_base = base_static ? member->t_base->actual_type : member->t_base;
 
     // make sure that the base type is object
-    assert( t_base->info != NULL );
+    assert( t_base->nspc != NULL );
 
     // if base is static?
     if( !base_static )
@@ -4889,9 +4889,9 @@ t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a
     if( type->has_pre_ctor )
     {
         // make sure
-        assert( type->info->pre_ctor != NULL );
+        assert( type->nspc->pre_ctor != NULL );
         // append instruction
-        emit->append( new Chuck_Instr_Pre_Constructor( type->info->pre_ctor,
+        emit->append( new Chuck_Instr_Pre_Constructor( type->nspc->pre_ctor,
             emit->code->frame->curr_offset ) );
     }
 
@@ -5704,7 +5704,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     a_Class_Body body = class_def->body;
 
     // make sure the code is empty
-    if( type->info->pre_ctor != NULL && type->info->pre_ctor->instr != NULL )
+    if( type->nspc->pre_ctor != NULL && type->nspc->pre_ctor->instr != NULL )
     {
         EM_error2( class_def->where,
             "(emit): class '%s' already emitted...",
@@ -5787,13 +5787,13 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         // use CK_SAFE_REF_ASSIGN to add_ref RHS then releae LHS | 1.5.1.5
         // maintain refcount integrity whether type->info->pre_ctor==NULL or not
         // ----------------------
-        CK_SAFE_REF_ASSIGN( type->info->pre_ctor,
-                            emit_to_code( emit->code, type->info->pre_ctor, emit->dump ) );
+        CK_SAFE_REF_ASSIGN( type->nspc->pre_ctor,
+                            emit_to_code( emit->code, type->nspc->pre_ctor, emit->dump ) );
 
         // allocate static
-        type->info->class_data = new t_CKBYTE[type->info->class_data_size];
+        type->nspc->class_data = new t_CKBYTE[type->nspc->class_data_size];
         // verify
-        if( !type->info->class_data )
+        if( !type->nspc->class_data )
         {
             // we have a problem
             CK_FPRINTF_STDERR(
@@ -5804,7 +5804,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         else
         {
             // zero it out
-            memset( type->info->class_data, 0, type->info->class_data_size );
+            memset( type->nspc->class_data, 0, type->nspc->class_data_size );
         }
     }
 
@@ -5812,7 +5812,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     if( !ret )
     {
         // release | 1.5.1.5 (ge) changed from DELETE to RELEASE
-        CK_SAFE_RELEASE( type->info->pre_ctor );
+        CK_SAFE_RELEASE( type->nspc->pre_ctor );
     }
 
     // unset the class

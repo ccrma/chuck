@@ -4171,7 +4171,7 @@ void call_all_parent_pre_constructors( Chuck_VM * vm, Chuck_VM_Shred * shred,
     // next, call my pre-ctor
     if( type->has_pre_ctor )
     {
-        call_pre_constructor( vm, shred, type->info->pre_ctor, stack_offset );
+        call_pre_constructor( vm, shred, type->nspc->pre_ctor, stack_offset );
     }
     // next, call my default ctor | 1.5.2.2 (ge)
     if( type->ctor_default && type->ctor_default->code )
@@ -4375,7 +4375,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
 
     // sanity
     assert( type != NULL );
-    assert( type->info != NULL );
+    assert( type->nspc != NULL );
 
     // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
@@ -4386,7 +4386,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     object->vtable = new Chuck_VTable;
     if( !object->vtable ) goto out_of_memory;
     // copy the object's virtual table
-    object->vtable->funcs = type->info->obj_v_table.funcs;
+    object->vtable->funcs = type->nspc->obj_v_table.funcs;
     // set the type reference
     object->type_ref = type;
     // reference count
@@ -4508,7 +4508,7 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Sh
 
     // sanity
     assert( type != NULL );
-    assert( type->info != NULL );
+    assert( type->nspc != NULL );
 
     // allocate the VM object
     if( !type->ugen_info )
@@ -7649,9 +7649,9 @@ void Chuck_Instr_Dot_Static_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     // get the object pointer
     Chuck_Type * t_class = (Chuck_Type *)(*sp);
     // make sure
-    assert( (m_offset + m_size) <= t_class->info->class_data_size );
+    assert( (m_offset + m_size) <= t_class->nspc->class_data_size );
     // calculate the data pointer
-    data = (t_CKUINT)(t_class->info->class_data + m_offset);
+    data = (t_CKUINT)(t_class->nspc->class_data + m_offset);
 
     // emit addr or value
     if( m_emit_addr )

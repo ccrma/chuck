@@ -1648,14 +1648,14 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
     }
 
     // check type info
-    if( type->info )
+    if( type->nspc )
     {
         // get functions
         vector<Chuck_Func *> funcs;
-        type->info->get_funcs( funcs );
+        type->nspc->get_funcs( funcs );
         // get values
         vector<Chuck_Value *> vars;
-        type->info->get_values( vars );
+        type->nspc->get_values( vars );
         // function names
         map<string, int> func_names;
 

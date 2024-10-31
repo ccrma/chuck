@@ -1839,7 +1839,7 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar(Chuck_DL_Api::Object o, const char * nam
     Chuck_Object* obj = (Chuck_Object*)o;
     Chuck_Type* type = obj->type_ref;
     // check type
-    if (type->info == NULL)
+    if (type->nspc == NULL)
     {
         // put error here
         EM_error2(0, "get mvar: ck_get_mvar: object has no type info");
@@ -1848,7 +1848,7 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar(Chuck_DL_Api::Object o, const char * nam
 
     vector<Chuck_Value*> vars;
     Chuck_Value* var = NULL;
-    type->info->get_values(vars);
+    type->nspc->get_values(vars);
     // iterate over retrieved functions
     for (vector<Chuck_Value*>::iterator v = vars.begin(); v != vars.end(); v++)
     {

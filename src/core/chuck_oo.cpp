@@ -291,16 +291,16 @@ Chuck_Object::~Chuck_Object()
         // SPENCER TODO: HACK! is there a better way to call the dtor?
         // has_pre-dtor: related to info->pre_dtor, but different since info is shared with arrays
         // of this type (via new_array_type()), but this flag pertains to this type only
-        if( type->info && type->has_pre_dtor ) // 1.5.0.0 (ge) added type->info check
+        if( type->nspc && type->has_pre_dtor ) // 1.5.0.0 (ge) added type->info check
         {
             // make sure
-            assert( type->info->pre_dtor );
+            assert( type->nspc->pre_dtor );
             // check origin of dtor
-            if( type->info->pre_dtor->native_func ) // c++-defined deconstructor
+            if( type->nspc->pre_dtor->native_func ) // c++-defined deconstructor
             {
                 // REFACTOR-2017: do we know which VM to pass in? (diff main/sub instance?)
                 // pass in type-associated vm and current shred | 1.5.1.8
-                ((f_dtor)(type->info->pre_dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
+                ((f_dtor)(type->nspc->pre_dtor->native_func))( this, vm, shred, Chuck_DL_Api::instance() );
             }
             else // chuck-defined deconstructor
             {
