@@ -188,8 +188,16 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
                 // env->context->public_class_def = prog->section->class_def;
                 // -----------------------------------------
 
-                // make global
+                // -----------------------------------------
+                // mark this class definition to be added to [user] namespace
+                //   which typically sits between [global] namespace and context namesapce
                 prog->section->class_def->home = env->user();
+                // -----------------------------------------
+                // NOTE: for legacy reasons, fallback to [global] if no [user] namespace
+                //   this fallback mechanism was moved out of env->user() to here for clarity in 1.5.4.0 (ge)
+                //   needs further verification, as this fallback may not be necessary
+                if( !prog->section->class_def->home ) prog->section->class_def->home = env->global();
+                // -----------------------------------------
             }
             // scan the class definition
             ret = type_engine_scan0_class_def( env, prog->section->class_def );

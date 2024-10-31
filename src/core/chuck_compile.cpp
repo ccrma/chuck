@@ -277,6 +277,11 @@ t_CKBOOL Chuck_Compiler::importChugin( const string & path,
         // this is necessary to make sure the chugin is imported into its own
         // namespace, to avoid being imported into say a host namespace -- e.g.,
         // a chuck file that @import this chugin
+        // ALSO: if the chuck file that imports the chugin contains an error,
+        // its context would be cleaned up, which leads to a crash on chuck exit;
+        // this created context prevent that crash
+        // ... further investigation may be beneficial to fully understand this
+        // mechanism
         type_engine_load_context( this->carrier()->env, type_engine_make_context( NULL, "@[chugin-import]" ) );
     }
 
@@ -1719,6 +1724,8 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
     // preserve all operator overloads currently in registry | 1.5.1.5
     env->op_registry.preserve();
 
+    // always return true...
+    // a failed chugin load should not prevent chuck from starting
     return TRUE;
 }
 

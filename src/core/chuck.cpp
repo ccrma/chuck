@@ -783,16 +783,12 @@ t_CKBOOL ChucK::initChugins()
         // pop log
         EM_poplog();
         ---------------------------------------------------------------------*/
-        return true;
     }
     else
     {
         // log | 1.4.1.0 (ge) commented out; printing earlier
         EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
     }
-
-    // load user namespace
-    m_carrier->env->load_user_namespace();
 
     // unset origin hint | 1.5.0.0 (ge) added
     m_carrier->compiler->m_originHint = ckte_origin_UNKNOWN;

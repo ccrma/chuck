@@ -736,7 +736,7 @@ public:
     t_CKBOOL is_global();
     // global namespace
     Chuck_Namespace * global();
-    // user namespace, if there is one (if not, return global)
+    // user namespace
     Chuck_Namespace * user();
     // get namespace at top of stack
     Chuck_Namespace * nspc_top();

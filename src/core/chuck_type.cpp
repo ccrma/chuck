@@ -378,6 +378,8 @@ void Chuck_Env::clear_user_namespace()
     this->reset();
     // reset operator overloads, including public (env->reset() only resets local)
     op_registry.reset2public();
+    // reset @import registry | 1.5.4.0 (ge) added
+    this->compiler()->imports()->clearAllUserImports();
 }
 
 
@@ -418,12 +420,16 @@ Chuck_Namespace * Chuck_Env::global() { return global_nspc; }
 
 //-----------------------------------------------------------------------------
 // name: user()
-// desc: get user namespace, if there is one (if not, return global)
+// desc: get user namespace
 //-----------------------------------------------------------------------------
 Chuck_Namespace * Chuck_Env::user()
 {
+    // always return user namespace (even NULL) | 1.5.4.0 (ge) changed for clarity
+    return user_nspc;
+
+    // previously:
     // check if we have a user namespace here
-    return user_nspc != NULL ? user_nspc : global();
+    // return user_nspc != NULL ? user_nspc : global();
 }
 
 
@@ -712,6 +718,13 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 
     // initialize operator mappings
     if( !type_engine_init_op_overload( env ) ) return FALSE;
+
+    // create [user] namespace | 1.5.4.0 (ge) added/moved here
+    // subsequent definitions (e.g., public classes) would be added
+    // to this namespace, unless explicitly specified;
+    // types added to the [user] namespace will be cleared during clearVM
+    // whereas types in the [global] namespace persists
+    env->load_user_namespace();
 
     // pop indent level
     EM_poplog();
@@ -8639,7 +8652,7 @@ error:
 // desc: add the DLL using type_engine functions (added 1.3.0.0)
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_add_dll2( Chuck_Env * env, Chuck_DLL * dll,
-                               const string &  )
+                               const string & dest )
 {
     const Chuck_DL_Query * query = NULL;
 
