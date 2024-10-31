@@ -654,10 +654,10 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         // TODO: possible caching -- search for match first in registry
         // match-right between each entry and fname; if found, return entry absolute path
 
-        // get search paths; order: system, user, packages
+        // get search paths; order: system, packages, user
         list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
-        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER ) );
         append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES ) );
+        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER ) );
         // go over paths
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {

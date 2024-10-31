@@ -71,12 +71,12 @@
 
 // string literal containing default chugin paths (platform-specific)
 extern char g_default_path_system[];
-extern char g_default_path_user[];
 extern char g_default_path_packages[];
+extern char g_default_path_user[];
 // string literal containing environment variable names for import search path
 extern char g_envvar_path_system[];
-extern char g_envvar_path_user[];
 extern char g_envvar_path_packages[];
+extern char g_envvar_path_user[];
 // contains deprecated env var name
 extern char g_envvar_path_deprecated[];
 

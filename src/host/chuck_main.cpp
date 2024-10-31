@@ -659,22 +659,24 @@ t_CKBOOL go( int argc, const char ** argv )
     ck_configANSI_ESCcodes();
 
     // initial chug-in path (added 1.3.0.0)
-    // separate into system, user, packages | 1.5.4.0 (ge)
-    std::string import_path_system, import_path_user, import_path_packages;
+    // separate into system, packages, user | 1.5.4.0 (ge)
+    std::string import_path_system, import_path_packages, import_path_user;
     // list of search paths (added 1.3.0.0)
-    std::list<std::string> dl_search_path_system, dl_search_path_user, dl_search_path_packages;
+    std::list<std::string> dl_search_path_system, dl_search_path_packages, dl_search_path_user;
 
     // 1.3.0.0 | if set as environment variable, get it; otherwise use default
     // 1.5.4.0 | separate out into system, user, packages paths
     if( getenv( g_envvar_path_system ) )
     { import_path_system = getenv( g_envvar_path_system ); }
     else { import_path_system = g_default_path_system; }
-    if( getenv( g_envvar_path_user ) )
-    { import_path_user = getenv( g_envvar_path_user ); }
-    else { import_path_user = g_default_path_user; }
+
     if( getenv( g_envvar_path_packages ) )
     { import_path_packages = getenv( g_envvar_path_packages ); }
     else { import_path_packages = g_default_path_packages; }
+
+    if( getenv( g_envvar_path_user ) )
+    { import_path_user = getenv( g_envvar_path_user ); }
+    else { import_path_user = g_default_path_user; }
 
     // test for deprecation
     if( getenv( g_envvar_path_deprecated ) )
@@ -682,13 +684,13 @@ t_CKBOOL go( int argc, const char ** argv )
         // issue warning
         EM_error2( 0, "(warning) environment variable '%s' is deprecated", g_envvar_path_deprecated );
         EM_error2( 0, "...please use '%s' '%s' '%s' to set import search paths",
-                   g_envvar_path_user, g_envvar_path_system, g_envvar_path_packages );
+                   g_envvar_path_system, g_envvar_path_packages, g_envvar_path_user );
     }
 
     // parse the colon list into STL list (added 1.3.0.0)
     parse_path_list( import_path_system, dl_search_path_system );
-    parse_path_list( import_path_user, dl_search_path_user );
     parse_path_list( import_path_packages, dl_search_path_packages );
+    parse_path_list( import_path_user, dl_search_path_user );
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls;
 
@@ -1256,8 +1258,8 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_SYSTEM, dl_search_path_system );
-    the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_USER, dl_search_path_user );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_PACKAGES, dl_search_path_packages );
+    the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_USER, dl_search_path_user );
 
     //-----------------------------------------------------------------
     // probe chugins | 1.5.0.4 (ge) added
