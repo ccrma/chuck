@@ -104,8 +104,8 @@
 #define CHUCK_PARAM_USER_CHUGINS                "USER_CHUGINS"
 // import paths
 #define CHUCK_PARAM_IMPORT_PATH_SYSTEM          "IMPORT_PATH_SYSTEM"
-#define CHUCK_PARAM_IMPORT_PATH_USER            "IMPORT_PATH_USER"
 #define CHUCK_PARAM_IMPORT_PATH_PACKAGES        "IMPORT_PATH_PACKAGES"
+#define CHUCK_PARAM_IMPORT_PATH_USER            "IMPORT_PATH_USER"
 
 // code literal signifier
 #define CHUCK_CODE_LITERAL_SIGNIFIER            "<compiled.code>"

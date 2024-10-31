@@ -96,8 +96,8 @@
 #define CHUCK_PARAM_USER_CHUGINS_DEFAULT           std::list<std::string>()
 // import search paths defaults
 #define CHUCK_PARAM_IMPORT_PATH_SYSTEM_DEFAULT     std::list<std::string>()
-#define CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT       std::list<std::string>()
 #define CHUCK_PARAM_IMPORT_PATH_PACKAGES_DEFAULT   std::list<std::string>()
+#define CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT       std::list<std::string>()
 
 
 
@@ -210,10 +210,10 @@ void ChucK::initDefaultParams()
     // import search paths
     m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_SYSTEM)]    = CHUCK_PARAM_IMPORT_PATH_SYSTEM_DEFAULT;
     m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_SYSTEM)]     = ck_param_string_list;
-    m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]    = CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT;
-    m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]     = ck_param_string_list;
     m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_PACKAGES)]    = CHUCK_PARAM_IMPORT_PATH_PACKAGES_DEFAULT;
     m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_PACKAGES)]     = ck_param_string_list;
+    m_listParams[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]    = CHUCK_PARAM_IMPORT_PATH_USER_DEFAULT;
+    m_param_types[tolower(CHUCK_PARAM_IMPORT_PATH_USER)]     = ck_param_string_list;
 }
 
 
@@ -837,8 +837,8 @@ void ChucK::probeChugins()
 
     // list of search pathes (added 1.3.0.0)
     std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
-    append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER) );
     append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES) );
+    append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER) );
 
     // list of individually named chug-ins (added 1.3.0.0)
     std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
