@@ -3588,7 +3588,10 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
         if( strstr(filename, "special:sinewave") ) {
             rawsize = 1024; rawdata = NULL;
         }
-        else if( strstr(filename, "special:ahh") ) {
+        else if( strstr(filename, "special:aaa") ||
+                 strstr(filename, "special:aah") ||
+                 strstr(filename, "special:ahh") )
+        {
             rawsize = ahh_size; rawdata = ahh_data;
         }
         else if( strstr(filename, "special:britestk") ) {

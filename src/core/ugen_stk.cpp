@@ -18360,7 +18360,9 @@ void WvIn :: openFile( const char *fileName, bool raw, bool doNormalize, bool ge
             SAMPLE * rawdata = NULL;
             t_CKUINT rawsize = 0;
 
-            if( strstr(fileName, "special:aah") ) {
+            if( strstr(fileName, "special:aaa") ||
+                strstr(fileName, "special:aah") ||
+                strstr(fileName, "special:ahh") ) {
                 rawsize = ahh_size; rawdata = ahh_data;
             }
             else if( strstr(fileName, "special:britestk") ) {
