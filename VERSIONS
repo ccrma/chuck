@@ -55,7 +55,8 @@ ChucK VERSIONS log
     suffice, assuming there are no filename conflicts elsewhere in the 
     import paths)
 ******************************************************
-- (added) member function in Object:
+- (added) member function in Object to get the instantiated type of an
+    object, regardless of the apparent type
     Type Object.typeOfInstance()
         Get the instanced type of this object.
 - (fixed) specific internal UGen connection error now handled without 
@@ -64,6 +65,12 @@ ChucK VERSIONS log
     now are distinguished from windows drive letters (e.g., "A:\")
 - (fixed) Type.of() now reports more specific array type (e.g., 
     `string[]`) instead ofgeneric `@array`
+- (fixed) type system [user] namespace now instantiated correctly at
+    initialization; previously [global] was used until a clearVM was 
+    performed -- this caused incorrect behavior with certain functionality,
+    including a crash in Type.children(); relatedly a long-standing
+    bug was fixed in the type system scope::lookup mechanism that added
+    NULL entries during lookup
 - (fixed) modulo `%` by zero (int or float) now throws an exception; 
     previously this would either produce an incorrect result or cause a 
     crash

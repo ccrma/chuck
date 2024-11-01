@@ -3452,25 +3452,34 @@ CK_DLL_MFUN( type_children )
 
     // instantiate
     Chuck_ArrayInt * ret = new Chuck_ArrayInt( TRUE );
+    // initialize as chuck object
     initialize_object( ret, VM->env()->ckt_array, SHRED, VM );
-
-    // results
-    vector<Chuck_Type *> types;
-    // get types
-    VM->env()->nspc_top()->get_types( types );
-    // clear
+    // clear the vector
     ret->m_vector.clear();
-    // iterate
-    for( t_CKINT i = 0; i < types.size(); i++ )
+
+    // get the current top-most namespace
+    Chuck_Namespace * nspc = VM->env()->nspc_top();
+    // while we have a namespace
+    while( nspc != NULL )
     {
-        // skip me
-        if( equals( types[i], me ) ) continue;
-        // skip if not a subclass of me
-        if( !isa( types[i], me ) ) continue;
-        // copy
-        ret->m_vector.push_back( (t_CKINT)types[i] );
-        // add reference
-        CK_SAFE_ADD_REF( types[i] );
+        // results
+        vector<Chuck_Type *> types;
+        // get types
+        nspc->get_types( types );
+        // iterate
+        for( t_CKINT i = 0; i < types.size(); i++ )
+        {
+            // skip me
+            if( equals( types[i], me ) ) continue;
+            // skip if not a subclass of me
+            if( !isa( types[i], me ) ) continue;
+            // append to vector
+            ret->m_vector.push_back( (t_CKINT)types[i] );
+            // add reference
+            CK_SAFE_ADD_REF( types[i] );
+        }
+        // go up the namespace, e.g., from [user] to [global]
+        nspc = nspc->parent;
     }
 
     // return
