@@ -848,7 +848,7 @@ t_CKBOOL type_engine_scan_import( Chuck_Env * env, a_Stmt_List stmt_list,
                         {
                             // print error (chugin loading only prints to log)
                             EM_error2( import->where, "cannot load chugin: '%s'...", theFile.c_str() );
-                            EM_error2( 0, "...(reason) %s", errorStr.length() ? errorStr.c_str() : "[none given, unhelpfully]" );
+                            EM_error2( 0, "...(reason) %s", errorStr.length() ? errorStr.c_str() : "[none provided, unhelpfully (try running with more verbose log-level)]" );
                             EM_error2( 0, "...in file '%s'", abs.c_str() );
                             // error encountered in chugin load, bailing out
                             return FALSE;

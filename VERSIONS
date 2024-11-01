@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.4.0 (October 2024)
+1.5.4.0 (November 2024)
 =======
 ********** new language feature ************
 @import system for .ck and .chug files
@@ -11,7 +11,6 @@ ChucK VERSIONS log
   ***************************************************
   https://chuck.stanford.edu/doc/language/import.html
   ***************************************************
-
 - the @import system imports classes and operator overloads from another 
     .ck file, or from a chugin; it is designed to faciliate creating, 
     using, and distributing multi-file programs and libraries
