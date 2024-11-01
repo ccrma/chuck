@@ -1,0 +1,144 @@
+--------------------------------------------------
+type name using .name(): int[][]
+type name using .baseName(): int[][]
+inherits: @array -> Object
+isa...Object:1 UGen:0 UAna:0
+primitive: NO
+array: YES depth: 2
+--------------------------------------------------
+type name using .name(): int[][]
+type name using .baseName(): int[][]
+inherits: @array -> Object
+isa...Object:1 UGen:0 UAna:0
+primitive: NO
+array: YES depth: 2
+--------------------------------------------------
+type name using .name(): SinOsc
+type name using .baseName(): SinOsc
+inherits: Osc -> UGen -> Object
+isa...Object:1 UGen:1 UAna:0
+primitive: NO
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): SinOsc
+type name using .baseName(): SinOsc
+inherits: Osc -> UGen -> Object
+isa...Object:1 UGen:1 UAna:0
+primitive: NO
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): int
+type name using .baseName(): int
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): float
+type name using .baseName(): float
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): time
+type name using .baseName(): time
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): dur
+type name using .baseName(): dur
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): complex
+type name using .baseName(): complex
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): polar
+type name using .baseName(): polar
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): vec3
+type name using .baseName(): vec3
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): vec4
+type name using .baseName(): vec4
+inherits: (nothing)
+isa...Object:0 UGen:0 UAna:0
+primitive: YES
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): DAC
+type name using .baseName(): DAC
+inherits: UGen_Stereo -> UGen_Multi -> UGen -> Object
+isa...Object:1 UGen:1 UAna:0
+primitive: NO
+array: NO depth: 0
+--------------------------------------------------
+type name using .name(): MFCC
+type name using .baseName(): MFCC
+inherits: UAna -> UGen -> Object
+isa...Object:1 UGen:1 UAna:1
+primitive: NO
+array: NO depth: 0
+StkInstrument: BandedWG
+StkInstrument: BeeThree
+StkInstrument: BlowBotl
+StkInstrument: BlowHole
+StkInstrument: Bowed
+StkInstrument: Brass
+StkInstrument: Clarinet
+StkInstrument: Flute
+StkInstrument: FM
+StkInstrument: FMVoices
+StkInstrument: FrencHrn
+StkInstrument: HevyMetl
+StkInstrument: HnkyTonk
+StkInstrument: KrstlChr
+StkInstrument: Mandolin
+StkInstrument: ModalBar
+StkInstrument: Moog
+StkInstrument: PercFlut
+StkInstrument: Rhodey
+StkInstrument: Saxofony
+StkInstrument: Shakers
+StkInstrument: Sitar
+StkInstrument: StifKarp
+StkInstrument: TubeBell
+StkInstrument: VoicForm
+StkInstrument: Wurley
+UAna: AutoCorr
+UAna: Centroid
+UAna: Chroma
+UAna: DCT
+UAna: FeatureCollector
+UAna: FFT
+UAna: Flip
+UAna: Flux
+UAna: IDCT
+UAna: IFFT
+UAna: Kurtosis
+UAna: MFCC
+UAna: RMS
+UAna: RollOff
+UAna: SFM
+UAna: UnFlip
+UAna: XCorr
+UAna: ZeroX
+SinOsc UGen 
+SinOsc SinOsc 
