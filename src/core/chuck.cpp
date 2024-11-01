@@ -1111,7 +1111,7 @@ t_CKBOOL ChucK::compileFile( const std::string & path,
     //-------------------------------------------------------------------------
 
     // log
-    EM_log( CK_LOG_INFO, "compiling '%s'...", path.c_str() );
+    EM_log( CK_LOG_HERALD, "compiling '%s'...", path.c_str() );
     // push indent
     EM_pushlog();
 

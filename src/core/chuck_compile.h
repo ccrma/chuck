@@ -304,7 +304,8 @@ public: // import while observing semantics of chuck @import
     // import a chugin by path (and optional short-hand name)
     t_CKBOOL importChugin( const std::string & path,
                            t_CKBOOL createNamespace,
-                           const std::string & name = "" );
+                           const std::string & name,
+                           std::string & errorStr );
 
 public:
     // compile a target | 1.5.4.0 (ge)
@@ -399,7 +400,7 @@ protected: // import
     // scan for @import statements, and return a list of resulting import targets
     t_CKBOOL scan_imports( Chuck_Env * env, Chuck_CompileTarget * target );
     // import chugin
-    t_CKBOOL import_chugin_opt( const std::string & path, const std::string & name );
+    t_CKBOOL import_chugin_opt( const std::string & path, const std::string & name, std::string & errorStr );
 
 protected: // internal import dependency helpers
     // produce a compilation sequences of targets from a import dependency graph
