@@ -55,6 +55,9 @@ ChucK VERSIONS log
     suffice, assuming there are no filename conflicts elsewhere in the 
     import paths)
 ******************************************************
+- (added) member function in Object:
+    Type Object.typeOfInstance()
+        Get the instanced type of this object.
 - (fixed) specific internal UGen connection error now handled without 
     exiting
 - (fixed, windows) single letter filenames without extensions (e.g., "A") 

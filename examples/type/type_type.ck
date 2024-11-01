@@ -118,3 +118,12 @@ for( int i; i < kids.size(); i++ )
 {
     cherr <= "UAna: " <= kids[i].name() <= IO.newline();
 }
+
+// instantiate a SinOsc; assign reference to a parent class
+SinOsc theChild @=> UGen @ theParent;
+// static typing: should be `SinOsc UGen`
+<<< theChild.typeOf().name(),
+    theParent.typeOf().name() >>>;
+// instanced typing: should be `SinOsc SinOsc`
+<<< theChild.typeOfInstance().name(),
+    theParent.typeOfInstance().name() >>>;

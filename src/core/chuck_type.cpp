@@ -373,11 +373,11 @@ void Chuck_Env::clear_user_namespace()
     // clean up user namesapce
     CK_SAFE_RELEASE( user_nspc );
     // load new user namespace
-    load_user_namespace();
+    this->load_user_namespace();
     // reset it
     this->reset();
     // reset operator overloads, including public (env->reset() only resets local)
-    op_registry.reset2public();
+    this->op_registry.reset2public();
     // reset @import registry | 1.5.4.0 (ge) added
     this->compiler()->imports()->clearAllUserImports();
 }
@@ -565,6 +565,10 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     EM_pushlog();
 
     //-------------------------
+    // initialize internal classes; for now these are assumed to not error out
+    // NOTE: alternately, could test for return values and bailing out gracefully
+    // however, there may be inconstencies for cleaning up ChucK::init() fails
+    //-------------------------
     // disable array type cache until ckt_array is initialized | 1.5.4.0 (ge) added
     env->arrayTypeCache()->enable( FALSE );
     // special: Object and Type, whose initializations mutually depend
@@ -719,17 +723,23 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // initialize operator mappings
     if( !type_engine_init_op_overload( env ) ) return FALSE;
 
-    // create [user] namespace | 1.5.4.0 (ge) added/moved here
+    // clear/create/reset [user] namespace | 1.5.4.0 (ge) added/moved here
     // subsequent definitions (e.g., public classes) would be added
     // to this namespace, unless explicitly specified;
     // types added to the [user] namespace will be cleared during clearVM
     // whereas types in the [global] namespace persists
-    env->load_user_namespace();
+    env->clear_user_namespace();
 
     // pop indent level
     EM_poplog();
 
     return TRUE;
+
+error:
+    EM_error2( 0, "(internal error) during type initialization..." );
+    EM_error2( 0, "...bailing out; please contact the ChucK Team" );
+
+    return FALSE;
 }
 
 

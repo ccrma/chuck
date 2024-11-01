@@ -86,10 +86,15 @@ t_CKBOOL init_class_object( Chuck_Env * env, Chuck_Type * type )
     func->doc = "output helpful information about a class or an instance thereof.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // add getType() // 1.5.0.0
+    // add typeOf() // 1.5.0.0
     func = make_new_sfun( "Type", "typeOf", object_typeInfo );
     func->doc = "get the type of this object (or class).";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOfInstance() // 1.5.4.0 (nshaheed, ge) added
+    func = make_new_mfun( "Type", "typeOfInstance", object_typeInstanceInfo );
+    func->doc = "get the instanced type of this object.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
 //    // add dump()
 //    func = make_new_mfun( "void", "dump", object_dump );
@@ -1633,6 +1638,18 @@ CK_DLL_SFUN( object_typeInfo )
     }
 }
 
+// get the instanced type info
+CK_DLL_MFUN( object_typeInstanceInfo )
+{
+    // get the object reference
+    Chuck_Object * self = SELF;
+
+    // if null, return null
+    if( !self ) return;
+
+    // return the type
+    RETURN->v_object = self->type_ref;
+}
 
 // ctor
 CK_DLL_CTOR( ugen_ctor )
