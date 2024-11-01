@@ -851,8 +851,8 @@ void ChucK::probeChugins()
     extension = "chug.wasm";
 #endif
 
-    // load external libs
-    if( !Chuck_Compiler::probe_external_modules( extension.c_str(), dl_search_path, named_dls, TRUE, ck_libs_to_preload ) )
+    // load external libs; recurse changed to FALSE in 1.5.4.0 (ge)
+    if( !Chuck_Compiler::probe_external_modules( extension.c_str(), dl_search_path, named_dls, FALSE, ck_libs_to_preload ) )
     {
         // warning
         EM_log( CK_LOG_SYSTEM, "error probing chugins..." );

@@ -78,6 +78,7 @@ ChucK VERSIONS log
     of by Object refs)
 - (updated, internal) dynamic array types are now cached and reused,
     preventing potential memory build-up across compilations
+- (updated) chugin probe no longer recursively crawl directories
 - (updated) variable dependency check now treats sporked functions same 
     as function calls; unfulfilled dependencies will result in a compiler 
     error; previously, correctness in this regard was left to the 
