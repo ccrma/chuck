@@ -40,7 +40,6 @@
 #include "chuck_errmsg.h"
 
 
-
 //-----------------------------------------------------------------------------
 // name: enum te_Type
 // desc: basic, default ChucK types
@@ -175,11 +174,15 @@ public:
     // -1 base, 0 current, 1 climb
     T lookup( S_Symbol xid, t_CKINT climb = 1 )
     {
-        Chuck_VM_Object * val = NULL; assert( scope.size() != 0 );
+        Chuck_VM_Object * val = NULL;
+        assert( scope.size() != 0 );
 
         if( climb == 0 )
         {
-            val = (*scope.back())[xid];
+            // find key
+            std::map<S_Symbol, Chuck_VM_Object *> * b = scope.back();
+            std::map<S_Symbol, Chuck_VM_Object *>::iterator it = b->find(xid);
+            val = it != b->end() ? it->second : NULL;
             // look in commit buffer if the back is the front
             if( !val && scope.back() == scope.front()
                 && (commit_map.find(xid) != commit_map.end()) )
@@ -189,7 +192,10 @@ public:
         {
             for( t_CKUINT i = scope.size(); i > 0; i-- )
             {
-                val = (*scope[i - 1])[xid];
+                // find key
+                std::map<S_Symbol, Chuck_VM_Object *> * b = scope[i-1];
+                std::map<S_Symbol, Chuck_VM_Object *>::iterator it = b->find(xid);
+                val = it != b->end() ? it->second : NULL;
                 if( val ) break;
             }
 
@@ -199,7 +205,10 @@ public:
         }
         else
         {
-            val = (*scope.front())[xid];
+            // look front
+            std::map<S_Symbol, Chuck_VM_Object *> * b = scope.front();
+            std::map<S_Symbol, Chuck_VM_Object *>::iterator it = b->find(xid);
+            val = it != b->end() ? it->second : NULL;
             // look in commit buffer
             if( !val && (commit_map.find(xid) != commit_map.end()) )
                 val = commit_map[xid];
