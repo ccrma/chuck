@@ -1524,6 +1524,8 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
 {
     // get env
     Chuck_Env * env = this->env();
+    // platform-specific path (below: will use the appropriate '/' vs '\\')
+    string platformPath = path;
 
     // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
     EM_log( CK_LOG_INFO, "@import loading [chugin] %s...", name.c_str() );
@@ -1535,8 +1537,24 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
     // clear error string
     errorStr = "";
 
+#if defined(__PLATFORM_WINDOWS__)
+    // replace '/' with '\\'
+    std::replace( platformPath.begin(), platformPath.end(), '/', '\\' );
+    // the dll search path to add
+    string dll_path = extract_filepath_dir( platformPath );
+    // the relateive _deps directory
+    string dll_deps_path = dll_path + "_deps\\";
+    // convert to wchar
+    wstring dll_pathw = wstring( dll_path.begin(), dll_path.end() );
+    wstring dll_deps_pathw = wstring( dll_deps_path.begin(), dll_deps_path.end() );
+    // add to the dll search path, for resolving the chugin's own DLL dependencies
+    DLL_DIRECTORY_COOKIE cookie_path = AddDllDirectory( dll_pathw.c_str() );
+    // add the relateive _deps directory to the search path as well
+    DLL_DIRECTORY_COOKIE cookie_deps_path = AddDllDirectory( dll_deps_pathw.c_str() );
+#endif
+
     // load (but don't query yet; lazy mode == TRUE)
-    if( dll->load( path.c_str(), CK_QUERY_FUNC, TRUE) )
+    if( dll->load( platformPath.c_str(), CK_QUERY_FUNC, TRUE) )
     {
         // probe it
         dll->probe();
@@ -1575,6 +1593,8 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
             }
             EM_log( CK_LOG_HERALD, "%s '%s'...", TC::blue("skipping",true).c_str(), path.c_str() );
             EM_poplog();
+            // set error string
+            errorStr = dll->last_error();
             // go to error for cleanup
             goto error;
         }
@@ -1589,6 +1609,8 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
         EM_pushlog();
         EM_log( CK_LOG_HERALD, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
         EM_poplog();
+        // set error string
+        errorStr = dll->last_error();
         // go to error for cleanup
         goto error;
     }
@@ -1601,6 +1623,11 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
     m_importRegistry.commit( dll );
     // commit operator overloads | 1.5.1.5
     env->op_registry.preserve();
+#if defined(__PLATFORM_WINDOWS__)
+    // undo the AddDllDirectory()
+    if( cookie_path ) RemoveDllDirectory( cookie_path );
+    if( cookie_deps_path ) RemoveDllDirectory( cookie_deps_path );
+#endif
     // return home successful
     return TRUE;
 
@@ -1609,7 +1636,11 @@ error:
     CK_SAFE_DELETE( dll );
     // rollback operator overloads | 1.5.1.5
     env->op_registry.reset2local();
-
+#if defined(__PLATFORM_WINDOWS__)
+    // undo the AddDllDirectory()
+    if( cookie_path ) RemoveDllDirectory( cookie_path );
+    if( cookie_deps_path ) RemoveDllDirectory( cookie_deps_path );
+#endif
     return FALSE;
 }
 

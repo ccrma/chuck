@@ -735,9 +735,9 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
 
     return TRUE;
 
-error:
-    EM_error2( 0, "(internal error) during type initialization..." );
-    EM_error2( 0, "...bailing out; please contact the ChucK Team" );
+// error:
+//     EM_error2( 0, "(internal error) during type initialization..." );
+//     EM_error2( 0, "...bailing out; please contact the ChucK Team" );
 
     return FALSE;
 }

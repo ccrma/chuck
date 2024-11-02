@@ -3011,11 +3011,16 @@ extern "C"
 void *dlopen( const char *path, int mode )
 {
 #ifndef __CHUNREAL_ENGINE__
-    return (void *)LoadLibrary(path);
+    // 1.5.4.0 (ge) change from LoadLibrary to LoadLibraryEx to specific 
+    // LOAD_LIBRARY_SEARCH_DEFAULT_DIRS -- this is needed, apparently,
+    // to take directories added by AddDllDirectory() into account, which
+    // is needed to load DLL dependencies of chugins...
+    // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-adddlldirectory
+    return (void *)LoadLibraryEx( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #else
     // 1.5.0.0 (ge) | #chunreal; explicitly call ASCII version
     // the build envirnment seems to force UNICODE
-    return (void *)LoadLibraryA(path);
+    return (void *)LoadLibraryExA( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #endif
 }
 
