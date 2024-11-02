@@ -4,6 +4,17 @@ ChucK VERSIONS log
 
 1.5.4.0 (November 2024)
 =======
+\/\/\/\/\/
+LICENSE UPDATE: ChucK source code is dual-licensed under the MIT License 
+and the GNU General Public License 2.0 (or any later version). You can 
+choose either license in order to use the source code. Previoiusly, ChucK 
+was GPL-only. Please the LICENSE.MIT and LICENSE.GPL in the source 
+distribution for details.
+----
+NOTE: as before, miniAudicle source code remains GPL for now; chugins 
+each have their own license(s). WebChucK, ChuGL, Chunity, Chunreal 
+respectively have MIT licenses
+/\/\/\/\/\
 ********** new language feature ************
 @import system for .ck and .chug files
 ********************************************
