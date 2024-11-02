@@ -1535,6 +1535,21 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
     // clear error string
     errorStr = "";
 
+#if defined(__PLATFORM_WINDOWS__)
+    // get dll path to add
+    string dll_path = extract_filepath_dir( path );
+    // replace '/' with '\\'
+    std::replace( dll_path.begin(), dll_path.end(), '/', '\\' );
+    // add in _deps
+    string dll_deps_path = dll_path + "_deps";
+    // convert to wchar
+    wstring dll_pathw = wstring( dll_path.begin(), dll_path.end() );
+    wstring dll_deps_pathw = wstring( dll_deps_path.begin(), dll_deps_path.end() );
+    // add directory
+    DLL_DIRECTORY_COOKIE cookie_path = AddDllDirectory( dll_pathw.c_str() );
+    DLL_DIRECTORY_COOKIE cookie_deps_path = AddDllDirectory( dll_deps_pathw.c_str() );
+#endif
+
     // load (but don't query yet; lazy mode == TRUE)
     if( dll->load( path.c_str(), CK_QUERY_FUNC, TRUE) )
     {
@@ -1575,6 +1590,8 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
             }
             EM_log( CK_LOG_HERALD, "%s '%s'...", TC::blue("skipping",true).c_str(), path.c_str() );
             EM_poplog();
+            // set error string
+            errorStr = dll->last_error();
             // go to error for cleanup
             goto error;
         }
@@ -1589,10 +1606,16 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
         EM_pushlog();
         EM_log( CK_LOG_HERALD, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
         EM_poplog();
+        // set error string
+        errorStr = dll->last_error();
         // go to error for cleanup
         goto error;
     }
 
+#if defined(__PLATFORM_WINDOWS__)
+    // RemoveDllDirectory( cookie_path );
+    // RemoveDllDirectory( cookie_deps_path );
+#endif
     // print `[chugin] X.chug`
     logChuginLoad( name, CK_LOG_HERALD );
     // print success status
@@ -1605,6 +1628,10 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
     return TRUE;
 
 error:
+#if defined(__PLATFORM_WINDOWS__)
+    // RemoveDllDirectory( cookie_path );
+    // RemoveDllDirectory( cookie_deps_path );
+#endif
     // clean up
     CK_SAFE_DELETE( dll );
     // rollback operator overloads | 1.5.1.5
