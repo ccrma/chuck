@@ -1520,18 +1520,18 @@ static void logChuginLoad( const string & name, t_CKINT logLevel )
 // name: import_chugin_opt()
 // desc: load chugin module by path, with options
 //-----------------------------------------------------------------------------
-t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & thePath, const string & name, string & errorStr )
+t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & name, string & errorStr )
 {
     // get env
     Chuck_Env * env = this->env();
     // platform-specific path (below: will use the appropriate '/' vs '\\')
-    string path = thePath;
+    string platformPath = path;
 
     // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
     EM_log( CK_LOG_INFO, "@import loading [chugin] %s...", name.c_str() );
 
     // create chuck DLL data structure
-    Chuck_DLL * dll = new Chuck_DLL( this->carrier(), name != "" ? name.c_str() : (extract_filepath_file(thePath)).c_str() );
+    Chuck_DLL * dll = new Chuck_DLL( this->carrier(), name != "" ? name.c_str() : (extract_filepath_file(path)).c_str() );
     t_CKBOOL query_failed = FALSE;
 
     // clear error string
@@ -1539,9 +1539,9 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & thePath, const string
 
 #if defined(__PLATFORM_WINDOWS__)
     // replace '/' with '\\'
-    std::replace( path.begin(), path.end(), '/', '\\' );
+    std::replace( platformPath.begin(), platformPath.end(), '/', '\\' );
     // the dll search path to add
-    string dll_path = extract_filepath_dir( path );
+    string dll_path = extract_filepath_dir( platformPath );
     // the relateive _deps directory
     string dll_deps_path = dll_path + "_deps\\";
     // convert to wchar
@@ -1554,7 +1554,7 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & thePath, const string
 #endif
 
     // load (but don't query yet; lazy mode == TRUE)
-    if( dll->load( path.c_str(), CK_QUERY_FUNC, TRUE) )
+    if( dll->load( platformPath.c_str(), CK_QUERY_FUNC, TRUE) )
     {
         // probe it
         dll->probe();
