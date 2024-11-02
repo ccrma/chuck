@@ -232,7 +232,7 @@ endif
 
 ############################ DISTRIBUTION INFO ################################
 # release notes
-NOTES=AUTHORS DEVELOPERS INSTALL LICENSE QUICKSTART README.md THANKS VERSIONS
+NOTES=AUTHORS DEVELOPERS INSTALL LICENSE.GPL LICENSE.MIT QUICKSTART README.md THANKS VERSIONS
 # where to put the newly constructed distribution
 DIST_DIR=chuck-$(CK_VERSION)
 # root directory where the above is found
