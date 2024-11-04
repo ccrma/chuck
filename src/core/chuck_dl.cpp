@@ -3028,6 +3028,8 @@ void * dlopen( const char * path, int mode )
 {
     // return
     void * retval = NULL;
+    // copy into string
+    std::string platformPath = path;
 
     // add DLL search path | 1.5.4.0 (ge & nshaheed) added
     // (e.g., for chugins that have DLL dependencies)
@@ -3051,11 +3053,11 @@ void * dlopen( const char * path, int mode )
     // to take directories added by AddDllDirectory() into account, which
     // is needed to load DLL dependencies of chugins...
     // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-adddlldirectory
-    retval = (void *)LoadLibraryEx( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
+    retval = (void *)LoadLibraryEx( platformPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #else
     // 1.5.0.0 (ge) | #chunreal; explicitly call ASCII version
     // the build envirnment seems to force UNICODE
-    retval = (void *)LoadLibraryExA( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
+    retval = (void *)LoadLibraryExA( platformPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #endif
 
     // undo the AddDllDirectory()
