@@ -66,7 +66,22 @@ respectively have MIT licenses
     files
 - @import has built-in cycle-detection; if an @import cycle is detected, 
     a compiler error will be issued and that compilation will be failed 
-******************************************************
+*******************
+ChuGL 0.2.3 Release
+*******************
+- Video textures! 
+  - Currently supporting MPEG1 Video decoding and playback
+- Webcam/video camera integration
+- ChuGL can now run at a fixed framerate across all machines/monitors
+  - `GG.fps(int fps)` to set the target framerate (lower values improve 
+    chuck's audio performance)
+  - defaults to 60fps
+- Added skybox support to GScene and environment lighting to PhongMaterial
+- New Examples
+  - basic/skybox.ck
+  - basic/webcam.ck
+  - basic/video.ck
+- Fix memory leak on creating new Shaders
 - (updated behavior) the one-public-class-per-file restriction has been 
     lifted; i.e., it is now possible to define more than one public class 
     in a single .ck file; this update is intended to give programmers and 
@@ -77,7 +92,7 @@ respectively have MIT licenses
     be explicitly @imported to be used (FYI just the file name will 
     suffice, assuming there are no filename conflicts elsewhere in the 
     import paths)
-******************************************************
+*******************
 - (added) member function in Object to get the instantiated type of an
     object, regardless of the apparent type
     Type Object.typeOfInstance()
