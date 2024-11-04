@@ -1207,7 +1207,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: load_module()
-// desc: load a dll and add it
+// desc: load an internal module and add it to the type system
 //-----------------------------------------------------------------------------
 t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query query,
                       const char * name, const char * nspc )
@@ -1215,20 +1215,23 @@ t_CKBOOL load_module( Chuck_Compiler * compiler, Chuck_Env * env, f_ck_query que
     Chuck_DLL * dll = NULL;
     t_CKBOOL query_failed = FALSE;
 
-    // load osc
+    // create a DLL as a module (here DLL is not actually dynamically loaded
+    // from disk, but rather is a construct that contains a query function
     dll = new Chuck_DLL( compiler->carrier(), name );
     // (fixed: 1.3.0.0) query_failed now catches either failure of load or query
     query_failed = !(dll->load( query ) && dll->query());
+    // check and add contents to type system
     if( query_failed || !type_engine_add_dll( env, dll, nspc ) )
     {
-        EM_error2( 0, "internal error loading module '%s.%s'...",
-                   nspc, name );
-        if( query_failed )
-        EM_error2( 0, "...(reason: %s)", dll->last_error() );
-
+        // print error
+        EM_error2( 0, "internal error loading module '%s.%s'...", nspc, name );
+        // print error if it came from DLL query
+        if( query_failed ) { EM_error2( 0, "...(reason: %s)", dll->last_error() ); }
+        // done
         return FALSE;
     }
 
+    // TODO: SAFE_DELETE( dll ) -- possibly in both error and success cases?
     return TRUE;
 }
 
@@ -1933,6 +1936,9 @@ t_CKBOOL Chuck_Compiler::probe_external_chugin( const string & path, const strin
         EM_log( CK_LOG_SYSTEM, "reason: %s", TC::orange(dll->last_error(),true).c_str() );
         EM_poplog();
     }
+
+    // clean up | 1.5.4.1 (ge) added
+    CK_SAFE_DELETE( dll );
 
     // done
     return TRUE;
