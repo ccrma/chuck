@@ -2,12 +2,17 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.4.1
+
+1.5.4.1 (November 2024)
 =======
 (patch release)
 - (fixed, linux) a crash when the OTF handles an OTF command (add or replace)
 - (added) support for crawling subdirectories for importing for packages
      to be managed by the upcoming ChuMP (ChucK Manager of Packages)
+- (updated) --chugin-probe now prints .ck files in the import search paths
+     NOTE: as of 1.5.4.1 chuck auto-loads ONLY chugins in the system search
+     paths; all other chugins and all chuck files in the import search paths
+     must be @imported in order to be used.
 
 
 1.5.4.0 (November 2024)
