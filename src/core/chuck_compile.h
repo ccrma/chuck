@@ -112,8 +112,8 @@ public:
     // constructor
     Chuck_CompileTarget( te_HowMuch extent = te_do_all )
         : state(te_compile_inprogress), howMuch(extent), isSystemImport(FALSE),
-          timestamp(0), fd2parse(NULL), chugin(NULL), lineNum(1), tokPos(0),
-          AST(NULL), the_chuck(NULL)
+          fd2parse(NULL), chugin(NULL), lineNum(1), tokPos(0),
+          AST(NULL), timestamp(0), the_chuck(NULL)
     {
         // initialize
         the_linePos = intList( 0, NULL );
