@@ -983,6 +983,9 @@ Chuck_Carrier * Chuck_DL_Query::carrier() const { return m_carrier; }
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL lazy )
 {
+    // return value
+    t_CKBOOL ret = TRUE;
+
     // open
     m_handle = dlopen( filename, lazy ? RTLD_LAZY : RTLD_NOW );
 
@@ -990,7 +993,8 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
     if( !m_handle )
     {
         m_last_error = dlerror();
-        return FALSE;
+        ret = FALSE;
+        goto cleanup;
     }
 
     // save the filename
@@ -1000,9 +1004,20 @@ t_CKBOOL Chuck_DLL::load( const char * filename, const char * func, t_CKBOOL laz
 
     // if not lazy, do it
     if( !lazy && !this->query() )
-        return FALSE;
+    {
+        // clean up the handle | 1.5.4.1 (ge) added here
+        dlclose( m_handle );
+        m_handle = NULL;
 
-    return TRUE;
+        // FYI last error should be set from within query()
+        ret = FALSE;
+        goto cleanup;
+    }
+
+cleanup:
+
+    // return
+    return ret;
 }
 
 
@@ -3009,20 +3024,48 @@ extern "C"
   #include "Windows/MinWindows.h"
 #endif // #ifndef __CHUNREAL_ENGINE__
 
-void *dlopen( const char *path, int mode )
+void * dlopen( const char * path, int mode )
 {
+    // return
+    void * retval = NULL;
+    // copy into string
+    std::string platformPath = path;
+
+    // add DLL search path | 1.5.4.0 (ge & nshaheed) added
+    // (e.g., for chugins that have DLL dependencies)
+    // replace '/' with '\\'
+    std::replace( platformPath.begin(), platformPath.end(), '/', '\\' );
+    // the dll search path to add
+    string dll_path = extract_filepath_dir( platformPath );
+    // the relateive _deps directory
+    string dll_deps_path = dll_path + "_deps\\";
+    // convert to wchar
+    wstring dll_pathw = wstring( dll_path.begin(), dll_path.end() );
+    wstring dll_deps_pathw = wstring( dll_deps_path.begin(), dll_deps_path.end() );
+    // add to the dll search path, for resolving the chugin's own DLL dependencies
+    DLL_DIRECTORY_COOKIE cookie_path = AddDllDirectory( dll_pathw.c_str() );
+    // add the relateive _deps directory to the search path as well
+    DLL_DIRECTORY_COOKIE cookie_deps_path = AddDllDirectory( dll_deps_pathw.c_str() );
+
 #ifndef __CHUNREAL_ENGINE__
     // 1.5.4.0 (ge) change from LoadLibrary to LoadLibraryEx to specific 
     // LOAD_LIBRARY_SEARCH_DEFAULT_DIRS -- this is needed, apparently,
     // to take directories added by AddDllDirectory() into account, which
     // is needed to load DLL dependencies of chugins...
     // https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-adddlldirectory
-    return (void *)LoadLibraryEx( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
+    retval = (void *)LoadLibraryEx( platformPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #else
     // 1.5.0.0 (ge) | #chunreal; explicitly call ASCII version
     // the build envirnment seems to force UNICODE
-    return (void *)LoadLibraryExA( path, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
+    retval = (void *)LoadLibraryExA( platformPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS );
 #endif
+
+    // undo the AddDllDirectory()
+    if( cookie_path ) RemoveDllDirectory( cookie_path );
+    if( cookie_deps_path ) RemoveDllDirectory( cookie_deps_path );
+
+    // return
+    return retval;
 }
 
 int dlclose( void *handle )
