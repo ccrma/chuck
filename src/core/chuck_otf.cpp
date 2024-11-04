@@ -294,7 +294,8 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
 
 cleanup:
     // close file handle
-    if( fd ) fclose( fd );
+    // if( fd ) fclose( fd );
+    // 1.5.4.1 (ge) not needed, file handle should be cleaned up as part of compile-target
 
     return ret;
 }

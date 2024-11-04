@@ -2,6 +2,12 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.4.1
+=======
+(patch release)
+- (fixed, linux) a crash when the OTF handles an OTF command (add or replace)
+
+
 1.5.4.0 (November 2024)
 =======
 \/\/\/\/\/
