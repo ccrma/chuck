@@ -44,6 +44,7 @@
 #include "chuck_vm.h"
 #include <list>
 #include <set>
+#include <string>
 
 
 
@@ -416,6 +417,21 @@ protected: // internal import dependency helpers
                            std::vector<ImportTargetNode *> & problems );
 };
 
+
+
+
+//-----------------------------------------------------------------------------
+// helper functions
+//-----------------------------------------------------------------------------
+// log a chugin load
+void logChuginLoad( const std::string & name, t_CKINT logLevel );
+// log a chuck file found
+void logCKFileFound( const std::string & name, t_CKINT logLevel );
+// scan for subdirs in a dir
+t_CKBOOL scan_for_dirs_in_directory( const std::string & directory,
+                                     const std::string & extensionForSubdirTest,
+                                     t_CKBOOL recursiveSearch,
+                                     std::list<std::string> & results );
 
 
 

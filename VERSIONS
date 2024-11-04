@@ -6,6 +6,8 @@ ChucK VERSIONS log
 =======
 (patch release)
 - (fixed, linux) a crash when the OTF handles an OTF command (add or replace)
+- (added) support for crawling subdirectories for importing for packages
+     to be managed by the upcoming ChuMP (ChucK Manager of Packages)
 
 
 1.5.4.0 (November 2024)

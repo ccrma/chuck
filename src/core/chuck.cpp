@@ -687,7 +687,7 @@ t_CKBOOL ChucK::initCompiler()
 
 //-----------------------------------------------------------------------------
 // name: initChugin()
-// desc: initialize chugin system
+// desc: initialize chugin system (auto-load system chugins)
 //-----------------------------------------------------------------------------
 t_CKBOOL ChucK::initChugins()
 {
@@ -817,6 +817,12 @@ void ChucK::probeChugins()
     std::list<std::string> ck_libs_to_preload;
     // host verison
     std::ostringstream ostr; ostr << CK_DLL_VERSION_MAJOR << "." << CK_DLL_VERSION_MINOR;
+    // chugin extension
+    std::string extension = ".chug";
+#ifdef __EMSCRIPTEN__
+    // webchugins have extension ".chug.wasm" | 1.5.2.0 (terryzfeng) added
+    extension = "chug.wasm";
+#endif
 
     // print whether chugins enabled
     EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
@@ -832,9 +838,20 @@ void ChucK::probeChugins()
     // pop
     EM_poplog();
 
-    // list of search pathes (added 1.3.0.0)
+    // list of search pathes (added 1.3.0.0; revisited 1.5.4.0)
+    // start with system paths (auto-load chugins; .ck files must be @imported)
     std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
-    append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES) );
+    // next, process packages paths (e.g., as managed by ChuMP; no auto-load; all must be @imported)
+    std::list<std::string> packages_paths = getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES);
+    // append packages paths to search paths
+    append_path_list( dl_search_path, packages_paths );
+    // iterate over packages paths | 1.5.4.1 (ge & nshaheed) added
+    for( std::list<std::string>::iterator it = packages_paths.begin(); it != packages_paths.end(); it++ )
+    {
+        // scan for subdirs, but only one-level in each packages path
+        scan_for_dirs_in_directory( *it, extension, FALSE, dl_search_path );
+    }
+    // finally, add user-managed search paths (no auto-load; all must be @imported)
     append_path_list( dl_search_path, getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER) );
 
     // list of individually named chug-ins (added 1.3.0.0)
@@ -844,13 +861,6 @@ void ChucK::probeChugins()
     EM_log( CK_LOG_SYSTEM, "probing chugins (.chug)..." );
     // push indent level
     // EM_pushlog();
-
-    // chugin extension
-    std::string extension = ".chug";
-#ifdef __EMSCRIPTEN__
-    // webchugins have extension ".chug.wasm" | 1.5.2.0 (terryzfeng) added
-    extension = "chug.wasm";
-#endif
 
     // load external libs; recurse changed to FALSE in 1.5.4.0 (ge)
     if( !Chuck_Compiler::probe_external_modules( extension.c_str(), dl_search_path, named_dls, FALSE, ck_libs_to_preload ) )
@@ -863,9 +873,9 @@ void ChucK::probeChugins()
 
     //-------------------------------------------------------------------------
     // 1.5.4.0 | .ck files are no longer auto compiled; need to be @import
-    /*-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // log
-    EM_log( CK_LOG_SYSTEM, "probing auto-load chuck files (.ck)..." );
+    EM_log( CK_LOG_SYSTEM, "probing chuck files (.ck)..." );
     EM_pushlog();
 
     // iterate over list of ck files that the compiler found
@@ -875,7 +885,8 @@ void ChucK::probeChugins()
         // the filename
         std::string filename = *j;
         // log
-        EM_log( CK_LOG_SYSTEM, "[%s] '%s'...", TC::green("FOUND",true).c_str(), filename.c_str() );
+        logCKFileFound( filename, CK_LOG_SYSTEM );
+        // EM_log( CK_LOG_SYSTEM, "[%s] '%s'...", TC::green("FOUND",true).c_str(), filename.c_str() );
     }
 
     // check
@@ -884,7 +895,6 @@ void ChucK::probeChugins()
 
     // pop log
     EM_poplog();
-    -------------------------------------------------------------------------*/
 }
 
 

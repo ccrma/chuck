@@ -666,10 +666,21 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         // TODO: possible caching -- search for match first in registry
         // match-right between each entry and fname; if found, return entry absolute path
 
-        // get search paths; order: system, packages, user
-        list<string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
-        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES ) );
-        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER ) );
+        // search paths: start with system paths
+        std::list<std::string> searchPaths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
+        // next, process packages paths (e.g., as managed by ChuMP)
+        std::list<std::string> packages_paths = this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_PACKAGES);
+        // append packages paths to search paths
+        append_path_list( searchPaths, packages_paths );
+        // iterate over packages paths | 1.5.4.1 (ge & nshaheed) added
+        for( std::list<std::string>::iterator it = packages_paths.begin(); it != packages_paths.end(); it++ )
+        {
+            // scan for subdirs, but only one-level in each packages path
+            scan_for_dirs_in_directory( *it, "", FALSE, searchPaths );
+        }
+        // finally, add user-managed search paths (no auto-load; all must be @imported)
+        append_path_list( searchPaths, this->carrier()->chuck->getParamStringList( CHUCK_PARAM_IMPORT_PATH_USER) );
+
         // go over paths
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {
@@ -677,6 +688,8 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
             absolutePath = expand_filepath(*it+fname);
             // try to match
             hasMatch = matchFilename( absolutePath, extension, exts );
+            // log
+            EM_log( CK_LOG_FINER, "testing match: '%s' ('%s')", absolutePath.c_str(), hasMatch ? "yes" : "no" );
             // if match found, break out
             if( hasMatch ) break;
         }
@@ -1419,7 +1432,7 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
     vector<string> & ckfiles2load )
 {
     // expand directory path
-    string path = expand_filepath( string(directory), FALSE );
+    string path = expand_filepath( directory, FALSE );
     // open the directory
     DIR * dir = opendir( path.c_str() );
 
@@ -1429,7 +1442,7 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
     // do first read | 1.5.0.0 (ge + eito) #chunreal
     struct dirent * de = readdir( dir );
     // while( (de = readdir(dir)) ) <- UE5 forces us to not do this
-    while( de != NULL )
+    for( de = readdir(dir); de != NULL; de = readdir(dir) )
     {
         t_CKBOOL is_regular = false;
         t_CKBOOL is_directory = false;
@@ -1490,9 +1503,6 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
             chugins2load.push_back( ChuginFileInfo( de->d_name, subdirectory, true ) );
         }
 #endif // #ifdef __PLATFORM_APPLE__
-
-        // read next | 1.5.0.0 (ge) moved here due to #chunreal
-        de = readdir( dir );
     }
 
     // close
@@ -1505,13 +1515,101 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
 
 
 //-----------------------------------------------------------------------------
+// name: scan_for_dirs_in_directory() | 1.5.4.1 (ge & nshaheed) added
+// desc: scan all subdirectories within a directory
+//-----------------------------------------------------------------------------
+t_CKBOOL scan_for_dirs_in_directory( const string & directory,
+                                     const string & extensionForSubdirTest,
+                                     t_CKBOOL recursiveSearch,
+                                     list<string> & results )
+{
+    // expand directory path
+    string path = normalize_directory_name( expand_filepath( directory, FALSE ) );
+    // open the directory
+    DIR * dir = opendir( path.c_str() );
+    // cannot open
+    if( !dir ) return FALSE;
+
+    // local results
+    list<string> localResults;
+
+    // do first read | 1.5.0.0 (ge + eito) #chunreal
+    struct dirent * de = readdir( dir );
+    // while( (de = readdir(dir)) ) <- UE5 forces us to not do this
+    for( de = readdir(dir); de != NULL; de = readdir(dir) )
+    {
+        t_CKBOOL is_regularFile = false;
+        t_CKBOOL is_directory = false;
+        // get attributes
+        if( !getDirEntryAttribute( de, is_directory, is_regularFile ) ) continue;
+
+        // check if directory
+        if( is_directory )
+        {
+            // test for special cases (e.g., chugins that are directories)
+            if( extensionForSubdirTest.length() && !subdir_ok2recurse( de->d_name, extensionForSubdirTest ) ) continue;
+
+            // check dir entry
+            if( strncmp( de->d_name, ".", sizeof( "." ) ) != 0 &&
+                strncmp( de->d_name, "..", sizeof( ".." ) ) != 0 )
+            {
+                // construct absolute path (use the non-expanded path for consistency when printing)
+                string absolute_path = string(path) + de->d_name;
+                // queue sub-directory
+                localResults.push_back( normalize_directory_name(absolute_path) );
+            }
+        }
+    }
+
+    // close
+    closedir( dir );
+
+    // sort the local results
+    localResults.sort();
+    // copy local results
+    append_path_list( results, localResults );
+
+    // recurse?
+    if( recursiveSearch )
+    {
+        // iterate over local directoriesug
+        for( list<string>::iterator it = localResults.begin(); it != localResults.end(); it++ )
+        {
+            // scan subdirs in this local dir
+            scan_for_dirs_in_directory( *it, extensionForSubdirTest, recursiveSearch, results );
+        }
+    }
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: logChuginLoad() | 1.5.2.5 (ge)
 // desc: local function quick-hand for logging a chugin load
 //-----------------------------------------------------------------------------
-static void logChuginLoad( const string & name, t_CKINT logLevel )
+void logChuginLoad( const string & name, t_CKINT logLevel )
 {
     // log with no newline; print `[chugin] X.chug`
     EM_log_opts( logLevel, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::magenta("chugin",true).c_str(), name.c_str() );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: logCKFileFound() | 1.5.4.1 (ge & nshaheed)
+// desc: local function quick-hand for logging a chuck file found
+//-----------------------------------------------------------------------------
+void logCKFileFound( const string & name, t_CKINT logLevel )
+{
+    // log with no newline; print `[chuck file] X.ck`
+    EM_log_opts( logLevel, EM_LOG_NO_NEWLINE, "[%s] %s ", TC::blue("chuck file",true).c_str(), name.c_str() );
+
+    // print success status
+    EM_log_opts( logLevel, EM_LOG_NO_PREFIX, "[%s]", TC::green("FOUND",true).c_str() );
 }
 
 
@@ -1987,7 +2085,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
     // push
     EM_pushlog();
 
-    // now recurse through search paths and load any DLs or .ck files found
+    // now recurse through search paths and note any DLs or .ck files found
     for( list<string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
