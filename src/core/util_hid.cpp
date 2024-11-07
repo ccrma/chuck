@@ -410,9 +410,11 @@ t_CKINT OSX_Hid_Device::preconfigure( io_object_t ioHIDDeviceObject )
                                                                    &hidProperties,
                                                                    kCFAllocatorDefault,
                                                                    kNilOptions);
+    EM_log( CK_LOG_WARNING, "hid: hidProperties (0x%x)", hidProperties );
 
     if( kern_result != KERN_SUCCESS || hidProperties == NULL )
     {
+        EM_log( CK_LOG_WARNING, "hid: hidProperties failed to create (0x%x)", hidProperties );
         hidProperties = NULL;
         return -1;
     }
@@ -594,6 +596,7 @@ t_CKINT OSX_Hid_Device::configure()
     result = (*queue)->create( queue, 0, event_queue_size );
     if( result != kIOReturnSuccess )
     {
+        EM_log( CK_LOG_WARNING, "hid: error: queue create (%s)", name );
         CFRelease( hidProperties );
         hidProperties = NULL;
         (*queue)->Release( queue );
@@ -608,6 +611,7 @@ t_CKINT OSX_Hid_Device::configure()
     result = (*queue)->createAsyncEventSource( queue, &eventSource );
     if( result != kIOReturnSuccess )
     {
+        EM_log( CK_LOG_WARNING, "hid: error: createAsyncEventSource (%s)", name );
         CFRelease( hidProperties );
         hidProperties = NULL;
         (*queue)->dispose( queue );
@@ -634,6 +638,8 @@ t_CKINT OSX_Hid_Device::configure()
         return -1;
     }
 
+    EM_log( CK_LOG_INFO, "hid: (configure) hidProperties (0x%x)", hidProperties );
+    
     if( hidProperties != NULL )
     {
         EM_log( CK_LOG_WARNING, "hid: enumerating elements (%s)", name );
@@ -1198,6 +1204,7 @@ void OSX_Hid_Device::disconnect()
 //------------------------------------------------------------------------------
 void OSX_Hid_Device::cleanup()
 {
+    EM_log( CK_LOG_INFO, "hid: cleanup %s", name );
     // can only be called in Hid thread, or if the hid thread hasnt started
     assert( rlHid == NULL || rlHid == CFRunLoopGetCurrent() );
 
@@ -1524,6 +1531,11 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
         if( !refCF )
             continue;
 
+        io_string_t io_path;
+        io_path[0] = 0;
+        IORegistryEntryGetPath( ioHIDDeviceObject, kIOServicePlane, io_path );
+        EM_log( CK_LOG_INFO, "hid: device name: %s", io_path );
+        
         CFNumberGetValue( ( CFNumberRef )refCF, kCFNumberLongType, &usage );
         CFRelease( refCF );
 
@@ -1798,7 +1810,7 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
                 EM_poplog();
             }
 
-            if( usage == kHIDUsage_GD_Keyboard || usage == kHIDUsage_GD_Keypad )
+            if( false && ( usage == kHIDUsage_GD_Keyboard || usage == kHIDUsage_GD_Keypad ) )
                 // this is a keyboard
             {
                 // see if this an device that was disconnected being reconnected
