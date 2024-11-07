@@ -622,6 +622,7 @@ t_CKINT OSX_Hid_Device::configure()
     result = (*queue)->setEventCallout( queue, Hid_callback, NULL, this );
     if( result != kIOReturnSuccess )
     {
+        EM_log( CK_LOG_WARNING, "hid: error: setting callback (%s)", name );
         CFRelease( hidProperties );
         hidProperties = NULL;
         (*queue)->dispose( queue );
@@ -635,6 +636,8 @@ t_CKINT OSX_Hid_Device::configure()
 
     if( hidProperties != NULL )
     {
+        EM_log( CK_LOG_WARNING, "hid: enumerating elements (%s)", name );
+
         if( elements == NULL )
         {
             // retrieve the array of elements...
@@ -1524,7 +1527,9 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
         CFNumberGetValue( ( CFNumberRef )refCF, kCFNumberLongType, &usage );
         CFRelease( refCF );
 
-        if( usage_page != kHIDPage_GenericDesktop )
+        EM_log( CK_LOG_INFO, "hid: usage_page: %02x usage: %02x", usage_page, usage);
+        
+        if( false && usage_page != kHIDPage_GenericDesktop )
         {
             // some sort of HID device we dont recognize
             // lets probe its input/output reports and try to categorize it
@@ -1536,28 +1541,35 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
             new_device->num = 0;
             new_device->usage_page = usage_page;
             new_device->usage = usage;
+            bool did_detect = false;
 
             if( !new_device->preconfigure( ioHIDDeviceObject ) && !new_device->configure() )
             {
                 if( new_device->hats > 0 || new_device->axes > 2 )
                     // make it a joystick
                 {
+                    EM_log( CK_LOG_INFO, "hid: treating device as joystick" );
                     usage_page = kHIDPage_GenericDesktop;
                     usage = kHIDUsage_GD_Joystick;
+                    did_detect = true;
                 }
 
                 else if( new_device->axes == 2 )
                     // make it a mouse
                 {
+                    EM_log( CK_LOG_INFO, "hid: treating device as mouse" );
                     usage_page = kHIDPage_GenericDesktop;
                     usage = kHIDUsage_GD_Mouse;
+                    did_detect = true;
                 }
 
                 else if( new_device->buttons > 0 )
                     // make it a keyboard
                 {
+                    EM_log( CK_LOG_INFO, "hid: treating device as keyboard" );
                     usage_page = kHIDPage_GenericDesktop;
                     usage = kHIDUsage_GD_Keyboard;
+                    did_detect = true;
                 }
 
                 new_device->cleanup();
@@ -1566,6 +1578,11 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
             else
             {
                 //EM_log( );
+            }
+            
+            if (!did_detect)
+            {
+                EM_log( CK_LOG_INFO, "hid: ignoring device, no profile detected" );
             }
 
             delete new_device;
@@ -1577,6 +1594,8 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
                 usage == kHIDUsage_GD_GamePad )
                 // this is a joystick, create a new item in the joystick array
             {
+                EM_log( CK_LOG_INFO, "hid: generic joystick detected" );
+
                 // see if this an device that was disconnected being reconnected
                 refCF = IORegistryEntryCreateCFProperty( ioHIDDeviceObject,
                                                          CFSTR( kIOHIDProductKey ),
@@ -1693,6 +1712,9 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
 
                 else
                     strncpy( __temp, "Mouse", 256 );
+                
+                
+                EM_log( CK_LOG_INFO, "hid: generic mouse detected: %s", __temp );
 
                 pair< xmultimap< string, OSX_Hid_Device * >::const_iterator,
                     xmultimap< string, OSX_Hid_Device * >::const_iterator > name_range
@@ -1794,6 +1816,8 @@ static void Hid_new_devices( void * refcon, io_iterator_t iterator )
 
                 else
                     strncpy( __temp, "Keyboard", 256 );
+
+                EM_log( CK_LOG_INFO, "hid: generic keyboard detected %s", __temp );
 
                 pair< xmultimap< string, OSX_Hid_Device * >::const_iterator,
                     xmultimap< string, OSX_Hid_Device * >::const_iterator > name_range
@@ -1949,6 +1973,8 @@ void Hid_callback( void * target, IOReturn result,
     AbsoluteTime atZero = { 0, 0 };
     IOHIDEventStruct event;
     HidMsg msg;
+
+    EM_log( CK_LOG_INFO, "hid: Hid_callback" );
 
     while( result == kIOReturnSuccess )
     {
