@@ -1974,11 +1974,19 @@ void Hid_poll()
     id auto_release_pool = createAutoReleasePool();
 #endif
 
-    CFRunLoopRunInMode( kCFRunLoopChuckHidMode, 60 * 60 * 24, false );
+    // CFRunLoopRunInMode( kCFRunLoopChuckHidMode, 0.001, false );
+    
+    for ( auto device : *mice ) {
+        if (device->queue) {
+            Hid_callback( NULL, kIOReturnSuccess, device, NULL );
+        }
+    }
+    
+    usleep(10);
 }
 
-void Hid_callback( void * target, IOReturn result,
-                   void * refcon, void * sender)
+void Hid_callback( void * target_, IOReturn result,
+                   void * refcon, void * sender_)
 {
     OSX_Hid_Device * device = ( OSX_Hid_Device * ) refcon;
     OSX_Hid_Device_Element * element;
@@ -1986,19 +1994,25 @@ void Hid_callback( void * target, IOReturn result,
     IOHIDEventStruct event;
     HidMsg msg;
 
-    EM_log( CK_LOG_INFO, "hid: Hid_callback" );
+    // EM_log( CK_LOG_INFO, "hid: Hid_callback" );
 
     while( result == kIOReturnSuccess )
     {
         result = ( *( device->queue ) )->getNextEvent( device->queue,
                                                        &event, atZero, 0 );
+        
         if( result == kIOReturnUnderrun )
+        {
+            // EM_log( CK_LOG_INFO, "hid: warning: kIOReturnUnderrun" );
             break;
+        }
         if( result != kIOReturnSuccess )
         {
             EM_log( CK_LOG_INFO, "hid: warning: getNextEvent failed" );
             break;
         }
+        
+        EM_log( CK_LOG_INFO, "hid: got event" );
 
         element = ( *( device->elements ) )[event.elementCookie];
 
