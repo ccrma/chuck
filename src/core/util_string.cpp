@@ -761,9 +761,9 @@ std::string expandFilePathWindows( const string & path )
 
 //-----------------------------------------------------------------------------
 // name: get_full_path()
-// desc: get full path to file
+// desc: get full path to file; if treatAsDir is TRUE, then don't auto-match .ck
 //-----------------------------------------------------------------------------
-std::string get_full_path( const std::string & fp )
+std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
 {
 #ifndef __PLATFORM_WINDOWS__
 
@@ -797,7 +797,7 @@ std::string get_full_path( const std::string & fp )
     }
 
     // try with .ck extension
-    if( result == 0 && !extension_matches(fp, ".ck") )
+    if( result == 0 && !treatAsDir && !extension_matches(fp, ".ck") )
     {
 #ifndef __CHUNREAL_ENGINE__
         result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);

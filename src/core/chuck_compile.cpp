@@ -1850,7 +1850,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         string dl_path = expand_filepath( *i_sp );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path );
+        dl_path = get_full_path( dl_path, TRUE );
         // search directory and load contents
         load_external_modules_in_directory( dl_path, extension, recursiveSearch );
     }
@@ -2083,7 +2083,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         string dl_path = expand_filepath( *i_sp );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path );
+        dl_path = get_full_path( dl_path, TRUE );
         // search directory and load contents
         probe_external_modules_in_directory( dl_path, extension, recursiveSearch, ck_libs );
     }
