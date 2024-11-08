@@ -2,6 +2,10 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.4.2
+=======
+(fixed) an issue with --chugin: where local paths aren't resolved correctly
+
 
 1.5.4.1 (November 2024)
 =======

@@ -1629,6 +1629,7 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
 
     // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
     EM_log( CK_LOG_INFO, "@import loading [chugin] %s...", name.c_str() );
+    EM_log( CK_LOG_FINE, " |- path: '%s'", path.c_str() );
 
     // create chuck DLL data structure
     Chuck_DLL * dll = new Chuck_DLL( this->carrier(), name != "" ? name.c_str() : (extract_filepath_file(path)).c_str() );
@@ -1830,12 +1831,14 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         // error string
         std::string error_str;
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
-        dl_path = expand_filepath(dl_path);
+        dl_path = expand_filepath( dl_path );
+        // make full path
+        dl_path = get_full_path( dl_path );
         // check extension, append if no match
-        if( !extension_matches(dl_path, extension) )
+        if( !extension_matches( dl_path, extension ) )
             dl_path += extension;
         // load the module, in its own namespace == FALSE
-        this->importChugin( dl_path, FALSE, "", error_str );
+        this->importChugin( dl_path, FALSE, mini(dl_path.c_str()), error_str );
     }
 
     // now recurse through search paths and load any DLs or .ck files found
@@ -1876,6 +1879,7 @@ t_CKBOOL Chuck_Compiler::probe_external_chugin( const string & path, const strin
 
     // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
     EM_log( CK_LOG_INFO, "probing [chugin] %s...", name.c_str() );
+    EM_log( CK_LOG_FINE, " |- path: '%s'", path.c_str() );
 
     // load the dll, lazy mode
     if( dll->load(path.c_str(), CK_QUERY_FUNC, TRUE) )
@@ -2047,12 +2051,14 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
         // get chugin name
         std::string & dl_path = *i_dl;
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
-        dl_path = expand_filepath(dl_path);
+        dl_path = expand_filepath( dl_path );
+        // get full path
+        dl_path = get_full_path( dl_path );
         // check extension, append if no match
-        if( !extension_matches(dl_path, extension) )
+        if( !extension_matches( dl_path, extension ) )
             dl_path += extension;
         // load the module
-        probe_external_chugin( dl_path, dl_path );
+        probe_external_chugin( dl_path, mini(dl_path.c_str()) );
     }
 
     // check

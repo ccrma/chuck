@@ -3037,6 +3037,10 @@ void * dlopen( const char * path, int mode )
     std::replace( platformPath.begin(), platformPath.end(), '/', '\\' );
     // the dll search path to add
     string dll_path = extract_filepath_dir( platformPath );
+    // if empty string, use current directory
+    if( dll_path == "" ) dll_path = ".\\";
+    // AddDllDirectory expects only fullpaths
+    dll_path = get_full_path( dll_path );
     // the relateive _deps directory
     string dll_deps_path = dll_path + "_deps\\";
     // convert to wchar
