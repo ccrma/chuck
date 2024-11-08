@@ -774,10 +774,12 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
     if( result == NULL && !treatAsDir && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
-    if( result == NULL )
-        return fp;
-    else
-        return buf;
+    // get the return value
+    string ret = result ? buf : fp;
+    // if treat as dir, ensure trailing / 1.5.4.2 (ge & nshaheed) added
+    if( treatAsDir ) ret = normalize_directory_name(ret);
+    // return
+    return ret;
 
 #else // windows
 
@@ -807,10 +809,12 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
 #endif
     }
 
-    if( result == 0 )
-        return fp;
-    else
-        return normalize_directory_separator(buf);
+    // get the return value
+    string ret = result ? normalize_directory_separator(buf) : fp;
+    // if treat as dir, ensure trailing / 1.5.4.2 (ge & nshaheed) added
+    if( treatAsDir ) ret = normalize_directory_name(ret);
+    // return
+    return ret;
 
 #endif // __PLATFORM_WINDOWS__
 }

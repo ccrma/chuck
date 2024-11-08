@@ -100,7 +100,7 @@ t_CKBOOL extract_args( const std::string & token,
 std::string dir_go_up( const std::string & dir, t_CKINT numUp );
 
 // get full path to file
-std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDirector = FALSE );
+std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDirectory = FALSE );
 
 // perform filepath expansion (e.g., with ~ on unix systems and some windows)
 std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists = FALSE );

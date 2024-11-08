@@ -685,8 +685,10 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {
             // construct path; expand path again here in case search path has things like ~
-            absolutePath = get_full_path(expand_filepath(normalize_directory_name(*it)+fname));
-            // try to match
+            // make sure to get_full_path on the directory itself before appending fname,
+            // FYI get_full_path() verifies presence of file, fname could be without extension e.g., @import "Foo"
+            absolutePath = get_full_path( expand_filepath(*it), TRUE ) + fname;
+            // try to match, by known extensions if none specified
             hasMatch = matchFilename( absolutePath, extension, exts );
             // log
             EM_log( CK_LOG_FINER, "testing match: '%s' ('%s')", absolutePath.c_str(), hasMatch ? "yes" : "no" );
