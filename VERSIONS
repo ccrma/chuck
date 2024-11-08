@@ -4,7 +4,15 @@ ChucK VERSIONS log
 
 1.5.4.2
 =======
-(fixed) an issue with --chugin: where local paths aren't resolved correctly
+(updated) --chugin-path:<path> no longer auto-loads chugins found in the 
+    specified paths; instead the specified paths are added to the import 
+    system user paths, and the .chug and .ck files within the specified 
+    paths can be @imported.
+(added) --auto-load-chugin-path:<path> flag -- this behaves as 
+    --chugin-path previously did: chugins in the specified path(s) are 
+    auto-loaded; .ck files can be @imported
+(fixed) --chugin:<name> and --chugin-path:<path> now correctly auto-expand
+    paths
 
 
 1.5.4.1 (November 2024)
@@ -12,11 +20,11 @@ ChucK VERSIONS log
 (patch release)
 - (fixed, linux) a crash when the OTF handles an OTF command (add or replace)
 - (added) support for crawling subdirectories for importing for packages
-     to be managed by the upcoming ChuMP (ChucK Manager of Packages)
+    to be managed by the upcoming ChuMP (ChucK Manager of Packages)
 - (updated) --chugin-probe now prints .ck files in the import search paths
-     NOTE: as of 1.5.4.1 chuck auto-loads ONLY chugins in the system search
-     paths; all other chugins and all chuck files in the import search paths
-     must be @imported in order to be used.
+    NOTE: as of 1.5.4.1 chuck auto-loads ONLY chugins in the system search
+    paths; all other chugins and all chuck files in the import search paths
+    must be @imported in order to be used.
 
 
 1.5.4.0 (November 2024)

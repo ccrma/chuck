@@ -771,7 +771,7 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
     char * result = realpath(fp.c_str(), buf);
 
     // try with .ck extension
-    if( result == NULL && !extension_matches(fp, ".ck") )
+    if( result == NULL && !treatAsDir && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
     if( result == NULL )

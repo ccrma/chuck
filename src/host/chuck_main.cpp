@@ -916,17 +916,24 @@ t_CKBOOL go( int argc, const char ** argv )
                     break;
                 }
             }
+            // add to system path(s); chugins in system paths are auto-loaded...
+            // .ck files can be @imported | 1.5.4.2 (ge) added
+            else if( !strncmp(argv[i], "--auto-load-chugin-path:", sizeof("--auto-load-chugin-path:")-1) )
+            {
+                // get the rest
+                dl_search_path_system.push_back( argv[i]+sizeof("--auto-load-chugin-path:")-1 );
+            }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
                 // get the rest
-                dl_search_path_system.push_back( argv[i]+sizeof("--chugin-path:")-1 );
+                dl_search_path_user.push_back( argv[i]+sizeof("--chugin-path:")-1 );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
                 // get the rest
-                dl_search_path_system.push_back( argv[i]+sizeof("-G")-1 );
+                dl_search_path_user.push_back( argv[i]+sizeof("-G")-1 );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )

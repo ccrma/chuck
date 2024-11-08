@@ -685,7 +685,7 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {
             // construct path; expand path again here in case search path has things like ~
-            absolutePath = expand_filepath(*it+fname);
+            absolutePath = get_full_path(expand_filepath(normalize_directory_name(*it)+fname));
             // try to match
             hasMatch = matchFilename( absolutePath, extension, exts );
             // log
