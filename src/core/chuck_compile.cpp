@@ -1436,6 +1436,8 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
 {
     // expand directory path
     string path = expand_filepath( directory, FALSE );
+    // normalize path
+    path = normalize_directory_name( path );
     // open the directory
     DIR * dir = opendir( path.c_str() );
 
@@ -1459,7 +1461,7 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
             if( extension_matches( de->d_name, ".ck" ) )
             {
                 // construct absolute path
-                string absolute_path = path + "/" + de->d_name;
+                string absolute_path = path + de->d_name;
                 // append file path
                 ckfiles2load.push_back( absolute_path );
             }
@@ -1467,7 +1469,7 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
             else if( extension_matches( de->d_name, extension ) )
             {
                 // construct absolute path
-                string absolute_path = path + "/" + de->d_name;
+                string absolute_path = path + de->d_name;
                 // append module
                 chugins2load.push_back( ChuginFileInfo( de->d_name, absolute_path ) );
             }
@@ -1481,7 +1483,7 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
                 strncmp( de->d_name, "..", sizeof( ".." ) ) != 0 )
             {
                 // construct absolute path (use the non-expanded path for consistency when printing)
-                string absolute_path = string(directory) + "/" + de->d_name;
+                string absolute_path = string(directory) + de->d_name;
                 // queue search in sub-directory
                 dirs2search.push_back( absolute_path );
             }
@@ -1832,7 +1834,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         std::string error_str;
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         dl_path = expand_filepath( dl_path );
-        // make full path
+        // get full path | 1.5.4.2 (ge) added
         dl_path = get_full_path( dl_path );
         // check extension, append if no match
         if( !extension_matches( dl_path, extension ) )
@@ -1841,14 +1843,16 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         this->importChugin( dl_path, FALSE, mini(dl_path.c_str()), error_str );
     }
 
-    // now recurse through search paths and load any DLs or .ck files found
+    // now recurse through search paths and load any .chug files found
     for( list<string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
-        string dl_path = expand_filepath(*i_sp);
+        string dl_path = expand_filepath( *i_sp );
+        // get full path | 1.5.4.2 (ge) added
+        dl_path = get_full_path( dl_path );
         // search directory and load contents
-        load_external_modules_in_directory( *i_sp, extension, recursiveSearch );
+        load_external_modules_in_directory( dl_path, extension, recursiveSearch );
     }
 
     // clear context
@@ -2052,7 +2056,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
         std::string & dl_path = *i_dl;
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         dl_path = expand_filepath( dl_path );
-        // get full path
+        // get full path | 1.5.4.2 (ge) added
         dl_path = get_full_path( dl_path );
         // check extension, append if no match
         if( !extension_matches( dl_path, extension ) )
@@ -2072,12 +2076,14 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
     // push
     EM_pushlog();
 
-    // now recurse through search paths and note any DLs or .ck files found
+    // now recurse through search paths and note any .chug files found
     for( list<string>::iterator i_sp = chugin_search_paths.begin();
          i_sp != chugin_search_paths.end(); i_sp++ )
     {
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
-        string dl_path = expand_filepath(*i_sp);
+        string dl_path = expand_filepath( *i_sp );
+        // get full path | 1.5.4.2 (ge) added
+        dl_path = get_full_path( dl_path );
         // search directory and load contents
         probe_external_modules_in_directory( dl_path, extension, recursiveSearch, ck_libs );
     }
