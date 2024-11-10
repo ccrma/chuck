@@ -320,9 +320,7 @@ void Chuck_Env::reset()
     // TODO: release stack items?
     nspc_stack.clear();
     // push global namespace
-    nspc_stack.push_back( this->global() );
-    // push user namespace
-    if( user_nspc != NULL ) nspc_stack.push_back( this->user_nspc );
+    nspc_stack.push_back( global_nspc );
     // TODO: release stack items?
     class_stack.clear(); class_stack.push_back( NULL );
     // should be at top level
@@ -331,8 +329,8 @@ void Chuck_Env::reset()
     // release curr? class_def? func?
     // 1.5.0.1 (ge) don't think these need ref counts; they are used as temporary variables
 
-    // assign
-    curr = (user_nspc != NULL) ? this->user() : this->global();
+    // current namesapce
+    curr = (user_nspc != NULL) ? user_nspc : global_nspc;
     // clear
     class_def = NULL; func = NULL;
 
@@ -353,11 +351,9 @@ void Chuck_Env::reset()
 void Chuck_Env::load_user_namespace()
 {
     // user namespace
-    user_nspc = new Chuck_Namespace;
-    user_nspc->name = "[user]";
-    user_nspc->parent = global_nspc;
-    CK_SAFE_ADD_REF(global_nspc);
-    CK_SAFE_ADD_REF(user_nspc);
+    user_nspc = new Chuck_Namespace; CK_SAFE_ADD_REF(user_nspc);
+    user_nspc->name = "@[user]";
+    user_nspc->parent = global_nspc; CK_SAFE_ADD_REF(global_nspc);
 }
 
 

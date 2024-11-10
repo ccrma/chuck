@@ -442,8 +442,8 @@ t_CKBOOL Chuck_VM::shutdown()
     // log
     EM_log( CK_LOG_SYSTEM, "freeing special ugens..." );
     // explcitly calling a destructor, accounting for internal ref counts | 1.5.2.0
-    stereo_dtor( m_dac, this, NULL, Chuck_DL_Api::instance() );
-    stereo_dtor( m_adc, this, NULL, Chuck_DL_Api::instance() );
+    if( m_dac ) stereo_dtor( m_dac, this, NULL, Chuck_DL_Api::instance() );
+    if( m_adc ) stereo_dtor( m_adc, this, NULL, Chuck_DL_Api::instance() );
     // special case: if mono, must zero out multi-chan[0] (see Chuck_VM::initialize_synthesis())
     if( m_num_dac_channels == 1 ) // 1.5.2.0 (ge) added
     {

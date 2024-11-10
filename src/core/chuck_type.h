@@ -772,10 +772,10 @@ protected:
     Chuck_Carrier * m_carrier;
 
 protected:
-    // global namespace
-    Chuck_Namespace * global_nspc;
     // global context
     Chuck_Context global_context;
+    // global namespace
+    Chuck_Namespace * global_nspc;
     // user-global namespace
     Chuck_Namespace * user_nspc;
     // cache of various array types, which are created as needed by the type system
