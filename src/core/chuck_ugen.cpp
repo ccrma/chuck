@@ -245,7 +245,7 @@ void Chuck_UGen::done()
 
     assert( this->m_ref_count == 0 );
 
-    // disconnect
+    // disconnect from UGen graph
     this->disconnect( TRUE );
     m_valid = FALSE;
 
@@ -517,8 +517,11 @@ t_CKBOOL Chuck_UGen::add( Chuck_UGen * src, t_CKBOOL isUpChuck )
 
         // append
         fa_push_back( m_src_list, m_src_cap, m_num_src, src );
+        // increment source count
         m_num_src++;
-        src->add_ref();
+        // 1.5.4.2 (ge) removed as part of #ugen-refs
+        // src->add_ref();
+        // add from other side
         src->add_by( this, isUpChuck );
 
         // upchuck
@@ -588,7 +591,9 @@ void Chuck_UGen::add_by( Chuck_UGen * dest, t_CKBOOL isUpChuck )
 
     // append
     fa_push_back( m_dest_list, m_dest_cap, m_num_dest, dest );
-    dest->add_ref();
+    // 1.5.4.2 (ge) removed as part of #ugen-refs
+    // dest->add_ref();
+    // increment dest count
     m_num_dest++;
 
     // uana
@@ -659,7 +664,8 @@ t_CKBOOL Chuck_UGen::remove( Chuck_UGen * src )
 
                 m_src_list[--m_num_src] = NULL;
                 src->remove_by( this );
-                src->release();
+                // 1.5.4.2 (ge) removed as part of #ugen-refs
+                // src->release();
                 --k;
             }
     }
@@ -744,8 +750,8 @@ void Chuck_UGen::remove_by( Chuck_UGen * dest )
             for( t_CKUINT j = i+1; j < m_num_dest; j++ )
                 m_dest_list[j-1] = m_dest_list[j];
 
-            // release
-            dest->release();
+            // 1.5.4.2 (ge) removed as part of #ugen-refs
+            // dest->release();
             // null the last element
             m_dest_list[--m_num_dest] = NULL;
             i--;
@@ -796,7 +802,7 @@ void Chuck_UGen::remove_all( )
 
 //-----------------------------------------------------------------------------
 // name: disconnect()
-// desc: ...
+// desc: disconnect this UGen
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
 {
@@ -809,7 +815,7 @@ t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
         return inlet()->disconnect( recursive );
     }
 
-    // remove
+    // remove from dest
     while( m_num_dest > 0 )
     {
         // make sure at least one got disconnected
@@ -828,9 +834,12 @@ t_CKBOOL Chuck_UGen::disconnect( t_CKBOOL recursive )
     //    m_dest_list[i]->remove( this );
     // m_num_dest = 0;
 
-    // disconnect src too?
+    // recursive?
     if( recursive )
+    {
+        // disconnect sources, too
         this->remove_all();
+    }
 
     return TRUE;
 }
@@ -1379,7 +1388,8 @@ void Chuck_UGen::init_subgraph()
     Chuck_Object * obj = NULL;
 
     // instantiate object for inlet
-    obj = instantiate_and_initialize_object( this->origin_shred->vm_ref->env()->ckt_ugen, this->origin_shred );
+    // 1.5.4.2 (ge) remove special-case refs between UGen and shred; part of #ugen-refs
+    obj = instantiate_and_initialize_object( this->origin_vm->env()->ckt_ugen, this->origin_vm );
     // set as inlet
     m_inlet = (Chuck_UGen *)obj;
     // additional reference count
@@ -1390,7 +1400,8 @@ void Chuck_UGen::init_subgraph()
     // CK_SAFE_ADD_REF(this);
 
     // instantiate object for outlet
-    obj = instantiate_and_initialize_object( this->origin_shred->vm_ref->env()->ckt_ugen, this->origin_shred );
+    // 1.5.4.2 (ge) remove special-case refs between UGen and shred; part of #ugen-refs
+    obj = instantiate_and_initialize_object( this->origin_vm->env()->ckt_ugen, this->origin_vm );
     // set as outlet
     m_outlet = (Chuck_UGen *)obj;
     // additional reference count

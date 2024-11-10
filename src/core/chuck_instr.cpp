@@ -4381,7 +4381,8 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
     // set origin shred for non-ugens | 1.5.1.5 (ge & andrew) moved here from instantiate_...
-    if( !type->ugen_info && setShredOrigin ) object->setOriginShred( shred );
+    // remove dependency on non-ugens | 1.5.4.2 (ge) part of #ugen-refs
+    if( /* !type->ugen_info && */ setShredOrigin ) object->setOriginShred( shred );
 
     // allocate virtual table
     object->vtable = new Chuck_VTable;
@@ -4410,15 +4411,21 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     {
         // ugen
         Chuck_UGen * ugen = (Chuck_UGen *)object;
+        //---------------------------------------
         // UGens: needs shred for auto-disconnect when shred is removed
         // 1.5.1.5 (ge & andrew) moved from instantiate_and_initialize_object()
-        if( shred )
-        {
-            // add ugen to shred (ref-counted)
-            shred->add( ugen );
-            // add shred to ugen (ref-counted) | 1.5.1.5 (ge) was: ugen->shred = shred;
-            object->setOriginShred( shred );
-        }
+        // if( shred )
+        // {
+        //    // add ugen to shred (ref-counted)
+        //    shred->add( ugen );
+        //    // add shred to ugen (ref-counted) | 1.5.1.5 (ge) was: ugen->shred = shred;
+        //    object->setOriginShred( shred );
+        // }
+        //---------------------------------------
+        // 1.5.4.2 (ge) revisiting the above mechanism, part of #ugen-refs
+        // now UGens are not ref-counted by shred, is subject to the normal GC,
+        // and when refcount goes to 0, will remove it self from UGen graph
+        //---------------------------------------
         // set tick
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
         // added 1.3.0.0 -- tickf for multi-channel tick
