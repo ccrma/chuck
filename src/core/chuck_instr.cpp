@@ -4381,8 +4381,8 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
     // REFACTOR-2017: added | 1.5.1.5 (ge & andrew) moved here from instantiate_...
     object->setOriginVM( vm );
     // set origin shred for non-ugens | 1.5.1.5 (ge & andrew) moved here from instantiate_...
-    // remove dependency on non-ugens | 1.5.4.2 (ge) part of #ugen-refs
-    if( /* !type->ugen_info && */ setShredOrigin ) object->setOriginShred( shred );
+    // change logic: if ugen OR setShredOrigin==TRUE | 1.5.4.2 (ge) part of #ugen-refs
+    if( type->ugen_info || setShredOrigin ) object->setOriginShred( shred );
 
     // allocate virtual table
     object->vtable = new Chuck_VTable;
@@ -4414,17 +4414,20 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
         //---------------------------------------
         // UGens: needs shred for auto-disconnect when shred is removed
         // 1.5.1.5 (ge & andrew) moved from instantiate_and_initialize_object()
-        // if( shred )
-        // {
-        //    // add ugen to shred (ref-counted)
-        //    shred->add( ugen );
-        //    // add shred to ugen (ref-counted) | 1.5.1.5 (ge) was: ugen->shred = shred;
-        //    object->setOriginShred( shred );
-        // }
         //---------------------------------------
         // 1.5.4.2 (ge) revisiting the above mechanism, part of #ugen-refs
         // now UGens are not ref-counted by shred, is subject to the normal GC,
         // and when refcount goes to 0, will remove it self from UGen graph
+        //---------------------------------------
+        if( shred )
+        {
+            // register ugen with originShred; if the shred is preemptively removed
+            // (e.g., through OTF / Machine.remove()), it will trigger a ugen_detach()
+            // to disconnect UGens that were created on it...
+            // 1.5.4.2 (ge) no longer ref-counted as part of #ugen-refs
+            // FYI the ugen's originShred should be set already (above) for UGens
+            shred->add( ugen );
+        }
         //---------------------------------------
         // set tick
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
@@ -4440,6 +4443,10 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
         for( t_CKUINT i = 0; i < ugen->m_multi_chan_size; i++ )
         {
             // allocate ugen for each | REFACTOR-2017: added ugen->vm
+            // NOTE the channels currently are also detached as part of the
+            // origin shred's ugen_detach() routine when the shred
+            // is removed; as of 1.5.4.2, however, ugens are no longer
+            // reference-counted when added to their origin shreds
             Chuck_Object * obj = instantiate_and_initialize_object(
                 ugen->originVM()->env()->ckt_ugen, ugen->originShred(), ugen->originVM() );
             // cast to ugen

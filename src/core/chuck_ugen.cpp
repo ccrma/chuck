@@ -236,19 +236,29 @@ void Chuck_UGen::init()
 
 //-----------------------------------------------------------------------------
 // name: done()
-// desc: ...
+// desc: this function is called when a UGen is about to be deleted, typically
+//       from the Chuck_UGen's destructor
 //-----------------------------------------------------------------------------
 void Chuck_UGen::done()
 {
-    if( this->origin_shred )
-        origin_shred->remove( this );
-
+    // ref count gotta be zero if we get to this function
     assert( this->m_ref_count == 0 );
+
+    // check if we have origin shred reference
+    if( this->origin_shred )
+    {
+        // unregister from origin shred
+        origin_shred->remove( this );
+        // reset/release origin shred reference
+        setOriginShred( NULL );
+    }
 
     // disconnect from UGen graph
     this->disconnect( TRUE );
+    // flag
     m_valid = FALSE;
 
+    // reclaim lists
     fa_done( m_src_list, m_src_cap );
     fa_done( m_dest_list, m_dest_cap );
     fa_done( m_src_uana_list, m_src_uana_cap );
@@ -261,8 +271,8 @@ void Chuck_UGen::done()
     // for each multichan reference | 1.5.2.0
     for( t_CKUINT i = 0; i < m_multi_chan_size; i++ )
     {
-        // TODO: disconnect?
-
+        // disconnect each channel | 1.5.4.2 (ge) part of #ugen-refs
+        m_multi_chan[i]->disconnect( TRUE );
         // release
         CK_SAFE_RELEASE( m_multi_chan[i] );
     }
@@ -273,12 +283,13 @@ void Chuck_UGen::done()
     // zero out
     m_multi_chan_size = 0;
 
-    // SPENCER: is this okay??? (added 1.3.0.0)
-    // changed to release | 1.5.2.0 (ge)
+    // disconnect inlet and outlet (chugraphs) | 1.5.4.2 (ge) part of #ugen-refs
+    if( m_inlet ) m_inlet->disconnect( TRUE );
+    if( m_outlet ) m_outlet->disconnect( TRUE );
+    // release the reference held by Chuck_UGen (C++) | 1.5.2.0 (ge)
     CK_SAFE_RELEASE( m_inlet );
     CK_SAFE_RELEASE( m_outlet );
-
-    // clean up inlet/outlet | 1.5.2.0 (ge)
+    // clean up inlet/outlet as held by member variables (ChucK) | 1.5.2.0 (ge)
     if( m_is_subgraph ) ck_subgraph_cleaup_inlet_outlet( this );
 
     // clean up array (added 1.3.0.0)

@@ -1902,28 +1902,12 @@ error:
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shred::detach_ugens()
 {
-    // check if we have anything in ugen map for this shred
-    if( !m_ugen_map.size() )
-        return;
-
-    // spencer - March 2012 (added 1.3.0.0)
-    // can't dealloc ugens while they are still keys to a map;
-    // add reference, store them in a vector, and release them after
-    // SPENCERTODO: is there a better way to do this????
-    std::vector<Chuck_UGen *> release_v;
-    release_v.reserve( m_ugen_map.size() );
-
     // get iterator to our map
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
     while( iter != m_ugen_map.end() )
     {
         // get the ugen
         Chuck_UGen * ugen = iter->first;
-
-        // store ref in array for now (added 1.3.0.0)
-        // NOTE no need to bump reference since now ugen_map ref counts
-        release_v.push_back(ugen);
-
         // make sure if ugen has an origin shred, it is this one | 1.5.1.5
         assert( !ugen->originShred() || ugen->originShred() == this );
         // also clear reference to this shred | 1.5.1.5
@@ -1936,17 +1920,6 @@ void Chuck_VM_Shred::detach_ugens()
     }
     // clear map
     m_ugen_map.clear();
-
-    // loop over vector
-    for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-         rvi != release_v.end(); rvi++ )
-    {
-        // cerr << "RELEASE: " << (void *) *rvi<< endl;
-        // release it
-        CK_SAFE_RELEASE( *rvi );
-    }
-    // clear the release vector
-    release_v.clear();
 }
 
 
@@ -2120,10 +2093,8 @@ t_CKBOOL Chuck_VM_Shred::add( Chuck_UGen * ugen )
         return FALSE;
 
     // increment reference count (added 1.3.0.0)
-    CK_SAFE_ADD_REF( ugen );
-
-    // RUBBISH
-    // cerr << "vm add ugen: 0x" << hex << (int)ugen << endl;
+    // remove ref-count from VM-side | 1.5.4.2 (ge) part of #ugen-refs
+    // CK_SAFE_ADD_REF( ugen );
 
     m_ugen_map[ugen] = ugen;
     return TRUE;
@@ -2145,7 +2116,8 @@ t_CKBOOL Chuck_VM_Shred::remove( Chuck_UGen * ugen )
     m_ugen_map.erase( ugen );
 
     // decrement reference count (added 1.3.0.0)
-    ugen->release();
+    // remove ref-count from VM-side | 1.5.4.2 (ge) part of #ugen-refs
+    // ugen->release();
 
     return TRUE;
 }

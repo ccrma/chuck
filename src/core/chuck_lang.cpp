@@ -209,6 +209,12 @@ t_CKBOOL init_class_ugen( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the ugen's buffered operation mode.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+//    // add attachToOriginShred
+//    func = make_new_mfun( "Shred", "attachToOriginShred", ugen_originShred );
+//    func->add_arg( "Shred", "shred" );
+//    func->doc = "(Use with care) by default, a UGen is attached to its origin Shred (the Shred the UGen was created on); if that Shred is removed (e.g., by Machine.remove()), it will disconnect its UGens' audio connections. This methods makes it possible for UGen to be attached to either a different Shred or to no Shred if `null` is passed in. The latter makes this UGen a kind of \"free agent\" that is subject to the garbage collector as usual, but no longer to a origin Shred. This is useful ";
+//    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end
     type_engine_import_class_end( env );
 
