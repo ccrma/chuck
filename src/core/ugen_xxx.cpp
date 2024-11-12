@@ -3042,6 +3042,15 @@ struct sndbuf_data
 
     ~sndbuf_data()
     {
+        // open file descriptor? | 1.5.4.2 (ge) added #ugen-refs
+        if( this->fd )
+        {
+            // close file descriptor
+            sf_close( this->fd );
+            // zero out
+            this->fd = NULL;
+        }
+
         CK_SAFE_DELETE_ARRAY( buffer );
 
         if( chunk_map )

@@ -8,6 +8,16 @@ ChucK VERSIONS log
     specified paths; instead the specified paths are added to the import 
     system user paths, and the .chug and .ck files within the specified 
     paths can be @imported.
+(updated) improved internal garbage collection mechanism for all UGens; 
+    now UGens are garbage collected and disconnected from all its UGen 
+    connections, as soon as it is now longer referenced from code (previously,
+    this was deferred until the end of origin shred the UGen was created on,
+    which poses potentially significant memory build-up if a shred repeatedly
+    instantiated/connected UGens without exiting). Overall, this internal
+    update should result in improved CPU performance and memory behavior in 
+    various scenarios.
+(fixed) long-standing SndBuf issue, especially prevalent on macOS:
+    "System error : Too many open files." this was due a combination of 
 (added) --auto-load-chugin-path:<path> flag -- this behaves as 
     --chugin-path previously did: chugins in the specified path(s) are 
     auto-loaded; .ck files can be @imported
