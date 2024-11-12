@@ -3042,7 +3042,7 @@ struct sndbuf_data
 
     ~sndbuf_data()
     {
-        // open file descriptor? | 1.5.4.2 (ge) added
+        // open file descriptor? | 1.5.4.2 (ge) added #ugen-refs
         if( this->fd )
         {
             // close file descriptor
