@@ -2005,6 +2005,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
                 left = lhs->cast_to = env->ckt_string;
             }
         case ae_op_minus:
+            // vectors implicit conversions
             CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
             else CK_LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
             else CK_LR( te_vec2, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
@@ -2047,6 +2048,13 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
             if( isa( left, env->ckt_object ) && isa( right, env->ckt_string ) && !isa( left, env->ckt_string ) )
                 left = lhs->cast_to = env->ckt_string;
         case ae_op_minus_chuck:
+            // vec implicit conversions | 1.5.4.2 (ge) added
+            CK_LR( te_vec3, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec4, te_vec3 ) right = rhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec2, te_vec4 ) left = lhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec4, te_vec2 ) right = rhs->cast_to = env->ckt_vec4;
+            else CK_LR( te_vec2, te_vec3 ) left = lhs->cast_to = env->ckt_vec3;
+            else CK_LR( te_vec3, te_vec2 ) right = rhs->cast_to = env->ckt_vec3;
         case ae_op_times_chuck:
         case ae_op_divide_chuck:
         case ae_op_percent_chuck:
