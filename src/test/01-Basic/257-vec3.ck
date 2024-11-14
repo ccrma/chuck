@@ -1,4 +1,7 @@
+// test vec3
+// including .cross() and .dot(), which were added in 1.5.4.2
 // vec3 is a primitive type
+
 @(1,0,0) => vec3 a;
 // declare another
 @(0,1,0) => vec3 b;
@@ -20,6 +23,7 @@ a.dot(b) => float dot;
 <<< "diff:", diff >>>;
 // print cross product
 <<< "cross product:", c >>>;
+<<< "cross product (function):", cross >>>;
 // print dot product
 <<< "dot product:", dot >>>;
 
@@ -43,4 +47,5 @@ v.normalize();
 5 * v => vec3 v2;
 // print result
 <<< "scalar multiply:", v2 >>>;
+
 

@@ -263,10 +263,13 @@ CK_DLL_MFUN( vec2_set );
 CK_DLL_MFUN( vec2_setAll );
 CK_DLL_MFUN( vec2_magnitude );
 CK_DLL_MFUN( vec2_normalize );
+CK_DLL_MFUN( vec2_dot );
 CK_DLL_MFUN( vec3_set );
 CK_DLL_MFUN( vec3_setAll );
 CK_DLL_MFUN( vec3_magnitude );
 CK_DLL_MFUN( vec3_normalize );
+CK_DLL_MFUN( vec3_dot );
+CK_DLL_MFUN( vec3_cross );
 CK_DLL_MFUN( vec3_interp );
 CK_DLL_MFUN( vec3_interp_delta_float );
 CK_DLL_MFUN( vec3_interp_delta_dur );
@@ -278,6 +281,8 @@ CK_DLL_MFUN( vec4_set );
 CK_DLL_MFUN( vec4_setAll );
 CK_DLL_MFUN( vec4_magnitude );
 CK_DLL_MFUN( vec4_normalize );
+CK_DLL_MFUN( vec4_dot );
+CK_DLL_MFUN( vec4_cross );
 
 
 //-----------------------------------------------------------------------------

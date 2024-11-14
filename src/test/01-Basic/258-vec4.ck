@@ -20,6 +20,7 @@ a.dot(b) => float dot;
 <<< "diff:", diff >>>;
 // print cross product
 <<< "cross product:", c >>>;
+<<< "cross product (function):", cross >>>;
 // print dot product
 <<< "dot product:", dot >>>;
 

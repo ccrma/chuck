@@ -693,6 +693,11 @@ t_CKBOOL init_class_vec2( Chuck_Env * env, Chuck_Type * type )
     func = make_new_mfun( "void", "normalize", vec2_normalize );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add dot() product | 1.5.4.2 (ge & azaday) added
+    func = make_new_mfun( "float", "dot", vec2_dot );
+    func->add_arg( "vec2", "rhs" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -745,6 +750,16 @@ t_CKBOOL init_class_vec3( Chuck_Env * env, Chuck_Type * type )
 
     // add normalize()
     func = make_new_mfun( "void", "normalize", vec3_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add dot() product | 1.5.4.2 (ge & azaday) added
+    func = make_new_mfun( "float", "dot", vec3_dot );
+    func->add_arg( "vec3", "rhs" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add cross() product | same as vec3 * vec3
+    func = make_new_mfun( "vec3", "cross", vec3_cross );
+    func->add_arg( "vec3", "rhs" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add interp()
@@ -836,6 +851,17 @@ t_CKBOOL init_class_vec4( Chuck_Env * env, Chuck_Type * type )
 
     // add normalize()
     func = make_new_mfun( "void", "normalize", vec4_normalize );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add dot() product | 1.5.4.2 (ge & azaday) added
+    func = make_new_mfun( "float", "dot", vec4_dot );
+    func->add_arg( "vec4", "rhs" );
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add cross() product | same as vec4 * vec4
+    // (which ignores w and computes a 3d cross product)
+    func = make_new_mfun( "vec4", "cross", vec4_cross );
+    func->add_arg( "vec4", "rhs" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end the class import
@@ -2222,6 +2248,16 @@ CK_DLL_MFUN( vec2_normalize )
     }
 }
 
+CK_DLL_MFUN( vec2_dot ) // 1.5.4.2 (ge & azaday) added
+{
+    // get lhs value
+    t_CKVEC2 lhs = *((t_CKVEC2 *)SELF);
+    // get rhs from argument
+    t_CKVEC2 rhs = GET_NEXT_VEC2(ARGS);
+    // compute dot product and set as return value
+    RETURN->v_float = lhs.x*rhs.x + lhs.y*rhs.y;
+}
+
 
 //-----------------------------------------------------------------------------
 // vec3 API
@@ -2268,6 +2304,28 @@ CK_DLL_MFUN( vec3_normalize )
         vec3->y /= mag;
         vec3->z /= mag;
     }
+}
+
+CK_DLL_MFUN( vec3_dot ) // 1.5.4.2 (ge & azaday) added
+{
+    // get lhs value
+    t_CKVEC3 lhs = *((t_CKVEC3 *)SELF);
+    // get rhs from argument
+    t_CKVEC3 rhs = GET_NEXT_VEC3(ARGS);
+    // compute dot product and set as return value
+    RETURN->v_float = lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z;
+}
+
+CK_DLL_MFUN( vec3_cross ) // 1.5.4.2 (ge & azaday) added
+{
+    // get lhs value
+    t_CKVEC3 lhs = *((t_CKVEC3 *)SELF);
+    // get rhs from argument
+    t_CKVEC3 rhs = GET_NEXT_VEC3(ARGS);
+    // compute cross product and set as return value
+    RETURN->v_vec3.x = lhs.y*rhs.z - lhs.z*rhs.y;
+    RETURN->v_vec3.y = lhs.z*rhs.x - lhs.x*rhs.z;
+    RETURN->v_vec3.z = lhs.x*rhs.y - lhs.y*rhs.x;
 }
 
 CK_DLL_MFUN( vec3_interp )
@@ -2404,6 +2462,31 @@ CK_DLL_MFUN( vec4_normalize )
         vec4->z /= mag;
         vec4->w /= mag;
     }
+}
+
+CK_DLL_MFUN( vec4_dot ) // 1.5.4.2 (ge & azaday) added
+{
+    // get lhs value
+    t_CKVEC4 lhs = *((t_CKVEC4 *)SELF);
+    // get rhs from argument
+    t_CKVEC4 rhs = GET_NEXT_VEC4(ARGS);
+    // compute dot product and set as return value
+    RETURN->v_float = lhs.x*rhs.x + lhs.y*rhs.y + lhs.z*rhs.z + lhs.w*rhs.w;
+}
+
+CK_DLL_MFUN( vec4_cross ) // 1.5.4.2 (ge & azaday) added
+{
+    // get lhs value
+    t_CKVEC3 lhs = *((t_CKVEC3 *)SELF);
+    // get rhs from argument
+    t_CKVEC3 rhs = GET_NEXT_VEC3(ARGS);
+    // compute cross product and set as return value
+    // 4D cross product is undefined; as a shorthand we do a 3D cross product
+    // w is ignored in the calcluation, and the resulting w component is set to 0
+    RETURN->v_vec4.x = lhs.y*rhs.z - lhs.z*rhs.y;
+    RETURN->v_vec4.y = lhs.z*rhs.x - lhs.x*rhs.z;
+    RETURN->v_vec4.z = lhs.x*rhs.y - lhs.y*rhs.x;
+    RETURN->v_vec4.w = 0;
 }
 
 

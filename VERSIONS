@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.4.2
+1.5.4.2 (November 2024)
 =======
 (updated) --chugin-path:<path> no longer auto-loads chugins found in the 
     specified paths; instead the specified paths are added to the import 
@@ -18,6 +18,19 @@ ChucK VERSIONS log
     various scenarios.
 (fixed) long-standing SndBuf issue, especially prevalent on macOS:
     "System error : Too many open files." this was due a combination of 
+(fixed) vec2/vec3/vec4 implicit cast logic for +=> and -=> operations
+    (previously, this would cause a crash in some cases)
+(added) vector dot product methods for vec2, vec3, and vec4
+        float vec2.dot( vec2 rhs )
+        float vec3.dot( vec3 rhs )
+        float vec4.dot( vec4 rhs )
+(added) vector cross product method for vec3 and vec4 (as 3D shorthand)
+    NOTE: this is the same as vec3*vec3 or vec4*vec4
+    NOTE: 4D cross product is mathematically undefined; vec4 cross product
+        ignores the `w` components and computes a 3D cross product;
+        `w` is also set to zero in the resulting vec4
+        vec3 vec3.cross( vec3 rhs )
+        vec4 vec4.cross( vec4 rhs )
 (added) --auto-load-chugin-path:<path> flag -- this behaves as 
     --chugin-path previously did: chugins in the specified path(s) are 
     auto-loaded; .ck files can be @imported

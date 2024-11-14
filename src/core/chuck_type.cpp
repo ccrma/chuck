@@ -4669,7 +4669,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         }
         else if( exp_func->s_type == ae_exp_dot_member )
         {
-            EM_error2( exp_func->where,
+            EM_error2( exp_func->dot_member.where,
                 "argument type(s) do not match...\n...for function '%s(...)'...",
                 type_engine_print_exp_dot_member( env, &exp_func->dot_member ).c_str() );
         }
