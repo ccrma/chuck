@@ -4841,10 +4841,8 @@ t_CKTYPE type_engine_check_exp_dot_member_special( Chuck_Env * env, a_Exp_Dot_Me
         }
         else
         {
-            // not valid
-            EM_error2( member->where,
-                      "type '%s' has no member named '%s'", member->t_base->c_name(), str.c_str() );
-            return NULL;
+            // check function | 1.5.4.1 (ge) changed from error
+            goto check_func;
         }
     }
     else if( member->t_base->xid == te_vec3 || member->t_base->xid == te_vec4 )
