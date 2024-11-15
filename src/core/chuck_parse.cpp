@@ -343,10 +343,21 @@ string absyn2str( a_Exp exp, t_CKBOOL appendSemicolon )
 //-----------------------------------------------------------------------------
 string name_demangle( const string & name )
 {
-    // find the first @
-    size_t pos = name.find_first_of('@');
-    // if found, substring
-    return ( pos != string::npos ) ? name.substr(0,pos) : name;
+    // account for @( for vec2/3/4 literals | 1.5.4.2 (ge) added
+    size_t where = 0;
+    while( where < name.length() )
+    {
+        // find the first '@' that's not "@("
+        size_t pos = name.find_first_of( '@', where );
+        // if not found or if found in the last character, we are done
+        if( pos == string::npos ) return name;
+        // check for (
+        if( pos == name.length()-1 || name[pos+1] != '(' ) return name.substr(where,pos);
+        // otherwise, found @(... keep searching
+        where += 2;
+    }
+    // if reached here, no need to modify
+    return name;
 }
 
 
@@ -417,9 +428,10 @@ string absyn_exp2str( a_Exp exp, t_CKBOOL iterate )
             return "";
         }
 
-        // implicit cast
-        if( exp->cast_to != NULL )
-            break;
+        // implicit cast | 1.5.4.2 (ge) commented out
+        // ...hmm can't remember why this is here
+        // if( exp->cast_to != NULL )
+        //    break;
 
         // break
         if( !iterate ) break;
