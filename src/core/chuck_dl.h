@@ -883,11 +883,14 @@ struct Chuck_DL_Arg
 
 
 //------------------------------------------------------------------------------
-// alternative functions to make stuff
+// alternative functions to make stuff`
 //------------------------------------------------------------------------------
 Chuck_DL_Func * make_new_ctor( f_ctor ctor );
 Chuck_DL_Func * make_new_mfun( const char * t, const char * n, f_mfun mfun );
 Chuck_DL_Func * make_new_sfun( const char * t, const char * n, f_sfun sfun );
+Chuck_DL_Func * make_new_op_binary( const char * t, ae_Operator op, f_gfun gfun );
+Chuck_DL_Func * make_new_op_prefix( const char * t, ae_Operator op, f_gfun gfun );
+Chuck_DL_Func * make_new_op_postfix( const char * t, ae_Operator op, f_gfun gfun );
 Chuck_DL_Value * make_new_arg( const char * t, const char * n );
 Chuck_DL_Value * make_new_mvar( const char * t, const char * n, t_CKBOOL c = FALSE );
 Chuck_DL_Value * make_new_svar( const char * t, const char * n, t_CKBOOL c, void * a );

@@ -2116,57 +2116,6 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         {
             emit->append( instr = new Chuck_Instr_Add_double );
         }
-        // string + string
-        else if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
-        {
-            // concatenate
-            emit->append( instr = new Chuck_Instr_Add_string );
-            instr->set_linepos( lhs->line );
-        }
-        // left: string
-        else if( isa( t_left, emit->env->ckt_string ) )
-        {
-            // + int
-            if( isa( t_right, emit->env->ckt_int ) )
-            {
-                emit->append( instr = new Chuck_Instr_Add_string_int );
-                instr->set_linepos( lhs->line );
-            }
-            else if( isa( t_right, emit->env->ckt_float ) )
-            {
-                emit->append( instr = new Chuck_Instr_Add_string_float );
-                instr->set_linepos( lhs->line );
-            }
-            else
-            {
-                EM_error2( lhs->where,
-                    "(emit): internal error: unhandled op '%s' %s '%s'",
-                    t_left->c_name(), op2str( op ), t_right->c_name() );
-                return FALSE;
-            }
-        }
-        // right: string
-        else if( isa( t_right, emit->env->ckt_string ) )
-        {
-            // + int
-            if( isa( t_left, emit->env->ckt_int ) )
-            {
-                emit->append( instr = new Chuck_Instr_Add_int_string );
-                instr->set_linepos( rhs->line );
-            }
-            else if( isa( t_left, emit->env->ckt_float ) )
-            {
-                emit->append( instr = new Chuck_Instr_Add_float_string );
-                instr->set_linepos( rhs->line );
-            }
-            else
-            {
-                EM_error2( lhs->where,
-                    "(emit): internal error: unhandled op '%s' %s '%s'",
-                    t_left->c_name(), op2str( op ), t_right->c_name() );
-                return FALSE;
-            }
-        }
         else // other types
         {
             switch( left )
@@ -2210,13 +2159,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             emit->append( instr = new Chuck_Instr_Time_Advance );
             instr->set_linepos( lhs->line );
         }
-        // time + dur
+        // time +=> dur
         else if( ( left == te_dur && right == te_time ) ||
             ( left == te_time && right == te_dur ) )
         {
             emit->append( instr = new Chuck_Instr_Add_double_Assign );
         }
-        // string + string
+        // string +=> string
         else if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
         {
             // concatenate
@@ -2780,13 +2729,13 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
 
     // -------------------------------- bool -----------------------------------
     case ae_op_eq:
-        if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
-            && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
-        {
-            emit->append( instr = new Chuck_Instr_Op_string( op ) );
-            instr->set_linepos( lhs->line );
-        }
-        else if( ( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) ) ||
+        // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
+        //     && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
+        // {
+        //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+        //     instr->set_linepos( lhs->line );
+        // } else
+        if( ( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) ) ||
                  ( isa( t_left, emit->env->ckt_object ) && isnull( emit->env, t_right ) ) ||
                  ( isnull( emit->env,t_left ) && isa( t_right, emit->env->ckt_object ) ) ||
                  ( isnull( emit->env,t_left ) && isnull( emit->env, t_right ) ) )
@@ -2826,14 +2775,14 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
         break;
 
     case ae_op_neq:
-        if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
-            && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
-            // added 1.3.2.0 (spencer)
-        {
-            emit->append( instr = new Chuck_Instr_Op_string( op ) );
-            instr->set_linepos( lhs->line );
-        }
-        else if( ( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) ) ||
+        // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string )
+        //     && !isa( t_left, emit->env->ckt_null ) && !isa( t_right, emit->env->ckt_null ) ) // !null
+        //     // added 1.3.2.0 (spencer)
+        // {
+        //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+        //     instr->set_linepos( lhs->line );
+        // } else
+        if( ( isa( t_left, emit->env->ckt_object ) && isa( t_right, emit->env->ckt_object ) ) ||
                  ( isa( t_left, emit->env->ckt_object ) && isnull( emit->env, t_right ) ) ||
                  ( isnull( emit->env,t_left ) && isa( t_right, emit->env->ckt_object ) ) ||
                  ( isnull( emit->env,t_left ) && isnull( emit->env, t_right ) ) )
@@ -2884,11 +2833,11 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
-            {
-                emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->line );
-            }
+        // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
+        // {
+        //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+        //     instr->set_linepos( lhs->line );
+        // }
             break;
         }
         break;
@@ -2906,12 +2855,12 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
-            {
-                emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->line );
-            }
-            else if( isa( t_left, emit->env->ckt_io ) )
+            // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
+            // {
+            //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+            //     instr->set_linepos( lhs->line );
+            // } else
+            if( isa( t_left, emit->env->ckt_io ) )
             {
                 // output
                 if( isa( t_right, emit->env->ckt_int ) )
@@ -2972,11 +2921,11 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
-            {
-                emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->line );
-            }
+            // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
+            // {
+            //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+            //     instr->set_linepos( lhs->line );
+            // }
             break;
         }
         break;
@@ -2994,11 +2943,11 @@ t_CKBOOL emit_engine_emit_op( Chuck_Emitter * emit, ae_Operator op, a_Exp lhs, a
             break;
 
         default:
-            if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
-            {
-                emit->append( instr = new Chuck_Instr_Op_string( op ) );
-                instr->set_linepos( lhs->line );
-            }
+            // if( isa( t_left, emit->env->ckt_string ) && isa( t_right, emit->env->ckt_string ) )
+            // {
+            //     emit->append( instr = new Chuck_Instr_Op_string( op ) );
+            //     instr->set_linepos( lhs->line );
+            // }
             break;
         }
         break;

@@ -1971,48 +1971,49 @@ void Chuck_Instr_vec4_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shre
 //-----------------------------------------------------------------------------
 // name: execute()
 // desc: string + string
+//       (no longer used; string concat now handled by op overloading)
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
-{
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    Chuck_String * lhs = NULL;
-    Chuck_String * rhs = NULL;
-    Chuck_String * result = NULL;
-
-    // pop word from reg stack
-    pop_( reg_sp, 2 );
-    // left
-    lhs = (Chuck_String *)(*(reg_sp));
-    // right
-    rhs = (Chuck_String *)(*(reg_sp+1));
-
-    // make sure no null
-    if( !rhs || !lhs ) goto null_pointer;
-
-    // make new string
-    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
-
-    // concat
-    // result->str = lhs->str + rhs->str;
-    result->set( lhs->str() + rhs->str() );
-
-    // push the reference value to reg stack
-    push_( reg_sp, (t_CKUINT)(result) );
-
-    return;
-
-null_pointer:
-    // we have a problem
-    EM_exception(
-        "NullPointer: (string + string) on line[%lu] in shred[id=%lu:%s]",
-        m_linepos, shred->xid, shred->name.c_str() ); // , shred->pc );
-    goto done;
-
-done:
-    // do something!
-    shred->is_running = FALSE;
-    shred->is_done = TRUE;
-}
+//void Chuck_Instr_Add_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+//{
+//    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+//    Chuck_String * lhs = NULL;
+//    Chuck_String * rhs = NULL;
+//    Chuck_String * result = NULL;
+//
+//    // pop word from reg stack
+//    pop_( reg_sp, 2 );
+//    // left
+//    lhs = (Chuck_String *)(*(reg_sp));
+//    // right
+//    rhs = (Chuck_String *)(*(reg_sp+1));
+//
+//    // make sure no null
+//    if( !rhs || !lhs ) goto null_pointer;
+//
+//    // make new string
+//    result = (Chuck_String *)instantiate_and_initialize_object( vm->env()->ckt_string, shred );
+//
+//    // concat
+//    // result->str = lhs->str + rhs->str;
+//    result->set( lhs->str() + rhs->str() );
+//
+//    // push the reference value to reg stack
+//    push_( reg_sp, (t_CKUINT)(result) );
+//
+//    return;
+//
+//null_pointer:
+//    // we have a problem
+//    EM_exception(
+//        "NullPointer: (string + string) on line[%lu] in shred[id=%lu:%s]",
+//        m_linepos, shred->xid, shred->name.c_str() ); // , shred->pc );
+//    goto done;
+//
+//done:
+//    // do something!
+//    shred->is_running = FALSE;
+//    shred->is_done = TRUE;
+//}
 
 
 
@@ -4509,9 +4510,11 @@ Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM * 
 
 //-----------------------------------------------------------------------------
 // name: instantiate_and_initialize_object()
-// desc: you probably shouldn't call this version. call the one that takes a
-//       shred if you have a non-null shred, otherwise call the one that
-//       takes a vm
+// desc: instiate and initialize a ChucK Object of a particular Type
+//       NOTE: the returned Object will have a reference count of 0
+//       NOTE: you probably shouldn't call this version. call the one that
+//       takes a shred if you have a non-null shred, otherwise call the one
+//       that takes a vm
 //-----------------------------------------------------------------------------
 Chuck_Object * instantiate_and_initialize_object( Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm )
 {
@@ -8259,75 +8262,76 @@ done:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: various string ops
+//       (no longer used; string ops now handled more properly by op overloads)
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
-{
-    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
-    Chuck_String * lhs = NULL;
-    Chuck_String * rhs = NULL;
-
-    // pop
-    pop_( sp, 2 );
-    // get the string references
-    lhs = (Chuck_String *)*sp;
-    rhs = (Chuck_String *)*(sp + 1);
-    // neither should be null
-    if( !lhs || !rhs ) goto null_pointer;
-
-    // look
-    switch( m_val )
-    {
-    case ae_op_eq:
-        push_( sp, lhs->str() == rhs->str() );
-    break;
-
-    case ae_op_neq:
-        push_( sp, lhs->str() != rhs->str() );
-    break;
-
-    case ae_op_lt:
-        push_( sp, lhs->str() < rhs->str() );
-    break;
-
-    case ae_op_le:
-        push_( sp, lhs->str() <= rhs->str() );
-    break;
-
-    case ae_op_gt:
-        push_( sp, lhs->str() > rhs->str() );
-    break;
-
-    case ae_op_ge:
-        push_( sp, lhs->str() >= rhs->str() );
-    break;
-
-    default:
-        goto invalid_op;
-    break;
-    }
-
-    return;
-
-null_pointer:
-    // we have a problem
-    EM_exception(
-        "NullPointer: (string op) on line[%lu] in shred[id=%lu:%s]",
-        m_linepos, shred->xid, shred->name.c_str() );
-    goto done;
-
-invalid_op:
-    // we have a problem
-    EM_exception(
-        "InvalidStringOp: '%s' on line[%lu] in shred[id=%lu:%s]",
-        op2str((ae_Operator)m_val), m_linepos, shred->xid, shred->name.c_str() );
-    goto done;
-
-done:
-    // do something!
-    shred->is_running = FALSE;
-    shred->is_done = TRUE;
-}
+//void Chuck_Instr_Op_string::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+//{
+//    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+//    Chuck_String * lhs = NULL;
+//    Chuck_String * rhs = NULL;
+//
+//    // pop
+//    pop_( sp, 2 );
+//    // get the string references
+//    lhs = (Chuck_String *)*sp;
+//    rhs = (Chuck_String *)*(sp + 1);
+//    // neither should be null
+//    if( !lhs || !rhs ) goto null_pointer;
+//
+//    // look
+//    switch( m_val )
+//    {
+//    case ae_op_eq:
+//        push_( sp, lhs->str() == rhs->str() );
+//    break;
+//
+//    case ae_op_neq:
+//        push_( sp, lhs->str() != rhs->str() );
+//    break;
+//
+//    case ae_op_lt:
+//        push_( sp, lhs->str() < rhs->str() );
+//    break;
+//
+//    case ae_op_le:
+//        push_( sp, lhs->str() <= rhs->str() );
+//    break;
+//
+//    case ae_op_gt:
+//        push_( sp, lhs->str() > rhs->str() );
+//    break;
+//
+//    case ae_op_ge:
+//        push_( sp, lhs->str() >= rhs->str() );
+//    break;
+//
+//    default:
+//        goto invalid_op;
+//    break;
+//    }
+//
+//    return;
+//
+//null_pointer:
+//    // we have a problem
+//    EM_exception(
+//        "NullPointer: (string op) on line[%lu] in shred[id=%lu:%s]",
+//        m_linepos, shred->xid, shred->name.c_str() );
+//    goto done;
+//
+//invalid_op:
+//    // we have a problem
+//    EM_exception(
+//        "InvalidStringOp: '%s' on line[%lu] in shred[id=%lu:%s]",
+//        op2str((ae_Operator)m_val), m_linepos, shred->xid, shred->name.c_str() );
+//    goto done;
+//
+//done:
+//    // do something!
+//    shred->is_running = FALSE;
+//    shred->is_done = TRUE;
+//}
 
 
 

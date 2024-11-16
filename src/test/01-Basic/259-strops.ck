@@ -46,9 +46,11 @@ assert( "foo" + "bar" == "foobar", "16" );
 "bar" +=> s;
 assert( s == "foobar", "17" );
 assert( "bar" + 10 == "bar10", "18" );
-assert( "bar" + 10.0 == "bar10.000000", "19" );
+// "bar10.000000" -- using find in case # of 0s after decimal differs
+assert( ("bar" + 10.0).find("bar10.") == 0, "19" );
 assert( 10 + "bar" == "10bar", "20" );
-assert( 10.0 + "bar" == "10.000000bar", "21" );
+// "10.000000bar" -- using find in case # of 0s after decimal differs
+assert( (10.0 + "bar").find("bar") > 2, "21" );
 assert( "foo" + "bar" + "cle" == "foobarcle", "22" );
 assert( "FoO".lower() == "foo", "23" );
 assert( "foo".upper() == "FOO", "24" );

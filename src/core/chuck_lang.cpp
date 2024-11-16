@@ -1096,12 +1096,78 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     // end the class import
     type_engine_import_class_end( env );
 
+    // add operator overload: string+string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: int+string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_int_plus_string );
+    func->add_arg( "int", "ival" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+int | 1.5.4.2 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_int );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "int", "ival" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: int+string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_float_plus_string );
+    func->add_arg( "float", "fval" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+int | 1.5.4.2 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_float );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "float", "fval" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string == string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_eq, string_op_string_eq_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string != string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_neq, string_op_string_neq_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string < string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_lt, string_op_string_lt_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string <= string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_le, string_op_string_le_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string > string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_gt, string_op_string_gt_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: string >= string | 1.5.4.2 (ge)
+    func = make_new_op_binary( "int", ae_op_ge, string_op_string_ge_string );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
     return TRUE;
 
 error:
 
     // end the class import
     type_engine_import_class_end( env );
+
+error_post_class:
 
     return FALSE;
 }
@@ -2975,6 +3041,12 @@ CK_DLL_MFUN(string_findStr)
     Chuck_String * str = (Chuck_String *) SELF;
     Chuck_String * the_str = GET_NEXT_STRING(ARGS);
 
+    if( the_str == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument in .find()" );
+        return;
+    }
+
     string::size_type index = str->str().find(the_str->str());
 
     if(index == string::npos)
@@ -2989,9 +3061,15 @@ CK_DLL_MFUN(string_findStrStart)
     Chuck_String * the_str = GET_NEXT_STRING(ARGS);
     t_CKINT start = GET_NEXT_INT(ARGS);
 
+    if( the_str == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument in .find()" );
+        return;
+    }
+
     if(start < 0 || start >= str->str().length())
     {
-        ck_throw_exception(SHRED, "IndexOutOfBounds", start);
+        ck_throw_exception( SHRED, "IndexOutOfBounds", start );
         RETURN->v_int = -1;
         return;
     }
@@ -3043,6 +3121,12 @@ CK_DLL_MFUN(string_rfindStr)
     Chuck_String * str = (Chuck_String *) SELF;
     Chuck_String * the_str = GET_NEXT_STRING(ARGS);
 
+    if( the_str == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument in .find()" );
+        return;
+    }
+
     string::size_type index = str->str().rfind(the_str->str());
 
     if(index == string::npos)
@@ -3056,6 +3140,12 @@ CK_DLL_MFUN(string_rfindStrStart)
     Chuck_String * str = (Chuck_String *) SELF;
     Chuck_String * the_str = GET_NEXT_STRING(ARGS);
     t_CKINT start = GET_NEXT_INT(ARGS);
+
+    if( the_str == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument in .find()" );
+        return;
+    }
 
     if(start < 0 || start >= str->str().length())
     {
@@ -3150,6 +3240,166 @@ CK_DLL_MFUN( string_get_at )
     RETURN->v_int = s->str.length();
 }
 */
+
+// 1.5.4.2 (ge) added
+CK_DLL_GFUN( string_op_string_plus_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    if( left == NULL || right == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,string)" );
+        return;
+    }
+
+    string lhs = left->str();
+    string rhs = right->str();
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    RETURN->v_string->set( lhs + rhs );
+}
+
+CK_DLL_GFUN( string_op_int_plus_string )
+{
+    t_CKINT left = GET_NEXT_INT(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    if( right == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(int,string)" );
+        return;
+    }
+
+    string rhs = right->str();
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    RETURN->v_string->set( std::to_string(left) + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_int )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKINT right = GET_NEXT_INT(ARGS);
+
+    if( left == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,int)" );
+        return;
+    }
+
+    string lhs = left->str();
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    RETURN->v_string->set( lhs + std::to_string(right) );
+}
+
+CK_DLL_GFUN( string_op_float_plus_string )
+{
+    t_CKFLOAT left = GET_NEXT_FLOAT(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    if( right == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(float,string)" );
+        return;
+    }
+
+    string rhs = right->str();
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    RETURN->v_string->set( std::to_string(left) + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_float )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKFLOAT right = GET_NEXT_FLOAT(ARGS);
+
+    if( left == NULL ) // 1.5.4.2 (ge) added
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,float)" );
+        return;
+    }
+
+    string lhs = left->str();
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    RETURN->v_string->set( lhs + std::to_string(right) );
+}
+
+CK_DLL_GFUN( string_op_string_eq_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() == right->str());
+    // only one is null
+    else if( (left && !right) || (!left && right) ) RETURN->v_int = FALSE;
+    // both null
+    else RETURN->v_int = TRUE;
+}
+
+CK_DLL_GFUN( string_op_string_neq_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() != right->str());
+    // if at least one is null
+    else RETURN->v_int = FALSE;
+}
+
+CK_DLL_GFUN( string_op_string_lt_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() < right->str());
+    // if at least one is null
+    else RETURN->v_int = FALSE;
+}
+
+CK_DLL_GFUN( string_op_string_le_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() <= right->str());
+    // if at least one is null
+    else RETURN->v_int = FALSE;
+}
+
+CK_DLL_GFUN( string_op_string_gt_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() > right->str());
+    // if at least one is null
+    else RETURN->v_int = FALSE;
+}
+
+CK_DLL_GFUN( string_op_string_ge_string )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // if both non-null
+    if( left && right ) RETURN->v_int = (left->str() >= right->str());
+    // if at least one is null
+    else RETURN->v_int = FALSE;
+}
 
 
 //-----------------------------------------------------------------------------

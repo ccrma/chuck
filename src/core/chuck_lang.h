@@ -253,6 +253,17 @@ CK_DLL_MFUN( string_erase);
 CK_DLL_MFUN( string_toInt);
 CK_DLL_MFUN( string_toFloat);
 CK_DLL_MFUN( string_parent);
+CK_DLL_GFUN( string_op_string_plus_string ); // 1.5.4.2 (ge) added
+CK_DLL_GFUN( string_op_int_plus_string );
+CK_DLL_GFUN( string_op_string_plus_int );
+CK_DLL_GFUN( string_op_float_plus_string );
+CK_DLL_GFUN( string_op_string_plus_float );
+CK_DLL_GFUN( string_op_string_eq_string );
+CK_DLL_GFUN( string_op_string_neq_string );
+CK_DLL_GFUN( string_op_string_lt_string );
+CK_DLL_GFUN( string_op_string_le_string );
+CK_DLL_GFUN( string_op_string_gt_string );
+CK_DLL_GFUN( string_op_string_ge_string );
 
 
 //-----------------------------------------------------------------------------

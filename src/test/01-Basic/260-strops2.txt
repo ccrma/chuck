@@ -1,0 +1,18 @@
+str: the quick brown fox jumped over the lazy dog 
+str.charAt( 0 ): 116 
+str.charAt( 10 ): 98 
+str.setCharAt( 0, 'T' ): The quick brown fox jumped over the lazy dog 
+str.substring( 10 ): brown fox jumped over the lazy dog 
+str.substring( 10, 10 ): brown fox  
+str.insert( 36, "old " ): The quick brown fox jumped over the old lazy dog 
+str.erase( 40, 5 ): The quick brown fox jumped over the old dog 
+str.replace( 40, "cat" ): The quick brown fox jumped over the old cat 
+str.replace( 4, 5, "slow" ): The slow brown fox jumped over the old cat 
+str.find('x'): 17 
+str.find('x', 15): 17 
+str.find("fox"): 15 
+str.find("fox", 20): -1 
+str.rfind('o'): 35 
+str.rfind('o', 20): 16 
+str.rfind("fox"): 15 
+str.rfind("fox", 20): 15 

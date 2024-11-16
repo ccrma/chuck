@@ -101,6 +101,8 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helpers
+void type_engine_init_op_overload_builtin( Chuck_Env * env );
+// check for const
 Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
 // convert dot member expression to string for printing
 string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member member );
@@ -561,6 +563,13 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     EM_log( CK_LOG_HERALD, "adding base classes..." );
     EM_pushlog();
 
+    // initialize operator overloading (part 1)
+    // 1.5.4.2 (ge) broken up into two parts; moved part 1 to here:
+    // before initializing builtin types -- since some types,
+    // e.g., string, now overload operators
+    // (also see: type_engine_init_op_overload_builtin())
+    if( !type_engine_init_op_overload( env ) ) return FALSE;
+
     //-------------------------
     // initialize internal classes; for now these are assumed to not error out
     // NOTE: alternately, could test for return values and bailing out gracefully
@@ -717,8 +726,15 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // commit the global namespace
     env->global()->commit();
 
-    // initialize operator mappings
-    if( !type_engine_init_op_overload( env ) ) return FALSE;
+    // initialize operator overloas (part 2: reserve builtin overloads)
+    // 1.5.4.2 (ge) this was broken up into two parts due to the need to
+    // initialize op overloads in general before initializing the builtin
+    // types like string, which now overload operators instead of hard-coding
+    // string operations; (also see type_engine_init_op_overload())
+    type_engine_init_op_overload_builtin( env );
+
+    // important: preserve all entries (or they will be cleared on next reset)
+    env->op_registry.preserve();
 
     // clear/create/reset [user] namespace | 1.5.4.0 (ge) added/moved here
     // subsequent definitions (e.g., public classes) would be added
@@ -2135,14 +2151,14 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     switch( op )
     {
     case ae_op_plus:
-        // string + int/float
-        if( isa( left, env->ckt_string ) )
-        {
-            // right is string or int/float
-            if( isa( right, env->ckt_string ) || isa( right, env->ckt_int )
-                || isa( right, env->ckt_float ) )
-                break;
-        }
+//        // string + int/float
+//        if( isa( left, env->ckt_string ) )
+//        {
+//            // right is string or int/float
+//            if( isa( right, env->ckt_string ) || isa( right, env->ckt_int )
+//                || isa( right, env->ckt_float ) )
+//                break;
+//        }
     case ae_op_plus_chuck:
         // int/float + string
         if( isa( left, env->ckt_string ) || isa( left, env->ckt_int ) || isa( left, env->ckt_float ) )
@@ -2297,11 +2313,11 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_COMMUTE( te_vec2, te_vec4 ) return env->ckt_vec4; // 1.5.1.7
         CK_COMMUTE( te_vec3, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
         CK_COMMUTE( te_dur, te_time ) return env->ckt_time;
-        if( isa( left, env->ckt_string ) && isa( right, env->ckt_string ) ) return env->ckt_string;
-        if( isa( left, env->ckt_string ) && isa( right, env->ckt_int ) ) return env->ckt_string;
-        if( isa( left, env->ckt_string ) && isa( right, env->ckt_float ) ) return env->ckt_string;
-        if( isa( left, env->ckt_int ) && isa( right, env->ckt_string ) ) return env->ckt_string;
-        if( isa( left, env->ckt_float ) && isa( right, env->ckt_string ) ) return env->ckt_string;
+//        if( isa( left, env->ckt_string ) && isa( right, env->ckt_string ) ) return env->ckt_string;
+//        if( isa( left, env->ckt_string ) && isa( right, env->ckt_int ) ) return env->ckt_string;
+//        if( isa( left, env->ckt_string ) && isa( right, env->ckt_float ) ) return env->ckt_string;
+//        if( isa( left, env->ckt_int ) && isa( right, env->ckt_string ) ) return env->ckt_string;
+//        if( isa( left, env->ckt_float ) && isa( right, env->ckt_string ) ) return env->ckt_string;
     break;
 
     case ae_op_minus:
@@ -2396,7 +2412,6 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_vec2, te_vec2 ) return env->ckt_int; // 1.5.1.7
         CK_LR( te_vec3, te_vec3 ) return env->ckt_int; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_int; // 1.3.5.3
-        if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
     case ae_op_lt:
     case ae_op_le:
     {
@@ -2487,6 +2502,14 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     Chuck_Type * ret = type_engine_check_op_overload_binary( env, op, left, right, binary );
     // if we have a hit
     if( ret ) return ret;
+
+    // if no match, catch reference compare | 1.5.4.2 (ge) moved to after op overload check
+    if( op == ae_op_eq || op == ae_op_neq )
+    {
+        // if both are Object references
+        // NB string == string is overloaded by default
+        if( isa( left, env->ckt_object ) && isa( right, env->ckt_object ) ) return env->ckt_int;
+    }
 
     // no match
     EM_error2( binary->where,
@@ -7425,9 +7448,6 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_vec2, ae_op_plus, env->ckt_vec3, TRUE ); // commute | 1.5.1.7
     registry->reserve( env->ckt_vec2, ae_op_plus, env->ckt_vec4, TRUE ); // commute | 1.5.1.7
     registry->reserve( env->ckt_vec3, ae_op_plus, env->ckt_vec4, TRUE ); // commute
-    registry->reserve( env->ckt_object, ae_op_plus, env->ckt_string ); // object +=> string
-    registry->reserve( env->ckt_int, ae_op_plus, env->ckt_string, TRUE ); // int/float +=> string
-    registry->reserve( env->ckt_float, ae_op_plus, env->ckt_string, TRUE ); // string +=> int/float
     // -
     registry->reserve( env->ckt_time, ae_op_minus, env->ckt_time );
     registry->reserve( env->ckt_time, ae_op_minus, env->ckt_dur );
@@ -7744,8 +7764,9 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
     registry->add( ae_op_ungruck_right )->configure( TRUE, false, false );
     registry->add( ae_op_ungruck_left )->configure( TRUE, false, false );
 
-    // mark built-in overload
-    type_engine_init_op_overload_builtin( env );
+    // mark built-in op overloads
+    // 1.5.4.2 (ge) moved to later ("part 2")
+    // type_engine_init_op_overload_builtin( env );
 
     // pop log
     EM_poplog();

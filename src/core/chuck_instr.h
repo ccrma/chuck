@@ -1249,13 +1249,14 @@ public:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Add_string
-// desc: ...
+// desc: string + string
+//       (no longer used; string concat now handled by op overloading)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Add_string : public Chuck_Instr_Binary_Op
-{
-public:
-    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-};
+//struct Chuck_Instr_Add_string : public Chuck_Instr_Binary_Op
+//{
+//public:
+//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+//};
 
 
 
@@ -4392,16 +4393,17 @@ protected:
 
 //-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Op_string
-// desc: ...
+// desc: // desc: various string ops
+//       (no longer used; string ops now handled more properly by op overloads)
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Op_string : public Chuck_Instr_Unary_Op
-{
-public:
-    Chuck_Instr_Op_string( t_CKUINT v ) { this->set( v ); }
-
-public:
-    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-};
+//struct Chuck_Instr_Op_string : public Chuck_Instr_Unary_Op
+//{
+//public:
+//    Chuck_Instr_Op_string( t_CKUINT v ) { this->set( v ); }
+//
+//public:
+//    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+//};
 
 
 

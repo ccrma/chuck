@@ -951,6 +951,40 @@ Chuck_DL_Value * CK_DLL_CALL make_new_mvar( const char * t, const char * n, t_CK
 {   return new Chuck_DL_Value( t, n, c ); }
 Chuck_DL_Value * CK_DLL_CALL make_new_svar( const char * t, const char * n, t_CKBOOL c, void * a )
 {   return new Chuck_DL_Value( t, n, c, a ); }
+Chuck_DL_Func * make_new_op_binary( const char * t, ae_Operator op, f_gfun gfun )
+{
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func( t, (string("@operator")+op2str(op)).c_str(), (t_CKUINT)gfun, ae_fp_gfun );
+    // set operator overload kind
+    f->opOverloadKind = ckte_op_overload_BINARY;
+    // set the op
+    f->op2overload = op;
+    // return
+    return f;
+}
+Chuck_DL_Func * make_new_op_prefix( const char * t, ae_Operator op, f_gfun gfun )
+{
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func( t, (string("@operator")+op2str(op)).c_str(), (t_CKUINT)gfun, ae_fp_gfun );
+    // set operator overload kind
+    f->opOverloadKind = ckte_op_overload_UNARY_PRE;
+    // set the op
+    f->op2overload = op;
+    // return
+    return f;
+}
+Chuck_DL_Func * make_new_op_postfix( const char * t, ae_Operator op, f_gfun gfun )
+{
+    // allocate
+    Chuck_DL_Func * f = new Chuck_DL_Func( t, (string("@operator")+op2str(op)).c_str(), (t_CKUINT)gfun, ae_fp_gfun );
+    // set operator overload kind
+    f->opOverloadKind = ckte_op_overload_UNARY_POST;
+    // set the op
+    f->op2overload = op;
+    // return
+    return f;
+}
+
 
 
 
