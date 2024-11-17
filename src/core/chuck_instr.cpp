@@ -5372,7 +5372,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_DL_Return retval;
     // 1.5.4.2 (ge) added; #special-primitive-member-func-from-literal
-    t_CKUINT THIS = 0;
+    t_CKUINT ckTHIS = 0;
 
     // pop word
     pop_( reg_sp, 2 );
@@ -5428,7 +5428,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     }
 
     // remember THIS #special-primitive-member-func-from-literal
-    THIS = (t_CKUINT)(*mem_sp);
+    ckTHIS = (t_CKUINT)(*mem_sp);
 
     // check the function pointer kind: ctor or mfun?
     if( func->native_func_kind == ae_fp_ctor ) // ctor
@@ -5516,7 +5516,7 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     // to existing special cases for special primitives; if there is any silver
     // lining, it might be that this logic is isolated and contained
     // (see #special-primitive-member-func-from-literal for related code)
-    if( m_special_primitive_cleanup_this ) special_primitive_cleanup( (t_CKBYTE *)THIS );
+    if( m_special_primitive_cleanup_this ) special_primitive_cleanup( (t_CKBYTE *)ckTHIS );
 
     // pop the stack pointer
     mem_sp -= push;
