@@ -18,8 +18,14 @@ ChucK VERSIONS log
     various scenarios.
 (fixed) long-standing SndBuf issue, especially prevalent on macOS:
     "System error : Too many open files." this was due a combination of 
+(fixed) memory leak involving string operations (e.g., string + string);
+    internally, string operations now are appropriately handled by the
+    operator overloading mechanism
+(fixed) < <= > >= operators for strings
 (fixed) vec2/vec3/vec4 implicit cast logic for +=> and -=> operations
     (previously, this would cause a crash in some cases)
+(fixed) vec2/vec3/vec4 function call from literal (non-variable) value
+    (e.g., @(1,0).magnitude(); previously this yielded a compiler error)
 (added) vector dot product methods for vec2, vec3, and vec4
         float vec2.dot( vec2 rhs )
         float vec3.dot( vec3 rhs )

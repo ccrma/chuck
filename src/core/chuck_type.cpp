@@ -4932,11 +4932,16 @@ check_func:
     // check base; 1.3.5.3
     if( member->base->s_meta == ae_meta_value ) // is literal
     {
+        // mark as special primitive member function call from literal
+        // 1.5.4.2 (ge) added #special-primitive-member-func-from-literal
+        member->isSpecialPrimitiveFunc = TRUE;
+
         // error
-        EM_error2( member->base->where,
-                  "cannot call function from literal %s value",
-                  member->t_base->c_name() );
-        return NULL;
+        // 1.5.4.2 (ge) commented out #special-primitive-member-func-from-literal
+        // EM_error2( member->base->where,
+        //            "cannot call function from literal %s value",
+        //            member->t_base->c_name() );
+        // return NULL;
     }
 
     // find the value

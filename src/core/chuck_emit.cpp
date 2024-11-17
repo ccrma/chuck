@@ -40,10 +40,11 @@
 #include "util_string.h" // added 1.5.0.5
 #include <sstream>
 #include <iostream>
-
 using namespace std;
 
 
+// forward references
+struct Chuck_FuncCall_Options;
 
 
 //-----------------------------------------------------------------------------
@@ -81,7 +82,8 @@ t_CKBOOL emit_engine_emit_exp_dur( Chuck_Emitter * emit, a_Exp_Dur dur );
 t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, Chuck_Func * func,
                                          Chuck_Type * type, t_CKUINT line, t_CKUINT where,
-                                         t_CKBOOL spork = FALSE );
+                                         t_CKBOOL spork = FALSE,
+                                         Chuck_FuncCall_Options * options = NULL );
 t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit, a_Exp_Func_Call func_call,
                                          t_CKBOOL spork = FALSE );
 t_CKBOOL emit_engine_emit_func_args( Chuck_Emitter * emit, a_Exp_Func_Call func_call );
@@ -4209,95 +4211,29 @@ t_CKBOOL emit_engine_emit_exp_array( Chuck_Emitter * emit, a_Exp_Array array )
 
 
 //-----------------------------------------------------------------------------
-// name: emit_engine_emit_exp_func_call()
-// desc: ...
+// name: struct Chuck_FuncCall_Options | 1.5.4.2 (ge) added
+// desc: a struct containing func call options, usually for specific cases
 //-----------------------------------------------------------------------------
-t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
-                                         Chuck_Func * func,
-                                         Chuck_Type * type,
-                                         t_CKUINT line,
-                                         t_CKUINT where,
-                                         t_CKBOOL spork )
+struct Chuck_FuncCall_Options
 {
-    // is a member?
-    t_CKBOOL is_member = func->is_member;
-    // is a static? (within class)
-    t_CKBOOL is_static = func->is_static;
+    // set this to true ONLY for specific cases of...
+    // 1) a special primitive (e.g., vec2/3/4)...
+    // 2) calls one of its "member" functions (e.g., magnitude())
+    // 3) not from a variable but from a literal value (e.g., @(1,2,3).magnitude())
+    // in these cases, a special Chuck_Instr_Reg_Transmute_Value_To_Pointer
+    // must have been emitted prior to the member function call
+    // NOTE: in effect, this option tells the member function call to
+    // clean up the trasmuted THIS pointer before returning
+    // NOTE: part of #special-primitive-member-func-from-literal
+    t_CKBOOL transmutingSpecialPrimitiveForMemberFunc;
 
-    // only check dependency violations if we are at a context-top-level
-    // or class-top-level scope, i.e., not in a function definition
-    // also, once sporked, it will be up the programmer to ensure intention
-    // -------
-    // 1.5.4.0 (ge) sporked function calls now subject to same dependency verification
-    // this may be more stringent (due to potential timing behavior) but
-    // should help prevent confusing crashes; removing check for spork
-    if( !emit->env->func /* && !spork */ )
+    // constructor
+    Chuck_FuncCall_Options( t_CKBOOL transmuting = FALSE )
     {
-        // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
-        // NOTE if func originates from another file, this should behave correctly and return NULL | 1.5.1.1 (ge) fixed
-        // NOTE passing in emit->env->class_def, to differentiate dependencies across class definitions | 1.5.2.0 (ge) fixed
-        const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def );
-        // at least one unfulfilled dependency
-        if( unfulfilled )
-        {
-            EM_error2( where,
-                      "%s '%s()' at this point %sskips initialization of a needed variable:",
-                      spork ? "sporking" : "calling", func->base_name.c_str(), spork ? "potentially " : "" );
-            EM_error2( unfulfilled->where,
-                      "...(note: this skipped variable initialization is needed by '%s')",
-                      func->signature().c_str() );
-            EM_error2( unfulfilled->use_where,
-                      "...(note: this is where the variable is used within '%s' or its subsidiaries)",
-                      func->signature().c_str() );
-            EM_error2( 0,
-                      "...(hint: try calling '%s()' after the variable initialization)", func->base_name.c_str() );
-            return FALSE;
-        }
+        // defaults
+        transmutingSpecialPrimitiveForMemberFunc = transmuting;
     }
-
-    // translate to code
-    emit->append( new Chuck_Instr_Func_To_Code );
-    // emit->append( new Chuck_Instr_Reg_Push_Code( func->code ) );
-    // push the local stack depth - local variables
-    emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
-
-    // call the function
-    t_CKUINT size = type->size;
-    t_CKUINT kind = getkindof( emit->env, type ); // added 1.3.1.0
-
-    // the pointer
-    Chuck_Instr * instr = NULL;
-    if( func->def()->s_type == ae_func_builtin )
-    {
-        // ISSUE: 64-bit (fixed 1.3.1.0)
-        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_VEC2 ||
-            size == sz_VEC3 || sz_VEC4 )
-        {
-            // is member (1.3.1.0: changed to use kind instead of size)
-            if( is_member )
-                emit->append( instr = new Chuck_Instr_Func_Call_Member( kind, func ) );
-            else if( is_static )
-                emit->append( instr = new Chuck_Instr_Func_Call_Static( kind, func ) );
-            else // 1.5.1.5 (ge & andrew) new planes of existence --> this is in global-scope (not global variable)
-                emit->append( instr = new Chuck_Instr_Func_Call_Global( kind, func ) );
-        }
-        else
-        {
-            EM_error2( where,
-                       "(emit): internal error: %i func call not handled",
-                       size );
-            return FALSE;
-        }
-    }
-    else
-    {
-        emit->append( instr = new Chuck_Instr_Func_Call );
-    }
-    // set line position
-    instr->set_linepos(line);
-
-    return TRUE;
-}
+};
 
 
 
@@ -4352,16 +4288,120 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // line and pos
     t_CKUINT line = func_call->line;
     t_CKUINT where = func_call->where;
-    // if possible, get more accurate code position
+    // additional func call options | 1.5.4.2 (ge) added
+    Chuck_FuncCall_Options options;
+
+    // in the case of member func calls
     if( func_call->func->s_type == ae_exp_dot_member )
     {
+        // if possible, get more accurate code position
         line = func_call->func->dot_member.line;
         where = func_call->func->dot_member.where;
+        // set option | 1.5.4.2 (ge) added as part of #special-primitive-member-func-from-literal
+        // this should only be true for special non-primitive functions *from literal value* e.g., @(1,2,3).magnitude();
+        options.transmutingSpecialPrimitiveForMemberFunc = func_call->func->dot_member.isSpecialPrimitiveFunc;
     }
 
     // the rest
     return emit_engine_emit_exp_func_call( emit, func_call->ck_func, func_call->ret_type,
-                                           line, where, spork );
+                                           line, where, spork, &options );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: emit_engine_emit_exp_func_call()
+// desc: emit function call from necessary information
+//-----------------------------------------------------------------------------
+t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
+                                         Chuck_Func * func,
+                                         Chuck_Type * type,
+                                         t_CKUINT line,
+                                         t_CKUINT where,
+                                         t_CKBOOL spork,
+                                         Chuck_FuncCall_Options * options )
+{
+    // is a member?
+    t_CKBOOL is_member = func->is_member;
+    // is a static? (within class)
+    t_CKBOOL is_static = func->is_static;
+    // whether to enable the #special-primitive-member-func-from-literal option for member func
+    t_CKBOOL transmuting = options ? options->transmutingSpecialPrimitiveForMemberFunc : FALSE;
+
+    // only check dependency violations if we are at a context-top-level
+    // or class-top-level scope, i.e., not in a function definition
+    // also, once sporked, it will be up the programmer to ensure intention
+    // -------
+    // 1.5.4.0 (ge) sporked function calls now subject to same dependency verification
+    // this may be more stringent (due to potential timing behavior) but
+    // should help prevent confusing crashes; removing check for spork
+    if( !emit->env->func /* && !spork */ )
+    {
+        // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
+        // NOTE if func originates from another file, this should behave correctly and return NULL | 1.5.1.1 (ge) fixed
+        // NOTE passing in emit->env->class_def, to differentiate dependencies across class definitions | 1.5.2.0 (ge) fixed
+        const Chuck_Value_Dependency * unfulfilled = func->depends.locate( where, emit->env->class_def );
+        // at least one unfulfilled dependency
+        if( unfulfilled )
+        {
+            EM_error2( where,
+                      "%s '%s()' at this point %sskips initialization of a needed variable:",
+                      spork ? "sporking" : "calling", func->base_name.c_str(), spork ? "potentially " : "" );
+            EM_error2( unfulfilled->where,
+                      "...(note: this skipped variable initialization is needed by '%s')",
+                      func->signature().c_str() );
+            EM_error2( unfulfilled->use_where,
+                      "...(note: this is where the variable is used within '%s' or its subsidiaries)",
+                      func->signature().c_str() );
+            EM_error2( 0,
+                      "...(hint: try calling '%s()' after the variable initialization)", func->base_name.c_str() );
+            return FALSE;
+        }
+    }
+
+    // translate to code
+    emit->append( new Chuck_Instr_Func_To_Code );
+    // emit->append( new Chuck_Instr_Reg_Push_Code( func->code ) );
+    // push the local stack depth - local variables
+    emit->append( new Chuck_Instr_Reg_Push_Imm( emit->code->frame->curr_offset ) );
+
+    // call the function
+    t_CKUINT size = type->size;
+    t_CKUINT kind = getkindof( emit->env, type ); // added 1.3.1.0
+
+    // the pointer
+    Chuck_Instr * instr = NULL;
+    if( func->def()->s_type == ae_func_builtin )
+    {
+        // ISSUE: 64-bit (fixed 1.3.1.0)
+        if( size == 0 || size == sz_INT || size == sz_FLOAT || size == sz_VEC2 ||
+            size == sz_VEC3 || sz_VEC4 )
+        {
+            // is member (1.3.1.0: changed to use kind instead of size)
+            if( is_member )
+                emit->append( instr = new Chuck_Instr_Func_Call_Member( kind, func, CK_FUNC_CALL_THIS_IN_BACK, transmuting ) );
+            else if( is_static )
+                emit->append( instr = new Chuck_Instr_Func_Call_Static( kind, func ) );
+            else // 1.5.1.5 (ge & andrew) new planes of existence --> this is in global-scope (not global variable)
+                emit->append( instr = new Chuck_Instr_Func_Call_Global( kind, func ) );
+        }
+        else
+        {
+            EM_error2( where,
+                       "(emit): internal error: %i func call not handled",
+                       size );
+            return FALSE;
+        }
+    }
+    else
+    {
+        emit->append( instr = new Chuck_Instr_Func_Call );
+    }
+    // set line position
+    instr->set_linepos(line);
+
+    return TRUE;
 }
 
 
@@ -4546,22 +4586,39 @@ check_func:
     // get the func
     value = type_engine_find_value( t_base, member->xid );
     func = value->func_ref;
-    // make sure it's there
-    assert( func != NULL );
+    if( !func )
+    {
+        // should not get here
+        EM_error2( member->base->where,
+                  "(emit): internal error in lit_special(): expected function not found in value" );
+        // done
+        return FALSE;
+    }
 
     // NOTE: base already emitted earier in this function (and as var)
 
     // check base; 1.3.5.3
     if( member->base->s_meta == ae_meta_value ) // is literal
     {
-        // dup the value as pointer (as faux-'this' pointer)
-        emit->append( new Chuck_Instr_Reg_Dup_Last_As_Pointer( t_base->size / sz_WORD ) );
+        // verify
+        if( !member->isSpecialPrimitiveFunc )
+        {
+            // should not get here
+            EM_error2( member->base->where,
+                      "(emit): internal error in lit_special(): unexpected specialPrimitiveFunc == FALSE" );
+            // done
+            return FALSE;
+        }
+
+        // 1.5.4.2 (ge) #special-primitive-member-func-from-literal
+        // transmute the value as pointer (as faux-'this' pointer)
+        emit->append( new Chuck_Instr_Reg_Transmute_Value_To_Pointer( t_base->size ) );
     }
-    else // normal object
-    {
-        // dup the base pointer ('this' pointer as argument -- special case primitive)
-        emit->append( new Chuck_Instr_Reg_Dup_Last );
-    }
+
+    // dup the base pointer ('this' pointer as argument -- special case primitive)
+    // as of 1.5.4.2 this is emitted for both literals and variables
+    // #special-primitive-member-func-from-literal
+    emit->append( new Chuck_Instr_Reg_Dup_Last );
 
     // find the offset for virtual table
     offset = func->vt_index;

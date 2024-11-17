@@ -1965,6 +1965,7 @@ void Chuck_Instr_vec4_Divide_float_Assign::execute( Chuck_VM * vm, Chuck_VM_Shre
 
 
 
+
 #pragma mark === String Arithmetic ===
 
 
@@ -2474,17 +2475,41 @@ void Chuck_Instr_Reg_Dup_Last2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 //-----------------------------------------------------------------------------
-// name: execute()
-// desc: ...
+// allocate memory in special-primitive storage; used for vec2/3/4 member function calls
+// 1.5.4.2 (ge) added as part of #special-primitive-member-func-from-literal
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Dup_Last_As_Pointer::execute(
-     Chuck_VM * vm, Chuck_VM_Shred * shred )
+static t_CKBYTE * special_primitive_alloc( const t_CKBYTE * copyFrom, t_CKUINT numBytes )
 {
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    t_CKBYTE * where = (t_CKBYTE *)shred->reg->sp;
-
+    t_CKBYTE * copy = new t_CKBYTE[numBytes];
+    memcpy( copy, copyFrom, numBytes );
+    return copy;
+}
+//-----------------------------------------------------------------------------
+// reclaim memory in special-primitive storage; used for vec2/3/4 member function calls
+// 1.5.4.2 (ge) added as part of #special-primitive-member-func-from-literal
+//-----------------------------------------------------------------------------
+static void special_primitive_cleanup( t_CKBYTE * reclaimMe )
+{
+    CK_SAFE_DELETE_ARRAY( reclaimMe );
+}
+//-----------------------------------------------------------------------------
+// name: execute() | 1.5.4.2 (ge) added
+// desc: assume a (primitive, e.g., vec2/3/4) value on reg stack, pop from stack,
+//       put into special-primitive storage, push its address to reg
+//       stack for a potential function call #special-primitive-member-func-from-literal
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Transmute_Value_To_Pointer::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // stack pointer
+    t_CKBYTE *& reg_sp = (t_CKBYTE *&)shred->reg->sp;
+    // pop the specified number of bytes
+    pop_( reg_sp, m_val );
+    // allocate
+    t_CKBYTE * ptr = special_primitive_alloc( reg_sp, m_val );
+    // get as uint pointer so the push_() pointer arithmetic works correctly
+    t_CKUINT *& the_sp = (t_CKUINT *&)reg_sp;
     // push pointer into reg stack
-    push_( reg_sp, (t_CKUINT)(where-(m_val*sz_WORD)) );
+    push_( the_sp, (t_CKUINT)ptr );
 }
 
 
@@ -5327,9 +5352,10 @@ error_overflow:
 const char * Chuck_Instr_Func_Call_Member::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s, %s",
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s, %s, %s",
               m_func_ref ? m_func_ref->signature(FALSE,FALSE).c_str() : "[null]",
-              m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK ? "this:back" : "this:front" );
+              m_arg_convention == CK_FUNC_CALL_THIS_IN_BACK ? "this:back" : "this:front",
+              m_special_primitive_cleanup_this ? "transmute:yes" : "transmute:no" );
     return buffer;
 }
 
@@ -5345,6 +5371,8 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
     t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
     Chuck_DL_Return retval;
+    // 1.5.4.2 (ge) added; #special-primitive-member-func-from-literal
+    t_CKUINT THIS = 0;
 
     // pop word
     pop_( reg_sp, 2 );
@@ -5398,6 +5426,9 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         for( t_CKUINT i = 0; i < stack_depth; i++ )
             *mem_sp2++ = *reg_sp2++;
     }
+
+    // remember THIS #special-primitive-member-func-from-literal
+    THIS = (t_CKUINT)(*mem_sp);
 
     // check the function pointer kind: ctor or mfun?
     if( func->native_func_kind == ae_fp_ctor ) // ctor
@@ -5476,6 +5507,16 @@ void Chuck_Instr_Func_Call_Member::execute( Chuck_VM * vm, Chuck_VM_Shred * shre
         //          e.g., string Sndbuf.read(string)
         func_release_args( vm, m_func_ref->def()->arg_list, (t_CKBYTE *)(mem_sp+1) );
     }
+
+    // check if we need to do special-primitive cleanup | 1.5.4.2 (ge) added
+    // this is for special primitives that have "member" functions
+    // e.g., vec2/3/4 -- specifically, this supports calling a "member" function
+    // from a literal value (i.e., not a variable) -- e.g., @(1,0).magnitude()
+    // NOTE: this approach is cursed because it adds more special case treatment
+    // to existing special cases for special primitives; if there is any silver
+    // lining, it might be that this logic is isolated and contained
+    // (see #special-primitive-member-func-from-literal for related code)
+    if( m_special_primitive_cleanup_this ) special_primitive_cleanup( (t_CKBYTE *)THIS );
 
     // pop the stack pointer
     mem_sp -= push;
