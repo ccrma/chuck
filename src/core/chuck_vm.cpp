@@ -1931,51 +1931,54 @@ void Chuck_VM_Shred::detach_ugens()
 //       associated with this shred, instead of waiting for the shred to finish
 //       NOTE this can be useful if a shred dynamically creates a lot of
 //       UGens without exiting
+//       1.5.4.2 (ge) NOTE this is no longer necessary as the new UGen/shred
+//       semantics have been updated for these types of checks to happen on
+//       a per-UGen level
 //-----------------------------------------------------------------------------
-void Chuck_VM_Shred::prune_ugens()
-{
-    // check if we have anything in ugen map for this shred
-    if( !m_ugen_map.size() )
-        return;
-
-    // ugens to release
-    std::vector<Chuck_UGen *> release_v;
-
-    // get iterator to our map
-    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
-    while( iter != m_ugen_map.end() )
-    {
-        // get the ugen
-        Chuck_UGen * ugen = iter->first;
-
-        // verify
-        assert( ugen->refcount() > 0 );
-        // check for ugens with only one reference (to this shred)
-        if( ugen->refcount() == 1 ) release_v.push_back( ugen );
-
-        // advance the iterator
-        iter++;
-    }
-
-    // check if anything to prune
-    if( release_v.size() )
-    {
-        // log
-        EM_log( CK_LOG_FINE, "pruning '%ld' ugen(s) from shred: %x...", release_v.size(), this );
-
-        // loop over vector
-        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-            rvi != release_v.end(); rvi++ )
-        {
-            // remove from map
-            m_ugen_map.erase( *rvi );
-            // release the ugen
-            CK_SAFE_RELEASE( *rvi );
-        }
-        // clear the release vector
-        release_v.clear();
-    }
-}
+//void Chuck_VM_Shred::prune_ugens()
+//{
+//    // check if we have anything in ugen map for this shred
+//    if( !m_ugen_map.size() )
+//        return;
+//
+//    // ugens to release
+//    std::vector<Chuck_UGen *> release_v;
+//
+//    // get iterator to our map
+//    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+//    while( iter != m_ugen_map.end() )
+//    {
+//        // get the ugen
+//        Chuck_UGen * ugen = iter->first;
+//
+//        // verify
+//        assert( ugen->refcount() > 0 );
+//        // check for ugens with only one reference (to this shred)
+//        if( ugen->refcount() == 1 ) release_v.push_back( ugen );
+//
+//        // advance the iterator
+//        iter++;
+//    }
+//
+//    // check if anything to prune
+//    if( release_v.size() )
+//    {
+//        // log
+//        EM_log( CK_LOG_FINE, "pruning '%ld' ugen(s) from shred: %x...", release_v.size(), this );
+//
+//        // loop over vector
+//        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
+//            rvi != release_v.end(); rvi++ )
+//        {
+//            // remove from map
+//            m_ugen_map.erase( *rvi );
+//            // release the ugen
+//            CK_SAFE_RELEASE( *rvi );
+//        }
+//        // clear the release vector
+//        release_v.clear();
+//    }
+//}
 
 
 
@@ -2010,7 +2013,9 @@ void Chuck_VM_Shred::gc_inc( t_CKDUR inc )
 //-----------------------------------------------------------------------------
 void Chuck_VM_Shred::gc()
 {
-    this->prune_ugens();
+    // 1.5.4.2 (ge) this type of pruning is no longer necessary; FYI in any
+    // case, this function was never activated in a release due to instabilty
+    // this->prune_ugens();
 }
 
 

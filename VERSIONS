@@ -37,11 +37,17 @@ ChucK VERSIONS log
         `w` is also set to zero in the resulting vec4
         vec3 vec3.cross( vec3 rhs )
         vec4 vec4.cross( vec4 rhs )
+(added) Type.of( vec2 ) function to get the associate Type
 (added) --auto-load-chugin-path:<path> flag -- this behaves as 
     --chugin-path previously did: chugins in the specified path(s) are 
     auto-loaded; .ck files can be @imported
 (fixed) --chugin:<name> and --chugin-path:<path> now correctly auto-expand
     paths
+(updated) Shred(.parent(), .ancester(), .childMemSize(), .childRegSize())
+    now will operate with respect to the shred reference rather than always
+    w.r.t. the calling shred (e.g., shred that is running when these functions
+    are called)
+(added) Shred.pc(), .regSP(), .memSP() -- for debugging, info, amusement
 
 
 1.5.4.1 (November 2024)

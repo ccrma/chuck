@@ -171,13 +171,16 @@ CK_DLL_MFUN( shred_getArg );
 CK_DLL_MFUN( shred_sourcePath ); // added 1.3.0.0
 CK_DLL_MFUN( shred_sourceDir ); // added 1.3.0.0
 CK_DLL_MFUN( shred_sourceDir2 ); // added 1.3.2.0
-CK_DLL_SFUN( shred_fromId ); // added 1.3.2.0
-CK_DLL_SFUN( shred_parent ); // added 1.5.2.0 (nshaheed)
-CK_DLL_SFUN( shred_ancestor ); // added 1.5.2.0 (nshaheed)
+CK_DLL_MFUN( shred_parent ); // added 1.5.2.0 (nshaheed)
+CK_DLL_MFUN( shred_ancestor ); // added 1.5.2.0 (nshaheed)
+CK_DLL_MFUN( shred_pc ); // added 1.5.4.2 (ge)
+CK_DLL_MFUN( shred_reg_stack_sp ); // added 1.5.4.2 (ge)
+CK_DLL_MFUN( shred_mem_stack_sp ); // added 1.5.4.2 (ge)
 CK_DLL_MFUN( shred_ctrl_hintChildMemSize ); // added 1.5.1.5
 CK_DLL_MFUN( shred_cget_hintChildMemSize ); // added 1.5.1.5
 CK_DLL_MFUN( shred_ctrl_hintChildRegSize ); // added 1.5.1.5
 CK_DLL_MFUN( shred_cget_hintChildRegSize ); // added 1.5.1.5
+CK_DLL_SFUN( shred_fromId ); // added 1.3.2.0
 
 
 //-----------------------------------------------------------------------------
@@ -320,6 +323,7 @@ CK_DLL_SFUN( type_typeOf_time ); // Type.typeOf( time )
 CK_DLL_SFUN( type_typeOf_dur ); // Type.typeOf( dur )
 CK_DLL_SFUN( type_typeOf_complex ); // Type.typeOf( complex )
 CK_DLL_SFUN( type_typeOf_polar ); // Type.typeOf( polar )
+CK_DLL_SFUN( type_typeOf_vec2 ); // Type.typeOf( vec2 )
 CK_DLL_SFUN( type_typeOf_vec3 ); // Type.typeOf( vec3 )
 CK_DLL_SFUN( type_typeOf_vec4 ); // Type.typeOf( vec4 )
 CK_DLL_SFUN( type_getTypes );

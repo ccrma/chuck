@@ -192,8 +192,6 @@ public:
     t_CKBOOL remove( Chuck_UGen * ugen );
     // detach all associate ugens | 1.5.1.5 (ge) added
     void detach_ugens();
-    // clean up ugens | 1.5.2.0 (ge) added
-    void prune_ugens();
 
 public:
     // manually trigger a per-shred garbage collection pass | 1.5.2.0 (ge) added

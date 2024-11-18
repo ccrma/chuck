@@ -612,20 +612,35 @@ t_CKBOOL init_class_shred( Chuck_Env * env, Chuck_Type * type )
     func->doc = "get the operand stack size hint (in bytes) for shreds sporked from this one.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add parent() | 1.5.2.0 (nshaheed)
-    func = make_new_sfun( "Shred", "parent", shred_parent );
+    // add parent() | 1.5.2.0 (nshaheed) | 1.5.4.2 (ge) sfun => mfun
+    func = make_new_mfun( "Shred", "parent", shred_parent );
     func->doc = "get the calling shred's parent shred (i.e., the shred that sporked the calling shred). Returns null if there is no parent Shred. (Related: see Shred.ancestor())";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    // add ancestor() | 1.5.2.0 (nshaheed)
-    func = make_new_sfun( "Shred", "ancestor", shred_ancestor );
+    // add ancestor() | 1.5.2.0 (nshaheed) | 1.5.4.2 (ge) sfun => mfun
+    func = make_new_mfun( "Shred", "ancestor", shred_ancestor );
     func->doc = "get the calling shred's \"ancestor\" shred (i.e., the top-level shred). Returns itself if the calling shred is the top-level shred. (Related: see Shred.parent())";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add gc() | 1.5.2.0 (ge) added
     // func = make_new_mfun( "void", "gc", shred_gc );
     // func->doc = "manually trigger a per-shred garbage collection pass; can be used to clean up certain UGens/objects without waiting for the shred to complete; use with care.";
     // if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add pc() | 1.5.4.2 (ge) | 1.5.4.2 (ge) sfun => mfun
+    func = make_new_mfun( "int", "pc", shred_pc );
+    func->doc = "get the calling shred's current program counter (CP); useful for debugging, general information, or amusement.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add pc() | 1.5.4.2 (ge) | 1.5.4.2 (ge) sfun => mfun
+    func = make_new_mfun( "int", "regSP", shred_reg_stack_sp );
+    func->doc = "get the calling shred's current register/operand stack pointer; useful for debugging, general information, or amusement.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add pc() | 1.5.4.2 (ge) | 1.5.4.2 (ge) sfun => mfun
+    func = make_new_mfun( "int", "memSP", shred_mem_stack_sp );
+    func->doc = "get the calling shred's current memory/call stack pointer; useful for debugging, general information, or amusement.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
     if( !type_engine_import_add_ex( env, "shred/spork.ck" ) ) goto error;
@@ -1518,6 +1533,12 @@ t_CKBOOL init_class_type( Chuck_Env * env, Chuck_Type * type )
     func = make_new_sfun( "Type", "of", type_typeOf_polar );
     func->add_arg( "polar", "val" );
     func->doc = "return the Type associated with 'polar'.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add typeOf()
+    func = make_new_sfun( "Type", "of", type_typeOf_vec2 );
+    func->add_arg( "vec2", "val" );
+    func->doc = "return the Type associated with 'vec2'.";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add typeOf()
@@ -2685,68 +2706,103 @@ CK_DLL_SFUN( shred_fromId ) // added 1.3.2.0
 
 CK_DLL_MFUN( shred_ctrl_hintChildMemSize ) // 1.5.1.5
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // get arg
     t_CKINT sizeInBytes = GET_NEXT_INT(ARGS);
     // set
-    RETURN->v_int = SHRED->childSetMemSize( sizeInBytes );
+    RETURN->v_int = shred->childSetMemSize( sizeInBytes );
 }
 
 
 CK_DLL_MFUN( shred_cget_hintChildMemSize ) // 1.5.1.5
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // set
-    RETURN->v_int = SHRED->childGetMemSize();
+    RETURN->v_int = shred->childGetMemSize();
 }
 
 
 CK_DLL_MFUN( shred_ctrl_hintChildRegSize ) // 1.5.1.5
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // get arg
     t_CKINT sizeInBytes = GET_NEXT_INT(ARGS);
     // set
-    RETURN->v_int = SHRED->childSetRegSize( sizeInBytes );
+    RETURN->v_int = shred->childSetRegSize( sizeInBytes );
 }
 
 
 CK_DLL_MFUN( shred_cget_hintChildRegSize ) // 1.5.1.5
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // set
-    RETURN->v_int = SHRED->childGetRegSize();
+    RETURN->v_int = shred->childGetRegSize();
 }
 
 
-CK_DLL_SFUN( shred_parent ) // added 1.5.2.0 (nshaheed)
+CK_DLL_MFUN( shred_parent ) // added 1.5.2.0 (nshaheed)
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // get the parent
-    Chuck_VM_Shred * parent = SHRED->parent;
+    Chuck_VM_Shred * parent = shred->parent;
     // set return value
     RETURN->v_object = parent;
 }
 
 
-CK_DLL_SFUN( shred_ancestor ) // added 1.5.2.0 (nshaheed)
+CK_DLL_MFUN( shred_ancestor ) // added 1.5.2.0 (nshaheed)
 {
-    // current shred
-    Chuck_VM_Shred * curr = SHRED;
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
 
     // iterate up until parent is null; it's possible that
     // ancestor() returns the calling shred, if called on
     // the top-level "ancestor" shred
-    while( curr->parent != NULL )
+    while( shred->parent != NULL )
     {
         // set curr as parent
-        curr = curr->parent;
+        shred = shred->parent;
     }
 
     // set return value
-    RETURN->v_object = curr;
+    RETURN->v_object = shred;
 }
 
+CK_DLL_MFUN( shred_pc ) // added 1.5.4.2 (ge)
+{
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
+    // set return value to shred program counter
+    RETURN->v_int = shred->pc;
+}
+
+CK_DLL_MFUN( shred_reg_stack_sp ) // added 1.5.4.2 (ge)
+{
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
+    // set return value to shred register/operand stack pointer
+    RETURN->v_int = (t_CKINT)shred->reg->sp;
+}
+
+CK_DLL_MFUN( shred_mem_stack_sp ) // added 1.5.4.2 (ge)
+{
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
+    // set return value to shred register/operand stack pointer
+    RETURN->v_int = (t_CKINT)shred->mem->sp;
+}
 
 CK_DLL_MFUN( shred_gc ) // added 1.5.2.0 (ge)
 {
+    // get this pointer
+    Chuck_VM_Shred * shred = (Chuck_VM_Shred *)SELF;
     // invoke manual per-shred GC pass
-    SHRED->gc();
+    shred->gc();
 }
 
 
@@ -3952,6 +4008,11 @@ CK_DLL_SFUN( type_typeOf_complex )
 CK_DLL_SFUN( type_typeOf_polar )
 {
     RETURN->v_object = VM->env()->ckt_polar;
+}
+
+CK_DLL_SFUN( type_typeOf_vec2 )
+{
+    RETURN->v_object = VM->env()->ckt_vec2;
 }
 
 CK_DLL_SFUN( type_typeOf_vec3 )
