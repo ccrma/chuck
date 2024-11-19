@@ -1496,6 +1496,51 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
      // end the class import
      type_engine_import_class_end( env );
      */
+
+    // init Mouse class | 1.5.4.2 (ge & spencer) added
+    if( !type_engine_import_class_begin( env, "Mouse", "Object",
+                                         env->global(), Mouse_ctor, Mouse_dtor,
+                                         "Global mouse tracking object." ) )
+        return FALSE;
+
+    // add pos() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "pos", Mouse_pos );
+    func->doc = "get the normalized X and Y positions of the mouse cursor, respectively in the range [0.0,1.0]; same as .xy().";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add xy() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "xy", Mouse_pos );
+    func->doc = "get the normalized X and Y positions of the mouse cursor, respectively in the range [0.0,1.0]; same as .pos().";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add x() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "float", "x", Mouse_pos_x );
+    func->doc = "get the normalized X position of the mouse cursor, in the range [0.0,1.0].";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add y() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "float", "y", Mouse_pos_y );
+    func->doc = "get the normalized Y positions of the mouse cursor, in the range [0.0,1.0].";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add abs() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "abs", Mouse_abs );
+    func->doc = "get the absolute X and Y coordinates of the mouse cursor; this is dependent on screen resolution.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add abs() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "absX", Mouse_abs_x );
+    func->doc = "get the absolute X coordinate of the mouse cursor; this is dependent on screen resolution.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add abs() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "absY", Mouse_abs_y );
+    func->doc = "get the absolute Y coordinate of the mouse cursor; this is dependent on screen resolution.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
     return TRUE;
 
 error:
@@ -3005,6 +3050,43 @@ CK_DLL_MFUN( HidOut_send )
     // the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, HidMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
 }
+
+// Mouse constructor
+CK_DLL_CTOR( Mouse_ctor ) { }
+// Mouse desctructor
+CK_DLL_DTOR( Mouse_dtor ) { }
+
+// get normalized mouse XY position, range [0,1]
+CK_DLL_SFUN( Mouse_pos )
+{
+    RETURN->v_vec2 = ck_get_mouse_xy_normalize();
+}
+
+CK_DLL_SFUN( Mouse_pos_x )
+{
+    RETURN->v_float = ck_get_mouse_xy_normalize().x;
+}
+
+CK_DLL_SFUN( Mouse_pos_y )
+{
+    RETURN->v_float = ck_get_mouse_xy_normalize().y;
+}
+
+CK_DLL_SFUN( Mouse_abs )
+{
+    RETURN->v_vec2 = ck_get_mouse_xy_absolute();
+}
+
+CK_DLL_SFUN( Mouse_abs_x )
+{
+    RETURN->v_float = ck_get_mouse_xy_absolute().x;
+}
+
+CK_DLL_SFUN( Mouse_abs_y )
+{
+    RETURN->v_float = ck_get_mouse_xy_absolute().y;
+}
+
 #endif // __DISABLE_HID__
 
 

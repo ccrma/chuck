@@ -7800,7 +7800,72 @@ const char * Keyboard_name( int k )
 #endif
 
 
+//-----------------------------------------------------------------------------
+// unified easy mouse functions
+//-----------------------------------------------------------------------------
+// name: ck_get_mouse_xy_normalize() | 1.5.4.2 (ge & spencer) added
+// desc: get normalize [0,1] mouse cursor position
+//-----------------------------------------------------------------------------
+t_CKVEC2 ck_get_mouse_xy_normalize()
+{
+    t_CKVEC2 retval;
+#ifdef __PLATFORM_APPLE__
+    // get screen coords
+    CGEventRef cg_event = CGEventCreate(NULL);
+    CGPoint mouseLocation = CGEventGetLocation(cg_event);
+
+    t_CKFLOAT cursorX = (t_CKFLOAT)mouseLocation.x;
+    t_CKFLOAT cursorY = (t_CKFLOAT)mouseLocation.y;
+
+    CGDirectDisplayID display;
+    CGDisplayCount displayCount;
+
+    if( CGGetDisplaysWithPoint( mouseLocation, 1, &display, &displayCount ) == kCGErrorSuccess )
+    {
+        CGRect bounds = CGDisplayBounds( display );
+        retval.x = ( (t_CKFLOAT)(mouseLocation.x-bounds.origin.x) ) / bounds.size.width;
+        retval.y = ( (t_CKFLOAT)(mouseLocation.y-bounds.origin.y) ) / bounds.size.height;
+    }
+
+    // reclaim
+    CFRelease( cg_event );
+#elif #defined(__PLATFORM_WINDOWS__)
+#elif #defined(__PLATFORM_LINUX__)
+#else
+#endif
+
+    // done
+    return retval;
+}
+//-----------------------------------------------------------------------------
+// name: ck_get_mouse_xy_absolute() | 1.5.4.2 (ge & spencer) added
+// desc: get absolute mouse cursor position, dependent on screen resolution
+//-----------------------------------------------------------------------------
+t_CKVEC2 ck_get_mouse_xy_absolute()
+{
+    t_CKVEC2 retval;
+#ifdef __PLATFORM_APPLE__
+    // get screen coords
+    CGEventRef cg_event = CGEventCreate(NULL);
+    CGPoint mouseLocation = CGEventGetLocation(cg_event);
+    // return value
+    retval.x = (t_CKFLOAT)mouseLocation.x;
+    retval.y = (t_CKFLOAT)mouseLocation.y;
+    // reclaim
+    CFRelease( cg_event );
+#elif #defined(__PLATFORM_WINDOWS__)
+#elif #defined(__PLATFORM_LINUX__)
+#else
+#endif
+    return retval;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 #pragma mark Hid graveyard
+//-----------------------------------------------------------------------------
 /***** empty functions for stuff that isn't yet cross platform *****/
 #ifndef __PLATFORM_APPLE__
 /*** empty functions for Mac-only stuff ***/

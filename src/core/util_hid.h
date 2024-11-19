@@ -36,8 +36,6 @@
 #include "chuck_def.h"
 
 
-
-
 //-----------------------------------------------------------------------------
 // definitions
 //-----------------------------------------------------------------------------
@@ -64,8 +62,6 @@ struct HidMsg
     }
 #endif
 };
-
-
 
 
 /* device types */
@@ -200,7 +196,6 @@ extern const char * TiltSensor_name( int ts );
 t_CKINT TiltSensor_setPollRate( t_CKINT usec );
 t_CKINT TiltSensor_getPollRate( );
 
-
 extern void MultiTouchDevice_init();
 extern void MultiTouchDevice_quit();
 extern void MultiTouchDevice_probe();
@@ -209,7 +204,6 @@ extern int MultiTouchDevice_open( int ts );
 extern int MultiTouchDevice_close( int ts );
 extern const char * MultiTouchDevice_name( int ts );
 
-
 extern void Tablet_init();
 extern void Tablet_quit();
 extern void Tablet_probe();
@@ -217,6 +211,12 @@ extern int Tablet_count();
 extern int Tablet_open( int ts );
 extern int Tablet_close( int ts );
 extern const char * Tablet_name( int ts );
+
+
+// get normalized [0,1] mouse cursor position
+t_CKVEC2 ck_get_mouse_xy_normalize();
+// get absolute mouse cursor position
+t_CKVEC2 ck_get_mouse_xy_absolute();
 
 
 
