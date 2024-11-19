@@ -7808,7 +7808,8 @@ const char * Keyboard_name( int k )
 //-----------------------------------------------------------------------------
 t_CKVEC2 ck_get_mouse_xy_normalize()
 {
-    t_CKVEC2 retval;
+    t_CKVEC2 retval; retval.x = retval.y = 0;
+
 #ifdef __PLATFORM_APPLE__
     // get screen coords
     CGEventRef cg_event = CGEventCreate(NULL);
@@ -7829,9 +7830,13 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
 
     // reclaim
     CFRelease( cg_event );
-#elif #defined(__PLATFORM_WINDOWS__)
-#elif #defined(__PLATFORM_LINUX__)
+#elif defined(__PLATFORM_WINDOWS__)
+    // multiple monitors info
+    // https://stackoverflow.com/questions/4631292/how-to-detect-the-current-screen-resolution
+
+#elif defined(__PLATFORM_LINUX__)
 #else
+    // unsupported, for now; return 0,0
 #endif
 
     // done
@@ -7843,7 +7848,7 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
 //-----------------------------------------------------------------------------
 t_CKVEC2 ck_get_mouse_xy_absolute()
 {
-    t_CKVEC2 retval;
+    t_CKVEC2 retval; retval.x = retval.y = 0;
 #ifdef __PLATFORM_APPLE__
     // get screen coords
     CGEventRef cg_event = CGEventCreate(NULL);
@@ -7853,8 +7858,15 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
     retval.y = (t_CKFLOAT)mouseLocation.y;
     // reclaim
     CFRelease( cg_event );
-#elif #defined(__PLATFORM_WINDOWS__)
-#elif #defined(__PLATFORM_LINUX__)
+#elif defined(__PLATFORM_WINDOWS__)
+    // get screen coords
+    POINT pt;
+    if( GetCursorPos( &pt ) )
+    {
+        retval.x = pt.x;
+        retval.y = pt.y;
+    }
+#elif defined(__PLATFORM_LINUX__)
 #else
 #endif
     return retval;
