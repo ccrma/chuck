@@ -7800,6 +7800,33 @@ const char * Keyboard_name( int k )
 #endif
 
 
+#ifdef __PLATFORM_WINDOWS__
+
+// multiple monitors info:
+// https://stackoverflow.com/questions/4631292/how-to-detect-the-current-screen-resolution
+t_CKBOOL GetMonitorRealResolution( HMONITOR monitor, t_CKFLOAT * pixelsWidth, t_CKFLOAT * pixelsHeight )
+{
+    // zero out
+    *pixelsWidth = *pixelsHeight = 0;
+
+    // get monitor info
+    MONITORINFOEX info; info.cbSize = sizeof( MONITORINFOEX );
+    if( !GetMonitorInfoA( monitor, &info ) ) return FALSE;
+
+    // get display setting
+    DEVMODE devmode; devmode.dmSize = sizeof( DEVMODE );
+    if( !EnumDisplaySettingsA( info.szDevice, ENUM_CURRENT_SETTINGS, &devmode ) ) return FALSE;
+
+    // get monitor pixel dimensions (note does not take DPI scaling into account; see below for alternate method)
+    *pixelsWidth = (t_CKFLOAT)devmode.dmPelsWidth;
+    *pixelsHeight = (t_CKFLOAT)devmode.dmPelsHeight;
+
+    // done
+    return TRUE;
+}
+
+#endif
+
 //-----------------------------------------------------------------------------
 // unified easy mouse functions
 //-----------------------------------------------------------------------------
@@ -7831,14 +7858,45 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
     // reclaim
     CFRelease( cg_event );
 #elif defined(__PLATFORM_WINDOWS__)
-    // multiple monitors info
-    // https://stackoverflow.com/questions/4631292/how-to-detect-the-current-screen-resolution
 
+    t_CKINT x = 0, y = 0;
+    t_CKFLOAT logicalWidth = 0, logicalHeight = 0;
+    POINT pt;
+    MONITORINFOEX info; info.cbSize = sizeof( MONITORINFOEX );
+    DEVMODE devmode; devmode.dmSize = sizeof( DEVMODE );
+    HMONITOR monitor = NULL;
+
+    // get cursor position; in a mutliple monitor setup, this could return negative values
+    // for monitors to the left or above the primary monitor
+    if( !GetCursorPos( &pt ) ) goto done;
+    // get the monitor that contains the point
+    monitor = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST ); if( !monitor ) goto done;
+    // get monitor info
+    if( !GetMonitorInfo( monitor, &info ) ) goto done;
+    // get logical width and height, this takes DPI scaling into account
+    // e.g., in Settings->Display->Make everything bigger (Windows 10, 11)
+    logicalWidth = (t_CKFLOAT)info.rcMonitor.right - info.rcMonitor.left;
+    logicalHeight = (t_CKFLOAT)info.rcMonitor.bottom - info.rcMonitor.top;
+    // map to monitor coordinate
+    x = (t_CKINT)pt.x - info.rcMonitor.left;
+    y = (t_CKINT)pt.y - info.rcMonitor.top;
+    // normalize
+    retval.x = x / logicalWidth;
+    retval.y = y / logicalHeight;
+
+    // cerr << pt.x << " " << pt.y << " => " << x << " " << y << " " << " offset: "
+    //      << info.rcMonitor.left << " " << info.rcMonitor.top
+    //      << " dim: " << logicalWidth << " " << logicalHeight
+    //      << " return: " << retval.x << " " << retval.y << endl;
+
+    // t_CKFLOAT screenWidth = GetSystemMetrics( SM_CXVIRTUALSCREEN );
+    // t_CKFLOAT screenHeight = GetSystemMetrics( SM_CYVIRTUALSCREEN );
 #elif defined(__PLATFORM_LINUX__)
 #else
     // unsupported, for now; return 0,0
 #endif
 
+done:
     // done
     return retval;
 }
