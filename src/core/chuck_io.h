@@ -611,9 +611,7 @@ CK_DLL_MFUN( HidOut_send );
 
 CK_DLL_CTOR( Mouse_ctor );
 CK_DLL_DTOR( Mouse_dtor );
-CK_DLL_SFUN( Mouse_pos );
-CK_DLL_SFUN( Mouse_pos_x );
-CK_DLL_SFUN( Mouse_pos_y );
+CK_DLL_SFUN( Mouse_scaled );
 CK_DLL_SFUN( Mouse_abs );
 CK_DLL_SFUN( Mouse_abs_x );
 CK_DLL_SFUN( Mouse_abs_y );

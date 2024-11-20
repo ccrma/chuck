@@ -1500,42 +1500,35 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
     // init Mouse class | 1.5.4.2 (ge & spencer) added
     if( !type_engine_import_class_begin( env, "Mouse", "Object",
                                          env->global(), Mouse_ctor, Mouse_dtor,
-                                         "Global mouse tracking object." ) )
+                                         "Mouse position tracking. (For full access to mouse input, see the Hid class.)" ) )
         return FALSE;
 
+    // add examples
+    if( !type_engine_import_add_ex( env, "hid/ezmouse.ck" ) ) goto error;
+
     // add pos() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "pos", Mouse_pos );
-    func->doc = "get the normalized X and Y positions of the mouse cursor, respectively in the range [0.0,1.0]; same as .xy().";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
-
-    // add xy() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "xy", Mouse_pos );
-    func->doc = "get the normalized X and Y positions of the mouse cursor, respectively in the range [0.0,1.0]; same as .pos().";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
-
-    // add x() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "float", "x", Mouse_pos_x );
-    func->doc = "get the normalized X position of the mouse cursor, in the range [0.0,1.0].";
-    if( !type_engine_import_sfun( env, func ) ) goto error;
-
-    // add y() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "float", "y", Mouse_pos_y );
-    func->doc = "get the normalized Y positions of the mouse cursor, in the range [0.0,1.0].";
+    func = make_new_sfun( "vec2", "scaled", Mouse_scaled );
+    func->doc = "get the current X and Y normalized positions of the mouse cursor relative to its containing monitor; yields X and Y values in the range [0.0,1.0]";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add abs() | 1.5.4.2 (ge & spencer ) added
     func = make_new_sfun( "vec2", "abs", Mouse_abs );
-    func->doc = "get the absolute X and Y coordinates of the mouse cursor; this is dependent on screen resolution.";
+    func->doc = "get the current X and Y absolute coordinates of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup; same as .xy()";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // add abs() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "absX", Mouse_abs_x );
-    func->doc = "get the absolute X coordinate of the mouse cursor; this is dependent on screen resolution.";
+    // add xy() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "vec2", "xy", Mouse_abs );
+    func->doc = "get the current X and Y absolute coordinates of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup; same as .abs()";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // add abs() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "absY", Mouse_abs_y );
-    func->doc = "get the absolute Y coordinate of the mouse cursor; this is dependent on screen resolution.";
+    // add x() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "float", "x", Mouse_abs_x );
+    func->doc = "get the current X absolute coordinate of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // add y() | 1.5.4.2 (ge & spencer ) added
+    func = make_new_sfun( "float", "y", Mouse_abs_y );
+    func->doc = "get the current Y absolute coordinate of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
@@ -3057,19 +3050,9 @@ CK_DLL_CTOR( Mouse_ctor ) { }
 CK_DLL_DTOR( Mouse_dtor ) { }
 
 // get normalized mouse XY position, range [0,1]
-CK_DLL_SFUN( Mouse_pos )
+CK_DLL_SFUN( Mouse_scaled )
 {
     RETURN->v_vec2 = ck_get_mouse_xy_normalize();
-}
-
-CK_DLL_SFUN( Mouse_pos_x )
-{
-    RETURN->v_float = ck_get_mouse_xy_normalize().x;
-}
-
-CK_DLL_SFUN( Mouse_pos_y )
-{
-    RETURN->v_float = ck_get_mouse_xy_normalize().y;
 }
 
 CK_DLL_SFUN( Mouse_abs )
