@@ -6387,6 +6387,11 @@ Linux general HID support
 #include <linux/joystick.h>
 #include <linux/input.h>
 
+#if defined(__USE_X11__)
+// for Mouse | 1.5.4.2 (ge) added
+#include <X11/Xlib.h>
+#endif
+
 #define CK_HID_DIR ("/dev/input")
 #define CK_HID_MOUSEFILE ("mouse%d")
 #define CK_HID_JOYSTICKFILE ("js%d")
@@ -7892,6 +7897,37 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
     // t_CKFLOAT screenWidth = GetSystemMetrics( SM_CXVIRTUALSCREEN );
     // t_CKFLOAT screenHeight = GetSystemMetrics( SM_CYVIRTUALSCREEN );
 #elif defined(__PLATFORM_LINUX__)
+
+  #if defined(__USE_X11__)
+    // stuff to query
+    Window root;
+    XWindowAttributes attributes;
+    int qRootX, qRootY, qChildX, qChildY;
+    Window qRoot, qChild;
+    unsigned int qMask;
+    // open connection to X server
+    Display * display = XOpenDisplay( nullptr );
+    if( !display )
+    {
+        // print error
+        std::cerr << "Mouse cannot open display (X server)..." << std::endl;
+	goto done;
+    }
+    // get root window
+    root = DefaultRootWindow( display );
+    // get the point
+    XQueryPointer( display, root, &qRoot, &qChild, &qRootX, &qRootY, &qChildX, &qChildY, &qMask );
+    // get window attributes
+    XGetWindowAttributes( display, root, &attributes );
+    // copy to return value
+    retval.x = (t_CKFLOAT)qRootX / attributes.width;
+    retval.y = (t_CKFLOAT)qRootY / attributes.height;
+    // close the connection
+    XCloseDisplay(display);
+  #else // no __USE_X11__
+    cerr << "Mouse needs X11 on Linux; to use, re-compile chuck with USE_X11=1" << endl;
+  #endif // if defined(__USE_X11__)
+
 #else
     // unsupported, for now; return 0,0
 #endif
@@ -7925,8 +7961,39 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
         retval.y = pt.y;
     }
 #elif defined(__PLATFORM_LINUX__)
+
+  #if defined(__USE_X11__)
+    // stuff to query
+    Window root;
+    int qRootX, qRootY, qChildX, qChildY;
+    Window qRoot, qChild;
+    unsigned int qMask;
+    // open connection to X server
+    Display * display = XOpenDisplay( nullptr );
+    if( !display )
+    {
+        // print error
+        std::cerr << "Mouse cannot open display (X server)..." << std::endl;
+	goto done;
+    }
+    // get root window
+    root = DefaultRootWindow( display );
+    // get the point
+    XQueryPointer( display, root, &qRoot, &qChild, &qRootX, &qRootY, &qChildX, &qChildY, &qMask );
+    // copy to return value
+    retval.x = qRootX;
+    retval.y = qRootY;
+    // close the connection
+    XCloseDisplay(display);
+  #else // no __USE_X11__
+    cerr << "Mouse needs X11 on Linux; to use, re-compile chuck with USE_X11=1" << endl;
+  #endif // if defined(__USE_X11__)
+
 #else
-#endif
+    // unsupported platform; nothing to do for now; return 0,0
+#endif // platform select
+
+done:
     return retval;
 }
 

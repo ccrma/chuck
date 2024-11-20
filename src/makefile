@@ -127,6 +127,12 @@ ifneq ($(CHUCK_STRICT),)
 CFLAGS+= -Wall
 endif
 
+# use X11? (Linux)
+ifneq ($(USE_X11),)
+CFLAGS+= -D__USE_X11__
+LDFLAGS+= -lX11
+endif
+
 # ifneq ($(findstring arm,$(shell uname -m)),)
 # some sort of arm platform- enable aggressive optimizations
 # CFLAGS+= -ffast-math
