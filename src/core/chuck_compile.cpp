@@ -1446,10 +1446,9 @@ t_CKBOOL scan_external_modules_in_directory( const string & directory,
     // cannot open
     if( !dir ) return FALSE;
 
-    // do first read | 1.5.0.0 (ge + eito) #chunreal
-    struct dirent * de = readdir( dir );
     // while( (de = readdir(dir)) ) <- UE5 forces us to not do this
-    for( de = readdir(dir); de != NULL; de = readdir(dir) )
+    // iterate over directory entries | 1.5.0.0 (ge + eito) #chunreal
+    for( struct dirent * de = readdir( dir ); de != NULL; de = readdir(dir) )
     {
         t_CKBOOL is_regular = false;
         t_CKBOOL is_directory = false;

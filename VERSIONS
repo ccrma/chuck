@@ -24,6 +24,8 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
     internally, string operations now are appropriately handled by the
     operator overloading mechanism
 (fixed) < <= > >= operators for strings
+(fixed) an issue chugin system auto-load and --chugin-probe was skipping\
+    over the first element when scanning directories 
 (fixed) vec2/vec3/vec4 implicit cast logic for +=> and -=> operations
     (previously, this would cause a crash in some cases)
 (fixed) vec2/vec3/vec4 function call from literal (non-variable) value

@@ -891,7 +891,7 @@ void ChucK::probeChugins()
 
     // check
     if( ck_libs_to_preload.size() == 0 )
-        EM_log( CK_LOG_INFO, "(no auto-load chuck files found)" );
+        EM_log( CK_LOG_INFO, "(no chuck files found)" );
 
     // pop log
     EM_poplog();
