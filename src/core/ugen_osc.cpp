@@ -52,7 +52,7 @@ static t_CKUINT osc_offset_data = 0;
 DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
 {
     // srate
-    g_srateOsc = QUERY->srate;
+    g_srateOsc = QUERY->srate();
     // get the env
     Chuck_Env * env = QUERY->env();
 
@@ -1067,7 +1067,7 @@ static void _transition( t_CKDOUBLE a, t_CKDOUBLE alpha, t_CKDOUBLE b,
 DLL_QUERY genX_query( Chuck_DL_Query * QUERY )
 {
     // srate
-    g_srateOsc = QUERY->srate;
+    g_srateOsc = QUERY->srate();
     // get the env
     Chuck_Env * env = QUERY->env();
     std::string doc;

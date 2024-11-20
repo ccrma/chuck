@@ -119,7 +119,7 @@ enum PanTypesEnum
 //-----------------------------------------------------------------------------
 DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 {
-    g_srateXxx = QUERY->srate;
+    g_srateXxx = QUERY->srate();
     // get the env
     Chuck_Env * env = QUERY->env();
 

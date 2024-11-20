@@ -207,7 +207,7 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     Chuck_DL_Func * func = NULL;
 
     // 1.4.2.0 (ge) | store sample rate
-    g_srate = QUERY->srate;
+    g_srate = QUERY->srate();
 
     std::string doc;
 

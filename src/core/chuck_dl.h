@@ -352,6 +352,8 @@ typedef void (CK_DLL_CALL * f_callback_on_shutdown)( void * bindle );
 typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 // type instantiation callback
 typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Object * OBJECT, Chuck_Type * TYPE, Chuck_VM_Shred * originShred, Chuck_VM * VM );
+// sample rate update callback | 1.5.4.2 (ge) added
+typedef void (* ck_f_srate_cb)( t_CKUINT srate, void * userData );
 }
 
 
@@ -618,6 +620,15 @@ public:
     // un-register shred notifcations
     f_unregister_shreds_watcher unregister_shreds_watcher;
 
+public:
+    // -------------
+    // register callback to be invoked by chuck host when sample rate changes
+    // | 1.5.4.2 (ge) added
+    // -------------
+    // register sample rate notification
+    // f_register_srate_change register_srate_change;
+
+
 
 //-------------------------------------------------------------------------
 // HOST ONLY beyond this point...
@@ -626,7 +637,7 @@ public:
     //-------------------------------------------------------------------------
     // NOTE: everything below std::anything cannot be reliably accessed by
     // offset across DLL/shared-library boundaries, since std::anything could
-    // be variable size;
+    // be variable size; *** chugins should never access anything below ***
     //-------------------------------------------------------------------------
     // *** put everything to be accessed from chugins ABOVE this point! ***
     //-------------------------------------------------------------------------
@@ -672,14 +683,16 @@ public:
     Chuck_Carrier * carrier() const;
 
 public:
+    // get sample rate; to be called by host only; (chugins use API->vm->srate)
+    t_CKUINT srate();
     // flag any error encountered during the query | 1.5.0.5 (ge) added
     t_CKBOOL errorEncountered;
-    // host sample rate
-    t_CKUINT srate;
 
 protected:
     // REFACTOR-2017: carrier ref
     Chuck_Carrier * m_carrier;
+    // host sample rate
+    t_CKUINT m_srate;
 };
 
 

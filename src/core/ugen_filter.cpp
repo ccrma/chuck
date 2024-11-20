@@ -59,7 +59,7 @@ static t_CKUINT biquad_offset_data = 0;
 DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 {
     // set srate
-    g_srateFilter = QUERY->srate;
+    g_srateFilter = QUERY->srate();
     // set radians per sample
     g_radians_per_sample = CK_TWO_PI / (t_CKFLOAT)g_srateFilter;
 

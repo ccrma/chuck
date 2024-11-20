@@ -1447,13 +1447,13 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     if( m_carrier != NULL )
     {
         // get the actual runtime sample rate
-        srate = m_carrier->vm->srate();
+        m_srate = m_carrier->vm->srate();
     }
     else
     {
         // set to something invalid...
         // (instead of default sample rate, which could be harder to notice / debug)
-        srate = 0;
+        m_srate = 0;
     }
     // get DL API reference | 1.5.1.5
     m_api = Chuck_DL_Api::instance();
@@ -1483,6 +1483,19 @@ void Chuck_DL_Query::clear()
     classes.clear();
     op_overloads.clear();
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: srate()
+// desc: get sample rate (to be called by host only; chugins use API->vm->srate)
+//-----------------------------------------------------------------------------
+t_CKUINT Chuck_DL_Query::srate()
+{
+    return m_srate;
+}
+
 
 
 
