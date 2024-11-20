@@ -10532,6 +10532,10 @@ t_CKBOOL stk_verify_baseclass( void * ptr, const std::string & typeName, Chuck_V
         EM_exception( "MethodCalledByAbstractClass: '%s' is an abstract class\n"
                       "...call the method from one of its non-abstract subclasses | shred[id=%lu:%s]",
                       typeName.c_str(), shred->xid, shred->name.c_str() );
+        // halt the shred
+        shred->is_running = FALSE;
+        shred->is_done = TRUE;
+        // return false
         return FALSE;
     }
 
