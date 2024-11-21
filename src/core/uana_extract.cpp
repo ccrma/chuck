@@ -193,7 +193,13 @@ void xcorr_fft( SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs, SAMPLE * buffer,
 void xcorr_normalize( SAMPLE * buffy, t_CKINT bs, SAMPLE * f, t_CKINT fs, SAMPLE * g, t_CKINT gs );
 
 // 1.4.2.0 (ge) | local global sample rate variable (e.g., for MFCC)
-static t_CKUINT g_srate = 0;
+static t_CKUINT g_uana_srate = 0;
+
+//-----------------------------------------------------------------------------
+// this is called for this module to know when sample rate changes | 1.5.4.2 (ge) added
+//-----------------------------------------------------------------------------
+void uana_srate_update_cb( t_CKUINT srate, void * userdata ) { g_uana_srate = srate; }
+
 
 
 
@@ -207,7 +213,9 @@ DLL_QUERY extract_query( Chuck_DL_Query * QUERY )
     Chuck_DL_Func * func = NULL;
 
     // 1.4.2.0 (ge) | store sample rate
-    g_srate = QUERY->srate();
+    g_uana_srate = QUERY->srate();
+    // register callback to be notified if/when sample rate changes | 1.5.4.2 (ge) added
+    QUERY->register_callback_on_srate_update( QUERY, uana_srate_update_cb, NULL );
 
     std::string doc;
 
@@ -1212,7 +1220,7 @@ struct MFCC_Object
     MFCC_Object()
     {
         size = 1024;
-        sample_rate = g_srate;
+        sample_rate = g_uana_srate;
         num_filters = 10;
         num_coeffs = 40;
         curr_sample_rate = 0.0;
@@ -1676,7 +1684,7 @@ struct SFM_Object
     SFM_Object()
     {
         size = 0;
-        sample_rate = g_srate;
+        sample_rate = g_uana_srate;
         nr_bands = 0;
         nr_valid_bands = 0;
         edge = NULL;
@@ -1927,7 +1935,7 @@ struct Chroma_Object
     Chroma_Object()
     {
         size = 1024;
-        sample_rate = g_srate;
+        sample_rate = g_uana_srate;
         low_oct_num = 0;
         high_oct_num = 8;
         curr_sample_rate = 0;

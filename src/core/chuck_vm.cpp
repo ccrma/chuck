@@ -380,8 +380,27 @@ t_CKBOOL Chuck_VM::initialize_synthesis()
 
 
 //-----------------------------------------------------------------------------
+// name: update_srate() | 1.5.4.2 (ge) added
+// update sample rate (this will also trigger notifications for srate update)
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM::update_srate( t_CKUINT srate )
+{
+    // log
+    EM_log( CK_LOG_SYSTEM, "updating sample rate: '%d'...", srate );
+    // set it
+    m_srate = srate;
+    // notify registered callbacks of the srate update
+    notify_callbacks_on_srate_update( srate );
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: shutdown()
-// desc: ...
+// desc: shut it down, VM-wise
 //-----------------------------------------------------------------------------
 t_CKBOOL Chuck_VM::shutdown()
 {
@@ -1459,6 +1478,29 @@ void Chuck_VM::register_callback_on_shutdown( f_callback_on_shutdown cb, void * 
 
 
 //-----------------------------------------------------------------------------
+// name: register_callback_on_srate_update() | 1.5.4.2 (ge) added
+// cesc: register a callback to be called on system sample rate update
+//-----------------------------------------------------------------------------
+void Chuck_VM::register_callback_on_srate_update( f_callback_on_srate_update cb, void * bindle )
+{
+    // check
+    if( !cb ) return;
+
+    // ensure no duplicates
+    list<Chuck_VM_Callback_On_SampleRate_Update>::iterator it = std::find( m_callbacks_on_srate_update.begin(),
+                                                                           m_callbacks_on_srate_update.end(), cb );
+    // add if not already preset
+    if( it == m_callbacks_on_srate_update.end() )
+    {
+        // append
+        m_callbacks_on_srate_update.push_back( Chuck_VM_Callback_On_SampleRate_Update(cb, bindle) );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: notify_callbacks_on_shutdown()
 // desc: notify callbacks on VM shutdown | 1.5.2.5 (ge) added
 //-----------------------------------------------------------------------------
@@ -1475,6 +1517,30 @@ void Chuck_VM::notify_callbacks_on_shutdown()
         f = (*it).cb;
         // call it with user data
         f( (*it).userdata );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: notify_callbacks_on_srate_update()
+// desc: notify callbacks on sample rate update | 1.5.4.2 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_VM::notify_callbacks_on_srate_update( t_CKUINT srate )
+{
+    // the function to call eventually
+    f_callback_on_srate_update f = NULL;
+    // iterator
+    list<Chuck_VM_Callback_On_SampleRate_Update>::iterator it;
+    // iterate
+    for( it = m_callbacks_on_srate_update.begin();
+        it != m_callbacks_on_srate_update.end(); it++ )
+    {
+        // the function
+        f = (*it).cb;
+        // call it with the srate and user data
+        f( srate, (*it).userdata );
     }
 }
 

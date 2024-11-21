@@ -49,6 +49,11 @@ static t_CKUINT FilterBasic_offset_data = 0;
 static t_CKUINT Teabox_offset_data = 0;
 static t_CKUINT biquad_offset_data = 0;
 
+//-----------------------------------------------------------------------------
+// this is called for this module to know when sample rate changes | 1.5.4.2 (ge) added
+//-----------------------------------------------------------------------------
+void filter_srate_update_cb( t_CKUINT srate, void * userdata ) { g_srateFilter = srate; }
+
 
 
 
@@ -60,6 +65,9 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 {
     // set srate
     g_srateFilter = QUERY->srate();
+    // register callback to be notified if/when sample rate changes | 1.5.4.2 (ge) added
+    QUERY->register_callback_on_srate_update( QUERY, filter_srate_update_cb, NULL );
+
     // set radians per sample
     g_radians_per_sample = CK_TWO_PI / (t_CKFLOAT)g_srateFilter;
 

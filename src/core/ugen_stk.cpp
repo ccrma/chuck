@@ -1302,6 +1302,11 @@ CK_DLL_MFUN( MidiFileIn_readTrack );
 CK_DLL_MFUN( MidiFileIn_rewind );
 CK_DLL_MFUN( MidiFileIn_rewindTrack );
 
+//-----------------------------------------------------------------------------
+// this is called for this module to know when sample rate changes | 1.5.4.2 (ge) added
+//-----------------------------------------------------------------------------
+void stk_srate_update_cb( t_CKUINT srate, void * userdata ) { Stk::setSampleRate( srate ); }
+
 
 
 
@@ -1320,6 +1325,8 @@ DLL_QUERY stk_query( Chuck_DL_Query * QUERY )
     // https://github.com/ccrma/chuck/issues/208
     // set srate
     Stk::setSampleRate( QUERY->srate() );
+    // register callback to be notified if/when sample rate changes | 1.5.4.2 (ge) added
+    QUERY->register_callback_on_srate_update( QUERY, stk_srate_update_cb, NULL );
 
     // test for endian
     what w; w.x = 1;

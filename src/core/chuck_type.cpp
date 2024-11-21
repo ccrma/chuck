@@ -102,6 +102,8 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 
 // helpers
 void type_engine_init_op_overload_builtin( Chuck_Env * env );
+// update builtin durs according to sample rate
+t_CKBOOL type_engine_update_builtin_durs( Chuck_Env * env, t_CKUINT srate );
 // check for const
 Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp );
 // convert dot member expression to string for printing
@@ -488,6 +490,86 @@ t_CKBOOL type_engine_init_special( Chuck_Env * env, Chuck_Type * objT )
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_update_builtin_dur()
+// desc: update a specific base duration value
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_update_builtin_dur( Chuck_Env * env,
+                                         const string & name, t_CKDUR value )
+{
+    // lookup the value
+    Chuck_Value * v = env->global()->value.lookup( name );
+    // check if we found a value
+    if( !v )
+    {
+        EM_error2( 0, "(internal error) cannot find base dur value '%s' in update_builtin_dur()", name.c_str() );
+        return FALSE;
+    }
+    // check if the value is a dur
+    if( !equals( v->type, env->ckt_dur ) )
+    {
+        EM_error2( 0, "(internal error) type mismatch for '%s' in update_builtin_dur()", name.c_str() );
+        return FALSE;
+    }
+    // cast out the dur
+    t_CKDUR * pDur = (t_CKDUR *)v->addr;
+    // check the addr
+    if( pDur == NULL )
+    {
+        EM_error2( 0, "(internal error) NULL address for '%s' in update_builtin_dur()", name.c_str() );
+        return FALSE;
+    }
+    // update it to the new value
+    *pDur = value;
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// callback from VM
+//-----------------------------------------------------------------------------
+void type_engine_on_srate_update_cb( t_CKUINT srate, void * userdata )
+{ type_engine_update_builtin_durs( (Chuck_Env *)userdata, srate ); }
+//-----------------------------------------------------------------------------
+// name: type_engine_update_builtin_durs()
+// desc: update built-in durations, given a sample rate
+//       NOTE: this should be called whenever the system sample rate changes
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_update_builtin_durs( Chuck_Env * env, t_CKUINT srate )
+{
+    // dur value
+    t_CKDUR samp = 1.0;
+    // TODO:
+    t_CKDUR second = srate * samp;
+    // t_CKDUR second = 44100 * samp;
+    t_CKDUR ms = second / 1000.0;
+    t_CKDUR minute = second * 60.0;
+    t_CKDUR hour = minute * 60.0;
+    t_CKDUR day = hour * 24.0;
+    t_CKDUR week = day * 7.0;
+    // one billion years, a very long time
+    // length of a sidereal year; https://en.wikipedia.org/wiki/Year
+    t_CKDUR eon = day * 365.256363004 * 1000000000.0;
+
+    // update
+    if( !type_engine_update_builtin_dur( env, "samp", samp ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "ms", ms ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "second", second ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "minute", minute ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "hour", hour ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "day", day ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "week", week ) ) return FALSE;
+    if( !type_engine_update_builtin_dur( env, "eon", eon ) ) return FALSE;
+
+    // done
+    return TRUE;
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: type_engine_init()
@@ -544,20 +626,6 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     env->global()->type.add( env->ckt_chout->base_name, env->ckt_chout );        env->ckt_chout->lock();
     env->global()->type.add( env->ckt_cherr->base_name, env->ckt_cherr );        env->ckt_cherr->lock();
     // env->global()->type.add( env->ckt_thread->base_name, env->ckt_thread );   env->ckt_thread->lock();
-
-    // dur value
-    t_CKDUR samp = 1.0;
-    // TODO:
-    t_CKDUR second = carrier->vm->srate() * samp;
-    // t_CKDUR second = 44100 * samp;
-    t_CKDUR ms = second / 1000.0;
-    t_CKDUR minute = second * 60.0;
-    t_CKDUR hour = minute * 60.0;
-    t_CKDUR day = hour * 24.0;
-    t_CKDUR week = day * 7.0;
-    // one billion years, a very long time
-    // length of a sidereal year; https://en.wikipedia.org/wiki/Year
-    t_CKDUR eon = day * 365.256363004 * 1000000000.0;
 
     // add internal classes
     EM_log( CK_LOG_HERALD, "adding base classes..." );
@@ -616,19 +684,19 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // pop indent
     EM_poplog();
 
-    // default global values
+    // default global values (except for the durs, which will be updated shortly hereafter)
     env->global()->value.add( "null", new Chuck_Value( env->ckt_null, "null", new void *(NULL), TRUE ) );
     env->global()->value.add( "NULL", new Chuck_Value( env->ckt_null, "NULL", new void *(NULL), TRUE ) );
     env->global()->value.add( "t_zero", new Chuck_Value( env->ckt_time, "time_zero", new t_CKDUR(0.0), TRUE ) );
     env->global()->value.add( "d_zero", new Chuck_Value( env->ckt_dur, "dur_zero", new t_CKDUR(0.0), TRUE ) );
-    env->global()->value.add( "samp", new Chuck_Value( env->ckt_dur, "samp", new t_CKDUR(samp), TRUE ) );
-    env->global()->value.add( "ms", new Chuck_Value( env->ckt_dur, "ms", new t_CKDUR(ms), TRUE ) );
-    env->global()->value.add( "second", new Chuck_Value( env->ckt_dur, "second", new t_CKDUR(second), TRUE ) );
-    env->global()->value.add( "minute", new Chuck_Value( env->ckt_dur, "minute", new t_CKDUR(minute), TRUE ) );
-    env->global()->value.add( "hour", new Chuck_Value( env->ckt_dur, "hour", new t_CKDUR(hour), TRUE ) );
-    env->global()->value.add( "day", new Chuck_Value( env->ckt_dur, "day", new t_CKDUR(day), TRUE ) );
-    env->global()->value.add( "week", new Chuck_Value( env->ckt_dur, "week", new t_CKDUR(week), TRUE ) );
-    env->global()->value.add( "eon", new Chuck_Value( env->ckt_dur, "eon", new t_CKDUR(eon), TRUE ) );
+    env->global()->value.add( "samp", new Chuck_Value( env->ckt_dur, "samp", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "ms", new Chuck_Value( env->ckt_dur, "ms", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "second", new Chuck_Value( env->ckt_dur, "second", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "minute", new Chuck_Value( env->ckt_dur, "minute", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "hour", new Chuck_Value( env->ckt_dur, "hour", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "day", new Chuck_Value( env->ckt_dur, "day", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "week", new Chuck_Value( env->ckt_dur, "week", new t_CKDUR(0.0), TRUE ) );
+    env->global()->value.add( "eon", new Chuck_Value( env->ckt_dur, "eon", new t_CKDUR(0.0), TRUE ) );
     env->global()->value.add( "true", new Chuck_Value( env->ckt_int, "true", new t_CKINT(1), TRUE ) );
     env->global()->value.add( "false", new Chuck_Value( env->ckt_int, "false", new t_CKINT(0), TRUE ) );
     env->global()->value.add( "maybe", new Chuck_Value( env->ckt_int, "maybe", new t_CKFLOAT(.5), FALSE ) );
@@ -636,6 +704,11 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     env->global()->value.add( "global", new Chuck_Value( env->ckt_class, "global", env->global(), TRUE ) );
     env->global()->value.add( "chout", new Chuck_Value( env->ckt_io, "chout", new Chuck_IO_Chout( carrier ), TRUE ) );
     env->global()->value.add( "cherr", new Chuck_Value( env->ckt_io, "cherr", new Chuck_IO_Cherr( carrier ), TRUE ) );
+
+    // update the base dur values, according to initial sample rate | 1.5.4.2 (ge) re-factored to support run-time sample rate updates
+    type_engine_update_builtin_durs( env, carrier->vm->srate() );
+    // register a callback to be notified when sample rate changes | 1.5.4.2 (ge) added
+    carrier->vm->register_callback_on_srate_update( type_engine_on_srate_update_cb, env );
 
     // TODO: can't use the following now is local to shred
     // env->global()->value.add( "now", new Chuck_Value( env->ckt_time, "now", &(vm->shreduler()->now_system), TRUE ) );

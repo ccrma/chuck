@@ -414,6 +414,33 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Callback_On_SampleRate_Update | 1.5.4.2 (ge) added
+// desc: an entry for a callback to be called when system sample rate changes
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Callback_On_SampleRate_Update
+{
+    // function pointer to call
+    f_callback_on_srate_update cb;
+    // user data
+    void * userdata;
+
+    // constructor
+    Chuck_VM_Callback_On_SampleRate_Update( f_callback_on_srate_update f = NULL, void * data = NULL )
+    : cb(f), userdata(data) { }
+
+    // copy constructor
+    Chuck_VM_Callback_On_SampleRate_Update( const Chuck_VM_Callback_On_SampleRate_Update & other )
+    : cb(other.cb), userdata(other.userdata) { }
+
+    // ==
+    bool operator ==( const Chuck_VM_Callback_On_SampleRate_Update & other )
+    { return this->cb == other.cb && this->userdata == other.userdata; }
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Callback_On_Shutdown
 // desc: an entry for a callback to be called on VM shutdown
 //-----------------------------------------------------------------------------
@@ -434,7 +461,7 @@ struct Chuck_VM_Callback_On_Shutdown
 
     // ==
     bool operator ==( const Chuck_VM_Callback_On_Shutdown & other )
-    { return this->cb == other.cb; }
+    { return this->cb == other.cb && this->userdata == other.userdata; }
 };
 
 
@@ -594,6 +621,8 @@ public:
     t_CKBOOL shutdown();
     // return whether VM is initialized
     t_CKBOOL has_init() { return m_init; }
+    // update sample rate (this will also trigger notifications for srate update)
+    t_CKBOOL update_srate( t_CKUINT srate );
 
 public: // run state; 1.3.5.3
     // run start
@@ -688,10 +717,14 @@ public:
 public:
     // register a callback to be called on VM shutdown | 1.5.2.5 (ge) added
     void register_callback_on_shutdown( f_callback_on_shutdown cb, void * bindle );
+    // register a callback to be called on system sample rate update | 1.5.4.2 (ge) added
+    void register_callback_on_srate_update( f_callback_on_srate_update cb, void * bindle );
 
 protected:
     // notify callbacks on VM shutdown | 1.5.2.5 (ge) added
     void notify_callbacks_on_shutdown();
+    // notify callbacks on sample rate update | 1.5.4.2 (ge) added
+    void notify_callbacks_on_srate_update( t_CKUINT srate );
 
 //-----------------------------------------------------------------------------
 // data
@@ -773,6 +806,8 @@ protected:
 protected:
     // 1.5.2.5 (ge) on major VM events callbacks
     std::list<Chuck_VM_Callback_On_Shutdown> m_callbacks_on_shutdown;
+    // 1.5.4.2 (ge) on system sample rate update
+    std::list<Chuck_VM_Callback_On_SampleRate_Update> m_callbacks_on_srate_update;
 };
 
 

@@ -860,6 +860,16 @@ void CK_DLL_CALL ck_register_callback_on_shutdown( Chuck_DL_Query * query, f_cal
 }
 
 //-----------------------------------------------------------------------------
+// name: ck_register_callback_on_srate_update() | 1.5.4.2 (ge) added
+// desc: register a callback function to be called on sample rate change
+//-----------------------------------------------------------------------------
+void CK_DLL_CALL ck_register_callback_on_srate_update( Chuck_DL_Query * query, f_callback_on_srate_update cb, void * bindle )
+{
+    // register
+    query->vm()->register_callback_on_srate_update( cb, bindle );
+}
+
+//-----------------------------------------------------------------------------
 // name: ck_register_shreds_watcher()
 // desc: register a callback function to receive notifications
 //       from the VM about shreds (add, remove, etc.)
@@ -1435,6 +1445,7 @@ Chuck_DL_Query::Chuck_DL_Query( Chuck_Carrier * carrier, Chuck_DLL * dll )
     register_shreds_watcher = ck_register_shreds_watcher; // 1.5.1.5 (ge & andrew)
     unregister_shreds_watcher = ck_unregister_shreds_watcher; // 1.5.1.5 (ge & andrew)
     register_callback_on_shutdown = ck_register_callback_on_shutdown; // 1.5.2.5 (ge)
+    register_callback_on_srate_update = ck_register_callback_on_srate_update; // 1.5.4.2 (ge)
     m_carrier = carrier;
     dll_ref = dll; // 1.5.1.3 (ge) added
 

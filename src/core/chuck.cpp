@@ -273,6 +273,18 @@ t_CKBOOL ChucK::matchParam( const std::string & lhs, const std::string & rhs )
 void ChucK::enactParam( const std::string & name, t_CKINT value )
 {
     // check and set
+    if( matchParam(name,CHUCK_PARAM_SAMPLE_RATE) )
+    {
+        // check
+        if( value <= 0 )
+        {
+            EM_error2( 0, "(warning) attempt to set CHUCK_PARAM_SAMPLE_RATE to invalid value '%d'; sample rate unchanged...", value );
+            return;
+        }
+        // update VM to new sample rate
+        // (NOTE: this could be pre-initialization, so need to check VM pointer)
+        if( vm() ) vm()->update_srate( value );
+    }
     if( matchParam(name,CHUCK_PARAM_TTY_COLOR) )
     {
         // set the global override switch

@@ -348,12 +348,12 @@ typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadhook)( void * bindle );
 typedef t_CKBOOL (CK_DLL_CALL * f_mainthreadquit)( void * bindle );
 // callback function, called on host shutdown
 typedef void (CK_DLL_CALL * f_callback_on_shutdown)( void * bindle );
+// sample rate update callback | 1.5.4.2 (ge) added
+typedef void (CK_DLL_CALL * f_callback_on_srate_update)( t_CKUINT srate, void * bindle );
 // shreds watcher callback
 typedef void (CK_DLL_CALL * f_shreds_watcher)( Chuck_VM_Shred * SHRED, t_CKINT CODE, t_CKINT PARAM, Chuck_VM * VM, void * BINDLE );
 // type instantiation callback
 typedef void (CK_DLL_CALL * f_callback_on_instantiate)( Chuck_Object * OBJECT, Chuck_Type * TYPE, Chuck_VM_Shred * originShred, Chuck_VM * VM );
-// sample rate update callback | 1.5.4.2 (ge) added
-typedef void (* ck_f_srate_cb)( t_CKUINT srate, void * userData );
 }
 
 
@@ -426,6 +426,8 @@ typedef t_CKBOOL (CK_DLL_CALL * f_end_class)( Chuck_DL_Query * query );
 typedef Chuck_DL_MainThreadHook * (CK_DLL_CALL * f_create_main_thread_hook)( Chuck_DL_Query * query, f_mainthreadhook hook, f_mainthreadquit quit, void * bindle );
 // register a callback to be called on host shutdown, e.g., for chugin cleanup
 typedef void (CK_DLL_CALL * f_register_callback_on_shutdown)( Chuck_DL_Query * query, f_callback_on_shutdown cb, void * bindle );
+// register a callback to be called on sample rate change
+typedef void (CK_DLL_CALL * f_register_callback_on_srate_update)( Chuck_DL_Query * query, f_callback_on_srate_update cb, void * bindle );
 // register a callback function to receive notification from the VM about shreds (add, remove, etc.)
 typedef void (CK_DLL_CALL * f_register_shreds_watcher)( Chuck_DL_Query * query, f_shreds_watcher cb, t_CKUINT options, void * bindle );
 // unregister a shreds notification callback
@@ -622,11 +624,11 @@ public:
 
 public:
     // -------------
-    // register callback to be invoked by chuck host when sample rate changes
-    // | 1.5.4.2 (ge) added
+    // register callback to be invoked by chuck host on
+    // sample rate changes | 1.5.4.2 (ge) added
     // -------------
-    // register sample rate notification
-    // f_register_srate_change register_srate_change;
+    f_register_callback_on_srate_update register_callback_on_srate_update;
+
 
 
 

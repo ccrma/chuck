@@ -110,6 +110,11 @@ enum PanTypesEnum
     PAN_LINEAR // not supported
 };
 
+//-----------------------------------------------------------------------------
+// this is called for this module to know when sample rate changes | 1.5.4.2 (ge) added
+//-----------------------------------------------------------------------------
+void xxx_srate_update_cb( t_CKUINT srate, void * userdata ) { g_srateXxx = srate; }
+
 
 
 
@@ -119,7 +124,11 @@ enum PanTypesEnum
 //-----------------------------------------------------------------------------
 DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 {
+    // set sample rate for this module
     g_srateXxx = QUERY->srate();
+    // register callback to be notified if/when sample rate changes | 1.5.4.2 (ge) added
+    QUERY->register_callback_on_srate_update( QUERY, xxx_srate_update_cb, NULL );
+
     // get the env
     Chuck_Env * env = QUERY->env();
 
