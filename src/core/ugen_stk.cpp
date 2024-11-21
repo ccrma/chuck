@@ -3476,6 +3476,9 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
                         TubeBell_ctor, TubeBell_dtor,
                         TubeBell_tick, TubeBell_pmsg, doc.c_str() ) ) return FALSE;
 
+    // add example
+    type_engine_import_add_ex( env, "stk/tubebell-algo5.ck" );
+
     // end the class import
     type_engine_import_class_end( env );
 
