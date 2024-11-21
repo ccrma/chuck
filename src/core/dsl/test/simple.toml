@@ -1,0 +1,55 @@
+tempo = 120
+complexity = 0.6
+
+[[voices]]
+offset = 0.0
+pan = 0.1
+
+[voices.instrument]
+osc = "SAW"
+gain = 0.3
+reverb = true
+
+[voices.instrument.env]
+attack = 0.05
+release = 0.3
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 900
+
+[voices.pattern]
+density = 0.8
+scale = "DORIAN"
+
+[[voices.pattern.notes]]
+pitch = 62
+dur = 1.0
+
+[[voices.pattern.notes]]
+pitch = 65
+dur = 1.0
+
+[[voices.pattern.notes]]
+pitch = 69
+dur = 2.0
+
+
+[[voices]]
+offset = 1.0
+pan = -0.2
+
+[voices.instrument]
+osc = "NOISE"
+gain = 0.1
+
+[voices.pattern]
+
+[[voices.pattern.notes]]
+pitch = 60
+dur = 0.5
+
+[[voices.pattern.notes]]
+pitch = 60
+dur = 0.5
+
