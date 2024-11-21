@@ -20,3 +20,10 @@ xcshareddata/
 .vscode
 .vs
 chuck.vcxproj.user
+
+# code coverage
+*.gcov
+*.gcda
+*.gcno
+*.info
+/report/
