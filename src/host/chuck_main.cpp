@@ -38,6 +38,8 @@
 #include "chuck_otf.h"
 #include "util_platforms.h"
 #include "util_string.h"
+#include "../core/dsl/dsl_codegen.h"
+#include "../core/dsl/dsl_toml.h"
 #include <signal.h>
 
 #if defined(__PLATFORM_WINDOWS__)
@@ -69,6 +71,7 @@ void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
 static void audio_cb( SAMPLE * in, SAMPLE * out, t_CKUINT numFrames,
                       t_CKUINT numInChans, t_CKUINT numOutChans, void * data );
+static t_CKBOOL compile_dsl_file( const std::string & path, t_CKUINT count );
 
 // C functions
 extern "C" void signal_int( int sig_num );
@@ -266,7 +269,7 @@ void usage()
     CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "                color:{on|off}|pid-file:<path>|cmd-listener:{on|off}\n" );
-    CK_FPRINTF_STDERR( "                query|query:<name>\n" );
+    CK_FPRINTF_STDERR( "                query|query:<name>|dsl:<file.toml>\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
     CK_FPRINTF_STDERR( "   [commands] = add|replace|remove|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
@@ -560,6 +563,32 @@ t_CKBOOL check_shell_shutdown()
     }
     
     return FALSE;
+}
+
+//-----------------------------------------------------------------------------
+// name: compile_dsl_file()
+// desc: load a TOML DSL file, lower to ChucK, and compile
+//-----------------------------------------------------------------------------
+static t_CKBOOL compile_dsl_file( const std::string & path, t_CKUINT count )
+{
+    dsl::Piece piece;
+    dsl::TomlError err;
+    if( !dsl::PieceFromTomlFile( path, &piece, &err ) )
+    {
+        EM_error2( 0, "[dsl] parse failed for '%s': %s (line %d, col %d)",
+                   path.c_str(), err.message.c_str(), err.line, err.column );
+        return FALSE;
+    }
+
+    std::string code;
+    std::string cg_err;
+    if( !dsl::PieceToChuckSource( piece, path, &code, &cg_err ) )
+    {
+        EM_error2( 0, "[dsl] codegen failed for '%s': %s", path.c_str(), cg_err.c_str() );
+        return FALSE;
+    }
+
+    return the_chuck->compileCode( code, "", count, FALSE, NULL, path );
 }
 
 
@@ -973,6 +1002,26 @@ t_CKBOOL go( int argc, const char ** argv )
             }
             else if( tolower(argv[i]) == "--no-color" )
                 colorTerminal = FALSE;
+            else if( !strcmp( argv[i], "--dsl" ) )
+            {
+                if( i + 1 >= argc )
+                {
+                    errorMessage1 = "missing argument for '--dsl <file.toml>'";
+                    break;
+                }
+                files++;
+                i++; // consume path
+            }
+            else if( !strncmp( argv[i], "--dsl=", sizeof("--dsl=")-1 ) )
+            {
+                std::string path = argv[i] + sizeof("--dsl=") - 1;
+                if( path.empty() )
+                {
+                    errorMessage1 = "missing argument for '--dsl=<file.toml>'";
+                    break;
+                }
+                files++;
+            }
             else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
             {
                 // get argument for writing PID file | 1.5.1.0 (@ynohtna) added
@@ -1505,6 +1554,28 @@ t_CKBOOL go( int argc, const char ** argv )
                 the_chuck->compiler()->emitter->dump = TRUE;
             else if( !strcmp(argv[i], "--nodump") || !strcmp(argv[i], "-d" ) )
                 the_chuck->compiler()->emitter->dump = FALSE;
+            else if( !strcmp( argv[i], "--dsl" ) )
+            {
+                if( i + 1 >= argc )
+                {
+                    EM_error2( 0, "missing argument for '--dsl <file.toml>'" );
+                    break;
+                }
+                compile_dsl_file( argv[i+1], count );
+                count = 1;
+                i++; // consume the path
+            }
+            else if( !strncmp( argv[i], "--dsl=", sizeof("--dsl=")-1 ) )
+            {
+                std::string path = argv[i] + sizeof("--dsl=") - 1;
+                if( path.empty() )
+                {
+                    EM_error2( 0, "missing argument for '--dsl=<file.toml>'" );
+                    break;
+                }
+                compile_dsl_file( path, count );
+                count = 1;
+            }
             else
                 get_count( argv[i], &count );
             
