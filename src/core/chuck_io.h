@@ -609,12 +609,15 @@ CK_DLL_MFUN( HidOut_name );
 CK_DLL_MFUN( HidOut_printerr );
 CK_DLL_MFUN( HidOut_send );
 
-CK_DLL_CTOR( Mouse_ctor );
-CK_DLL_DTOR( Mouse_dtor );
-CK_DLL_SFUN( Mouse_scaled );
-CK_DLL_SFUN( Mouse_abs );
-CK_DLL_SFUN( Mouse_abs_x );
-CK_DLL_SFUN( Mouse_abs_y );
+CK_DLL_CTOR( MouseCursor_ctor );
+CK_DLL_DTOR( MouseCursor_dtor );
+CK_DLL_SFUN( MouseCursor_scaled );
+CK_DLL_SFUN( MouseCursor_abs );
+CK_DLL_SFUN( MouseCursor_abs_x );
+CK_DLL_SFUN( MouseCursor_abs_y );
+
+CK_DLL_CTOR( Mousor_ctor );
+CK_DLL_DTOR( Mousor_dtor );
 
 #endif // __DISABLE_HID__1
 

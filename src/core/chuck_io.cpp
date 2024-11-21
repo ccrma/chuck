@@ -1497,39 +1497,48 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
      type_engine_import_class_end( env );
      */
 
-    // init Mouse class | 1.5.4.2 (ge & spencer) added
-    if( !type_engine_import_class_begin( env, "Mouse", "Object",
-                                         env->global(), Mouse_ctor, Mouse_dtor,
-                                         "Mouse position tracking. (For full access to mouse input, see the Hid class.)" ) )
+    // init MouseCursor class | 1.5.4.2 (ge & spencer) added
+    if( !type_engine_import_class_begin( env, "MouseCursor", "Object",
+                                         env->global(), MouseCursor_ctor, MouseCursor_dtor,
+                                         "Mouse cursor position tracking. (For full access to mouse input, see the Hid class.)" ) )
         return FALSE;
 
     // add examples
-    if( !type_engine_import_add_ex( env, "hid/ezmouse.ck" ) ) goto error;
+    if( !type_engine_import_add_ex( env, "hid/mouse-cursor.ck" ) ) goto error;
 
     // add pos() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "scaled", Mouse_scaled );
+    func = make_new_sfun( "vec2", "scaled", MouseCursor_scaled );
     func->doc = "get the current X and Y normalized positions of the mouse cursor relative to its containing monitor; yields X and Y values in the range [0.0,1.0]";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add abs() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "abs", Mouse_abs );
+    func = make_new_sfun( "vec2", "abs", MouseCursor_abs );
     func->doc = "get the current X and Y absolute coordinates of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup; same as .xy()";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add xy() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "vec2", "xy", Mouse_abs );
+    func = make_new_sfun( "vec2", "xy", MouseCursor_abs );
     func->doc = "get the current X and Y absolute coordinates of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup; same as .abs()";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add x() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "float", "x", Mouse_abs_x );
+    func = make_new_sfun( "float", "x", MouseCursor_abs_x );
     func->doc = "get the current X absolute coordinate of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup";
     if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // add y() | 1.5.4.2 (ge & spencer ) added
-    func = make_new_sfun( "float", "y", Mouse_abs_y );
+    func = make_new_sfun( "float", "y", MouseCursor_abs_y );
     func->doc = "get the current Y absolute coordinate of the mouse cursor; dependent on screen resolution; could yield positive and negative values in a multi-monitor setup";
     if( !type_engine_import_sfun( env, func ) ) goto error;
+
+    // end the class import
+    type_engine_import_class_end( env );
+
+    // init Mousor class | 1.5.4.2 (chuck team) added as a shorter and more fun/chaotic alias for MouseCursor
+    if( !type_engine_import_class_begin( env, "Mousor", "MouseCursor",
+                                         env->global(), Mousor_ctor, Mousor_dtor,
+                                         "Same as MouseCursor; for those who prefer less typing and more chaos. (For full access to mouse input, see the Hid class.)" ) )
+        return FALSE;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -3045,30 +3054,35 @@ CK_DLL_MFUN( HidOut_send )
 }
 
 // Mouse constructor
-CK_DLL_CTOR( Mouse_ctor ) { }
+CK_DLL_CTOR( MouseCursor_ctor ) { }
 // Mouse desctructor
-CK_DLL_DTOR( Mouse_dtor ) { }
+CK_DLL_DTOR( MouseCursor_dtor ) { }
 
 // get normalized mouse XY position, range [0,1]
-CK_DLL_SFUN( Mouse_scaled )
+CK_DLL_SFUN( MouseCursor_scaled )
 {
     RETURN->v_vec2 = ck_get_mouse_xy_normalize();
 }
 
-CK_DLL_SFUN( Mouse_abs )
+CK_DLL_SFUN( MouseCursor_abs )
 {
     RETURN->v_vec2 = ck_get_mouse_xy_absolute();
 }
 
-CK_DLL_SFUN( Mouse_abs_x )
+CK_DLL_SFUN( MouseCursor_abs_x )
 {
     RETURN->v_float = ck_get_mouse_xy_absolute().x;
 }
 
-CK_DLL_SFUN( Mouse_abs_y )
+CK_DLL_SFUN( MouseCursor_abs_y )
 {
     RETURN->v_float = ck_get_mouse_xy_absolute().y;
 }
+
+// Mouse constructor
+CK_DLL_CTOR( Mousor_ctor ) { }
+// Mouse desctructor
+CK_DLL_DTOR( Mousor_dtor ) { }
 
 #endif // __DISABLE_HID__
 

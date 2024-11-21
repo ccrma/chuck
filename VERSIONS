@@ -24,12 +24,21 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
     internally, string operations now are appropriately handled by the
     operator overloading mechanism
 (fixed) < <= > >= operators for strings
-(fixed) an issue chugin system auto-load and --chugin-probe was skipping\
+(fixed) an issue chugin system auto-load and --chugin-probe was skipping
     over the first element when scanning directories 
 (fixed) vec2/vec3/vec4 implicit cast logic for +=> and -=> operations
     (previously, this would cause a crash in some cases)
 (fixed) vec2/vec3/vec4 function call from literal (non-variable) value
     (e.g., @(1,0).magnitude(); previously this yielded a compiler error)
+(added) new `MouseCursor` class for quickly accessing mouse cursor:
+        // absolute screen coordinate of cursor
+        vec2 MouseCursor.xy();
+        // scaled coordinates in range [0,1]
+        vec2 MouseCursor.scaled();
+    (see API reference for more information)
+    https://chuck.stanford.edu/doc/reference/io.html#MouseCursor
+(added) new `Mousor` class; `Mousor` is functionally equivalent to `MouseCursor`,
+    purely made for those prefer slightly less typing and slightly more chaos!
 (added) vector dot product methods for vec2, vec3, and vec4
         float vec2.dot( vec2 rhs )
         float vec3.dot( vec3 rhs )
@@ -54,27 +63,27 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
 (added) Shred.pc(), .regSP(), .memSP() -- for debugging, info, amusement
 =======
 ChuGL 0.2.4 Release Notes
-
-New Features
+=======
+New Features:
 - Should now support both X11 and Wayland on Linux
 - PolygonGeometry: provides (decently) robust/performant triangulation, useful for animating or 
 drawing deformable 2d shapes
 - WireframeMaterial: renders a mesh as a wireframe
 - Texture.copy(...): can now copy data between textures
 - Texture.read(...): read back texture data from GPU --> CPU
-
-Improvements
+~~~
+Improvements:
 - Significantly reduced startup time from loading large OBJ models or building geometry with 
 many vertices (tangent frame calculation has been moved from the CPU --> GPU)
 - Optimized webcam implementation (now consumes less memory and requires fewer memory transfers)
-
+~~~
 New examples
 - deep/ray_triangle_intersection.ck: 3d ray-triangle intersection testing. Thanks Shenran!!
 - deep/fish.ck: procedurally animating a fish, showcases PolygonGeometry
 - deep/webcam_echo.ck: webcam delay effect via texture copying
 - basic/triangulate.ck: polygon triangulation with PolygonGeometry
 - basic/texture_read.ck: showcases reading texture data from GPU into chuck
-
+~~~
 Bug Fixes:
 - Crash when using Video textures
 - Fix race condition in Webcam destructor
