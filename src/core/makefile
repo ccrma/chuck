@@ -18,6 +18,13 @@ LD=g++
 
 CFLAGS+=-I. -Ilo
 
+ifneq ($(COVERAGE_REPORT),)
+CFLAGS+=-fprofile-arcs
+CFLAGS+=-ftest-coverage
+LDFLAGS+=-lgcov
+LDFLAGS+=--coverage
+endif
+
 ifneq ($(CHUCK_STAT),)
 CFLAGS+= -D__CHUCK_STAT_TRACK__
 endif
