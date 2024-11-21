@@ -17,6 +17,11 @@ CXX=g++
 LD=g++
 
 CFLAGS+=-I. -Ilo
+# protobuf (for DSL pipeline)
+PROTOBUF_CFLAGS:=$(shell pkg-config --cflags protobuf 2>/dev/null)
+PROTOBUF_LIBS:=$(shell pkg-config --libs protobuf 2>/dev/null)
+CFLAGS+=$(PROTOBUF_CFLAGS)
+LDFLAGS+=$(PROTOBUF_LIBS)
 
 ifneq ($(COVERAGE_REPORT),)
 CFLAGS+=-fprofile-arcs
@@ -104,7 +109,8 @@ CXXSRCS_CORE+= chuck_absyn.cpp chuck_parse.cpp chuck_errmsg.cpp \
 	ulib_std.cpp ulib_opsc.cpp util_buffers.cpp util_console.cpp \
 	util_math.cpp util_platforms.cpp util_string.cpp util_thread.cpp \
 	util_opsc.cpp util_serial.cpp util_hid.cpp uana_xform.cpp \
-	uana_extract.cpp
+	uana_extract.cpp dsl/dsl_toml.cpp dsl/dsl_codegen.cpp \
+	dsl/piece.pb.cc
 LO_CSRCS+= lo/address.c lo/blob.c lo/bundle.c lo/message.c lo/method.c \
     lo/pattern_match.c lo/send.c lo/server.c lo/server_thread.c lo/timetag.c
 ################################################################################
