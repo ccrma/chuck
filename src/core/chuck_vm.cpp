@@ -1918,8 +1918,13 @@ void Chuck_VM_Shred::detach_ugens()
         // advance the iterator
         iter++;
     }
-    // prune
+
+    // prune ugens still associated with the shred
+    // as of 1.5.4.2 this is no longer necessary in the general and non-OTF
+    // case; but for OTF replace and remove, this will conservatively release
+    // ugens (e.g., with refcount==1); see prune_ugens() for more info
     prune_ugens();
+
     // clear map
     m_ugen_map.clear();
 }
