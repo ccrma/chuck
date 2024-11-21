@@ -338,12 +338,18 @@ t_CKBOOL ChucK::setParamFloat( const std::string & name, t_CKFLOAT value )
     std::string key = tolower(name);
     // check read-only
     if( readOnlyParam(key) ) return FALSE;
-    // check
+    // check param type
     if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_float )
     {
         // insert into map
         m_params[key] = ck_ftoa( value, 32 );
         return TRUE;
+    }
+    // if param is an int, e.g., sample rate | 1.5.4.2 (ge)
+    else if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_int )
+    {
+        // round and redirect to setParam() as int
+        return setParam( name, (t_CKINT)(value+.05) );
     }
     else
     {
@@ -440,6 +446,11 @@ t_CKFLOAT ChucK::getParamFloat( const std::string & name )
     {
         std::istringstream s( m_params[key] );
         s >> result;
+    }
+    else if( m_params.count( key ) > 0 && m_param_types[key] == ck_param_int )
+    {
+        // get int and return as float | 1.5.4.2 (ge)
+        return (t_CKFLOAT)getParamInt(name);
     }
     return result;
 }
