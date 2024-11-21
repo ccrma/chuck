@@ -1904,6 +1904,7 @@ void Chuck_VM_Shred::detach_ugens()
 {
     // get iterator to our map
     map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+    // iterate over ugen attached to this shred
     while( iter != m_ugen_map.end() )
     {
         // get the ugen
@@ -1914,10 +1915,11 @@ void Chuck_VM_Shred::detach_ugens()
         ugen->setOriginShred( NULL );
         // disconnect
         ugen->disconnect( TRUE );
-
         // advance the iterator
         iter++;
     }
+    // prune
+    prune_ugens();
     // clear map
     m_ugen_map.clear();
 }
@@ -1934,51 +1936,62 @@ void Chuck_VM_Shred::detach_ugens()
 //       1.5.4.2 (ge) NOTE this is no longer necessary as the new UGen/shred
 //       semantics have been updated for these types of checks to happen on
 //       a per-UGen level
+//       1.5.4.2 (ge) okay maybe we still do need this for OTF operations,
+//       e.g., remove / replace, since currently those do not properly unwind
+//       the execution contexts (see TODO below)
+//       NOTE: this does not cover cases where a UGen has multiple variables
+//       referencing it on this shred; currently there is no mechanism to know
+//       if references are within a shred's context or outside of it
 //-----------------------------------------------------------------------------
-//void Chuck_VM_Shred::prune_ugens()
-//{
-//    // check if we have anything in ugen map for this shred
-//    if( !m_ugen_map.size() )
-//        return;
-//
-//    // ugens to release
-//    std::vector<Chuck_UGen *> release_v;
-//
-//    // get iterator to our map
-//    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
-//    while( iter != m_ugen_map.end() )
-//    {
-//        // get the ugen
-//        Chuck_UGen * ugen = iter->first;
-//
-//        // verify
-//        assert( ugen->refcount() > 0 );
-//        // check for ugens with only one reference (to this shred)
-//        if( ugen->refcount() == 1 ) release_v.push_back( ugen );
-//
-//        // advance the iterator
-//        iter++;
-//    }
-//
-//    // check if anything to prune
-//    if( release_v.size() )
-//    {
-//        // log
-//        EM_log( CK_LOG_FINE, "pruning '%ld' ugen(s) from shred: %x...", release_v.size(), this );
-//
-//        // loop over vector
-//        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
-//            rvi != release_v.end(); rvi++ )
-//        {
-//            // remove from map
-//            m_ugen_map.erase( *rvi );
-//            // release the ugen
-//            CK_SAFE_RELEASE( *rvi );
-//        }
-//        // clear the release vector
-//        release_v.clear();
-//    }
-//}
+//       TODO: the right way to handle this would be to carefully unwind the
+//       execution context: function call stacks and stmt-level releases
+//       possibly letting the current stmt finish if there is memory to be released
+//       AND then unwinding the call stack and releasing things along the way
+//-----------------------------------------------------------------------------
+void Chuck_VM_Shred::prune_ugens()
+{
+    // check if we have anything in ugen map for this shred
+    if( !m_ugen_map.size() )
+        return;
+
+    // ugens to release
+    std::vector<Chuck_UGen *> release_v;
+
+    // get iterator to our map
+    map<Chuck_UGen *, Chuck_UGen *>::iterator iter = m_ugen_map.begin();
+    while( iter != m_ugen_map.end() )
+    {
+        // get the ugen
+        Chuck_UGen * ugen = iter->first;
+
+        // verify
+        assert( ugen->refcount() > 0 );
+        // check for ugens with only one reference (to this shred)
+        if( ugen->refcount() == 1 ) release_v.push_back( ugen );
+
+        // advance the iterator
+        iter++;
+    }
+
+    // check if anything to prune
+    if( release_v.size() )
+    {
+        // log
+        EM_log( CK_LOG_FINE, "pruning '%ld' ugen(s) from shred: %x...", release_v.size(), this );
+
+        // loop over vector
+        for( vector<Chuck_UGen *>::iterator rvi = release_v.begin();
+            rvi != release_v.end(); rvi++ )
+        {
+            // remove from map
+            m_ugen_map.erase( *rvi );
+            // release the ugen
+            CK_SAFE_RELEASE( *rvi );
+        }
+        // clear the release vector
+        release_v.clear();
+    }
+}
 
 
 
