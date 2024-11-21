@@ -39,6 +39,8 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
     https://chuck.stanford.edu/doc/reference/io.html#MouseCursor
 (added) new `Mousor` class; `Mousor` is functionally equivalent to `MouseCursor`,
     purely made for those prefer slightly less typing and slightly more chaos!
+(added) examples/hid/mouse-cursor.ck
+        examples/stk/tubebell-algo5.ck
 (added) vector dot product methods for vec2, vec3, and vec4
         float vec2.dot( vec2 rhs )
         float vec3.dot( vec3 rhs )
