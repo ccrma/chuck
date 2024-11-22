@@ -2,6 +2,9 @@
 // name: mouse-fm.ck
 // desc: uses first X/Y axes of a mouse to control modulation frequency
 //       and index of modulation for FM Synthesis
+//       ALSO SEE mouse-cursor.ck for mouse cursor tracking...
+//          (MouseCursor is both absolute and scaled and is a different
+//           and simpler mechanism for mouse position input)
 //
 // note: select between mice/trackpads by specifying device number;
 //       to see a list of devices and their numbers, either...

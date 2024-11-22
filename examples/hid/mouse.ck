@@ -1,7 +1,10 @@
 //-----------------------------------------------------------------------------
 // name: mouse.ck
 // desc: basic mouse input (relative X and Y deltas)
-//       also see: mouse-abs.ck for absolute screen position
+//       ALSO SEE mouse-abs.ck for absolute screen position
+//       ALSO SEE mouse-cursor.ck for mouse cursor tracking...
+//          (MouseCursor is both absolute and scaled and is a different
+//           and simpler mechanism for mouse position input)
 //
 // note: select between mice/trackpads by specifying device number;
 //       to see a list of devices and their numbers, either...
