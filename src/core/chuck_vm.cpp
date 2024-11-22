@@ -1985,11 +1985,21 @@ void Chuck_VM_Shred::detach_ugens()
         iter++;
     }
 
-    // prune ugens still associated with the shred
+    // prune UGens still associated with the shred by refcount...
+    // ---
     // as of 1.5.4.2 this is no longer necessary in the general and non-OTF
     // case; but for OTF replace and remove, this will conservatively release
     // ugens (e.g., with refcount==1); see prune_ugens() for more info
-    prune_ugens();
+    // ---
+    // BUT WAIT... we can't reliably do this, because a UGen can be created
+    // on a shred, copy its reference to a variable that originates from a
+    // different shred and let the original reference go out of scope; this
+    // could result in the UGen refcount==1 but should NOT be released yet.
+    // COMMENTING OUT (again) NOTE: this affects OTF operations such as
+    // remove and replace and (in theory) nothing beyond those, as there
+    // are mechanisms for properly cleaning up UGens otherwise
+    // ---
+    // prune_ugens();
 
     // clear map
     m_ugen_map.clear();
@@ -2015,7 +2025,7 @@ void Chuck_VM_Shred::detach_ugens()
 //       if references are within a shred's context or outside of it
 //-----------------------------------------------------------------------------
 //       TODO: the right way to handle this would be to carefully unwind the
-//       execution context: function call stacks and stmt-level releases
+//       shred's execution context: function call stacks and stmt-level releases
 //       possibly letting the current stmt finish if there is memory to be released
 //       AND then unwinding the call stack and releasing things along the way
 //-----------------------------------------------------------------------------
