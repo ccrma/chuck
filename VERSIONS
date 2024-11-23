@@ -30,17 +30,7 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
     (previously, this would cause a crash in some cases)
 (fixed) vec2/vec3/vec4 function call from literal (non-variable) value
     (e.g., @(1,0).magnitude(); previously this yielded a compiler error)
-(added) new `MouseCursor` class for quickly accessing mouse cursor:
-        // absolute screen coordinate of cursor
-        vec2 MouseCursor.xy();
-        // scaled coordinates in range [0,1]
-        vec2 MouseCursor.scaled();
-    (see API reference for more information)
-    https://chuck.stanford.edu/doc/reference/io.html#MouseCursor
-(added) new `Mousor` class; `Mousor` is functionally equivalent to `MouseCursor`,
-    purely made for those prefer slightly less typing and slightly more chaos!
-(added) examples/hid/mouse-cursor.ck
-        examples/stk/tubebell-algo5.ck
+(added) examples/stk/tubebell-algo5.ck
 (added) vector dot product methods for vec2, vec3, and vec4
         float vec2.dot( vec2 rhs )
         float vec3.dot( vec3 rhs )

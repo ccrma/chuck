@@ -1497,6 +1497,18 @@ t_CKBOOL init_class_HID( Chuck_Env * env )
      type_engine_import_class_end( env );
      */
 
+// RELEASE NOTES for when we are ready
+//    (added) new `MouseCursor` class for quickly accessing mouse cursor:
+//            // absolute screen coordinate of cursor
+//            vec2 MouseCursor.xy();
+//            // scaled coordinates in range [0,1]
+//            vec2 MouseCursor.scaled();
+//        (see API reference for more information)
+//        https://chuck.stanford.edu/doc/reference/io.html#MouseCursor
+//    (added) new `Mousor` class; `Mousor` is functionally equivalent to `MouseCursor`,
+//        purely made for those prefer slightly less typing and slightly more chaos!
+//    (added) examples/hid/mouse-cursor.ck
+
     // init MouseCursor class | 1.5.4.2 (ge & spencer) added
     if( !type_engine_import_class_begin( env, "MouseCursor", "Object",
                                          env->global(), MouseCursor_ctor, MouseCursor_dtor,
