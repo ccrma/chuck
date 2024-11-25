@@ -2,6 +2,15 @@
 ChucK VERSIONS log
 ------------------
 
+
+1.5.4.3
+=======
+(added) '/usr/lib/chuck' to @import system search paths on Linux and MacOS.
+    .chug files in system paths will auto-load on start up (.ck files will 
+    not auto-load and needs to be @imported in order to be used); also 
+    @import will now include this directory when resolving fileanems.
+
+
 1.5.4.2 (November 2024)
 =======
 new ChuGL v0.2.4 (see ChuGL release notes below)

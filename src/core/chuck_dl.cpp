@@ -60,7 +60,7 @@ using namespace std;
 //   (=v ChuMP =v ChucK Manager of Packages)
 //-----------------------------------------------------------------------------
 #if defined(__PLATFORM_APPLE__)
-char g_default_path_system[] = "/usr/local/lib/chuck:/Library/Application Support/ChucK/chugins";
+char g_default_path_system[] = "/usr/lib/chuck:/usr/local/lib/chuck:/Library/Application Support/ChucK/chugins";
 char g_default_path_packages[] = "~/.chuck/packages";
 char g_default_path_user[] = "~/Library/Application Support/ChucK/chugins:~/.chuck/lib";
 #elif defined(__PLATFORM_WINDOWS__)
@@ -68,7 +68,7 @@ char g_default_path_system[] = "C:\\Windows\\system32\\ChucK;C:\\Program Files\\
 char g_default_path_packages[] = "C:\\Users\\%USERNAME%\\Documents\\ChucK\\packages";
 char g_default_path_user[] = "C:\\Users\\%USERNAME%\\Documents\\ChucK\\chugins";
 #else // Linux / Cygwin
-char g_default_path_system[] = "/usr/local/lib/chuck";
+char g_default_path_system[] = "/usr/lib/chuck:/usr/local/lib/chuck";
 char g_default_path_packages[] = "~/.chuck/packages";
 char g_default_path_user[] = "~/.chuck/lib";
 #endif
