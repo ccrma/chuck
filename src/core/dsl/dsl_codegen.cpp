@@ -104,7 +104,6 @@ std::string MakeVoiceFunction(const Voice &voice, int index)
     for (int i = 0; i < pattern.notes_size(); ++i)
     {
         const Note &note = pattern.notes(i);
-        const std::string gateVar = "gate_" + idx + "_" + std::to_string(i);
         out << "    // note " << i << "\n";
         if (density < 1.0)
         {
@@ -166,4 +165,3 @@ bool PieceToChuckSource(const Piece &piece, const std::string &source_name, std:
 }
 
 }  // namespace dsl
-
