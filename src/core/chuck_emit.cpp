@@ -269,10 +269,15 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // check success code
     if( ret )
     {
+        // get next instruction index
+        t_CKUINT index = emit->next_index();
         // pop global scope (added 1.3.0.0)
         emit->pop_scope();
         // append end of code
         emit->append( new Chuck_Instr_EOC );
+        // add code str to whichever instruction began this section | 1.5.4.2 (ge) added
+        emit->code->code[index]->prepend_codestr( "/* end of code */" );
+
         // make sure
         assert( emit->context->nspc->pre_ctor == NULL );
         // converted to virtual machine code
