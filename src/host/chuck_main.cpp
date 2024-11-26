@@ -255,6 +255,8 @@ void usage()
 {
     // (note: optional colon added 1.3.0.0)
     CK_FPRINTF_STDERR( "%s", TC::reset().c_str() );
+    CK_FPRINTF_STDERR( "\n%s %s%s %s", TC::bold("ChucK").c_str(), TC::color(TC::FG_GREEN,"=",TRUE).c_str(),
+                      TC::color(TC::FG_LIGHT_GREEN,">",TRUE).c_str(), TC::bold("Music Programming Language").c_str() );
     CK_FPRINTF_STDERR( "\nusage: %s --[%s|%s] [%s] file1 file2 ...\n\n", "chuck", TC::orange("options").c_str(), TC::blue("commands").c_str(), TC::blue("+-=^").c_str() );
     CK_FPRINTF_STDERR( "%s", TC::set_orange().c_str() );
     CK_FPRINTF_STDERR( "    [options] = halt|loop|audio|silent|dump|nodump|about|probe\n" );
