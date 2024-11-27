@@ -1,4 +1,4 @@
-error-string-func-concat-3.ck:9:5: error: cannot perform '+' on '[function]' and string
+error-string-func-concat-3.ck:9:5: error: cannot perform '+' on '[fun]foo()' and string
 [9] foo + "";
         ^
 error-string-func-concat-3.ck:9:1: error: ...(hint: to call the function, add '()' and any arguments)

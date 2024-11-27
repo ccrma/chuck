@@ -3082,16 +3082,21 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
 
     // make a new type for the function
     type = env->context->new_Chuck_Type( env );
+    // type id
     type->xid = te_function;
-    type->base_name = "[function]";
+    // type size
     type->size = sizeof(void *);
-
+    // function type name; this will be updated later in this function once we have more info (e.g., value_ref)
+    type->base_name = "[fun]";
     // 1.5.4.3 (ge) add ref; was: type->parent_type = env->ckt_function;
     // part of #2024-func-call-update
-    CK_SAFE_REF_ASSIGN(type->parent_type,env->ckt_function);
+    CK_SAFE_REF_ASSIGN(type->parent_type, env->ckt_function);
     // 1.5.4.3 (ge) add ref; was: type->func_bridge = func;
-    // part of #2024-func-call-update
+    // part of #2024-func-call-update | TODO: break cycle?
     CK_SAFE_REF_ASSIGN(type->func_bridge, func);
+    // 1.5.4.3 (ge) add func to type reference
+    // part of #2024-func-call-update | TODO: break cycle?
+    CK_SAFE_REF_ASSIGN(func->type_ref, type);
 
     // make new value, with potential overloaded name
     value = env->context->new_Chuck_Value( type, func_name );
@@ -3409,9 +3414,12 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     assert( f->code == NULL || f->code->s_type == ae_stmt_code );
     if( f->code && !type_engine_scan2_code_segment( env, &f->code->stmt_code, FALSE ) )
     {
-        EM_error2( 0, "...in function '%s'", func->signature().c_str() ); // S_name(f->name) );
+        EM_error2( 0, "...in function '%s'", func->signature(FALSE,FALSE).c_str() ); // S_name(f->name) );
         goto error;
     }
+
+    // update the function-specific type's name | 1.5.4.3 (ge) added
+    type->base_name = "[fun]" + func->signature(FALSE,FALSE);
 
     // pop the value stack
     env->curr->value.pop();

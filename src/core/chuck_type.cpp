@@ -9316,7 +9316,9 @@ Chuck_Type * Chuck_Func::type() const
 string Chuck_Func::signature( t_CKBOOL incFuncDef, t_CKBOOL incRetType ) const
 {
     // check we have the necessary info
-    if( !value_ref || !def() || !def()->ret_type )
+    // 1.5.4.3 (ge) added conditional check on ret_type
+    // to allow this function to be used pre-typecheck
+    if( !value_ref || !def() || (incRetType && !def()->ret_type) )
         return "[function signature missing info]";
 
     // check if a member func
