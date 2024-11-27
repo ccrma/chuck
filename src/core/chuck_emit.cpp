@@ -4931,10 +4931,10 @@ t_CKBOOL emit_engine_emit_exp_if( Chuck_Emitter * emit, a_Exp_If exp_if )
 t_CKBOOL emit_engine_pre_constructor( Chuck_Emitter * emit, Chuck_Type * type, a_Ctor_Call ctor_info )
 {
     // parent first pre constructor
-    if( type->parent != NULL )
+    if( type->parent_type != NULL )
     {
         // first emit parent pre and base constructor
-        emit_engine_pre_constructor( emit, type->parent, NULL );
+        emit_engine_pre_constructor( emit, type->parent_type, NULL );
     }
 
     // pre constructor

@@ -3836,7 +3836,7 @@ CK_DLL_MFUN( type_parent )
     // get self as type
     Chuck_Type * type = (Chuck_Type *)SELF;
     // get parent type
-    RETURN->v_object = type->parent;
+    RETURN->v_object = type->parent_type;
 }
 
 CK_DLL_MFUN( type_children )

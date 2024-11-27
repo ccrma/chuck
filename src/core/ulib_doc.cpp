@@ -365,7 +365,7 @@ public:
         m_outputStr += "      \"description\": \"" + jsonStringify(capitalize_and_periodize(type->doc)) + "\",\n";
 
         // type heirarchy, iterate through parents
-        Chuck_Type * parent = type->parent;
+        Chuck_Type * parent = type->parent_type;
         // check if there is a parent class
         if( parent != NULL )
         {
@@ -374,13 +374,13 @@ public:
         while( parent != NULL )
         {
             m_outputStr += "\"" + parent->base_name + "\"";
-            parent = parent->parent;
+            parent = parent->parent_type;
             if( parent != NULL )
             {
                 m_outputStr += ", ";
             }
         }
-        if( type->parent != NULL ) m_outputStr += "],\n";
+        if( type->parent_type != NULL ) m_outputStr += "],\n";
     }
 
     void end_class() { 
@@ -773,7 +773,7 @@ public:
         m_outputStr += "<h2 class=\"class_title\" name=\"" + type->base_name + "\">" + type->base_name + "</h2>\n";
 
         // type heirarchy
-        Chuck_Type * parent = type->parent;
+        Chuck_Type * parent = type->parent_type;
         // check if there is a parent class
         if( parent != NULL )
         {
@@ -788,10 +788,10 @@ public:
                          + "\" class=\"" + css_class_for_type(m_env_ref, parent)
                          + "\">" + parent->base_name + "</a> ",
             // go up the inheritance chain
-            parent = parent->parent;
+            parent = parent->parent_type;
         }
         // end the tag
-        if( type->parent != NULL ) m_outputStr += "</h4>\n";
+        if( type->parent_type != NULL ) m_outputStr += "</h4>\n";
 
         if(type->doc.size() > 0)
         {

@@ -265,6 +265,11 @@ void Chuck_Env::cleanup()
 
     // unlock each internal object type | 1.5.0.0 (ge) added
     // 1.5.0.1 (ge) re-ordered: parent dependencies are cleaned up later
+    // NOTE: these are DELETE not RELEASE; a type should be used in any
+    // way (including released) after it has been deleted
+    // EXAMPLE: uana has ugen as a parent (which it tries to release
+    // during its deletion/dtor), thus uana needs to be deleted *before*
+    // deleting ugen
     CK_SAFE_UNLOCK_DELETE(ckt_void);
     CK_SAFE_UNLOCK_DELETE(ckt_auto);
     CK_SAFE_UNLOCK_DELETE(ckt_int);
@@ -282,9 +287,9 @@ void Chuck_Env::cleanup()
     CK_SAFE_UNLOCK_DELETE(ckt_io);
     CK_SAFE_UNLOCK_DELETE(ckt_dac);
     CK_SAFE_UNLOCK_DELETE(ckt_adc);
-    CK_SAFE_UNLOCK_DELETE(ckt_ugen);
     CK_SAFE_UNLOCK_DELETE(ckt_uanablob);
     CK_SAFE_UNLOCK_DELETE(ckt_uana);
+    CK_SAFE_UNLOCK_DELETE(ckt_ugen);
     CK_SAFE_UNLOCK_DELETE(ckt_function);
     CK_SAFE_UNLOCK_DELETE(ckt_string);
     CK_SAFE_UNLOCK_DELETE(ckt_shred);
@@ -296,8 +301,8 @@ void Chuck_Env::cleanup()
     // ckt_class->parent is ckt_object, while ckt_object->type_ref is ckt_class
 
     // break the dependency manually | 1.5.0.1 (ge) added
-    // part 1: save the parent reference
-    Chuck_Type * skip = ckt_object->type_ref != NULL ? ckt_object->type_ref->parent : NULL;
+    // part 1: save the parent reference | commented out; see note below about `skip`
+    // Chuck_Type * skip = ckt_object->type_ref != NULL ? ckt_object->type_ref->parent_type : NULL;
     // free the Type type
     CK_SAFE_UNLOCK_DELETE(ckt_class);
 
@@ -3483,7 +3488,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                         // look up scope up-to class top-level (but no further); i.e., stayWithClass == TRUE
                         v = type_engine_find_value( env, S_name(exp->var), TRUE, TRUE, exp->where );
                         // if still not found, see if in parent (inherited)
-                        if( !v ) v = type_engine_find_value( env->class_def->parent, exp->var );
+                        if( !v ) v = type_engine_find_value( env->class_def->parent_type, exp->var );
                     }
 
                     // still not found
@@ -4272,7 +4277,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         if( env->class_def && env->class_scope == 0 )
         {
             // check if in parent
-            value = type_engine_find_value( env->class_def->parent, var_decl->xid );
+            value = type_engine_find_value( env->class_def->parent_type, var_decl->xid );
             if( value )
             {
                 EM_error2( var_decl->where,
@@ -4738,7 +4743,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
 
     // copy the func
-    up = f->type2func_bridge;
+    up = f->func_bridge;
 
     // check the arguments
     if( args )
@@ -5222,11 +5227,11 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     // check if parent class definition is complete or not
     // NOTE this could potentially be remove if class defs can be processed
     // out of order they appear in file; potentially a relationship tree?
-    if( the_class->parent->is_complete == FALSE )
+    if( the_class->parent_type->is_complete == FALSE )
     {
         EM_error2( class_def->ext->where,
             "cannot extend incomplete type '%s'",
-            the_class->parent->c_name() );
+            the_class->parent_type->c_name() );
         EM_error2( class_def->ext->where,
             "...(note: the parent's declaration must precede child's)" );
         // done
@@ -5236,9 +5241,9 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     // NB the following should be done AFTER the parent is completely defined
     // --
     // set the beginning of data segment to after the parent
-    the_class->nspc->offset = the_class->parent->obj_size;
+    the_class->nspc->offset = the_class->parent_type->obj_size;
     // duplicate the parent's virtual table
-    the_class->nspc->obj_v_table = the_class->parent->nspc->obj_v_table;
+    the_class->nspc->obj_v_table = the_class->parent_type->nspc->obj_v_table;
 
     // set the new type as current
     env->nspc_stack.push_back( env->curr );
@@ -5346,7 +5351,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( env->class_def )
     {
         // look up the value in the parent class
-        theOverride = type_engine_find_value( env->class_def->parent, f->name );
+        theOverride = type_engine_find_value( env->class_def->parent_type, f->name );
         // check if override
         if( theOverride )
         {
@@ -5417,10 +5422,10 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     if( env->class_def )
     {
         // get parent
-        parent = env->class_def->parent;
+        parent = env->class_def->parent_type;
         while( parent && !parent_match )
         {
-            v = type_engine_find_value( env->class_def->parent, f->name );
+            v = type_engine_find_value( env->class_def->parent_type, f->name );
             if( v )
             {
                 // see if the target is a function
@@ -5521,7 +5526,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
             }
 
             // move to next parent
-            parent = parent->parent;
+            parent = parent->parent_type;
         }
     }
 
@@ -5968,12 +5973,12 @@ t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & 
     //--------------------------------------------
 
     // if lhs is a child of rhs
-    const Chuck_Type * curr = lhs.parent;
+    const Chuck_Type * curr = lhs.parent_type;
     while( curr )
     {
         levels++;
         if( *curr == rhs ) return TRUE;
-        curr = curr->parent;
+        curr = curr->parent_type;
     }
 
     // back to 0
@@ -6342,7 +6347,7 @@ Chuck_Type * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs )
     if( isa( rhs, lhs ) ) return lhs;
 
     // move up
-    Chuck_Type * t = lhs->parent;
+    Chuck_Type * t = lhs->parent_type;
 
     // not at root
     while( t )
@@ -6350,7 +6355,7 @@ Chuck_Type * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs )
         // check and see again
         if( isa( rhs, t ) ) return t;
         // move up
-        t = t->parent;
+        t = t->parent_type;
     }
 
     // didn't find
@@ -6507,10 +6512,10 @@ Chuck_Type * type_engine_find_type( Chuck_Env * env, a_Id_List thePath )
         // look for the type in the namespace
         t = type_engine_find_type( theNpsc, xid );
         // look in parent
-        while( !t && type && type->parent )
+        while( !t && type && type->parent_type )
         {
-            t = type_engine_find_type( type->parent->nspc, xid );
-            type = type->parent;
+            t = type_engine_find_type( type->parent_type->nspc, xid );
+            type = type->parent_type;
         }
         // can't find
         if( !t )
@@ -6586,7 +6591,7 @@ Chuck_Value * type_engine_find_value( Chuck_Type * type, const string & xid )
     // -1 for base
     value = type->nspc->lookup_value( xid, -1 );
     if( value ) return value;
-    if( type->parent ) return type_engine_find_value( type->parent, xid );
+    if( type->parent_type ) return type_engine_find_value( type->parent_type, xid );
 
     return NULL;
 }
@@ -6822,12 +6827,12 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     // clear the object size
     type->obj_size = 0;
     // set the beginning of the data segment after parent
-    if( type->parent )
+    if( type->parent_type )
     {
-        type->nspc->offset = type->parent->obj_size;
+        type->nspc->offset = type->parent_type->obj_size;
         // duplicate parent's virtual table
-        assert( type->parent->nspc != NULL );
-        type->nspc->obj_v_table = type->parent->nspc->obj_v_table;
+        assert( type->parent_type->nspc != NULL );
+        type->nspc->obj_v_table = type->parent_type->nspc->obj_v_table;
     }
 
     // set the owner namespace
@@ -6950,8 +6955,8 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     if( !type ) return NULL;
 
     // make sure parent is ugen
-    assert( type->parent != NULL );
-    if( !isa( type->parent, env->ckt_ugen ) )
+    assert( type->parent_type != NULL );
+    if( !isa( type->parent_type, env->ckt_ugen ) )
     {
         // error
         EM_error2( 0,
@@ -6963,11 +6968,11 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
     // do the ugen part
     info = new Chuck_UGen_Info;
     info->add_ref();
-    info->tick = type->parent->ugen_info->tick;
-    info->tickf = type->parent->ugen_info->tickf; // added 1.3.0.0
-    info->pmsg = type->parent->ugen_info->pmsg;
-    info->num_ins = type->parent->ugen_info->num_ins;
-    info->num_outs = type->parent->ugen_info->num_outs;
+    info->tick = type->parent_type->ugen_info->tick;
+    info->tickf = type->parent_type->ugen_info->tickf; // added 1.3.0.0
+    info->pmsg = type->parent_type->ugen_info->pmsg;
+    info->num_ins = type->parent_type->ugen_info->num_ins;
+    info->num_outs = type->parent_type->ugen_info->num_outs;
     if( tick ) info->tick = tick;
     if( tickf ) { info->tickf = tickf; info->tick = NULL; } // added 1.3.0.0
     if( pmsg ) info->pmsg = pmsg;
@@ -7040,8 +7045,8 @@ Chuck_Type * type_engine_import_uana_begin( Chuck_Env * env, const char * name,
     if( !type ) return NULL;
 
     // make sure parent is ugen
-    assert( type->parent != NULL );
-    if( !isa( type->parent, env->ckt_uana ) )
+    assert( type->parent_type != NULL );
+    if( !isa( type->parent_type, env->ckt_uana ) )
     {
         // error
         EM_error2( 0,
@@ -8188,9 +8193,9 @@ Chuck_Type * create_new_array_type( Chuck_Env * env, Chuck_Type * array_parent,
     // 1.5.4.0 (ge & nick) this is now handled in isa_levels()
 
     // parent type
-    t->parent = array_parent;
+    t->parent_type = array_parent;
     // add reference
-    CK_SAFE_ADD_REF(t->parent);
+    CK_SAFE_ADD_REF(t->parent_type);
 
     // is a ref
     t->size = array_parent->size;
@@ -9757,14 +9762,14 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     env_ref = env; CK_SAFE_ADD_REF( env_ref );
     xid = _id;
     base_name = _n;
-    parent = _p; CK_SAFE_ADD_REF( parent );
+    parent_type = _p; CK_SAFE_ADD_REF( parent_type );
     size = _s;
     // owner = NULL;
     array_type = NULL;
     array_depth = 0;
     obj_size = 0;
     nspc = NULL;
-    type2func_bridge = NULL; /* def = NULL; */
+    func_bridge = NULL; /* def = NULL; */
     is_public = FALSE;
     is_copy = FALSE;
     ugen_info = NULL;
@@ -9825,13 +9830,11 @@ void Chuck_Type::reset()
         CK_SAFE_RELEASE( ctor_default ); // 1.5.2.0 (ge) added
         CK_SAFE_RELEASE( dtor_the ); // 1.5.2.0 (ge) added
 
-        // TODO: uncomment this, fix it to behave correctly
-        // TODO: make it safe to do this, as there are multiple instances of ->parent assignments without add-refs
         // TODO: verify this is valid for final shutdown sequence, including Chuck_Env::cleanup()
-        // CK_SAFE_RELEASE( parent );
-        // CK_SAFE_RELEASE( array_type );
-        // CK_SAFE_RELEASE( ugen_info );
-        // CK_SAFE_RELEASE( func );
+        CK_SAFE_RELEASE( ugen_info ); // 1.5.4.3 (ge) added #2024-func-call-update
+        CK_SAFE_RELEASE( func_bridge ); // 1.5.4.3 (ge) added #2024-func-call-update
+        CK_SAFE_RELEASE( array_type ); // 1.5.4.3 (ge) added #2024-func-call-update
+        CK_SAFE_RELEASE( parent_type ); // 1.5.4.3 (ge) added #2024-func-call-update
     }
 }
 
@@ -9850,13 +9853,13 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     // copy
     this->xid = rhs.xid;
     this->base_name = rhs.base_name;
-    this->parent = rhs.parent; CK_SAFE_ADD_REF(this->parent);
+    this->parent_type = rhs.parent_type; CK_SAFE_ADD_REF(this->parent_type);
     this->obj_size = rhs.obj_size;
     this->size = rhs.size;
     this->is_copy = TRUE;
     this->array_depth = rhs.array_depth;
     this->array_type = rhs.array_type; CK_SAFE_ADD_REF(this->array_type);
-    this->type2func_bridge = rhs.type2func_bridge; CK_SAFE_ADD_REF(this->type2func_bridge);
+    this->func_bridge = rhs.func_bridge; CK_SAFE_ADD_REF(this->func_bridge);
     this->nspc = rhs.nspc; CK_SAFE_ADD_REF(this->nspc);
     // this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
 
@@ -10020,7 +10023,7 @@ t_CKBOOL type_engine_has_implicit_def_ctor( Chuck_Type * type )
         }
 
         // up to parent type
-        t = t->parent;
+        t = t->parent_type;
     } while( t && t != t->env()->ckt_object );
 
     return implicitDefaultCtor;
@@ -10063,7 +10066,7 @@ void Chuck_Type::apropos( std::string & output )
     while( type->array_type )
     {
         // skip current one, which extend @array to avoid printing duplicates
-        type = type->parent;
+        type = type->parent_type;
         // yes to inherited
         inherited = TRUE;
     }
@@ -10081,7 +10084,7 @@ void Chuck_Type::apropos( std::string & output )
         // append
         outputAPI += temp;
         // go up the inheritance chain
-        type = type->parent;
+        type = type->parent_type;
         // all inherited from here
         inherited = TRUE;
     }
@@ -10219,13 +10222,13 @@ void Chuck_Type::apropos_top( std::string & output, const std::string & PREFIX )
     if( this->doc != "" )
         sout << PREFIX << "  |- " << capitalize_and_periodize(this->doc) << "" << endl;
     // inheritance
-    if( type->parent != NULL )
+    if( type->parent_type != NULL )
     {
         sout << PREFIX << "  |- (inheritance) " << name();
-        while( type->parent != NULL )
+        while( type->parent_type != NULL )
         {
             // move up
-            type = type->parent;
+            type = type->parent_type;
             // print
             sout << " -> " << type->name() << "";
         }
@@ -11636,7 +11639,7 @@ t_CKBOOL Chuck_Type::do_cbs_on_instantiate( std::vector<CallbackOnInstantiate> &
     // number of callbacks in total
     t_CKBOOL retval = 0;
     // process parents
-    if( this->parent ) retval = this->parent->do_cbs_on_instantiate( results );
+    if( this->parent_type ) retval = this->parent_type->do_cbs_on_instantiate( results );
     // process this
     for( t_CKUINT i = 0; i < m_cbs_on_instantiate.size(); i++ )
     {

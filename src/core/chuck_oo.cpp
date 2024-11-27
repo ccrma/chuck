@@ -328,7 +328,7 @@ Chuck_Object::~Chuck_Object()
         }
 
         // go up the inheritance
-        type = type->parent;
+        type = type->parent_type;
     }
 
     // release class-scope member vars | 1.5.2.0 (ge) added
@@ -346,7 +346,7 @@ Chuck_Object::~Chuck_Object()
         }
 
         // go up to parent type
-        type = type->parent;
+        type = type->parent_type;
     }
 
     // release origin shred

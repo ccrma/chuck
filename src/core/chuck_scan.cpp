@@ -297,10 +297,6 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     { the_class->nspc->parent = env->context->nspc; }
     else { the_class->nspc->parent = env->curr; }
 
-    // 1.5.4.3 (ge) commented out...type2func_bridge already init to NULL
-    // #2024-func-call-update
-    // the_class->type2func_bridge = NULL;
-
     // 1.5.0.5 (ge) commented out; the AST is cleaned up after every compilation;
     // would need to make deep copy if want to keep around
     // the_class->def = class_def;
@@ -2958,7 +2954,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
     the_class = class_def->type;
 
     // set fields not set in scan
-    the_class->parent = t_parent; CK_SAFE_ADD_REF(t_parent);
+    the_class->parent_type = t_parent; CK_SAFE_ADD_REF(t_parent);
     // inherit ugen_info data from parent PLD
     the_class->ugen_info = t_parent->ugen_info; CK_SAFE_ADD_REF(t_parent->ugen_info);
 
@@ -3088,9 +3084,14 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     type = env->context->new_Chuck_Type( env );
     type->xid = te_function;
     type->base_name = "[function]";
-    type->parent = env->ckt_function; // TODO: reference count the parent
     type->size = sizeof(void *);
-    type->type2func_bridge = func; // TODO: consider ref count
+
+    // 1.5.4.3 (ge) add ref; was: type->parent_type = env->ckt_function;
+    // part of #2024-func-call-update
+    CK_SAFE_REF_ASSIGN(type->parent_type,env->ckt_function);
+    // 1.5.4.3 (ge) add ref; was: type->func_bridge = func;
+    // part of #2024-func-call-update
+    CK_SAFE_REF_ASSIGN(type->func_bridge, func);
 
     // make new value, with potential overloaded name
     value = env->context->new_Chuck_Value( type, func_name );

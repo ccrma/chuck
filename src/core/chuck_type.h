@@ -989,7 +989,7 @@ struct Chuck_Type : public Chuck_Object
     // type name (FYI use this->str() for full name including []s for array)
     std::string base_name;
     // type parent (could be NULL)
-    Chuck_Type * parent;
+    Chuck_Type * parent_type;
     // size (in bytes)
     t_CKUINT size;
     // owner of the type
@@ -1003,7 +1003,7 @@ struct Chuck_Type : public Chuck_Object
     // type info
     Chuck_Namespace * nspc;
     // func info
-    Chuck_Func * type2func_bridge;
+    Chuck_Func * func_bridge;
     // ugen
     Chuck_UGen_Info * ugen_info;
     // is public class | 1.5.4.0 (ge) added
@@ -1187,7 +1187,10 @@ public:
 // name: struct Chuck_Func
 // desc: function definition
 //-----------------------------------------------------------------------------
-struct Chuck_Func : public Chuck_VM_Object
+// 1.5.4.3 (ge) Chuck_VM_Object => Chuck_Object
+// since functions are emitted as values #2024-func-call-update
+//-----------------------------------------------------------------------------
+struct Chuck_Func : public Chuck_Object
 {
     // name (actual in VM name, e.g., "dump@0@Object")
     std::string name;
