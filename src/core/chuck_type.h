@@ -1003,7 +1003,7 @@ struct Chuck_Type : public Chuck_Object
     // type info
     Chuck_Namespace * nspc;
     // func info
-    Chuck_Func * func;
+    Chuck_Func * type2func_bridge;
     // ugen
     Chuck_UGen_Info * ugen_info;
     // is public class | 1.5.4.0 (ge) added
@@ -1402,6 +1402,7 @@ t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp e, int pos ); // TODO
 t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, std::string & err, t_CKBOOL print = TRUE );
 t_CKBOOL type_engine_get_deprecate( Chuck_Env * env, const std::string & from, std::string & to );
 t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.5.0.0 (ge) added
+t_CKBOOL type_engine_binary_is_func_call( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs ); // 1.5.4.3 (ge) added
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.5.0.0 (ge) added

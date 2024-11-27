@@ -106,7 +106,7 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp );
 t_CKBOOL emit_engine_emit_cast( Chuck_Emitter * emit, Chuck_Type * to, Chuck_Type * from, uint32_t where );
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
-                                  t_CKUINT line, t_CKUINT where );
+                                  t_CKUINT line, t_CKUINT where, a_Exp_Primary exp );
 Chuck_Instr_Stmt_Start * emit_engine_track_stmt_refs_start( Chuck_Emitter * emit, a_Stmt stmt );
 void emit_engine_track_stmt_refs_cleanup( Chuck_Emitter * emit, Chuck_Instr_Stmt_Start * start );
 // disabled until further notice (added 1.3.0.0)
@@ -275,7 +275,7 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         emit->pop_scope();
         // append end of code
         emit->append( new Chuck_Instr_EOC );
-        // add code str to whichever instruction began this section | 1.5.4.2 (ge) added
+        // add code str to whichever instruction began this section | 1.5.4.3 (ge) added
         emit->code->code[index]->prepend_codestr( "/* end of code */" );
 
         // make sure
@@ -2050,12 +2050,19 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
     // whether to track object references on stack (added 1.3.0.2)
     t_CKBOOL doRefLeft = FALSE;
     t_CKBOOL doRefRight = FALSE;
+
     // check to see if this is a function call (added 1.3.0.2)
+    // i.e., does LHS => RHS resolve to function call RHS(LHS)?
     // added ae_op_chuck and make sure not null, latter has type-equivalence with object types in certain contexts | 1.5.1.7
-    if( binary->op == ae_op_chuck && isa( binary->rhs->type, emit->env->ckt_function ) && !isnull( emit->env, binary->rhs->type ) )
+    // if( binary->op == ae_op_chuck && isa( binary->rhs->type, emit->env->ckt_function ) && !isnull( emit->env, binary->rhs->type ) )
+    if( type_engine_binary_is_func_call( emit->env, binary->op, binary->lhs, binary->rhs ) )
     {
         // take care of objects in terms of reference counting
         doRefLeft = TRUE;
+
+        // need to know here so the RHS can properly emit
+        // 1.5.4.3 (ge) added as part of #2024-func-call-update
+        binary->rhs->emit_as_funccall = TRUE;
     }
     // check operator overload | 1.5.1.5 (ge)
     t_CKBOOL op_overload = (binary->ck_overload_func != NULL);
@@ -3158,6 +3165,9 @@ t_CKBOOL emit_engine_emit_op_overload_postfix( Chuck_Emitter * emit, a_Exp_Postf
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary )
 {
+    // consistency check | 1.5.4.3 (ge) added
+    assert( binary->op == ae_op_chuck );
+
     // any implicit cast happens before this
     Chuck_Type * left = lhs->cast_to ? lhs->cast_to : lhs->type;
     Chuck_Type * right = rhs->cast_to ? rhs->cast_to : rhs->type;
@@ -3243,7 +3253,8 @@ t_CKBOOL emit_engine_emit_op_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rhs, 
 
     // func call
     // make sure not 'null' which also looks like any object | 1.5.1.7
-    if( isa( right, emit->env->ckt_function ) && !isnull(emit->env,right) )
+    // if( isa( right, emit->env->ckt_function ) && !isnull(emit->env,right) )
+    if( type_engine_binary_is_func_call( emit->env, binary->op, lhs, rhs ) )
     {
         assert( binary->ck_func != NULL );
 
@@ -3740,7 +3751,7 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
         {
             // emit the symbol
             return emit_engine_emit_symbol(
-                emit, exp->var, exp->value, exp->self->emit_var, exp->line, exp->where );
+                emit, exp->var, exp->value, exp->self->emit_var, exp->line, exp->where, exp );
         }
         break;
 
@@ -4282,6 +4293,10 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
             return FALSE;
     }
 
+    // need to know here so the func can properly emit
+    // 1.5.4.3 (ge) added as part of #2024-func-call-update
+    func_call->func->emit_as_funccall = TRUE;
+
     // emit func
     if( !emit_engine_emit_exp( emit, func_call->func ) )
     {
@@ -4296,7 +4311,7 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // additional func call options | 1.5.4.2 (ge) added
     Chuck_FuncCall_Options options;
 
-    // in the case of member func calls
+    // check if func is a dot_member
     if( func_call->func->s_type == ae_exp_dot_member )
     {
         // if possible, get more accurate code position
@@ -4620,10 +4635,15 @@ check_func:
         emit->append( new Chuck_Instr_Reg_Transmute_Value_To_Pointer( t_base->size ) );
     }
 
-    // dup the base pointer ('this' pointer as argument -- special case primitive)
-    // as of 1.5.4.2 this is emitted for both literals and variables
-    // #special-primitive-member-func-from-literal
-    emit->append( new Chuck_Instr_Reg_Dup_Last );
+    // check if we are part of a function call vs. function as value
+    // 1.5.4.3 (ge) added as part of #2024-func-call-update
+    if( member->self->emit_as_funccall )
+    {
+        // dup the base pointer ('this' pointer as argument -- special case primitive)
+        // as of 1.5.4.2 this is emitted for both literals and variables
+        // #special-primitive-member-func-from-literal
+        emit->append( new Chuck_Instr_Reg_Dup_Last );
+    }
 
     // find the offset for virtual table
     offset = func->vt_index;
@@ -4700,8 +4720,13 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
-                // dup the base pointer ('this' pointer as argument)
-                emit->append( new Chuck_Instr_Reg_Dup_Last );
+                // check if we are part of a function call vs. function as value
+                // 1.5.4.3 (ge) added as part of #2024-func-call-update
+                if( member->self->emit_as_funccall )
+                {
+                    // dup the base pointer ('this' pointer as argument)
+                    emit->append( new Chuck_Instr_Reg_Dup_Last );
+                }
                 // find the offset for virtual table
                 offset = func->vt_index;
                 // emit the function
@@ -4712,6 +4737,13 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the type
                 emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
+                // check if we are part of a function call vs. function as value
+                // 1.5.4.3 (ge) added as part of #2024-func-call-update
+                if( member->self->emit_as_funccall )
+                {
+                    // dup the base pointer ('this' pointer as argument)
+                    emit->append( new Chuck_Instr_Reg_Dup_Last );
+                }
                 // emit the static function
                 emit->append( new Chuck_Instr_Dot_Static_Func( func ) );
             }
@@ -4769,6 +4801,14 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
         {
             // emit the type - spencer
             emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)t_base ) );
+            // if part of a func call
+            // 1.5.4.3 (ge) added as part of #2024-func-call-update
+            if( member->self->emit_as_funccall )
+            {
+                // dupe the pointer, as Chuck_Instr_Dot_Static_Func will consume it
+                // 1.5.4.3 (ge) added as part of #2024-func-call-update
+                emit->append( new Chuck_Instr_Reg_Dup_Last );
+            }
             // get the func | 1.4.1.0 (ge) added looking in parent
             value = type_engine_find_value( t_base, member->xid );
             // get the function reference
@@ -5861,6 +5901,10 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     if( !emit_engine_emit_func_args( emit, exp ) )
         return FALSE;
 
+    // need to know here so the func can properly emit
+    // 1.5.4.3 (ge) added as part of #2024-func-call-update
+    exp->func->emit_as_funccall = TRUE;
+
     // emit func pointer on sporker shred
     if( !emit_engine_emit_exp( emit, exp->func ) )
     {
@@ -5953,11 +5997,11 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_symbol()
-// desc: ...
+// desc: emit a symbol into code
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                                   Chuck_Value * v, t_CKBOOL emit_var,
-                                  t_CKUINT line, t_CKUINT where )
+                                  t_CKUINT line, t_CKUINT where, a_Exp_Primary exp )
 {
     // look up the value
     // Chuck_Value * v = emit->env->curr->lookup_value( symbol, TRUE );
@@ -6039,6 +6083,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         dot->dot_member.t_base = v->owner_class;
         CK_SAFE_ADD_REF( dot->dot_member.t_base ); // 1.5.1.3
         dot->emit_var = emit_var;
+
+        // propagate whether this should be emitted as a func call (vs. a function value only)
+        // 1.5.4.3 (ge) added as part of #2024-func-call-update
+        dot->emit_as_funccall = exp->self->emit_as_funccall;
 
         // emit it
         if( !emit_engine_emit_exp_dot_member( emit, &dot->dot_member ) )

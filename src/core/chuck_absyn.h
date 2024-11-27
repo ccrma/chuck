@@ -407,6 +407,11 @@ struct a_Exp_
     t_CKTYPE cast_to;
     t_CKUINT emit_var; // 1 = emit var, 2 = emit var and value
 
+    // assuming this Exp is a func, this will properly
+    // emit in preparation to be called | 1.5.4.3 (ge) added
+    // #2024-func-call-update
+    t_CKBOOL emit_as_funccall;
+
     union
     {
         struct a_Exp_Binary_ binary;

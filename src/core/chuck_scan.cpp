@@ -296,10 +296,15 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     if( the_class->is_public )
     { the_class->nspc->parent = env->context->nspc; }
     else { the_class->nspc->parent = env->curr; }
-    the_class->func = NULL;
+
+    // 1.5.4.3 (ge) commented out...type2func_bridge already init to NULL
+    // #2024-func-call-update
+    // the_class->type2func_bridge = NULL;
+
     // 1.5.0.5 (ge) commented out; the AST is cleaned up after every compilation;
     // would need to make deep copy if want to keep around
     // the_class->def = class_def;
+
     // add code
     the_class->nspc->pre_ctor = new Chuck_VM_Code;
     CK_SAFE_ADD_REF( the_class->nspc->pre_ctor );
@@ -3085,7 +3090,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     type->base_name = "[function]";
     type->parent = env->ckt_function; // TODO: reference count the parent
     type->size = sizeof(void *);
-    type->func = func;
+    type->type2func_bridge = func; // TODO: consider ref count
 
     // make new value, with potential overloaded name
     value = env->context->new_Chuck_Value( type, func_name );

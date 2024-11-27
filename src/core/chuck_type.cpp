@@ -2737,7 +2737,8 @@ t_CKTYPE type_engine_check_op_chuck( Chuck_Env * env, a_Exp lhs, a_Exp rhs,
     t_CKTYPE left = lhs->type, right = rhs->type;
 
     // chuck to function
-    if( !isnull(env, right) && isa( right, env->ckt_function ) )
+    // if( !isnull(env, right) && isa( right, env->ckt_function ) )
+    if( type_engine_binary_is_func_call( env, ae_op_chuck, lhs, rhs ) )
     {
         // treat this function call
         return type_engine_check_exp_func_call( env, rhs, lhs, binary->ck_func, binary->where );
@@ -4737,7 +4738,7 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
     }
 
     // copy the func
-    up = f->func;
+    up = f->type2func_bridge;
 
     // check the arguments
     if( args )
@@ -8962,6 +8963,25 @@ t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType )
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_binary_is_func_call() | 1.5.4.3 (ge)
+// desc: check whether a binary expression is a function call
+//        i.e., LHS => RHS same as RHS(LHS)
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_binary_is_func_call( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs )
+{
+    // get types
+    t_CKTYPE right = rhs->type;
+
+    // check LHS => RHS && RHS is a function (and not null)...
+    return op == ae_op_chuck
+        && isa( right, env->ckt_function )
+        && !isnull(env,right);
+}
+
+
+
+
 static const char * g_howmuch[] = { "ALL", "IMPORT_ONLY", "ALL_EXCEPT_IMPORT" };
 //-----------------------------------------------------------------------------
 // name: howmuch2str()
@@ -9744,7 +9764,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     array_depth = 0;
     obj_size = 0;
     nspc = NULL;
-    func = NULL; /* def = NULL; */
+    type2func_bridge = NULL; /* def = NULL; */
     is_public = FALSE;
     is_copy = FALSE;
     ugen_info = NULL;
@@ -9836,7 +9856,7 @@ const Chuck_Type & Chuck_Type::operator =( const Chuck_Type & rhs )
     this->is_copy = TRUE;
     this->array_depth = rhs.array_depth;
     this->array_type = rhs.array_type; CK_SAFE_ADD_REF(this->array_type);
-    this->func = rhs.func; CK_SAFE_ADD_REF(this->func);
+    this->type2func_bridge = rhs.type2func_bridge; CK_SAFE_ADD_REF(this->type2func_bridge);
     this->nspc = rhs.nspc; CK_SAFE_ADD_REF(this->nspc);
     // this->owner = rhs.owner; CK_SAFE_ADD_REF(this->owner);
 

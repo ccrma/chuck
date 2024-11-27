@@ -7776,7 +7776,11 @@ void Chuck_Instr_Dot_Static_Func::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
 
     // 1.4.1.0 (ge): leave the base type on the operand stack
     // commented out: pop the type pointer
-    // pop_( sp, 1 );
+    // 1.5.4.3 (ge): uncommented, remove base pointer, consistent with
+    // other dot-member function emission; this helps cleaning up the
+    // stack, depending on whether this is part of a function value emission
+    // only, or going to be used as a function call #2024-func-call-update
+    pop_( sp, 1 );
 
     // push the address
     push_( sp, (t_CKUINT)(m_func) );
@@ -9570,7 +9574,8 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                     if( *(sp) == 0 )
                         CK_FPRINTF_STDERR( "null " );
                     else
-                        CK_FPRINTF_STDERR( "0x%lx (refcount=%d) ", *(sp), obj->m_ref_count );
+                        CK_FPRINTF_STDERR( "0x%lx :(%s|refcount=%d)\n", *(sp), type->c_name(), obj->m_ref_count );
+                        // CK_FPRINTF_STDERR( "0x%lx (refcount=%d) ", *(sp), obj->m_ref_count );
                 }
                 else
                 {
