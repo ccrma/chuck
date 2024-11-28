@@ -9,6 +9,18 @@ ChucK VERSIONS log
     .chug files in system paths will auto-load on start up (.ck files will 
     not auto-load and needs to be @imported in order to be used); also 
     @import will now include this directory when resolving fileanems.
+(added) "ChucK => Music Programming Language" title to --about
+(fixed) object instantiation refcount integrity; now correctly accounts
+    for the situation where the object reference count is 0 during
+    constructors (before assignment to a variable) and the constructor
+    performs operations that previously could cause itself to be garbage
+    collected
+(fixed) now properly emits function calls vs. function values
+(fixed) class definitions that encounter compiler errors (or are
+    in files that have compiler errors) are now correctly rolled back
+    in the type system; previously it was possible to instantiate
+    partial class definition from a subsequent file, with undefined
+    outcome
 
 
 1.5.4.2 (November 2024)
