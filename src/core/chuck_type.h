@@ -334,6 +334,11 @@ struct Chuck_Namespace : public Chuck_VM_Object
     // destructor
     virtual ~Chuck_Namespace();
 
+    // add type to name space
+    void add_type( const std::string & xid, Chuck_Type * target );
+    void add_value( const std::string & xid, Chuck_Value * target );
+    void add_func( const std::string & xid, Chuck_Func * target );
+
     // look up value
     Chuck_Value * lookup_value( const std::string & name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
     Chuck_Value * lookup_value( S_Symbol name, t_CKINT climb = 1, t_CKBOOL stayWithinClassDef = FALSE );
@@ -346,13 +351,13 @@ struct Chuck_Namespace : public Chuck_VM_Object
 
     // commit the maps
     void commit() {
-        EM_log( CK_LOG_FINER, "committing namespace: '%s'...", name.c_str() );
+        EM_log( CK_LOG_DEBUG, "namespace: '%s' committing...", name.c_str() );
         type.commit(); value.commit(); func.commit();
     }
 
     // rollback the maps
     void rollback() {
-        EM_log( CK_LOG_FINER, "rolling back namespace: '%s'...", name.c_str() );
+        EM_log( CK_LOG_DEBUG, "namespace: '%s' rolling back...", name.c_str() );
         type.rollback(); value.rollback(); func.rollback();
     }
 
@@ -752,6 +757,10 @@ public:
     Chuck_Namespace * nspc_top();
     // get type at top of type stack
     Chuck_Type * class_top();
+    // commit namespaces
+    void commit_namespaces();
+    // rollback namespace
+    void rollback_namespaces();
 
 public:
     // REFACTOR-2017: carrier and accessors

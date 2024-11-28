@@ -903,9 +903,11 @@ t_CKBOOL type_engine_check_prog( Chuck_Env * env, a_Program prog,
 cleanup:
 
     // commit
-    if( ret ) env->global()->commit();
+    if( ret ) // 1.5.4.3 (ge) update to env->commit_namespaces() | was: env->global()->commit();
+    { env->commit_namespaces(); }
     // or rollback
-    else env->global()->rollback();
+    else // 1.5.4.3 (ge) update to env->commit_namespaces() | was: env->global()->rollback();
+    { env->rollback_namespaces(); }
 
     // unload the context from the type-checker
     if( !type_engine_unload_context( env ) )
@@ -4406,7 +4408,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         if( !env->class_def || env->class_scope > 0 )
         {
             // add as value
-            env->curr->value.add( var_decl->xid, value );
+            env->curr->add_value( S_name(var_decl->xid), value );
         }
 
         // the next var decl
@@ -5568,7 +5570,7 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         }
 
         // add as value
-        env->curr->value.add( arg_list->var_decl->xid, v );
+        env->curr->add_value( S_name(arg_list->var_decl->xid), v );
 
         // increment count
         count++;
@@ -5650,6 +5652,51 @@ Chuck_Namespace::~Chuck_Namespace()
     CK_SAFE_RELEASE( pre_dtor );
     // TODO: release ref
     // CK_SAFE_RELEASE( this->parent );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_type()
+// desc: add type to name space
+//-----------------------------------------------------------------------------
+void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * type )
+{
+    // log it
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding type '%s'->'%s'", this->name.c_str(), xid.c_str(), type->name().c_str() );
+    // add it
+    this->type.add( xid, type );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_value()
+// desc: add value to name space
+//-----------------------------------------------------------------------------
+void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * value )
+{
+    // log it
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding value '%s'->'%s'", this->name.c_str(), xid.c_str(), value->name.c_str() );
+    // add it
+    this->value.add( xid, value );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: add_func()
+// desc: add type to name space
+//-----------------------------------------------------------------------------
+void Chuck_Namespace::add_func( const std::string & xid, Chuck_Func * func )
+{
+    // log it
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding func '%s'->'%s'", this->name.c_str(), xid.c_str(), func->base_name.c_str() );
+    // add it
+    this->func.add( xid, func );
 }
 
 
@@ -6859,7 +6906,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     value->is_member = FALSE;
 
     // add to env
-    where->value.add( value->name, value );
+    where->add_value( value->name, value );
 
     // make the type current
     env->nspc_stack.push_back( env->curr );
@@ -6912,7 +6959,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, const char * name,
     type = new Chuck_Type( env, te_user, name, parent, sizeof(void *) );
 
     // add to namespace - TODO: handle failure, remove from where
-    where->type.add( name, type );
+    where->add_type( name, type );
 
     // do the rest
     if( !type_engine_import_class_begin( env, type, where, pre_ctor, dtor, doc ) )
@@ -8077,6 +8124,58 @@ Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
 {
     // call through
     return array_types.getOrCreate( this, array_parent, depth, base_type );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: commit_namespaces()
+// desc: commit namespace | 1.5.4.3 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_Env::commit_namespaces()
+{
+    // get current
+    Chuck_Namespace * nspc = this->curr;
+    // while not null and above user()
+    while( nspc != NULL && nspc != this->user()  && nspc != this->global() )
+    {
+        // commit
+        nspc->commit();
+        // move up to parent
+        nspc = nspc->parent;
+    }
+
+    // if user, explicitly commit user
+    if( this->user() ) this->user()->commit();
+    // explicitly commit global
+    this->global()->commit();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: rollback_namespaces()
+// desc: commit namespace | 1.5.4.3 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_Env::rollback_namespaces()
+{
+    // get current
+    Chuck_Namespace * nspc = this->curr;
+    // while not null and above user()
+    while( nspc != NULL && nspc != this->user()  && nspc != this->global() )
+    {
+        // rollback
+        nspc->rollback();
+        // move up to parent
+        nspc = nspc->parent;
+    }
+
+    // if user, explicitly rollback user
+    if( this->user() ) this->user()->rollback();
+    // explicitly rollback global
+    this->global()->rollback();
 }
 
 

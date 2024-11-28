@@ -1110,9 +1110,11 @@ cleanup:
     EM_setCurrentTarget( NULL );
 
     // commit
-    if( ret ) env()->global()->commit();
+    if( ret ) // 1.5.4.3 (ge) update to call commit_namespaces | was: env()->global()->commit();
+    { env()->commit_namespaces(); }
     // or rollback
-    else env()->global()->rollback();
+    else // 1.5.4.3 (ge) update to call commit_namespaces | was: env()->global()->rollback();
+    { env()->rollback_namespaces(); }
 
     // unload the context from the type-checker
     if( !type_engine_unload_context( env() ) )

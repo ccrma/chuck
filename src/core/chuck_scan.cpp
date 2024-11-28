@@ -197,7 +197,8 @@ t_CKBOOL type_engine_scan0_prog( Chuck_Env * env, a_Program prog,
                 // NOTE: for legacy reasons, fallback to [global] if no [user] namespace
                 //   this fallback mechanism was moved out of env->user() to here for clarity in 1.5.4.0 (ge)
                 //   needs further verification, as this fallback may not be necessary
-                if( !prog->section->class_def->home ) prog->section->class_def->home = env->global();
+                if( !prog->section->class_def->home )
+                { prog->section->class_def->home = env->global(); }
                 // -----------------------------------------
             }
             // scan the class definition
@@ -307,7 +308,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // name | 1.5.2.0 (ge) added
     the_class->nspc->pre_ctor->name = string("class ") + the_class->base_name;
     // add to env
-    env->curr->type.add( the_class->base_name, the_class );  // URGENT: make this global
+    env->curr->add_type( the_class->base_name, the_class ); // URGENT: make this global
     // incomplete
     the_class->is_complete = FALSE;
 
@@ -370,7 +371,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         value->is_const = TRUE;
         value->is_member = FALSE;
         // add to env
-        env->curr->value.add( the_class->base_name, value );
+        env->curr->add_value( the_class->base_name, value );
 
         // remember
         class_def->type = the_class;
@@ -2663,7 +2664,7 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         }
 
         // enter into value binding
-        env->curr->value.add( var_decl->xid,
+        env->curr->add_value( S_name(var_decl->xid),
             value = env->context->new_Chuck_Value( type, S_name(var_decl->xid) ) );
 
         // remember the owner
@@ -3241,7 +3242,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // later: add as value
         // symbols.push_back( arg_list );
         // values.push_back( v );
-        // later: env->curr->value.add( arg_list->var_decl->xid, v );
+        // later: env->curr->add_value( arg_list->var_decl->xid, v );
 
         // stack
         v->offset = f->stack_depth;
@@ -3394,15 +3395,15 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     }
 
     // add as value
-    env->curr->value.add( value->name, value );
+    env->curr->add_value( value->name, value );
     // enter the name into the function table
-    env->curr->func.add( func->name, func );
+    env->curr->add_func( func->name, func );
 
     // if not overload, add entries for orig name
     if( !overload )
     {
-        env->curr->value.add( orig_name, value );
-        env->curr->func.add( orig_name, func );
+        env->curr->add_value( orig_name, value );
+        env->curr->add_func( orig_name, func );
     }
 
     // set the current function to this
