@@ -365,7 +365,8 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
 
         // allocate value
         type = env->ckt_class->copy( env, env->context );
-        type->actual_type = the_class;
+        // 1.5.4.3 (ge) add reference count to actual_type | was: type->actual_type = the_class;
+        CK_SAFE_REF_ASSIGN(type->actual_type, the_class);
         value = env->context->new_Chuck_Value( type, the_class->base_name );
         value->owner = env->curr; CK_SAFE_ADD_REF(value->owner);
         value->is_const = TRUE;
