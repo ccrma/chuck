@@ -81,6 +81,8 @@ public:
     virtual void add_ref();
     // decrement reference; deletes objects when refcount reaches 0
     virtual void release();
+    // decrement reference only; no deletion | 1.5.4.3 (ge) added
+    virtual void dec_ref_no_release();
     // lock
     virtual void lock();
     // unlock | 1.5.0.0 (ge) added

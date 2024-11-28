@@ -2945,13 +2945,33 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Instantiate_Object
-// desc: instantiate object - leaves reference value on operand stack
+// name: struct Chuck_Instr_Instantiate_Object_Start
+// desc: instantiate object (starting step); leaves reference value on operand stack
 //-----------------------------------------------------------------------------
-struct Chuck_Instr_Instantiate_Object : public Chuck_Instr
+struct Chuck_Instr_Instantiate_Object_Start : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Instantiate_Object( Chuck_Type * t )
+    Chuck_Instr_Instantiate_Object_Start( Chuck_Type * t )
+    { this->type = t; }
+
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const;
+
+public:
+    Chuck_Type * type;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Instantiate_Object_Complete | 1.5.4.3 (ge) added
+// desc: instantiate object (completing step); leaves reference value on operand stack
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Instantiate_Object_Complete : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Instantiate_Object_Complete( Chuck_Type * t )
     { this->type = t; }
 
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );

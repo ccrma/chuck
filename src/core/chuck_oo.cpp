@@ -113,6 +113,19 @@ void Chuck_VM_Object::add_ref()
 
 
 //-----------------------------------------------------------------------------
+// name: dec_ref_no_release() | 1.5.4.3 (ge) added
+// desc: decrement reference only; no deletion
+//-----------------------------------------------------------------------------
+void Chuck_VM_Object::dec_ref_no_release()
+{
+    // decrement
+    if( m_ref_count > 0 ) m_ref_count--;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: release()
 // desc: decrement reference; deletes objects when refcount reaches 0;
 //-----------------------------------------------------------------------------

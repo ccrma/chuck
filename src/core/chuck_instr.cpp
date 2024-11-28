@@ -4392,8 +4392,8 @@ const char * Chuck_Instr_Pre_Constructor::params() const
 
 
 //-----------------------------------------------------------------------------
-// name: instantiate_object()
-// desc: instantiate Object including data and virtual table
+// name: initialize_object()
+// desc: initialize Object including data and virtual table
 //-----------------------------------------------------------------------------
 t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_Shred * shred, Chuck_VM * vm, t_CKBOOL setShredOrigin )
 {
@@ -4646,7 +4646,7 @@ error:
 // desc: instantiate a object, push its pointer on reg stack
 //-----------------------------------------------------------------------------
 inline void instantiate_object( Chuck_VM * vm, Chuck_VM_Shred * shred,
-                                Chuck_Type * type )
+                                Chuck_Type * type, t_CKBOOL addRef )
 {
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
@@ -4656,6 +4656,10 @@ inline void instantiate_object( Chuck_VM * vm, Chuck_VM_Shred * shred,
 
     // push the pointer on the operand stack
     push_( reg_sp, (t_CKUINT)object );
+
+    // add reference? | 1.5.4.3 (ge) added this logic
+    // see Chuck_Instr_Instantiate_Object_Complete::execute() for explanation
+    if( addRef ) object->add_ref();
 
     // call preconstructor
     // call_pre_constructor( vm, shred, object, type, stack_offset );
@@ -4674,11 +4678,15 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: instantiate object
+// desc: instantiate a ChucK Object (starting step)
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Instantiate_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+void Chuck_Instr_Instantiate_Object_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
-    instantiate_object( vm, shred, this->type  );
+    // instantiate a chuck Object
+    // 1.5.4.3 (ge) add (temporary) reference that will be decremented when
+    // instantiation complete; see Chuck_Instr_Instantiate_Object_Complete::execute()
+    // for explanation
+    instantiate_object( vm, shred, this->type, TRUE );
 }
 
 
@@ -4688,7 +4696,81 @@ void Chuck_Instr_Instantiate_Object::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
 // name: params()
 // desc: ...
 //-----------------------------------------------------------------------------
-const char * Chuck_Instr_Instantiate_Object::params() const
+const char * Chuck_Instr_Instantiate_Object_Start::params() const
+{
+    static char buffer[CK_PRINT_BUF_LENGTH];
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s", this->type->c_name() );
+    return buffer;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: complete the process of instantiating an Object | 1.5.4.3 (ge) added
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Instantiate_Object_Complete::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // operand stack pointer
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    // get the object reference (should be top of operand stack)
+    Chuck_Object * obj = (Chuck_Object *)(*(reg_sp-1));
+    // leave stack contents unchanged (no push or pop)...
+
+    // NOTE: decrement (but NOT release) the temporary reference added by
+    // Chuck_Instr_Instantiate_Object_Start; this is done so that a constructor
+    // can work with `this` pointer with refcount > 0 BEFORE the
+    // instatiated object has a chance to be assigned to a variable (at which
+    // point it would have a proper reference) | 1.5.4.3 (ge) added
+    //
+    // NOTE: we are derementing only because of the possibility of
+    // the reference going back to 0, but we don't want to delete it at
+    // this point in case it's about to be assigned to a variable
+    //
+    // EXAMPLE: a situation that needs this: a constructor that calls a member
+    // function that returns itself: the statement cleanup logic could delete
+    // this object before the object can be assigned to a variable -- to account
+    // for the above, this mechanism temporarily boosts the instantiating
+    // object's refcount throughout Object instantiation
+    obj->dec_ref_no_release();
+
+    /*--------------------------------------------------------------------------
+    | example -- also test/01-Basic/264-instantiation-integrity.ck
+    ----------------------------------------------------------------------------
+    // a class definition
+    public class Foo
+    {
+        // a member function that returns `this`
+        fun Foo getFoo() { return this; }
+        // a constructor (takes argument for good measure)
+        fun Foo( vec3 sz )
+        {
+            // return ourself -- note this is INSIDE Foo constructor
+            // which means it's before this instance can be assigned
+            // to a variable (as below); yet statements likes these
+            // have a clean-up logic that balances reference counts;
+            // so the refcount for Foo during instantiation must
+            // account for this interregnum; FYI this is typically
+            // handled by temporarily boosting the refcount during
+            // instantiation so it cannot be deleted from within
+            // its own constructor!
+            this.getFoo();
+        }
+    }
+    // instantiate and assignment to variable
+    Foo foo( @(1,2,3) );
+    --------------------------------------------------------------------------*/
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: params()
+// desc: ...
+//-----------------------------------------------------------------------------
+const char * Chuck_Instr_Instantiate_Object_Complete::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
     snprintf( buffer, CK_PRINT_BUF_LENGTH, "%s", this->type->c_name() );
@@ -4726,7 +4808,7 @@ void Chuck_Instr_Pre_Ctor_Array_Top::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     else
     {
         // instantiate
-        instantiate_object( vm, shred, type );
+        instantiate_object( vm, shred, type, FALSE );
     }
 }
 
@@ -6071,7 +6153,7 @@ t_CKBOOL Chuck_Instr_Stmt_Start::cleanupRefs( Chuck_VM_Shred * shred )
 const char * Chuck_Instr_Stmt_Remember_Object::params() const
 {
     static char buffer[CK_PRINT_BUF_LENGTH];
-    snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu start=%p", (unsigned long)m_offset, m_stmtStart );
+    snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%lu start=%p addref:%s", (unsigned long)m_offset, m_stmtStart, m_addRef?"yes":"no" );
     return buffer;
 }
 

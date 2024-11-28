@@ -5066,10 +5066,14 @@ t_CKBOOL emit_engine_instantiate_object( Chuck_Emitter * emit, Chuck_Type * type
     else if( !is_ref ) // not array
     {
         // emit object instantiation code, include pre constructor
-        emit->append( new Chuck_Instr_Instantiate_Object( type ) );
+        emit->append( new Chuck_Instr_Instantiate_Object_Start( type ) );
 
         // call pre constructor
         emit_engine_pre_constructor( emit, type, ctor_info );
+
+        // complete object instantiation | 1.5.4.3 (ge) added
+        // see Chuck_Instr_Instantiate_Object_Complete::execute() for explanation
+        emit->append( new Chuck_Instr_Instantiate_Object_Complete( type ) );
     }
 
     return TRUE;
