@@ -3643,6 +3643,11 @@ t_CKBOOL Chuck_VM_MFunInvoker::setup( Chuck_Func * func, t_CKUINT func_vt_offset
 
     // create dedicated shred
     invoker_shred = new Chuck_VM_Shred;
+    // add reference (although we will hard-delete this shred in cleanup()
+    // this is needed in case references are added/released along the way,
+    // e.g., as part of UGens created on this shred, which would add_ref
+    // as part of origin shred, and would release ref in shred.detach_ugens() | 1.5.4.3 (ge) added
+    invoker_shred->add_ref();
     // set the VM ref (needed by initialize)
     invoker_shred->vm_ref = vm;
     // initialize with code + allocate stacks
@@ -3822,8 +3827,9 @@ error:
 void Chuck_VM_MFunInvoker::cleanup()
 {
     // release shred reference
+    // 1.5.4.3 (ge) updated to hard-DELETE; in case of reference loops between shred and UGen created on it
     // NB this should also cleanup the code and VM instruction we created in setup
-    CK_SAFE_RELEASE( invoker_shred );
+    CK_SAFE_DELETE( invoker_shred );
 
     // clear the arg instructions
     instr_args.clear();
@@ -3901,6 +3907,11 @@ t_CKBOOL Chuck_VM_DtorInvoker::setup( Chuck_Func * dtor, Chuck_VM * vm )
 
     // create dedicated shred
     invoker_shred = new Chuck_VM_Shred;
+    // add reference (although we will hard-delete this shred in cleanup()
+    // this is needed in case references are added/released along the way,
+    // e.g., as part of UGens created on this shred, which would add_ref
+    // as part of origin shred, and would release ref in shred.detach_ugens() | 1.5.4.3 (ge) added
+    invoker_shred->add_ref();
     // set the VM ref (needed by initialize)
     invoker_shred->vm_ref = vm;
     // initialize with code + allocate stacks
@@ -3977,6 +3988,138 @@ void Chuck_VM_DtorInvoker::cleanup()
 
     // zero out
     instr_pushThis = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: Chuck_VM_SInitInvoker()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_VM_SInitInvoker::Chuck_VM_SInitInvoker()
+{
+    // zero
+    invoker_shred = NULL;
+    the_code = NULL;
+    the_class = NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_VM_SInitInvoker()
+// desc: destructor
+//-----------------------------------------------------------------------------
+Chuck_VM_SInitInvoker::~Chuck_VM_SInitInvoker()
+{
+    cleanup();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: setup()
+// desc: setup the invoker for use; static_itor should end with EOC
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_SInitInvoker::setup( Chuck_Type * type,
+                                       Chuck_VM_Code * static_code,
+                                       Chuck_VM * vm )
+{
+    // clean up first
+    if( invoker_shred ) cleanup();
+
+    // remember
+    CK_SAFE_REF_ASSIGN( the_code, static_code );
+    CK_SAFE_REF_ASSIGN( the_class, type );
+
+    // create dedicated shred
+    invoker_shred = new Chuck_VM_Shred;
+    // add reference (although we will hard-delete this shred in cleanup()
+    // this is needed in case references are added/released along the way,
+    // e.g., as part of UGens created on this shred, which would add_ref
+    // as part of origin shred, and would release ref in shred.detach_ugens()
+    invoker_shred->add_ref();
+    // set the VM ref (needed by initialize)
+    invoker_shred->vm_ref = vm;
+    // initialize with code + allocate stacks
+    invoker_shred->initialize( static_code );
+    // set name
+    invoker_shred->name = static_code->name;
+    // enter immediate mode (will throw runtime exception on any time/event ops)
+    invoker_shred->setImmediateMode( TRUE );
+
+    // done
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: invoke()
+// desc: invoke the dtor
+//-----------------------------------------------------------------------------
+void Chuck_VM_SInitInvoker::invoke( Chuck_VM_Shred * parent_shred )
+{
+    // no shred?
+    if( !invoker_shred ) return;
+    // verify
+    assert( the_class != NULL );
+
+    // log
+    EM_log( CK_LOG_DEBUG, "initializing static data for '%s'", the_class->name().c_str() );
+
+    // reset shred: program counter
+    invoker_shred->pc = 0;
+    // next pc
+    invoker_shred->next_pc = 1;
+    // set parent
+    invoker_shred->parent = parent_shred;
+
+    // set parent base_ref; in case mfun is part of a non-public class
+    // that can access file-global variables outside the class definition
+    if( invoker_shred->parent )
+    { invoker_shred->base_ref = invoker_shred->parent->base_ref; }
+    else
+    { invoker_shred->base_ref = invoker_shred->mem; }
+
+    // shred in dump (all done)
+    invoker_shred->is_dumped = FALSE;
+    // shred done
+    invoker_shred->is_done = FALSE;
+    // shred running
+    invoker_shred->is_running = FALSE;
+    // shred abort
+    invoker_shred->is_abort = FALSE;
+    // set the instr
+    invoker_shred->instr = invoker_shred->code->instr;
+    // zero out the id (shred is in immediate mode and cannot be shreduled)
+    invoker_shred->xid = 0;
+    // inherit now from vm
+    invoker_shred->now = invoker_shred->vm_ref->now();
+    // run shred on VM
+    invoker_shred->run( invoker_shred->vm_ref );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: cleanup()
+// desc: clean up
+//-----------------------------------------------------------------------------
+void Chuck_VM_SInitInvoker::cleanup()
+{
+    // release type reference
+    CK_SAFE_RELEASE( the_class );
+    // release code reference
+    CK_SAFE_RELEASE( the_code );
+
+    // DELETE invoker shred
+    CK_SAFE_DELETE( invoker_shred );
 }
 
 

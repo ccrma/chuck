@@ -1,0 +1,3 @@
+error-static-init-local-v.ck:12:5: error: cannot access local variable 'N' to initialize a static variable
+[12]     N => static int THE_NUM;
+         ^

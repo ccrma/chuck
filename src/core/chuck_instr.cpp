@@ -4658,7 +4658,7 @@ inline void instantiate_object( Chuck_VM * vm, Chuck_VM_Shred * shred,
     push_( reg_sp, (t_CKUINT)object );
 
     // add reference? | 1.5.4.3 (ge) added this logic
-    // see Chuck_Instr_Instantiate_Object_Complete::execute() for explanation
+    // for explanation see: Chuck_Instr_Instantiate_Object_Complete::execute()
     if( addRef ) object->add_ref();
 
     // call preconstructor
@@ -7790,9 +7790,9 @@ void Chuck_Instr_Dot_Static_Data::execute( Chuck_VM * vm, Chuck_VM_Shred * shred
     // get the object pointer
     Chuck_Type * t_class = (Chuck_Type *)(*sp);
     // make sure
-    assert( (m_offset + m_size) <= t_class->nspc->class_data_size );
+    assert( (m_offset + m_size) <= t_class->nspc->static_data_size );
     // calculate the data pointer
-    data = (t_CKUINT)(t_class->nspc->class_data + m_offset);
+    data = (t_CKUINT)(t_class->nspc->static_data + m_offset);
 
     // emit addr or value
     if( m_emit_addr )

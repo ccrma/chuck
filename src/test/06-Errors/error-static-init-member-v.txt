@@ -1,0 +1,3 @@
+error-static-init-member-v.ck:12:5: error: cannot access non-static variable 'Foo.n' to initialize a static variable
+[12]     n + m => static int THE_NUM;
+         ^

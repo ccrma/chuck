@@ -1169,8 +1169,59 @@ t_CKBOOL type_engine_check_stmt_list( Chuck_Env * env, a_Stmt_List list )
 
 
 //-----------------------------------------------------------------------------
+// name: type_engine_verify_stmt_static(()
+// desc: verify there are no semantic violations
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_verify_stmt_static( Chuck_Env * env, a_Stmt stmt )
+{
+    // check stmt
+    if( !stmt->hasStaticDecl ) return TRUE;
+
+    // return value
+    t_CKBOOL ret = FALSE;
+
+    // the type of stmt
+    switch( stmt->s_type )
+    {
+        case ae_stmt_import:
+        case ae_stmt_break:
+        case ae_stmt_continue:
+        case ae_stmt_gotolabel:
+            // trivial accept
+            ret = TRUE;
+            break;
+
+        case ae_stmt_if:
+        case ae_stmt_for:
+        case ae_stmt_foreach:
+        case ae_stmt_while:
+        case ae_stmt_until:
+        case ae_stmt_loop:
+        case ae_stmt_switch:
+        case ae_stmt_case:
+        case ae_stmt_return:
+        case ae_stmt_code:
+        default:
+            // shouldn't get here
+            EM_error2( stmt->where,
+                "(internal error) failed to detect illegal static var decl!", stmt->s_type );
+            ret = FALSE;
+            break;
+
+        case ae_stmt_exp:
+            // ret = ( type_engine_check_exp( env, stmt->stmt_exp ) != NULL );
+            break;
+    }
+
+    return ret;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: type_engine_check_stmt(()
-// desc: ...
+// desc: type-check a statement
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
 {
@@ -1286,6 +1337,14 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
 
     // pop stmt stack | 1.5.1.7
     env->stmt_stack.pop_back();
+
+    // check return value so far
+    // actually -- verification will be done during emission phase
+    // if( ret )
+    // {
+        // if stmt has static, check for violations | 1.5.4.3 (ge)
+        // ret = type_engine_verify_stmt_static( env, stmt );
+    // }
 
     return ret;
 }
@@ -3509,7 +3568,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             if( v->func_ref )
                             {
                                 EM_error2( exp->where,
-                                    "cannot call local function '%s' from within a public class", S_name( exp->var ) );
+                                    "cannot call local function '%s' from within a public class", v->func_ref->signature(FALSE,FALSE).c_str() );
                             }
                             else
                             {
@@ -3529,7 +3588,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             if( v->func_ref )
                             {
                                 EM_error2( exp->where,
-                                    "cannot call local function '%s' from within @destruct()", S_name( exp->var ) );
+                                    "cannot call local function '%s' from within @destruct()", v->func_ref->signature(FALSE,FALSE).c_str() );
                             }
                             else
                             {
@@ -4379,21 +4438,28 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             // flag
             value->is_static = TRUE;
             // offset
-            value->offset = env->class_def->nspc->class_data_size;
+            value->offset = env->class_def->nspc->static_data_size;
             // move the size
-            env->class_def->nspc->class_data_size += type->size;
+            env->class_def->nspc->static_data_size += type->size;
 
-            // if this is an object
-            if( is_obj && !is_ref )
+            // if we are located inside a statement
+            if( env->stmt_stack.size() )
             {
-                // for now - no good for static, since we need separate
-                // initialization which we don't have
-                EM_error2( var_decl->where,
-                    "cannot declare static non-primitive objects (yet)..." );
-                EM_error2( 0,
-                    "...(hint: declare as reference (@) & initialize outside class for now)" );
-                return NULL;
+                // mark containing statement as having static decl | 1.5.4.3 (ge) added as part of #2024-static-init
+                env->stmt_stack.back()->hasStaticDecl = TRUE;
             }
+
+            // // if this is an object
+            // if( is_obj && !is_ref )
+            // {
+            //    // for now - no good for static, since we need separate
+            //    // initialization which we don't have
+            //    EM_error2( var_decl->where,
+            //        "cannot declare static non-primitive objects (yet)..." );
+            //    EM_error2( 0,
+            //        "...(hint: declare as reference (@) & initialize outside class for now)" );
+            //    return NULL;
+            // }
         }
         else // local variable
         {
@@ -4457,7 +4523,7 @@ string type_engine_print_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member membe
     if( !member->t_base ) return "[error]";
 
     // is the base a class/namespace or a variable | modified 1.5.0.0 (ge)
-    base_static = type_engine_is_base_static( env, member->t_base );
+    base_static = type_engine_is_base_type_static( env, member->t_base );
     // base_static = isa( member->t_base, env->ckt_class );
 
     // actual type
@@ -5005,7 +5071,7 @@ check_func:
     t_CKBOOL base_static = FALSE;
 
     // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to call
-    base_static = type_engine_is_base_static( env, member->t_base );
+    base_static = type_engine_is_base_type_static( env, member->t_base );
     // base_static = isa( member->t_base, env->ckt_class );
     // actual type
     the_base = base_static ? member->t_base->actual_type : member->t_base;
@@ -5071,7 +5137,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     }
 
     // is the base a class/namespace or a variable
-    base_static = type_engine_is_base_static( env, member->t_base );
+    base_static = type_engine_is_base_type_static( env, member->t_base );
     // base_static = isa( member->t_base, env->ckt_class )
     // actual type
     the_base = base_static ? member->t_base->actual_type : member->t_base;
@@ -5634,8 +5700,12 @@ Chuck_Namespace::Chuck_Namespace()
     pre_dtor = NULL;
     parent = NULL;
     offset = 0;
-    class_data = NULL;
-    class_data_size = 0;
+
+    // static-specific
+    static_data = NULL;
+    static_data_size = 0;
+    static_is_init = FALSE;
+    static_invoker = NULL;
 }
 
 
@@ -5652,6 +5722,9 @@ Chuck_Namespace::~Chuck_Namespace()
     CK_SAFE_RELEASE( pre_dtor );
     // TODO: release ref
     // CK_SAFE_RELEASE( this->parent );
+
+    // delete invoker
+    CK_SAFE_DELETE( static_invoker );
 }
 
 
@@ -6202,7 +6275,7 @@ Chuck_Value * type_engine_check_const( Chuck_Env * env, a_Exp exp )
         // catch things like `1 => Math.PI`
         a_Exp_Dot_Member member = &exp->dot_member;
         // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to call
-        t_CKBOOL base_static = type_engine_is_base_static( env, member->t_base );
+        t_CKBOOL base_static = type_engine_is_base_type_static( env, member->t_base );
         // actual type
         Chuck_Type * the_base = base_static ? member->t_base->actual_type : member->t_base;
 
@@ -9051,17 +9124,73 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_is_base_static() | 1.5.0.0 (ge) added
+// name: type_engine_is_base_type_static() | 1.5.0.0 (ge) added
 // desc: check for static func/member access using class; e.g., SinOsc.help()
 //       this function was created after adding the complexity of t_class being
 //       made available in the language (as the Type type)
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType )
+t_CKBOOL type_engine_is_base_type_static( Chuck_Env * env, Chuck_Type * baseType )
 {
     // check
     if( baseType == NULL ) return FALSE;
     // check
     return isa( baseType, env->ckt_class ) && (baseType->actual_type != NULL);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_is_base_exp_static() | 1.5.4.3 (ge) added
+// desc: check if an dotmember base is static compatible; used in static var initialization
+//       verification; #2024-static-init
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_is_base_exp_static( Chuck_Env * env, a_Exp_Dot_Member exp )
+{
+    // check
+    switch( exp->base->s_type )
+    {
+        case ae_exp_primary:
+            // if we have a type-checked value...
+            if( exp->base->primary.value )
+            {
+                // check base type
+                if( type_engine_is_base_type_static( env, exp->base->primary.value->type ) ) { return TRUE; }
+                // return if value static
+                return exp->base->primary.value->is_static;
+            }
+            // or value could be NULL, e.g., in just-in-time implicit constructs for "this"
+            else
+            {
+                return FALSE;
+            }
+            break;
+
+        case ae_exp_dot_member:
+        {
+            // recursive check
+            if( type_engine_is_base_exp_static( env, &exp->base->dot_member ) ) return TRUE;
+
+            // next check after the dot; get value to test
+            Chuck_Value * v = type_engine_find_value( exp->base->dot_member.t_base, exp->base->dot_member.xid );
+            // check it (shouldn't be NULL)
+            if( !v ) return FALSE;
+
+            // func or var?
+            if( v->func_ref ) // func
+                return !(v->func_ref->is_member);
+            else // var
+                return v->is_static;
+            break;
+        }
+
+        default:
+            // everything else
+            return FALSE;
+            break;
+    }
+
+    return FALSE;
 }
 
 
@@ -9882,6 +10011,7 @@ Chuck_Type::Chuck_Type( Chuck_Env * env, te_Type _id, const std::string & _n,
     dtor_the = NULL;
     dtor_invoker = NULL;
     allocator = NULL;
+    static_code_emit = NULL;
 
     // default
     originHint = ckte_origin_UNKNOWN;

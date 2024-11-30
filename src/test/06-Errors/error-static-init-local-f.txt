@@ -1,0 +1,3 @@
+error-static-init-local-f.ck:12:5: error: cannot call local function 'foo()' to initialize a static variable
+[12]     foo() => static int THE_NUM;
+         ^

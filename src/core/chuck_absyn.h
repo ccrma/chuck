@@ -467,8 +467,11 @@ struct a_Stmt_
     ae_Stmt_Type s_type;
     // used to track control paths in non-void functions
     t_CKBOOL allControlPathsReturn; // 1.5.1.0 (ge) added
-    // number of obj refs that needs releasing after | 1.5.1.7
+    // number of obj refs that needs releasing after | 1.5.1.7 (ge) added
     t_CKUINT numObjsToRelease;
+    // does stmt have a static variable declaration | 1.5.4.3 (ge) added for #2024-static-init
+    // (used to mark a statement as part of static initializer for a class)
+    t_CKBOOL hasStaticDecl;
 
     // mushed into one!
     union

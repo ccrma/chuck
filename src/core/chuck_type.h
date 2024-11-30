@@ -287,10 +287,12 @@ struct Chuck_Type;
 struct Chuck_Value;
 struct Chuck_Func;
 struct Chuck_Multi;
+struct Chuck_Code; // 1.5.4.3
 struct Chuck_VM;
 struct Chuck_VM_Code;
 struct Chuck_VM_MFunInvoker;
 struct Chuck_VM_DtorInvoker;
+struct Chuck_VM_SInitInvoker;
 struct Chuck_DLL;
 // operator loading structs | 1.5.1.5
 struct Chuck_Op_Registry;
@@ -314,9 +316,13 @@ struct Chuck_Namespace : public Chuck_VM_Object
     // virtual table
     Chuck_VTable obj_v_table;
     // static data segment
-    t_CKBYTE * class_data;
+    t_CKBYTE * static_data;
     // static data segment size
-    t_CKUINT class_data_size;
+    t_CKUINT static_data_size;
+    // has static init been run?
+    t_CKBOOL static_is_init;
+    // static initializer (to be run once per class)
+    Chuck_VM_SInitInvoker * static_invoker;
 
     // name
     std::string name;
@@ -1041,9 +1047,15 @@ struct Chuck_Type : public Chuck_Object
     // offsets of mvars that are Objects
     std::vector<t_CKUINT> obj_mvars_offsets;
 
+public:
+    // current static init code for emitter | 1.5.4.3 (ge) added #2024-static-init
+    Chuck_Code * static_code_emit;
+
+public:
     // (within-context, e.g., a ck file) dependency tracking | 1.5.0.8
     Chuck_Value_Dependency_Graph depends;
 
+public:
     // documentation
     std::string doc;
     // example files
@@ -1413,7 +1425,8 @@ t_CKBOOL type_engine_check_primitive( Chuck_Env * env, Chuck_Type * type );
 t_CKBOOL type_engine_check_const( Chuck_Env * env, a_Exp e, int pos ); // TODO
 t_CKBOOL type_engine_compat_func( a_Func_Def lhs, a_Func_Def rhs, int pos, std::string & err, t_CKBOOL print = TRUE );
 t_CKBOOL type_engine_get_deprecate( Chuck_Env * env, const std::string & from, std::string & to );
-t_CKBOOL type_engine_is_base_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.5.0.0 (ge) added
+t_CKBOOL type_engine_is_base_type_static( Chuck_Env * env, Chuck_Type * baseType ); // 1.5.0.0 (ge) added
+t_CKBOOL type_engine_is_base_exp_static( Chuck_Env * env, a_Exp_Dot_Member exp ); // 1.5.4.3 (ge) added #2024-static-init
 t_CKBOOL type_engine_binary_is_func_call( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs ); // 1.5.4.3 (ge) added
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );

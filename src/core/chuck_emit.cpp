@@ -451,6 +451,35 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
     if( !stmt )
         return TRUE;
 
+    // push stmt stack | 1.5.4.3 (ge) added to match the type system
+    // in order to do additional checks in the emitter #2024-static-init
+    emit->env->stmt_stack.push_back(stmt);
+
+    // static initialization / initializer statements | 1.5.4.3 (ge) added #2024-static-init
+    // FYI semantics for static initializer (within class def but outside function def):
+    // 0) a single statement CANNOT read member data/call member functions AND init static data
+    // 1) otherwise, a single statement can access both static and member data
+    // these semantic rules should have been enforced in the type checker before this point
+    // so these are pre-conditions should we reach this point
+    // RUNTIME checks:
+    // 3) static initializer statements will be run in immediate mode, meaning no time advances;
+    //    this is enforced at runtime; time advances will result in an exception
+
+    // check if statement is a static initializer statement | 1.5.4.3 (ge) added
+    if( stmt->hasStaticDecl )
+    {
+        // check pre-conditions
+        assert( emit->env->class_def != NULL );
+        assert( emit->env->class_def->static_code_emit != NULL );
+
+        // get associated class
+        Chuck_Type * type = emit->env->class_def;
+        // push the current code sequender
+        emit->code_stack.push_back( emit->code );
+        // set the static code sequencer as the current
+        emit->code = type->static_code_emit;
+    }
+
     // return
     t_CKBOOL ret = TRUE;
     // next index
@@ -680,6 +709,18 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
         // APPPEND closing
         emit->code->code[emit->next_index()-1]->append_codestr( codestr_close );
     }
+
+    // if static initializer statement, restore
+    if( stmt->hasStaticDecl )
+    {
+        // set the static code sequencer as the current
+        emit->code = emit->code_stack.back();
+        // push the current code sequender
+        emit->code_stack.pop_back();
+    }
+
+    // pop stmt stack | 1.5.4.3 (ge) added as part of #2024-static-init
+    emit->env->stmt_stack.pop_back();
 
     return ret;
 }
@@ -2080,11 +2121,11 @@ t_CKBOOL emit_engine_emit_exp_binary( Chuck_Emitter * emit, a_Exp_Binary binary 
 
     // emit (doRef added 1.3.0.2)
     left = emit_engine_emit_exp( emit, binary->lhs, doRefLeft );
+    if( !left ) return FALSE;
     right = emit_engine_emit_exp( emit, binary->rhs, doRefRight );
-
+    if( !right ) return FALSE;
     // check
-    if( !left || !right )
-        return FALSE;
+    // if( !left || !right ) return FALSE;
 
     // emit the op
     if( !emit_engine_emit_op( emit, binary->op, binary->lhs, binary->rhs, binary ) )
@@ -4300,8 +4341,9 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // emit func
     if( !emit_engine_emit_exp( emit, func_call->func ) )
     {
-        EM_error2( func_call->where,
-                   "(emit): internal error in evaluating function call..." );
+        // 1.5.4.3 (ge) no longer necessarily an internal error #2024-static-init
+        // EM_error2( func_call->where,
+        //            "(emit): internal error in evaluating function call..." );
         return FALSE;
     }
 
@@ -4575,8 +4617,7 @@ check_func:
     // the type of the base
     Chuck_Type * t_base = member->t_base;
     // is the base a class/namespace or a variable
-    t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
-    // t_CKBOOL base_static = isa( member->ckt_base, emit->env->ckt_class );
+    t_CKBOOL base_type_static = type_engine_is_base_type_static( emit->env, member->t_base );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -4585,7 +4626,7 @@ check_func:
     t_CKUINT offset = 0;
 
     // check error
-    if( base_static )
+    if( base_type_static )
     {
         // should not get here
         EM_error2( member->base->where,
@@ -4668,8 +4709,9 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
     // whether to emit addr or value
     t_CKBOOL emit_addr = member->self->emit_var;
     // is the base a class/namespace or a variable | 1.5.0.0 (ge) modified to func call
-    t_CKBOOL base_static = type_engine_is_base_static( emit->env, member->t_base );
-    // t_CKBOOL base_static = isa( member->ckt_base, emit->env->ckt_class );
+    t_CKBOOL base_type_static = type_engine_is_base_type_static( emit->env, member->t_base );
+    // check if the base exp is static-compatible, e.g., usable to initialize static var | 1.5.4.3 (ge) added as part of #2024-static-init
+    t_CKBOOL base_exp_static = type_engine_is_base_exp_static( emit->env, member );
     // a function
     Chuck_Func * func = NULL;
     // a non-function value
@@ -4698,13 +4740,39 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
 
     // actual type - if base is class name its type is actually 'class'
     //               to get the actual type use actual_type
-    t_base = base_static ? member->t_base->actual_type : member->t_base;
+    t_base = base_type_static ? member->t_base->actual_type : member->t_base;
 
     // make sure that the base type is object
     assert( t_base->nspc != NULL );
 
+    // get the value to test | 1.5.4.3 (ge) added as part of #2024-static-init
+    // NOTE: this type of check usually resides pre-emisssion, in the type-checker
+    // but in this case, the hasStaticDecl check happens in the type-checker
+    // and this verification needs to be come after that
+    Chuck_Value * v = type_engine_find_value( t_base, member->xid );
+    if( v && (!base_type_static && !base_exp_static)
+          && emit->env->class_def && !emit->env->func
+          && (emit->env->stmt_stack.size() && emit->env->stmt_stack.back()->hasStaticDecl) )
+    {
+        if( v->func_ref )
+        {
+            if( v->is_member )
+            {
+                EM_error2( member->where,
+                           "cannot call non-static function '%s' to initialize a static variable", v->func_ref->signature(FALSE,FALSE).c_str() );
+                return FALSE;
+            }
+        }
+        else if( !v->is_static )
+        {
+            EM_error2( member->where,
+                       "cannot access non-static variable '%s.%s' to initialize a static variable", v->owner_class->name().c_str(), v->name.c_str() );
+            return FALSE;
+        }
+    }
+
     // if base is static?
-    if( !base_static )
+    if( !base_type_static )
     {
         // if is a func
         if( isfunc( emit->env, member->self->type ) )
@@ -4718,8 +4786,8 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             // is the func static?
             if( func->is_member )
             {
-                // emit the base (TODO: return on error?)
-                emit_engine_emit_exp( emit, member->base );
+                // emit the base
+                if( !emit_engine_emit_exp( emit, member->base ) ) { return FALSE; }
                 // check if we are part of a function call vs. function as value
                 // 1.5.4.3 (ge) added as part of #2024-func-call-update
                 if( member->self->emit_as_funccall )
@@ -5748,7 +5816,7 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_class_def()
-// desc: ...
+// desc: emit bytecode for a class definition
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def )
 {
@@ -5802,6 +5870,19 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         return FALSE;
     }
 
+    // static code initializer | 1.5.4.3 (ge) added as part of #2024-static-init
+    if( type->nspc->static_data_size > 0 )
+    {
+        // create code container for emitting
+        type->static_code_emit = new Chuck_Code;
+        // name the code; copy the class code name
+        type->static_code_emit->name = emit->code->name + " (static initializer)";
+        // need this?
+        type->static_code_emit->need_this = FALSE;
+        // keep track of filename; copy the class code filename
+        type->static_code_emit->filename = emit->code->filename;
+    }
+
     // emit the body
     while( body && ret )
     {
@@ -5846,21 +5927,75 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
         CK_SAFE_REF_ASSIGN( type->nspc->pre_ctor,
                             emit_to_code( emit->code, type->nspc->pre_ctor, emit->dump ) );
 
-        // allocate static
-        type->nspc->class_data = new t_CKBYTE[type->nspc->class_data_size];
-        // verify
-        if( !type->nspc->class_data )
+        // ----------------------
+        // static data and code
+        // check if we have static data?
+        if( type->nspc->static_data_size > 0 )
         {
-            // we have a problem
-            CK_FPRINTF_STDERR(
-                "[chuck](emitter): OutOfMemory: while allocating static data '%s'\n", type->c_name() );
-            // flag
-            ret = FALSE;
-        }
-        else
-        {
-            // zero it out
-            memset( type->nspc->class_data, 0, type->nspc->class_data_size );
+            // allocate static
+            type->nspc->static_data = new t_CKBYTE[type->nspc->static_data_size];
+            // verify
+            if( !type->nspc->static_data )
+            {
+                // we have a problem
+                CK_FPRINTF_STDERR(
+                    "[chuck](emitter): OutOfMemory: while allocating static data '%s'\n", type->c_name() );
+                // flag
+                ret = FALSE;
+            }
+            else
+            {
+                // zero it out
+                memset( type->nspc->static_data, 0, type->nspc->static_data_size );
+            }
+
+            // static initializer code | 1.5.4.3 (ge) added as part of #2024-static-init
+            //-----------------------------------------
+            // STATIC VARAIBLE INITIALIZATION SEMANTICS
+            //-----------------------------------------
+            // static variables must be DECLARED:
+            // a) within a class definition
+            // b) outside of any class function defintion
+            // c) at the outer-most class scope; can not be in nested { }
+            //-----------------------------------------
+            // COMPILE-TIME checks:
+            // 1) a statement containing a static variable declaration
+            //    CANNOT access member data/functions
+            // 2) otherwise, a statement can access both static and member data
+            // 3) a statement containing a static variable declaration
+            //    CANNOT access local (i.e., outside of class def) vars or funcs
+            //    even in non-public classes
+            //-----------------------------------------
+            // RUNTIME checks:
+            // 4) static initialization statements are run in immediate mode
+            //    meaning no time advances; this is enforced at runtime; any
+            //    time advances, including waiting on events, will result in
+            //    a runtime exception
+            //-----------------------------------------
+            // see if there is at least one static init instruction
+            if( type->static_code_emit->code.size() )
+            {
+                // append EOC for the static initializer
+                type->static_code_emit->code.push_back( new Chuck_Instr_EOC );
+                // static itor code => vm code
+                Chuck_VM_Code * static_code = emit_to_code( type->static_code_emit, NULL, emit->dump );
+
+                // make sure NULL
+                assert( type->nspc->static_invoker == NULL );
+                // instantiate an invoker
+                type->nspc->static_invoker = new Chuck_VM_SInitInvoker;
+                // setup
+                type->nspc->static_invoker->setup( type, static_code, emit->env->vm() );
+                // run the static initializer in immediate mode
+                type->nspc->static_invoker->invoke( emit->env->vm()->shreduler()->get_current_shred() );
+                // clean up
+                CK_SAFE_DELETE( type->nspc->static_invoker );
+
+                // TODO: either defer the initializer to when we have a parent shred OR disallow context-level vars and func calls for static
+                // TODO: disallow return in class def body (member and static)
+            }
+            // clean up the code emit structure
+            CK_SAFE_DELETE( type->static_code_emit );
         }
     }
 
@@ -5912,8 +6047,9 @@ t_CKBOOL emit_engine_emit_spork( Chuck_Emitter * emit, a_Exp_Func_Call exp )
     // emit func pointer on sporker shred
     if( !emit_engine_emit_exp( emit, exp->func ) )
     {
-        EM_error2( exp->where,
-                  "(emit): internal error in evaluating function call..." );
+        // 1.5.4.3 (ge) no longer necessarily an internal error #2024-static-init
+        // EM_error2( exp->where,
+        //            "(emit): internal error in evaluating function call..." );
         return FALSE;
     }
 
@@ -6095,9 +6231,10 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
         // emit it
         if( !emit_engine_emit_exp_dot_member( emit, &dot->dot_member ) )
         {
+            // 1.5.4.3 (ge) no longer necessarily an internal error #2024-static-init
             // internal error
-            EM_error2( where,
-                "(emit): internal error: symbol transformation failed..." );
+            // EM_error2( where,
+            //     "(emit): internal error: symbol transformation failed..." );
             return FALSE;
         }
 
@@ -6110,6 +6247,24 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
         // done
         return TRUE;
+    }
+
+    // 1.5.4.3 (ge) added this check #2024-static-init
+    // static variable declarations cannot access values that
+    if( v && v->is_context_global && !v->is_global
+          && emit->env->class_def && !emit->env->func && (emit->env->stmt_stack.size() && emit->env->stmt_stack.back()->hasStaticDecl) )
+    {
+        if( v->func_ref )
+        {
+            EM_error2( exp->where,
+                       "cannot call local function '%s' to initialize a static variable", v->func_ref->signature(FALSE,FALSE).c_str() );
+        }
+        else
+        {
+            EM_error2( exp->where,
+                       "cannot access local variable '%s' to initialize a static variable", S_name( exp->var ) );
+        }
+        return FALSE;
     }
 
     // var or value
