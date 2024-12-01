@@ -10,13 +10,14 @@ class Foo
     fun @construct() { 2 => num; }
 
     // another constructor
-    fun @construct( int x ) { x => num; }
+    // (using class name OR @construct is interchaneable)
+    fun Foo( int x ) { x => num; }
 
     // yet another constructor
     fun @construct( int x, int y ) { x*y => num; }
 
-    // alternate way of define a constructor
-    fun void Foo( int x, int y, int z ) { x*y*z => num; }
+    // yet another constructor 
+    fun Foo( int x, int y, int z ) { x*y*z => num; }
 
     // destructor
     fun @destruct() { <<< "destructor:", this.num >>>; }

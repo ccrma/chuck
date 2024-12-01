@@ -22,8 +22,9 @@ class Foo
         <<< "constructor 2:", x >>>;
     }
     
-    // constructor 3 (alternate method to define)
-    fun void Foo( int x, int y )
+    // constructor 3
+    // (using class name OR @construct is interchaneable)
+    fun Foo( int x, int y )
     {
         x*y => num;
         <<< "constructor 3:", x, y >>>;
