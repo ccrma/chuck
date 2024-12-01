@@ -36,6 +36,7 @@
 #include "chuck_audio.h"
 #include "chuck_console.h"
 #include "chuck_otf.h"
+#include <fstream>
 #include "util_platforms.h"
 #include "util_string.h"
 #include "../core/dsl/dsl_codegen.h"
@@ -586,6 +587,25 @@ static t_CKBOOL compile_dsl_file( const std::string & path, t_CKUINT count )
     {
         EM_error2( 0, "[dsl] codegen failed for '%s': %s", path.c_str(), cg_err.c_str() );
         return FALSE;
+    }
+
+    // dump generated ChucK source alongside current working directory
+    {
+        std::string filename = extract_filepath_file( path );
+        size_t dot = filename.find_last_of( '.' );
+        if( dot != std::string::npos ) filename = filename.substr( 0, dot );
+        std::string out_path = filename + ".ck";
+        std::ofstream ofs( out_path.c_str(), std::ios::out | std::ios::trunc );
+        if( !ofs.good() )
+        {
+            EM_error2( 0, "[dsl] warning: could not write generated ChucK to '%s'", out_path.c_str() );
+        }
+        else
+        {
+            ofs << code;
+            ofs.close();
+            EM_log( CK_LOG_SYSTEM, "[dsl] wrote generated ChucK to '%s'", out_path.c_str() );
+        }
     }
 
     return the_chuck->compileCode( code, "", count, FALSE, NULL, path );

@@ -119,7 +119,9 @@ CSRCS+= $(CSRCS_CORE) $(SF_CSRCS)
 CXXSRCS+= $(CXXSRCS_CORE)
 
 COBJS=$(CSRCS:.c=.o)
-CXXOBJS=$(CXXSRCS:.cpp=.o)
+CXXOBJS_CPP=$(patsubst %.cpp,%.o,$(filter %.cpp,$(CXXSRCS)))
+CXXOBJS_CC=$(patsubst %.cc,%.o,$(filter %.cc,$(CXXSRCS)))
+CXXOBJS=$(CXXOBJS_CPP) $(CXXOBJS_CC)
 LO_COBJS=$(LO_CSRCS:.c=.o)
 OBJS=$(COBJS) $(CXXOBJS) $(LO_COBJS)
 
@@ -159,7 +161,11 @@ chuck_yacc.c: chuck.yy.c
 chuck_yacc.h: chuck.tab.h
 	cat chuck.tab.h > $@
 
-$(CXXOBJS): %.o: %.cpp
+$(CXXOBJS_CPP): %.o: %.cpp
+	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
+	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
+
+$(CXXOBJS_CC): %.o: %.cc
 	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 

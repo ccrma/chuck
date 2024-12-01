@@ -50,6 +50,7 @@ std::string MakeVoiceFunction(const Voice &voice, int index)
 {
     const Instrument &instr = voice.instrument();
     const Pattern &pattern = voice.pattern();
+    const bool osc_has_freq = instr.osc() != Instrument_Osc_NOISE;
 
     std::ostringstream out;
     const std::string idx = std::to_string(index);
@@ -100,7 +101,7 @@ std::string MakeVoiceFunction(const Voice &voice, int index)
     const double density = pattern.density() > 0.0 ? pattern.density() : 1.0;
     const int scale = pattern.scale();
 
-    out << "  for( int rep = 0; rep < " << repeat << "; rep++ ) {\n";
+    out << "  for( 0 => int rep; rep < " << repeat << "; rep++ ) {\n";
     for (int i = 0; i < pattern.notes_size(); ++i)
     {
         const Note &note = pattern.notes(i);
@@ -109,8 +110,11 @@ std::string MakeVoiceFunction(const Voice &voice, int index)
         {
             out << "    if( Math.random2f(0.0, 1.0) > " << FormatDouble(density) << " ) { continue; }\n";
         }
-        out << "    Std.mtof(applyScale(" << note.pitch() << ", " << scale << ")) + "
-            << FormatDouble(instr.detune()) << " => " << osc << ".freq;\n";
+        if (osc_has_freq)
+        {
+            out << "    Std.mtof(applyScale(" << note.pitch() << ", " << scale << ")) + "
+                << FormatDouble(instr.detune()) << " => " << osc << ".freq;\n";
+        }
         out << "    " << env << ".keyOn();\n";
         out << "    " << FormatDouble(note.dur()) << " * beat => now;\n";
         if (!note.tie())
