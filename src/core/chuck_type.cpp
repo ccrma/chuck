@@ -7801,7 +7801,17 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( env->ckt_float, ae_op_percent, env->ckt_float );
     registry->reserve( env->ckt_time, ae_op_percent, env->ckt_dur );
     registry->reserve( env->ckt_dur, ae_op_percent, env->ckt_dur );
-    // TODO: look into array << int/float/etc. appends
+    // array append << | 1.5.4.3 (ge) added
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_int );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_float );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_dur );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_time );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_complex );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_polar );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_vec2 );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_vec3 );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_vec4 );
+    registry->reserve( env->ckt_array, ae_op_shift_left, env->ckt_object );
 
     //-------------------------------------------------------------------------
     // +=> -=> *=> /=>

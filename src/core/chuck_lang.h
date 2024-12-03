@@ -238,6 +238,7 @@ CK_DLL_MFUN( string_set_at );
 CK_DLL_MFUN( string_get_at );
 CK_DLL_MFUN( string_charAt);
 CK_DLL_MFUN( string_setCharAt);
+CK_DLL_MFUN( string_appendChar );
 CK_DLL_MFUN( string_substring);
 CK_DLL_MFUN( string_substringN);
 CK_DLL_MFUN( string_insert);

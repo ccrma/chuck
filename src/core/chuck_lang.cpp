@@ -967,6 +967,12 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->doc = "set the character at the specified index.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // add append()
+    func = make_new_mfun( "string", "appendChar", string_appendChar );
+    func->add_arg( "int", "theChar" );
+    func->doc = "append a character by its ASCII code and return a reference to itself; same as using the << operator `STR << INT`";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add substring()
     func = make_new_mfun( "string", "substring", string_substring );
     func->add_arg("int", "start");
@@ -1075,7 +1081,7 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add toFloat()
     func = make_new_mfun( "float", "toFloat", string_toFloat );
-    func->doc = "Attempt to convert the contents of the string to an float and return the result, or 0 if conversion failed.";
+    func->doc = "attempt to convert the contents of the string to an float and return the result, or 0 if conversion failed.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add parent()
@@ -2906,6 +2912,22 @@ CK_DLL_MFUN(string_setCharAt)
     s.at(index) = the_char;
     str->set( s );
     RETURN->v_int = str->str().at(index);
+}
+
+CK_DLL_MFUN(string_appendChar)
+{
+    Chuck_String * str = (Chuck_String *)SELF;
+    t_CKINT the_char = GET_NEXT_INT(ARGS);
+    char c = (char)the_char;
+
+    // get the internal string representation
+    std::string s = str->str();
+    // append the character
+    s += c;
+    // set it back
+    str->set( s );
+    // return the string itself
+    RETURN->v_string = str;
 }
 
 CK_DLL_MFUN(string_substring)
