@@ -2,12 +2,16 @@
 ChucK VERSIONS log
 ------------------
 
-
 1.5.4.3 (December 2024)
 =======
-(added, at last) class static variable initialization for primitive
+new ChuGL v0.2.5 (see ChuGL release notes below)
+======
+ChucK language updates:
+(added, at last) class STATIC variable initialization for primitive
     and Objects types. (Previously, static variables needed to be
-    instantiated and initialized separately.) Now they can, e.g.,
+    instantiated and initialized separately.) Now variables of any
+    type can be declared as static variable and they will be automatically
+    initialized on a per-class basis. Example:
     ----------------------------------------
     class Foo
     {
@@ -56,8 +60,8 @@ ChucK VERSIONS log
 (fixed) class definitions that encounter compiler errors (or are
     in files that have compiler errors) are now correctly rolled back
     in the type system; previously it was possible to instantiate
-    partial class definition from a subsequent file, with undefined
-    outcome
+    partial class definition defined in previously compiled code/file,
+    with undefined outcome
 
 
 1.5.4.2 (November 2024)
