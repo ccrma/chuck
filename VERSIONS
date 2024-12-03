@@ -5,8 +5,9 @@ ChucK VERSIONS log
 1.5.4.3 (December 2024)
 =======
 new ChuGL v0.2.5 (see ChuGL release notes below)
-======
-ChucK language updates:
+~~~
+ChucK 1.5.4.3
+=======
 (added, at last) class STATIC variable initialization for primitive
     and Objects types. (Previously, static variables needed to be
     instantiated and initialized separately.) Now variables of any
@@ -62,6 +63,21 @@ ChucK language updates:
     in the type system; previously it was possible to instantiate
     partial class definition defined in previously compiled code/file,
     with undefined outcome
+=======
+ChuGL v0.2.5 Release Notes
+=======
+(added) input functions to get *all* keys held/pressed/released this frame
+    GWindow.keys()
+    GWindow.keysDown()
+    GWindow.keysUp()
+(added) new RenderPass methods to set the output resolution, msaa sample 
+    count,target scene and target camera for rendering
+(added) HUD pass to ChuGL's default rendergraph. Can now easily add 2d HUD
+    overlay to 3D scenes by grucking ggens to GG.hud()
+(added) examples/basic/hud.ck
+(fixed) crash caused by ShaderDesc and other internal reference counting
+    logic
+=======
 
 
 1.5.4.2 (November 2024)
@@ -116,7 +132,7 @@ new ChuGL v0.2.4 (see ChuGL release notes below)
     are called)
 (added) Shred.pc(), .regSP(), .memSP() -- for debugging, info, amusement
 =======
-ChuGL 0.2.4 Release Notes
+ChuGL v0.2.4 Release Notes
 =======
 New Features:
 - Should now support both X11 and Wayland on Linux
