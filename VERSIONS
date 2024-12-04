@@ -2,6 +2,23 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.4.4
+=======
+(fixed) crash due to functions / classes references a local variable defined
+    at file-scope; code emission is now internally re-ordered to compile
+    file-scope code segments -> function definitions -> class definitions
+(fixed) foreach `auto` variable typing for multi-dimenion array, e.g.,
+    --------
+    // two dim array
+    for( auto x : [[1,2],[3,4]] ) {
+        for( auto y : x ) {
+            // print
+            <<< y >>>;
+        }
+    }
+    --------
+
+
 1.5.4.3 (December 2024)
 =======
 new ChuGL v0.2.5 (see ChuGL release notes below)

@@ -165,7 +165,7 @@ t_CKBOOL emit_engine_shutdown( Chuck_Emitter *& emit )
 
 //-----------------------------------------------------------------------------
 // name: emit_engine_emit_prog()
-// desc: ...
+// desc: emit a chuck program/AST into VM bytecode
 //-----------------------------------------------------------------------------
 Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
                                        te_HowMuch how_much )
@@ -208,6 +208,11 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
     // push global scope (added 1.3.0.0)
     emit->push_scope();
 
+    // for separating out function defs and class defs | 1.5.4.4 (ge) added
+    // this is to re-order code emission by stmt_lists -> func defs -> class defs
+    vector<a_Func_Def> func_defs;
+    vector<a_Class_Def> class_defs;
+
     // loop over the program sections
     while( prog && ret )
     {
@@ -223,17 +228,16 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         case ae_section_func: // function definition
             // check the compilation criteria | 1.5.2.5 (ge) added
             if( !howMuch_criteria_match( how_much, prog->section->func_def ) ) break;
-            // check function definition
-            ret = emit_engine_emit_func_def( emit, prog->section->func_def );
+            // add function def for emission
+            func_defs.push_back( prog->section->func_def );
             break;
 
         case ae_section_class: // class definition
             // 1.5.2.5 (ge) check the compilation criteria
             // if( !howMuch_criteria_match( how_much, prog->section->class_def ) ) break;
             // 1.5.4.0 (ge) commented out (see type_engine_prog0_scan() for explanation)
-
-            // emit class definition
-            ret = emit_engine_emit_class_def( emit, prog->section->class_def );
+            // add class def for emission
+            class_defs.push_back( prog->section->class_def );
             break;
 
         default: // bad
@@ -248,6 +252,32 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
 
         // the next
         prog = prog->next;
+    }
+
+    // make sure we are good so far
+    if( ret )
+    {
+        // iterate over func defs
+        for( size_t i = 0; i < func_defs.size(); i++ )
+        {
+            // check function definition
+            ret = emit_engine_emit_func_def( emit, func_defs[i] );
+            // check success code
+            if( !ret ) break;
+        }
+    }
+
+    // make sure we are good so far
+    if( ret )
+    {
+        // iterate over func defs
+        for( size_t i = 0; i < class_defs.size(); i++ )
+        {
+            // emit class definition
+            ret = emit_engine_emit_class_def( emit, class_defs[i] );
+            // check success code
+            if( !ret ) break;
+        }
     }
 
     // 1.4.1.0 (jack): error-checking: was dac-replacement initted?
