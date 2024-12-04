@@ -210,6 +210,9 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
 
     // for separating out function defs and class defs | 1.5.4.4 (ge) added
     // this is to re-order code emission by stmt_lists -> func defs -> class defs
+    // ensures that local (file-scope) variables have a chance to acquire a stack offset
+    // before their use from functions and classes -- even if the local var declaration
+    // appears after the function or class definintion
     vector<a_Func_Def> func_defs;
     vector<a_Class_Def> class_defs;
 
@@ -254,14 +257,14 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         prog = prog->next;
     }
 
-    // iterate over func defs, as long as `ret` is true
+    // iterate over func defs, as long as `ret` is true | 1.5.4.4 (ge) moved out to here
     for( size_t i = 0; ret && (i<func_defs.size()); i++ )
     {
         // check function definition
         ret = emit_engine_emit_func_def( emit, func_defs[i] );
     }
 
-    // iterate over class defs, as long as `ret` is true
+    // iterate over class defs, as long as `ret` is true | 1.5.4.4 (ge) moved out to here
     for( size_t i = 0; ret && (i<class_defs.size()); i++ )
     {
         // emit class definition
