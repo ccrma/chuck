@@ -6501,8 +6501,11 @@ void Chuck_Instr_Array_Init_Literal::execute( Chuck_VM * vm, Chuck_VM_Shred * sh
     // reg stack pointer
     t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
 
+    // 1.5.4.4 (ge) added base_type logic for multidim arrays
+    Chuck_Type * baseType = m_type_ref->array_type ? m_type_ref->array_type : m_type_ref;
     // amalgamating array type | 1.5.4.0 (ge, nick, andrew) added after a wild yak hunt
-    Chuck_Type * arrayType = vm->env()->get_array_type( vm->env()->ckt_array, m_type_ref->array_depth+1, m_type_ref );
+    // 1.5.4.4 (ge) updated to use `baseType` instead of `m_type_ref`
+    Chuck_Type * arrayType = vm->env()->get_array_type( vm->env()->ckt_array, m_type_ref->array_depth+1, baseType );
 
     // allocate the array
     // 1.4.2.0 (ge) | added: check for float explicitly

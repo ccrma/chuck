@@ -1489,7 +1489,8 @@ t_CKBOOL type_engine_check_foreach( Chuck_Env * env, a_Stmt_ForEach stmt )
     if( stmt->theIter->s_type == ae_exp_decl )
     {
         // process auto before we scan theIter
-        if( !type_engine_infer_auto( env, &stmt->theIter->decl, stmt->theArray->type->array_type ) )
+        // 1.5.4.4 (ge) added array_depth - 1 parameter; also see: type_engine_infer_auto()
+        if( !type_engine_infer_auto( env, &stmt->theIter->decl, type_array->array_type, type_array->array_depth-1 ) )
             return FALSE;
     }
 
@@ -1832,24 +1833,33 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_infer_auto() | 1.5.0.8 (ge) added
-// desc: process auto type
+// desc: process auto type from base_type/array_depth
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * type )
+t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * base_type, t_CKUINT array_depth )
 {
     // make sure
-    assert( type != NULL );
+    assert( base_type != NULL );
     assert( decl != NULL );
 
     // check first var decl, if not auto, then pass through
     if( !decl->ck_type || !isa(decl->ck_type, env->ckt_auto) )
     { return TRUE; }
     // if RHS is declared as auto, then check for invalid LHS types
-    else if( isa(type,env->ckt_void) || isa(type,env->ckt_null) || isa(type,env->ckt_auto) )
+    else if( isa(base_type,env->ckt_void) || isa(base_type,env->ckt_null) || isa(base_type,env->ckt_auto) )
     {
         EM_error2( decl->where,
             "cannot infer 'auto' type from '%s' type",
-            type->c_name() );
+            base_type->c_name() );
         return FALSE;
+    }
+
+    // the auto type
+    Chuck_Type * type = base_type;
+    // if type is array | 1.5.4.4 (ge) added
+    if( array_depth )
+    {
+        // update type to an an array of base_type
+        type = env->get_array_type( array_depth, base_type );
     }
 
     // replace with inferred type
@@ -2009,12 +2019,21 @@ t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary )
         ( binary->op == ae_op_chuck || binary->op == ae_op_at_chuck ) )
     {
         // get type of the left hand side
-        Chuck_Type * type = left;
-        // if array use actual type
-        if( type->array_depth ) type = type->array_type;
+        Chuck_Type * base_type = left;
+        // get array depth (could be 0)
+        t_CKUINT array_depth = base_type->array_depth;
+        // if array
+        if( array_depth )
+        {
+            // use actual/array type
+            base_type = base_type->array_type;
+            // the auto variable should have one fewer array_depth
+            // 1.5.4.4 (ge) added to pass into type_engine_infer_auto() below
+            array_depth--;
+        }
 
         // process auto before we scan the right hand side
-        if( !type_engine_infer_auto( env, &cr->decl, type ) )
+        if( !type_engine_infer_auto( env, &cr->decl, base_type, array_depth ) )
             return NULL;
     }
 
@@ -8213,6 +8232,19 @@ Chuck_Type * Chuck_Env::get_array_type( Chuck_Type * array_parent,
 
 
 //-----------------------------------------------------------------------------
+// name: get_array_type()
+// desc: retrieve array type based on parameters | 1.5.4.3 (ge, nick, andrew) added
+//-----------------------------------------------------------------------------
+Chuck_Type * Chuck_Env::get_array_type( t_CKUINT depth, Chuck_Type * base_type )
+{
+    // call through
+    return get_array_type( this->ckt_array, depth, base_type );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: commit_namespaces()
 // desc: commit namespace | 1.5.4.3 (ge) added
 //-----------------------------------------------------------------------------
@@ -8317,6 +8349,14 @@ Chuck_Type * Chuck_ArrayTypeCache::getOrCreate( Chuck_Env * env,
                                                 Chuck_Type * base_type /* ,
                                                 Chuck_Namespace * owner_nspc */ )
 {
+    // consistency check | 1.5.4.4 (ge) added
+    if( base_type->array_depth )
+    {
+        // print error message
+        EM_error2( 0, "(internal error) array type cache base_type cannot be an array type" );
+        return NULL;
+    }
+
     // if cache not enabled
     if( !m_enabled )
     {

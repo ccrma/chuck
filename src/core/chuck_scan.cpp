@@ -2637,12 +2637,15 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
             var_decl->ref = ( var_decl->array->exp_list == NULL );
             // the declaration type | 1.4.2.0 (ge) fixed for multiple decl (e.g., int x[1], y[2];)
             Chuck_Type * t2 = decl->ck_type; // was: type, which won't work if more than one var declared
-
+            // 1.5.4.4 (ge) added base_type and logic in case decl->ck_type is an array
+            // (typically this can't happen with a decl, except for 'auto' and multidim arrays)
+            // for example: https://github.com/ccrma/chuck/issues/441
+            Chuck_Type * base_type = t2->array_depth ? t2->array_type : t2;
             // get (or create) matching array type
             type = env->get_array_type(
                 env->ckt_array,  // the array base class
                 var_decl->array->depth,  // the depth of the new type
-                t2  // the 'array_type'
+                base_type // the 'array_type' | 1.5.4.4 (ge) changed to t2->array_type, in case t2 is an array
                 // env->curr  // the owner namespace
             );
 

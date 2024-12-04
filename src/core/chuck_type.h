@@ -779,6 +779,7 @@ public:
     // array type cache
     Chuck_ArrayTypeCache * arrayTypeCache() { return &array_types; }
     // retrieve array type based on parameters | 1.5.4.0 (ge, nick, andrew) added
+    Chuck_Type * get_array_type( t_CKUINT depth, Chuck_Type * base_type );
     Chuck_Type * get_array_type( Chuck_Type * array_parent,
                                  t_CKUINT depth, Chuck_Type * base_type /*,
                                  Chuck_Namespace * owner_nspc */ );
@@ -1438,7 +1439,7 @@ Chuck_Namespace * type_engine_find_nspc( Chuck_Env * env, a_Id_List path );
 // convert a vector of type names to a vector of Types | 1.5.0.0 (ge) added
 void type_engine_names2types( Chuck_Env * env, const std::vector<std::string> & typeNames, std::vector<Chuck_Type *> & types );
 // check and process auto types | 1.5.0.8 (ge) added
-t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * type );
+t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * base_type, t_CKUINT array_depth );
 // initialize operator overload subsystem | 1.5.1.5 (ge) added
 t_CKBOOL type_engine_init_op_overload( Chuck_Env * env );
 // verify an operator overload | 1.5.1.5 (ge) added
