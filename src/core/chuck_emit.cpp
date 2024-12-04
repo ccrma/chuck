@@ -254,35 +254,24 @@ Chuck_VM_Code * emit_engine_emit_prog( Chuck_Emitter * emit, a_Program prog,
         prog = prog->next;
     }
 
-    // make sure we are good so far
-    if( ret )
+    // iterate over func defs, as long as `ret` is true
+    for( size_t i = 0; ret && (i<func_defs.size()); i++ )
     {
-        // iterate over func defs
-        for( size_t i = 0; i < func_defs.size(); i++ )
-        {
-            // check function definition
-            ret = emit_engine_emit_func_def( emit, func_defs[i] );
-            // check success code
-            if( !ret ) break;
-        }
+        // check function definition
+        ret = emit_engine_emit_func_def( emit, func_defs[i] );
     }
 
-    // make sure we are good so far
-    if( ret )
+    // iterate over class defs, as long as `ret` is true
+    for( size_t i = 0; ret && (i<class_defs.size()); i++ )
     {
-        // iterate over func defs
-        for( size_t i = 0; i < class_defs.size(); i++ )
-        {
-            // emit class definition
-            ret = emit_engine_emit_class_def( emit, class_defs[i] );
-            // check success code
-            if( !ret ) break;
-        }
+        // emit class definition
+        ret = emit_engine_emit_class_def( emit, class_defs[i] );
     }
 
     // 1.4.1.0 (jack): error-checking: was dac-replacement initted?
     // (see chuck_compile.h for an explanation on replacement dacs)
-    if( emit->should_replace_dac )
+    // 1.5.4.4 (ge) added ret check
+    if( ret && emit->should_replace_dac )
     {
         if( !emit->env->vm()->globals_manager()->is_global_ugen_init( emit->dac_replacement ) )
         {
