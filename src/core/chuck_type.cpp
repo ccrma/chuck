@@ -4814,99 +4814,122 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         return NULL;
     }
 
-    // make sure we have a function
+    // is exp_func's type a function?
     if( !isa( f, env->ckt_function ) )
     {
-        EM_error2( exp_func->where,
-            "function call using a non-function value" );
-        // check if f is of type Type | 1.5.2.5 (ge) added
-        if( equals( f, env->ckt_class ) )
+        // check if this() -- for calling another constructor from a constructor | 1.5.4.4 (ge) added #2024-ctor-this
+        if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var && string(S_name(exp_func->primary.var)) == "this" )
         {
-            // provide hopefully helpful hint
-            EM_error2( 0, " |- (hint: creating an Object variable with a constructor?)" );
-            EM_error2( 0, " |- (...if so, try using the form `%s VARNAME(...)` instead)", f->actual_type->name().c_str() );
+            // NOTE should have already checked that we are within a class if `this` was used
+            assert( env->class_def != NULL );
+            // make a temp AST ctor call struct
+            a_Ctor_Call_ ctor_call;
+            // populate the args field
+            ctor_call.args = args;
+            // match constructor by args
+            ctor_call.func = type_engine_check_ctor_call( env, env->class_def, &ctor_call, NULL, exp_func->where );
+            // check for error
+            if( !ctor_call.func ) return NULL;
+            // set the function in question
+            theFunc = ctor_call.func;
+            // remember it as the func alias for `this`
+            exp_func->primary.func_alias = theFunc;
         }
-        return NULL;
-    }
-
-    // copy the func
-    up = f->func_bridge;
-
-    // check the arguments
-    if( args )
-    {
-        a = type_engine_check_exp( env, args );
-        if( !a ) return NULL;
-    }
-
-    // look for a match
-    t_CKBOOL hasError = FALSE;
-    theFunc = find_func_match( env, up, args, hasError, exp_func->where );
-
-    // no func
-    if( !theFunc )
-    {
-        // hasError implies an error has already been printed
-        if( hasError ) return NULL;
-
-        // if primary
-        if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
+        else // error case
         {
             EM_error2( exp_func->where,
-                "argument type(s) do not match...\n...for function '%s(...)'...",
-                S_name(exp_func->primary.var) );
+                      "function call using a non-function value" );
+            // check if f is of type Type | 1.5.2.5 (ge) added
+            if( equals( f, env->ckt_class ) )
+            {
+                // provide hopefully helpful hint
+                EM_error2( 0, " |- (hint: creating an Object variable with a constructor?)" );
+                EM_error2( 0, " |- (...if so, try using the form `%s VARNAME(...)` instead)", f->actual_type->name().c_str() );
+            }
+            return NULL;
+        }
+    }
+    else // exp_func's type is a function
+    {
+        // copy the func
+        up = f->func_bridge;
+
+        // check the arguments
+        if( args )
+        {
+            a = type_engine_check_exp( env, args );
+            if( !a ) return NULL;
+        }
+
+        // look for a match
+        t_CKBOOL hasError = FALSE;
+        theFunc = find_func_match( env, up, args, hasError, exp_func->where );
+
+        // no func
+        if( !theFunc )
+        {
+            // hasError implies an error has already been printed
+            if( hasError ) return NULL;
+
+            // if primary
+            if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
+            {
+                EM_error2( exp_func->where,
+                          "argument type(s) do not match...\n...for function '%s(...)'...",
+                          S_name(exp_func->primary.var) );
+            }
+            else if( exp_func->s_type == ae_exp_dot_member )
+            {
+                EM_error2( exp_func->dot_member.where,
+                          "argument type(s) do not match...\n...for function '%s(...)'...",
+                          type_engine_print_exp_dot_member( env, &exp_func->dot_member ).c_str() );
+            }
+            else
+            {
+                EM_error2( exp_func->where,
+                          "argument type(s) do not match for function..." );
+            }
+
+            EM_error2( 0,
+                      "...(please check the argument types)" );
+
+            return NULL;
+        }
+
+        // recheck the type with new name
+        if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
+        {
+            // set the new name
+            // TODO: clear old
+            exp_func->primary.var = insert_symbol(theFunc->name.c_str());
+            // make sure the type is still the name
+            if( *exp_func->type != *type_engine_check_exp( env, exp_func ) )
+            {
+                // error
+                EM_error2( exp_func->where,
+                          "(internal error) function type different on second check" );
+                return NULL;
+            }
         }
         else if( exp_func->s_type == ae_exp_dot_member )
         {
-            EM_error2( exp_func->dot_member.where,
-                "argument type(s) do not match...\n...for function '%s(...)'...",
-                type_engine_print_exp_dot_member( env, &exp_func->dot_member ).c_str() );
+            // set the new name
+            // TODO: clear old
+            exp_func->dot_member.xid = insert_symbol(theFunc->name.c_str());
+            /*
+             // TODO: figure if this is necessary - it type checks things twice!
+             // make sure the type is still the name
+             if( *exp_func->type != *type_engine_check_exp( env, exp_func ) )
+             {
+             // error
+             EM_error2( exp_func->where,
+             "(internal error) function type different on second check" );
+             return NULL;
+             }
+             */
         }
-        else
-        {
-            EM_error2( exp_func->where,
-                "argument type(s) do not match for function..." );
-        }
-
-        EM_error2( 0,
-            "...(please check the argument types)" );
-
-        return NULL;
+        else assert( FALSE );
     }
-
-    // recheck the type with new name
-    if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var )
-    {
-        // set the new name
-        // TODO: clear old
-        exp_func->primary.var = insert_symbol(theFunc->name.c_str());
-        // make sure the type is still the name
-        if( *exp_func->type != *type_engine_check_exp( env, exp_func ) )
-        {
-            // error
-            EM_error2( exp_func->where,
-                "(internal error) function type different on second check" );
-            return NULL;
-        }
-    }
-    else if( exp_func->s_type == ae_exp_dot_member )
-    {
-        // set the new name
-        // TODO: clear old
-        exp_func->dot_member.xid = insert_symbol(theFunc->name.c_str());
-        /*
-        // TODO: figure if this is necessary - it type checks things twice!
-        // make sure the type is still the name
-        if( *exp_func->type != *type_engine_check_exp( env, exp_func ) )
-        {
-            // error
-            EM_error2( exp_func->where,
-                "(internal error) function type different on second check" );
-            return NULL;
-        }
-        */
-    }
-    else assert( FALSE );
 
     // copy ck_func out (return by reference)
     ck_func = theFunc;

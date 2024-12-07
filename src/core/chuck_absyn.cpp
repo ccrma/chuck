@@ -1581,6 +1581,9 @@ void delete_exp( a_Exp e )
     {
         // TODO: release reference type
         // TODO: release reference owner
+        // 1.5.4.4 (ge) actually -- the above may not be necessary if:
+        // 1) they are not ref-counted in the first place; e.g., see type_engine_check_exp() which assigned `type`
+        // AND 2) the AST is cleaned up before types and nspcs etc.
 
         // delete content in this exp
         delete_exp_contents( e );
@@ -1682,7 +1685,13 @@ void delete_exp_decl( a_Exp e )
 void delete_exp_from_id( a_Exp_Primary e )
 {
     // TODO: do we need to anything with the Symbol?
+    // 1.5.4.4 (ge) symbols are additive but also also unique per string thus growth bounded -- can keep around, in practice
     EM_log( CK_LOG_FINEST, "deleting exp (primary ID '%s') [%p]...", S_name(e->var), (void *)e );
+
+    // TODO: release reference func_alias #2024-ctor-this
+    // 1.5.4.4 (ge) actually -- the above may not be necessary if:
+    // 1) func_alisa not ref-counted in the first place; e.g., see xxx() which assigned `func_alias`
+    // AND 2) the AST is cleaned up before the func etc.
 }
 
 void delete_exp_from_str( a_Exp_Primary e )

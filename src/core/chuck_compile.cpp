@@ -2510,8 +2510,6 @@ t_CKBOOL Chuck_Compiler::openFile( Chuck_CompileTarget * target,
         return FALSE;
     }
 
-    // open file
-    target->fd2parse = fopen( target->absolutePath.c_str(), "rb" );
     // check for directory
     if( ck_isdir( target->absolutePath ) )
     {
@@ -2521,6 +2519,8 @@ t_CKBOOL Chuck_Compiler::openFile( Chuck_CompileTarget * target,
         return FALSE;
     }
 
+    // open file
+    target->fd2parse = fopen( target->absolutePath.c_str(), "rb" );
     // if still unresolved
     if( !target->fd2parse )
     {

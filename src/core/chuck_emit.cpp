@@ -4369,6 +4369,17 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
         return FALSE;
     }
 
+    // get the function as exp | 1.5.4.4 (ge) added to support calling this() #2024-ctor-this
+    a_Exp exp_func = func_call->func;
+    // check if this() -- for calling another constructor from a constructor | 1.5.4.4 (ge) added
+    if( exp_func->s_type == ae_exp_primary && exp_func->primary.s_type == ae_primary_var && string(S_name(exp_func->primary.var)) == "this" )
+    {
+        // NOTE should have already checked that we are within a class if `this` was used
+        assert( emit->env->class_def != NULL );
+        // emit the contructor func | (don't need to dup last since we are not resolving from a dot_member
+        emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)exp_func->primary.func_alias ) );
+    }
+
     // line and pos
     t_CKUINT line = func_call->line;
     t_CKUINT where = func_call->where;

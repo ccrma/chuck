@@ -5329,7 +5329,7 @@ const char * Chuck_Instr_Func_Call::params() const
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: general function call for in-language defined functions
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Func_Call::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {

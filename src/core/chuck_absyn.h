@@ -368,6 +368,8 @@ struct a_Exp_Primary_
 {
     ae_Exp_Primary_Type s_type;
     t_CKVALUE value;
+    // 1.5.4.4 (ge) added to alias a contructor to this() #2024-ctor-this
+    t_CKFUNC func_alias;
 
     union
     {
