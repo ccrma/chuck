@@ -226,23 +226,23 @@ public:
     }
 
     // get list of top level
-    void get_toplevel( std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
+    void get_toplevel( std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE ) const
     {
         // pass on
         get_level( 0, out, includeMangled );
     }
 
     // get list of top level
-    void get_level( int level, std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE )
+    void get_level( int level, std::vector<Chuck_VM_Object *> & out, t_CKBOOL includeMangled = TRUE ) const
     {
         assert( scope.size() > level );
         // clear the out
         out.clear();
 
         // our iterator
-        std::map<S_Symbol, Chuck_VM_Object *>::iterator iter;
+        std::map<S_Symbol, Chuck_VM_Object *>::const_iterator iter;
         // get func map
-        std::map<S_Symbol, Chuck_VM_Object *> * m = NULL;
+        std::map<S_Symbol, Chuck_VM_Object *> const * m = NULL;
 
         // 1.5.0.5 (ge) modified: actually use level
         m = scope[level];
@@ -373,6 +373,13 @@ struct Chuck_Namespace : public Chuck_VM_Object
     void get_values( std::vector<Chuck_Value *> & out );
     // get top level functions
     void get_funcs( std::vector<Chuck_Func *> & out, t_CKBOOL includeManged = TRUE );
+
+    // check if this namespace contains a particular type at top scope level | 1.5.4.4 (ge) added
+    t_CKBOOL contains( Chuck_Type * target ) const;
+    // check if this namespace contains a particular value at top scope level | 1.5.4.4 (ge) added
+    t_CKBOOL contains( Chuck_Value * target ) const;
+    // check if this namespace contains a particular function at top scope level | 1.5.4.4 (ge) added
+    t_CKBOOL contains( Chuck_Func * target ) const;
 };
 
 

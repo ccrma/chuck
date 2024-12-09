@@ -68,6 +68,7 @@ t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br );
 t_CKBOOL type_engine_check_continue( Chuck_Env * env, a_Stmt_Continue cont );
 t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt );
 t_CKBOOL type_engine_check_switch( Chuck_Env * env, a_Stmt_Switch stmt );
+t_CKBOOL type_engine_enact_doc( Chuck_Env * env, a_Stmt_Doc doc );
 t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
@@ -1201,6 +1202,7 @@ t_CKBOOL type_engine_verify_stmt_static( Chuck_Env * env, a_Stmt stmt )
         case ae_stmt_case:
         case ae_stmt_return:
         case ae_stmt_code:
+        case ae_stmt_doc: // 1.5.4.4 (ge) added
         default:
             // shouldn't get here
             EM_error2( stmt->where,
@@ -1236,9 +1238,13 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
     // the type of stmt
     switch( stmt->s_type )
     {
-        case ae_stmt_import: // 1.5.2.5 (ge) added
+        case ae_stmt_import: // 1.5.4.0 (ge) added
             // do nothing here (return true to bypass)
             ret = TRUE;
+            break;
+
+        case ae_stmt_doc: // 1.5.4.4 (ge) added
+            ret = type_engine_enact_doc( env, &stmt->stmt_doc );
             break;
 
         case ae_stmt_if:
@@ -1826,6 +1832,36 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
     }
 
     return ret_type != NULL;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_enact_doc()
+// desc: take action for @doc statement
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_enact_doc( Chuck_Env * env, a_Stmt_Doc doc )
+{
+    // check if we are in a function
+    if( env->func )
+    {
+        // set the documentation string from first
+        env->func->doc = doc->list ? doc->list->desc : "";
+    }
+    else if( env->class_def )
+    {
+        // set the documentation string from first
+        env->class_def->doc = doc->list ? doc->list->desc : "";
+    }
+    else
+    {
+        // error
+        EM_error2( doc->where, "@doc statements used outside class and function definitions");
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 
@@ -6031,8 +6067,50 @@ void Chuck_Namespace::get_funcs( vector<Chuck_Func *> & out, t_CKBOOL includeMan
 
 
 //-----------------------------------------------------------------------------
+// name: contains()
+// desc: check if a particular type is in this namespace | 1.5.4.4 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Namespace::contains( Chuck_Type * target ) const
+{
+    vector<Chuck_VM_Object *> results;
+    type.get_toplevel( results, FALSE );
+    return std::find( results.begin(), results.end(), target ) != results.end();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: contains()
+// desc: check if a particular value is in this namespace | 1.5.4.4 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Namespace::contains( Chuck_Value * target ) const
+{
+    vector<Chuck_VM_Object *> results;
+    value.get_toplevel( results, FALSE );
+    return std::find( results.begin(), results.end(), target ) != results.end();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: contains()
+// desc; check if a particular function is in this namespace | 1.5.4.4 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_Namespace::contains( Chuck_Func * target ) const
+{
+    vector<Chuck_VM_Object *> results;
+    func.get_toplevel( results, TRUE );
+    return std::find( results.begin(), results.end(), target ) != results.end();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: operator ==
-// desc: ...
+// desc: type equivalence
 //-----------------------------------------------------------------------------
 t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs )
 {
@@ -10850,8 +10928,8 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
             if( value->name.length() == 0 ) continue;
             // see if name is internally reserved
             if( value->name[0] == '@' ) continue;
-            // see if name is a function
-            if( value->type->base_name == "[function]" ) continue;
+            // see if value is a function
+            if( value->func_ref ) continue;
 
             // check for static declaration
             if( value->is_static ) {

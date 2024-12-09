@@ -344,7 +344,7 @@ a_Stmt new_stmt_from_case( a_Exp exp, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Stmt new_stmt_from_import( a_Import list, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
+a_Stmt new_stmt_from_import( a_Import list, uint32_t line, uint32_t where ) // 1.5.4.0 (ge) added
 {
     a_Stmt a = (a_Stmt)checked_malloc( sizeof(struct a_Stmt_) );
     a->s_type = ae_stmt_import;
@@ -356,7 +356,19 @@ a_Stmt new_stmt_from_import( a_Import list, uint32_t line, uint32_t where ) // 1
     return a;
 }
 
-a_Import new_import( c_str str, a_Id_List list, uint32_t line, uint32_t where ) // 1.5.2.5 (ge) added
+a_Stmt new_stmt_from_doc( a_Doc list, uint32_t line, uint32_t where ) // 1.5.4.4 (ge) added
+{
+    a_Stmt a = (a_Stmt)checked_malloc( sizeof(struct a_Stmt_) );
+    a->s_type = ae_stmt_doc;
+    a->stmt_doc.list = list;
+    a->line = line; a->where = where;
+    a->stmt_doc.line = line; a->stmt_doc.where = where;
+    a->stmt_doc.self = a;
+
+    return a;
+}
+
+a_Import new_import( c_str str, a_Id_List list, uint32_t line, uint32_t where ) // 1.5.4.0 (ge) added
 {
     a_Import a = (a_Import)checked_malloc( sizeof(struct a_Import_) );
 
@@ -399,6 +411,25 @@ a_Import new_import( c_str str, a_Id_List list, uint32_t line, uint32_t where ) 
 }
 
 a_Import prepend_import( a_Import target, a_Import list, uint32_t lineNum, uint32_t posNum )
+{
+    target->next = list;
+    return target;
+}
+
+a_Doc new_doc( c_str str, uint32_t line, uint32_t where ) // 1.5.4.4 (ge) added
+{
+    a_Doc a = (a_Doc)checked_malloc( sizeof(struct a_Doc_) );
+
+    // copy allocated string pointer
+    a->desc = str; // no strdup( str ); <-- str should have been allocated in alloc_str()
+
+    // set line info
+    a->line = line; a->where = where;
+
+    return a;
+}
+
+a_Doc prepend_doc( a_Doc target, a_Doc list, uint32_t lineNum, uint32_t posNum )
 {
     target->next = list;
     return target;
@@ -1373,6 +1404,9 @@ void delete_stmt( a_Stmt stmt )
     case ae_stmt_import:
         delete_stmt_from_import( stmt );
         break;
+    case ae_stmt_doc: // 1.5.4.4 (ge) added
+        delete_stmt_from_doc( stmt );
+        break;
     }
 
     CK_SAFE_FREE( stmt );
@@ -1467,6 +1501,27 @@ void delete_stmt_from_import( a_Stmt stmt )
     {
         // delete the content
         CK_SAFE_FREE( i->what );
+        // get next before we delete this one
+        next = i->next;
+        // delete the import target
+        CK_SAFE_FREE( i );
+        // move to the next one
+        i = next;
+    }
+}
+
+void delete_stmt_from_doc( a_Stmt stmt )
+{
+    EM_log( CK_LOG_FINEST, "deleting stmt %p (doc)...", (void *)stmt );
+
+    // pointer
+    a_Doc next = NULL, i = stmt->stmt_doc.list;
+
+    // iterate instead of recurse to avoid stack overflow
+    while( i )
+    {
+        // delete the content
+        CK_SAFE_FREE( i->desc );
         // get next before we delete this one
         next = i->next;
         // delete the import target

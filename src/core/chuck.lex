@@ -380,6 +380,7 @@ global                  { adjust(); return GLOBAL; }
 "@construct"            { adjust(); return AT_CTOR; }
 "@destruct"             { adjust(); return AT_DTOR; }
 "@import"               { adjust(); return AT_IMPORT; }
+"@doc"                  { adjust(); return AT_DOC; }
 "->"                    { adjust(); return ARROW_RIGHT; }
 "<-"                    { adjust(); return ARROW_LEFT; }
 "-->"                   { adjust(); return GRUCK_RIGHT; }

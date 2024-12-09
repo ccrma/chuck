@@ -233,6 +233,7 @@ string absyn_loop2str( a_Stmt_Loop stmt_loop );
 string absyn_break2str( a_Stmt_Break stmt_break );
 string absyn_continue2str( a_Stmt_Continue stmt_continue );
 string absyn_return2str( a_Stmt_Return stmt_return );
+string absyn_doc2str( a_Stmt_Doc stmt_doc );
 string absyn_code2str( a_Stmt_Code stmt_code );
 
 
@@ -305,6 +306,14 @@ string absyn_stmt2str( a_Stmt stmt )
             str = absyn_return2str( &stmt->stmt_return );
             break;
 
+        case ae_stmt_import: // import statement
+            // (compile-time evaluated)
+            break;
+
+        case ae_stmt_doc: // doc statement | 1.5.4.4 (ge) added
+            str = absyn_doc2str( &stmt->stmt_doc );
+            break;
+
         case ae_stmt_code:  // code segment
             str = absyn_code2str( &stmt->stmt_code );
             break;
@@ -313,7 +322,6 @@ string absyn_stmt2str( a_Stmt stmt )
         case ae_stmt_switch: // switch statement
         case ae_stmt_case: // case statement
         case ae_stmt_gotolabel: // goto label statement
-        default: // bad
             break;
     }
 
@@ -851,6 +859,45 @@ string absyn_continue2str( a_Stmt_Continue stmt_continue )
 string absyn_return2str( a_Stmt_Return stmt_return )
 {
     return "return " + absyn_exp2str( stmt_return->val ) + ";";
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: absyn_doc2str() | 1.5.4.4 (ge) added
+// desc: convert abstract syntax doc stmt to string
+//-----------------------------------------------------------------------------
+string absyn_doc2str( a_Stmt_Doc stmt_doc )
+{
+    // check
+    if( !stmt_doc || !stmt_doc->list ) return "@doc [empty]";
+
+    // more than one target in list?
+    if( stmt_doc->list->next == NULL )
+    {
+        // return one item format
+        return "@doc \"" + string(stmt_doc->list->desc) + "\";";
+    }
+
+    // the string to be constructed
+    string str = "@doc [ ";
+    // the current target
+    a_Doc i = stmt_doc->list;
+    // iterate
+    while( i )
+    {
+        // append
+        str += "\"" + string( i->desc ) + "\"";
+        // next
+        i = i->next;
+        // check
+        str += ( i ? ", " : " ");
+    }
+    // end string
+    str += "];";
+    // return it
+    return str;
 }
 
 

@@ -392,7 +392,7 @@ protected: // internal
     // compile entire file
     t_CKBOOL compile_entire_file( Chuck_Context * context );
     // import only: public definitions (e.g., classes and operator overloads)
-    t_CKBOOL compile_import_only( Chuck_Context * context ); // 1.5.2.5 (ge) added
+    t_CKBOOL compile_import_only( Chuck_Context * context ); // 1.5.4.0 (ge) added
     // all except import
     t_CKBOOL compile_all_except_import( Chuck_Context * context );
 

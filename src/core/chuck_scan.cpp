@@ -530,7 +530,12 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
     // the type of stmt
     switch( stmt->s_type )
     {
-        case ae_stmt_import: // 1.5.2.5 (ge) added
+        case ae_stmt_import: // 1.5.4.0 (ge) added
+            // do nothing here (return true to bypass)
+            ret = TRUE;
+            break;
+
+        case ae_stmt_doc: // 1.5.4.4 (ge) added
             // do nothing here (return true to bypass)
             ret = TRUE;
             break;
@@ -1783,7 +1788,12 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
     // the type of stmt
     switch( stmt->s_type )
     {
-        case ae_stmt_import: // 1.5.2.5 (ge) added
+        case ae_stmt_import: // 1.5.4.0 (ge) added
+            // do nothing here (return true to bypass)
+            ret = TRUE;
+            break;
+
+        case ae_stmt_doc: // 1.5.4.4 (ge) added
             // do nothing here (return true to bypass)
             ret = TRUE;
             break;
