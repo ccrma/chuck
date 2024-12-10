@@ -1,0 +1,4 @@
+"a representation of a ChucK type." :(string)
+"a sine wave oscillator." :(string)
+"a sine wave oscillator." :(string)
+"" :(string)

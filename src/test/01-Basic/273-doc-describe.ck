@@ -1,9 +1,4 @@
-// show how to add descriptions with classes and functions
-// using @doc; descriptions added in this manner are associatd
-// with respective classes and functions and will appear in the
-// .help() runtime info mechanism, as well as in documentation
-// generated using CKDoc.
-//
+// test adding descriptions with classes and functions using @doc
 // requires: chuck-1.5.4.4 or higher
 
 class Foo

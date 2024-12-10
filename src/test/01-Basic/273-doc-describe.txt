@@ -1,0 +1,5 @@
+"this is a description for the class Foo" :(string)
+"beth() is working on a novel about shared memory" :(string)
+"kenny() is fun, and expects nothing in return" :(string)
+"this is a description for the class Foo" :(string)
+"a function in Foo, bar() likes calling his friends" :(string)

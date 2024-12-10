@@ -2466,7 +2466,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         }
 
         // mark to emit var instead of value
-        rhs->emit_var = 1;
+        rhs->emit_var = TRUE;
 
         break;
 

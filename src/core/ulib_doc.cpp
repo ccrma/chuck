@@ -231,11 +231,11 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY )
     // func->doc = "Associate a description with `target`, which must be either a Type (i.e., a class) or a function. Returns true on sucess; returns false if target is neither a class nor  function, or if describe() was called on a target without sufficient permission to update its description.";
     // if( !type_engine_import_sfun( env, func ) ) goto error;
 
-    // // describe
-    // func = make_new_sfun( "string", "describe", CKDoc_get_describe );
-    // func->add_arg( "Object", "target" );
-    // func->doc = "Returns the description associated with `target`, which must be either a Type (i.e., a class) or a function.";
-    // if( !type_engine_import_sfun( env, func ) ) goto error;
+    // describe
+    func = make_new_sfun( "string", "describe", CKDoc_get_describe );
+    func->add_arg( "Object", "target" );
+    func->doc = "Returns the description associated with `target`, which must be either a Type (i.e., a class) or a function.";
+    if( !type_engine_import_sfun( env, func ) ) goto error;
 
     // end the class import
     type_engine_import_class_end( env );
@@ -2351,44 +2351,33 @@ CK_DLL_SFUN( CKDoc_get_describe )
 {
     Chuck_Object * target = GET_NEXT_OBJECT(ARGS);
     // type of object
-    Chuck_Type * type = target ? target->type_ref : NULL;
+    Chuck_Type * targetType = NULL;
     string doc = "";
 
     // check it
-    if( !target )
-    {
-        CK_FPRINTF_STDERR( "CKDoc.describe(): null target argument; no action taken.\n" );
-        goto done;
-    }
-
-    // check target type
-    if( !isa(type,VM->env()->ckt_class) && !isa(type,VM->env()->ckt_function) )
-    {
-        CK_FPRINTF_STDERR( "CKDoc.describe(): target type must be either Type (i.e., a class) or a function; no action taken.\n" );
-        goto done;
-    }
+    if( !target ) goto done;
+    targetType = target->type_ref;
 
     // if a class
-    if( isa(type,VM->env()->ckt_class) )
+    if( isa(targetType,VM->env()->ckt_class) )
     {
-        // target is a type
-        Chuck_Type * targetType = (Chuck_Type *)target;
+        // target is a Type type
+        Chuck_Type * type = (Chuck_Type *)target;
         // copy the document string
-        doc = targetType->doc;
+        doc = type->doc;
     }
     // if a func
-    else if( isa(type,VM->env()->ckt_function) )
+    else if( isa(targetType,VM->env()->ckt_function) )
     {
         // target is a function
-        Chuck_Func * targetFunc = (Chuck_Func *)target;
+        Chuck_Func * func = (Chuck_Func *)target;
         // copy the document string
-        doc = targetFunc->doc;
+        doc = func->doc;
     }
     else
     {
-        // should not get here
-        CK_FPRINTF_STDERR( "CKDoc.describe(): internal error -- unaccounted Object type '%s", target->type_ref->name().c_str() );
-        goto done;
+        // use the target's type and copy the document string
+        doc = targetType->doc;
     }
 
 done:

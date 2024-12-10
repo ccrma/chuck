@@ -1,0 +1,3 @@
+error-assign-to-class.ck:4:10: error: cannot modify constant variable 'JCRev'
+[4] null @=> JCRev;
+             ^

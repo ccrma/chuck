@@ -3441,7 +3441,9 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
     if( isa( left, right ) )
     {
         // basic types?
-        if( type_engine_check_primitive( emit->env, left ) || isa( left, emit->env->ckt_string ) )
+        // 1.5.4.4 (ge) updated to isa( right, emit->env->ckt_string ) instead of left
+        // in case left is null; right can't be null since null should be const
+        if( type_engine_check_primitive( emit->env, left ) || isa( right, emit->env->ckt_string ) )
         {
             // assigment?
             if( rhs->s_meta != ae_meta_var )
@@ -3461,7 +3463,9 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
                 emit->append( instr = new Chuck_Instr_Time_Advance );
                 instr->set_linepos( lhs->line );
             }
-            else if( isa( left, emit->env->ckt_string ) ) // string
+            // string | 1.5.4.4 (ge) updated to check right instead of left
+            // in case left is null; right can't be null since null should be const
+            else if( isa( right, emit->env->ckt_string ) )
             {
                 // assign string
                 emit->append( new Chuck_Instr_Assign_String );
@@ -3500,6 +3504,7 @@ t_CKBOOL emit_engine_emit_op_at_chuck( Chuck_Emitter * emit, a_Exp lhs, a_Exp rh
     }
 
     // TODO: deal with const
+    // 1.5.4.4 (ge) if RHS is a var, now const is checked in
 
     // no match
     EM_error2( lhs->where,
@@ -6308,6 +6313,14 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     // var or value
     if( emit_var )
     {
+        // check for const | 1.5.4.4 (ge) added
+        if( v->is_const )
+        {
+            EM_error2( exp->where,
+                       "cannot modify constant variable '%s'", S_name( exp->var ) );
+            return FALSE;
+        }
+
         // emit as addr
         if( v->is_global )
         {
@@ -6339,6 +6352,14 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
                 new Chuck_Instr_Reg_Push_Global( v->name, global_type );
             instr->set_linepos( line );
             emit->append( instr );
+        }
+        else if( isa(v->type, emit->env->ckt_class) &&
+                 v->owner->lookup_type( v->name, 0, TRUE ) ) // 1.5.4.4 (ge) if the value is of type Type (e.g., <<< SinOsc >>>;)
+        {
+            // look up the type by name in the value's owner namespace, climb==0, stayWithinClassDef==TRUE
+            Chuck_Type * type = v->owner->lookup_type( v->name, 0, TRUE );
+            // append the value pointer directly | 1.5.4.4 (ge) added
+            emit->append( new Chuck_Instr_Reg_Push_Imm( (t_CKUINT)type ) );
         }
         // check size
         // (added 1.3.1.0: iskindofint -- since in some 64-bit systems, sz_INT == sz_FLOAT)
