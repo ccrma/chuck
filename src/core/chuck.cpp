@@ -1384,11 +1384,29 @@ t_CKBOOL ChucK::start()
 //-----------------------------------------------------------------------------
 void ChucK::run( const SAMPLE * input, SAMPLE * output, t_CKINT numFrames )
 {
-    // make sure we started...
-    if( !m_started ) this->start();
+    // make sure we started
+    if( !m_started && !this->start() ) return;
 
     // call the callback
     m_carrier->vm->run( numFrames, input, output );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: removeAllShreds() | 1.5.4.4 (ge) added
+// desc: remove all shreds currently in the VM
+//   |- (NOTE: not synchronous or truly immediate but is thread-safe;
+//   |-  this will happen at the top of the next VM compute() call)
+//-----------------------------------------------------------------------------
+void ChucK::removeAllShreds()
+{
+    // check
+    if( !m_carrier->vm ) return;
+
+    // request VM to remove all shreds asap (thread-safe)
+    m_carrier->vm->remove_all_shreds();
 }
 
 

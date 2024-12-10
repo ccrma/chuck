@@ -663,6 +663,8 @@ public: // running the machine
     // get currently executing shred | 1.5.1.8 (ge) now in VM, in addition to shreduler
     // NOTE this can only be non-NULL during a Chuck_VM::compute() cycle
     Chuck_VM_Shred * get_current_shred() const;
+    // remove all shreds asap (thread-safe) | 1.5.4.4 (ge) added
+    void remove_all_shreds();
 
 public: // invoke functions
     t_CKBOOL invoke_static( Chuck_VM_Shred * shred );
@@ -769,6 +771,10 @@ protected:
                          t_CKBOOL dec = TRUE );
     void dump_shred( Chuck_VM_Shred * shred );
     void release_dump();
+
+    // special flag to remove all shreds in the VM...
+    // as soon as safely possible | 1.5.4.4 (ge) added
+    t_CKBOOL m_asap_remove_all_shreds;
 
 protected:
     t_CKBOOL m_init;

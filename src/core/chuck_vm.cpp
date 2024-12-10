@@ -199,6 +199,7 @@ Chuck_VM::Chuck_VM()
     m_event_buffer = NULL;
     m_shred_id = 0;
     m_shred_check4dupes = FALSE; // 1.5.1.5 (ge)
+    m_asap_remove_all_shreds = FALSE; // 1.5.4.4 (ge) added
 
     // audio hookups
     m_dac = NULL;
@@ -566,6 +567,15 @@ t_CKBOOL Chuck_VM::compute()
     Chuck_Msg * msg = NULL;
     Chuck_Event * event = NULL;
     t_CKBOOL iterate = TRUE;
+
+    // check if request to remove all shreds | 1.5.4.4
+    if( m_asap_remove_all_shreds )
+    {
+        // call remove all
+        this->removeAll();
+        // reset the flag
+        m_asap_remove_all_shreds = FALSE;
+    }
 
     // REFACTOR-2017: spork queued shreds, handle global messages
     // this is called once per chuck time / sample / "tick"
@@ -1449,6 +1459,19 @@ Chuck_VM_Shred * Chuck_VM::get_current_shred() const
     if( !m_shreduler ) return NULL;
     // return shreduler's current shred
     return m_shreduler->get_current_shred();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: remove_all_shreds() | 1.5.4.4 (ge) added
+// desc: remove all shreds asap (thread-safe) will enact atop next compute()
+//-----------------------------------------------------------------------------
+void Chuck_VM::remove_all_shreds()
+{
+    // set the flag
+    m_asap_remove_all_shreds = TRUE;
 }
 
 

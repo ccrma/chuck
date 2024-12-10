@@ -182,6 +182,12 @@ public:
     void run( const SAMPLE * input, SAMPLE * output, t_CKINT numFrames );
 
 public:
+    // remove all shreds currently in the VM | 1.5.4.4 (ge) added
+    //   |- (NOTE: not synchronous or truly immediate, but is thread-safe;
+    //   |-  this will happen at the top of the next VM compute() call)
+    void removeAllShreds();
+
+public:
     // get globals (needed to access Globals Manager)
     //   |- useful for communication between C++ and ChucK using chuck global variables
     Chuck_Globals_Manager * globals();
