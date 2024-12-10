@@ -156,7 +156,8 @@
      AT_OP = 372,
      AT_CTOR = 373,
      AT_DTOR = 374,
-     AT_IMPORT = 375
+     AT_IMPORT = 375,
+     AT_DOC = 376
    };
 #endif
 /* Tokens.  */
@@ -278,6 +279,7 @@
 #define AT_CTOR 373
 #define AT_DTOR 374
 #define AT_IMPORT 375
+#define AT_DOC 376
 
 
 
@@ -309,10 +311,11 @@ typedef union YYSTYPE
     a_Complex complex_exp;
     a_Polar polar_exp;
     a_Vec vec_exp; // ge: added 1.3.5.3
-    a_Import import; // 1.5.2.5 (ge) added
+    a_Import import; // 1.5.4.0 (ge) added
+    a_Doc doc; // 1.5.4.4 (ge) added
 }
 /* Line 1529 of yacc.c.  */
-#line 316 "chuck.tab.h"
+#line 319 "chuck.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
