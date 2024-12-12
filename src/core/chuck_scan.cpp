@@ -370,7 +370,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
         value = env->context->new_Chuck_Value( type, the_class->base_name );
         value->owner = env->curr; CK_SAFE_ADD_REF(value->owner);
         value->is_const = TRUE;
-        value->is_member = FALSE;
+        value->is_instance_member = FALSE;
         // add to env
         env->curr->add_value( the_class->base_name, value );
 
@@ -527,6 +527,9 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
     if( !stmt )
         return TRUE;
 
+    // push stmt | 1.5.4.4 (ge) added to scanner
+    env->stmt_stack.push_back( stmt );
+
     // the type of stmt
     switch( stmt->s_type )
     {
@@ -656,6 +659,9 @@ t_CKBOOL type_engine_scan1_stmt( Chuck_Env * env, a_Stmt stmt )
 
     // set whether all control paths associated with this stmt return | 1.5.1.0
     stmt->allControlPathsReturn = allControlPathsReturn;
+
+    // pop stmt | 1.5.4.4 (ge) added to scanner
+    env->stmt_stack.pop_back();
 
     return ret;
 }
@@ -1785,6 +1791,9 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
     if( !stmt )
         return TRUE;
 
+    // push stmt | 1.5.4.4 (ge) added to scanner
+    env->stmt_stack.push_back( stmt );
+
     // the type of stmt
     switch( stmt->s_type )
     {
@@ -1889,6 +1898,9 @@ t_CKBOOL type_engine_scan2_stmt( Chuck_Env * env, a_Stmt stmt )
             ret = FALSE;
             break;
     }
+
+    // pop stmt | 1.5.4.4 (ge) added to scanner
+    env->stmt_stack.pop_back();
 
     return ret;
 }
@@ -2684,9 +2696,12 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         // remember the owner
         value->owner = env->curr; CK_SAFE_ADD_REF( value->owner );
         value->owner_class = env->func ? NULL : env->class_def;
-        value->is_member = ( env->class_def != NULL &&
+        // set if is instanced member
+        value->is_instance_member = ( env->class_def != NULL &&
                              env->class_scope == 0 &&
                              env->func == NULL && !decl->is_static );
+        // 1.5.4.4 (ge) moved is_static set here from type_engine_check_exp_decl_part2()
+        value->is_static = (decl->is_static != 0);
         value->is_context_global = ( env->class_def == NULL && env->func == NULL );
         value->addr = var_decl->addr;
         // flag it until the decl is checked
@@ -2696,9 +2711,17 @@ t_CKBOOL type_engine_scan2_exp_decl_create( Chuck_Env * env, a_Exp_Decl decl )
         // flag as const | 1.5.1.3 (ge) added
         value->is_const = decl->is_const;
 
+        // if we are located inside a statement
+        if( decl->is_static && env->stmt_stack.size() )
+        {
+            // mark containing statement as having static decl | 1.5.4.3 (ge) added as part of #2024-static-init
+            // 1.5.4.4 (ge) moved this logic from type_engine_check_exp_decl_part2()
+            env->stmt_stack.back()->hasStaticDecl = TRUE;
+        }
+
         // dependency tracking: remember the code position of the DECL | 1.5.0.8
-        // NOTE track if context-global and not global, or class-member
-        if( (value->is_context_global && !value->is_global ) || value->is_member )
+        // NOTE track if context-global and not global, or class-member, or static (1.5.4.4 added static check)
+        if( (value->is_context_global && !value->is_global ) || value->is_instance_member || value->is_static )
             value->depend_init_where = var_decl->where;
 
         // remember the value
@@ -3120,7 +3143,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // remember the owner
     value->owner = env->curr; CK_SAFE_ADD_REF( value->owner );
     value->owner_class = env->class_def; CK_SAFE_ADD_REF( value->owner_class );
-    value->is_member = func->is_member;
+    value->is_instance_member = func->is_member;
     // is global context
     value->is_context_global = env->class_def == NULL;
     // remember the func
@@ -3251,7 +3274,7 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         v->owner = env->curr; CK_SAFE_ADD_REF( v->owner );
         // function args not owned
         v->owner_class = NULL; CK_SAFE_ADD_REF( v->owner_class );
-        v->is_member = FALSE;
+        v->is_instance_member = FALSE;
         v->is_const = FALSE; // 1.5.1.3 (ge) added explicitly for future reference
         // later: add as value
         // symbols.push_back( arg_list );

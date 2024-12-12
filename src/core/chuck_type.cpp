@@ -3664,7 +3664,7 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             if( env->func )
                             {
                                 // if func static, v not
-                                if( env->func->is_static && v->is_member && !v->is_static )
+                                if( env->func->is_static && v->is_instance_member && !v->is_static )
                                 {
                                     EM_error2( exp->where,
                                         "non-static member '%s' used from static function", S_name( exp->var ) );
@@ -3715,13 +3715,31 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                             S_name(exp->var) );
                         return NULL;
                     }
-                    else if( v->is_member )
+                    else if( v->is_instance_member )
                     {
                         EM_error2( exp->where,
                             "class member '%s' is used before declaration",
                             S_name(exp->var) );
                         return NULL;
                     }
+                }
+
+                // 1.5.4.3 (ge) added this check #2024-static-init
+                // static variable declarations cannot access values that
+                if( v && v->is_context_global && !v->is_global
+                      && env->class_def && !env->func && env->in_static_stmt() )
+                {
+                    if( v->func_ref )
+                    {
+                        EM_error2( exp->where,
+                                   "cannot call local function '%s' to initialize a static variable", v->func_ref->signature(FALSE,FALSE).c_str() );
+                    }
+                    else
+                    {
+                        EM_error2( exp->where,
+                                   "cannot access local variable '%s' to initialize a static variable", S_name( exp->var ) );
+                    }
+                    return FALSE;
                 }
 
                 // dependency tracking
@@ -4459,7 +4477,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         }
 
         // member?
-        if( value->is_member )
+        if( value->is_instance_member )
         {
             // offset
             value->offset = env->curr->offset;
@@ -4480,7 +4498,7 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
             env->curr->offset = type_engine_next_offset( env->curr->offset, type );
             // env->curr->offset += type->size;
         }
-        else if( decl->is_static ) // static
+        else if( value->is_static ) // static
         {
             // base scope
             if( env->class_def == NULL || env->class_scope > 0 )
@@ -4490,19 +4508,10 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
                 return NULL;
             }
 
-            // flag
-            value->is_static = TRUE;
             // offset
             value->offset = env->class_def->nspc->static_data_size;
             // move the size
             env->class_def->nspc->static_data_size += type->size;
-
-            // if we are located inside a statement
-            if( env->stmt_stack.size() )
-            {
-                // mark containing statement as having static decl | 1.5.4.3 (ge) added as part of #2024-static-init
-                env->stmt_stack.back()->hasStaticDecl = TRUE;
-            }
 
             // // if this is an object
             // if( is_obj && !is_ref )
@@ -4983,6 +4992,10 @@ t_CKTYPE type_engine_check_exp_func_call( Chuck_Env * env, a_Exp exp_func, a_Exp
         }
         else if( env->class_def ) // in a class definition
         {
+            // check if a non-static stmt content is calling a static function | 1.5.4.4 (ge) added
+            // if so, no dependency since static is handled out-of-band
+            // t_CKBOOL skip = env->stmt_stack.size() && !env->stmt_stack.back()->hasStaticDecl && ck_func->is_static;
+
             // dependency tracking: add the callee's dependencies
             env->class_def->depends.add( &ck_func->depends );
         }
@@ -5194,7 +5207,8 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
 {
     Chuck_Value * value = NULL;
     Chuck_Type * the_base = NULL;
-    t_CKBOOL base_static = FALSE;
+    t_CKBOOL base_type_static = FALSE;
+    t_CKBOOL base_exp_static = FALSE;
     string str;
 
     // type check the base
@@ -5215,10 +5229,10 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     }
 
     // is the base a class/namespace or a variable
-    base_static = type_engine_is_base_type_static( env, member->t_base );
-    // base_static = isa( member->t_base, env->ckt_class )
+    base_type_static = type_engine_is_base_type_static( env, member->t_base );
+
     // actual type
-    the_base = base_static ? member->t_base->actual_type : member->t_base;
+    the_base = base_type_static ? member->t_base->actual_type : member->t_base;
 
     // have members?
     if( !the_base->nspc )
@@ -5235,7 +5249,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     if( str == "this" )
     {
         // uh
-        if( base_static )
+        if( base_type_static )
         {
             EM_error2( member->where,
                 "keyword 'this' must be associated with object instance" );
@@ -5264,7 +5278,7 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
     }
 
     // make sure
-    if( base_static && value->is_member )
+    if( base_type_static && value->is_instance_member )
     {
         // this won't work
         EM_error2( member->where,
@@ -5272,6 +5286,15 @@ t_CKTYPE type_engine_check_exp_dot_member( Chuck_Env * env, a_Exp_Dot_Member mem
             the_base->c_name(), S_name(member->xid) );
         return NULL;
     }
+
+    // FYI verification of static initialization rules reside in the emitter
+    // specifically in emit_engine_emit_exp_dot_member() -- this is due to
+    // the emitter implicitly handling both X.Y and Y (where Y is used inside
+    // X's definition), but the type-checker currently does not do this
+    // FYI this is for detecting things like:
+    // ""cannot call non-static function '%s' to initialize a static variable"
+    // 1.5.4.4 (ge) commented after trying to move the logic to this point
+    // and seeing incorrect unit test behavior | #2024-static-init
 
     return value->type;
 }
@@ -7096,7 +7119,7 @@ Chuck_Type * type_engine_import_class_begin( Chuck_Env * env, Chuck_Type * type,
     value->owner = where; CK_SAFE_ADD_REF( value->owner );
     // CK_SAFE_REF_ASSIGN( value->owner, where );
     value->is_const = TRUE;
-    value->is_member = FALSE;
+    value->is_instance_member = FALSE;
 
     // add to env
     where->add_value( value->name, value );
@@ -9613,7 +9636,7 @@ Chuck_Value::Chuck_Value( Chuck_Type * t, const std::string & n, void * a,
     is_const = c; access = acc;
     owner = o; CK_SAFE_ADD_REF( owner ); // add reference
     owner_class = oc; CK_SAFE_ADD_REF( owner_class ); // add reference
-    addr = a; is_member = FALSE;
+    addr = a; is_instance_member = FALSE;
     is_static = FALSE; is_context_global = FALSE;
     is_decl_checked = TRUE; // only set to false in certain cases
     is_global = FALSE;
@@ -10020,8 +10043,9 @@ const Chuck_Value_Dependency * Chuck_Value_Dependency_Graph::locateLocal(
         {
             // usage NOT from within a class def; value in question NOT a class member OR
             // usage from within a class def; value in question is a class member of the same class
-            if( (fromClassDef==NULL && v->is_member==FALSE) ||
-                (fromClassDef && v->is_member && equals(v->owner_class, fromClassDef)) )
+            // 1.5.4.4 (ge) add is_static to the logic (otherwise this will not work for static variables) #2024-static-init
+            if( (fromClassDef == NULL && !v->is_instance_member && !v->is_static) ||
+                (fromClassDef && equals(v->owner_class, fromClassDef) && (v->is_instance_member|| v->is_static)) )
             {
                 // return dependency
                 return &directs[i];

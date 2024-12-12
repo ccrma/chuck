@@ -1935,7 +1935,7 @@ static t_CKBOOL CK_DLL_CALL ck_get_mvar(Chuck_DL_Api::Object o, const char * nam
         // see if name is correct type
         if (value->type->xid != basic_type) continue;
         // see if var is a member var
-        if (!value->is_member) continue;
+        if (!value->is_instance_member) continue;
 
         // ladies and gentlemen, we've got it
         var = value;

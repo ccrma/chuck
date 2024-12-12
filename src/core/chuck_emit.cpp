@@ -496,7 +496,7 @@ t_CKBOOL emit_engine_emit_stmt( Chuck_Emitter * emit, a_Stmt stmt, t_CKBOOL pop 
 
         // get associated class
         Chuck_Type * type = emit->env->class_def;
-        // push the current code sequender
+        // push the current code sequencer
         emit->code_stack.push_back( emit->code );
         // set the static code sequencer as the current
         emit->code = type->static_code_emit;
@@ -4443,6 +4443,12 @@ t_CKBOOL emit_engine_emit_exp_func_call( Chuck_Emitter * emit,
     // should help prevent confusing crashes; removing check for spork
     if( !emit->env->func /* && !spork */ )
     {
+        // check if we should check for dependency | 1.5.4.4 (ge) added #2024-static-init
+        // can skip check if 1) we are in a class def 2) not in a stmt marked for static init 3) the function we are calling is static
+        // actually, this doesn't work for cases where static functions actually depend (implicitly) on instance members / pre-ctor
+        // for example through the use of new; see test/06-Errors/error-depend-class-extend.ck
+        // t_CKBOOL skip = ( emit->env->class_def && !emit->env->in_static_stmt() && func->is_static );
+
         // dependency tracking: check if we invoke func before all its deps are initialized | 1.5.0.8 (ge) added
         // NOTE if func originates from another file, this should behave correctly and return NULL | 1.5.1.1 (ge) fixed
         // NOTE passing in emit->env->class_def, to differentiate dependencies across class definitions | 1.5.2.0 (ge) fixed
@@ -4790,16 +4796,16 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
 
     // get the value to test | 1.5.4.3 (ge) added as part of #2024-static-init
     // NOTE: this type of check usually resides pre-emisssion, in the type-checker
-    // but in this case, the hasStaticDecl check happens in the type-checker
-    // and this verification needs to be come after that
+    // but in this case, dot_member() emission also implicitly covers symbol X
+    // if X is a member of a class (type-checker does not do this implicit conversion at the moment)
     Chuck_Value * v = type_engine_find_value( t_base, member->xid );
     if( v && (!base_type_static && !base_exp_static)
           && emit->env->class_def && !emit->env->func
-          && (emit->env->stmt_stack.size() && emit->env->stmt_stack.back()->hasStaticDecl) )
+          && emit->env->in_static_stmt() )
     {
         if( v->func_ref )
         {
-            if( v->is_member )
+            if( v->is_instance_member )
             {
                 EM_error2( member->where,
                            "cannot call non-static function '%s' to initialize a static variable", v->func_ref->signature(FALSE,FALSE).c_str() );
@@ -4871,7 +4877,7 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             offset = value->offset;
 
             // is the value static?
-            if( value->is_member )
+            if( value->is_instance_member )
             {
                 // emit the base (TODO: return on error?)
                 emit_engine_emit_exp( emit, member->base );
@@ -5406,7 +5412,7 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
         // put in the value
 
         // member
-        if( value->is_member )
+        if( value->is_instance_member )
         {
             // zero out location in object, and leave addr on operand stack
             // added 1.3.1.0: iskindofint -- on some 64-bit systems, sz_int == sz_FLOAT
@@ -6242,7 +6248,7 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
     }
 
     // if part of class - this only works because x.y is handled separately
-    if( v->owner_class && (v->is_member || v->is_static) )
+    if( v->owner_class && (v->is_instance_member || v->is_static) )
     {
         // make sure talking about the same class
         // this doesn't work since the owner class could be a super class
@@ -6290,24 +6296,6 @@ t_CKBOOL emit_engine_emit_symbol( Chuck_Emitter * emit, S_Symbol symbol,
 
         // done
         return TRUE;
-    }
-
-    // 1.5.4.3 (ge) added this check #2024-static-init
-    // static variable declarations cannot access values that
-    if( v && v->is_context_global && !v->is_global
-          && emit->env->class_def && !emit->env->func && (emit->env->stmt_stack.size() && emit->env->stmt_stack.back()->hasStaticDecl) )
-    {
-        if( v->func_ref )
-        {
-            EM_error2( exp->where,
-                       "cannot call local function '%s' to initialize a static variable", v->func_ref->signature(FALSE,FALSE).c_str() );
-        }
-        else
-        {
-            EM_error2( exp->where,
-                       "cannot access local variable '%s' to initialize a static variable", S_name( exp->var ) );
-        }
-        return FALSE;
     }
 
     // var or value

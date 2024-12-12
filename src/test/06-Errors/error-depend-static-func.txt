@@ -1,0 +1,10 @@
+error-depend-static-func.ck:4:5: error: calling 'bar()' at this point skips initialization of a needed variable:
+[4]     bar() => static vec2 foo;
+        ^
+error-depend-static-func.ck:4:26: error: ...(note: this skipped variable initialization is needed by 'fun vec2 Foo.bar()')
+[4]     bar() => static vec2 foo;
+                             ^
+error-depend-static-func.ck:8:16: error: ...(note: this is where the variable is used within 'fun vec2 Foo.bar()' or its subsidiaries)
+[8]         return foo;
+                   ^
+error-depend-static-func.ck: ...(hint: try calling 'bar()' after the variable initialization)

@@ -790,6 +790,10 @@ public:
     Chuck_Type * get_array_type( Chuck_Type * array_parent,
                                  t_CKUINT depth, Chuck_Type * base_type /*,
                                  Chuck_Namespace * owner_nspc */ );
+public:
+    // helper: are we currently in a stmt that has been marked for static init?
+    // 1.5.4.4 (ge) added #2024-static-init
+    t_CKBOOL in_static_stmt() { return stmt_stack.size() && stmt_stack.back()->hasStaticDecl; }
 
 protected:
     Chuck_Carrier * m_carrier;
@@ -973,7 +977,8 @@ public:
     void clear();
     // look for a dependency that occurs AFTER a particular code position
     // this function crawls the graph, taking care in the event of cycles
-    const Chuck_Value_Dependency * locate( t_CKUINT pos, Chuck_Type * fromClassDef = NULL );
+    const Chuck_Value_Dependency * locate( t_CKUINT pos,
+                                           Chuck_Type * fromClassDef = NULL );
 
 public:
     // constructor
@@ -1171,8 +1176,8 @@ struct Chuck_Value : public Chuck_VM_Object
     void * addr;
     // const?
     t_CKBOOL is_const;
-    // member?
-    t_CKBOOL is_member;
+    // instanced (non-static) member?
+    t_CKBOOL is_instance_member;
     // static?
     t_CKBOOL is_static; // do something
     // is context-global?

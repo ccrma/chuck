@@ -1,0 +1,10 @@
+error-depend-class-func2.ck:6:5: error: calling 'bar()' at this point skips initialization of a needed variable:
+[6]     bar() => vec2 foo;
+        ^
+error-depend-class-func2.ck:6:19: error: ...(note: this skipped variable initialization is needed by 'fun vec2 Foo.bar()')
+[6]     bar() => vec2 foo;
+                      ^
+error-depend-class-func2.ck:10:16: error: ...(note: this is where the variable is used within 'fun vec2 Foo.bar()' or its subsidiaries)
+[10]         return foo;
+                    ^
+error-depend-class-func2.ck: ...(hint: try calling 'bar()' after the variable initialization)

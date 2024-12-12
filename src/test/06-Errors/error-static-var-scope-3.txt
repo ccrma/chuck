@@ -1,0 +1,3 @@
+error-static-var-scope-3.ck:6:14: error: static variables must be declared at class scope
+[6]         5 => static int X;
+                 ^

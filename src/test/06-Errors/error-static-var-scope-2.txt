@@ -1,0 +1,4 @@
+error-static-var-scope-2.ck:7:14: error: static variables must be declared at class scope
+[7]         5 => static int X;
+                 ^
+error-static-var-scope-2.ck: ...in function 'void Foo.bar()'
