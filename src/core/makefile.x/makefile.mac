@@ -32,11 +32,13 @@ CFLAGS+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 CFLAGSDEPEND+= -D__MACOSX_CORE__ $(FORCE_M32) $(ISYSROOT)
 
 FRAMEWORKS+= CoreAudio CoreMIDI CoreFoundation IOKit Carbon AppKit Foundation
+# linker assumes CXX -- e.g., g++
 LDFLAGS+= $(FORCE_M32) $(ISYSROOT) $(addprefix -framework ,$(FRAMEWORKS)) \
-    $(LINK_EXTRAS) -lc++ -lm
+    $(LINK_EXTRAS) -lm
+# if linking using CC -- e.g., gcc -- add -lc++
+# LDFLAGS+= -lc++
 
 SF_CSRCS+= util_sndfile.c
-
 
 # this is to link properly on leopard...
 MACOSX_DEPLOYMENT_TARGET=10.9
@@ -47,7 +49,6 @@ export MACOSX_DEPLOYMENT_TARGET
 # by default, ChucK uses a pre-configured libsndfile...
 # uncomment the next 3 lines to use libsndfile on your system
 #-----------------------------------------------------------------------------
-#FLAGS+= -D__CK_SNDFILE_NATIVE__
-#LIBS+= -lsndfile
-#SF_OBJ=
-
+# FLAGS+= -D__CK_SNDFILE_NATIVE__
+# LIBS+= -lsndfile
+# SF_OBJ=
