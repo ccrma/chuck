@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.4.4
+1.5.4.4 (January 2025)
 =======
 (added) basic @doc functionality for language-defined classes to add inline
     CKDoc documentation for class definitions and function defintions.
@@ -46,6 +46,10 @@ ChucK VERSIONS log
         }
     }
     --------
+=======
+(fixed) miniAudicle export and record functionalities; these resulted in
+    empty WAV file (in 1.5.4.2 and 1.5.4.3), due to updates to garbage collection
+    policy for UGens. exporting and recording should now work, once again
 
 
 1.5.4.3 (December 2024)
@@ -118,7 +122,7 @@ ChuGL v0.2.5 Release Notes
     GWindow.keysUp()
 (added) new RenderPass methods to set the output resolution, msaa sample 
     count,target scene and target camera for rendering
-(added) HUD pass to ChuGL's default rendergraph. Can now easily add 2d HUD
+garbage collection mechanism for all UGens(added) HUD pass to ChuGL's default rendergraph. Can now easily add 2d HUD
     overlay to 3D scenes by grucking ggens to GG.hud()
 (added) examples/basic/hud.ck
 (fixed) crash caused by ShaderDesc and other internal reference counting
