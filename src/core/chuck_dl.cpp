@@ -3071,6 +3071,8 @@ Chuck_VM_Shred * CK_DLL_CALL ck_shred_parent( Chuck_VM_Shred * shred )
 //-----------------------------------------------------------------------------
 #if defined(__PLATFORM_WINDOWS__)
 #include <system_error> // std::system_category() | 1.5.1.5
+#include <algorithm> // std::replace() | 1.5.4.5
+
 extern "C"
 {
 
