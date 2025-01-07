@@ -1588,6 +1588,28 @@ void ChucK::poop()
 
 
 //-----------------------------------------------------------------------------
+// name: bind()
+// desc: additional native chuck bindings/types (use with extra caution)
+//-----------------------------------------------------------------------------
+t_CKBOOL ChucK::bind( f_ck_query queryFunc, const std::string & name )
+{
+    // check if we have initialized a compiler
+    if( !compiler() )
+    {
+        // error message
+        EM_error2( 0, "cannot bind() -- ChucK/compiler is not initialized..." );
+        // done
+        return FALSE;
+    }
+
+    // perform the bind
+    return compiler()->bind( queryFunc, name );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: setMainThreadHook()
 // desc: set a function pointer to call from the main thread loop
 //       e.g., for graphics, MAUI, potentially from a chug-in
