@@ -134,8 +134,8 @@ t_CKBOOL chuck_parse( Chuck_CompileTarget * target )
     }
     else
     {
-        CK_FPRINTF_STDERR( "[chuck](parser): (internal) code and FILE descriptor both NULL!\n" );
-        CK_FPRINTF_STDERR( "[chuck](parser):  |- bailing out...\n" );
+        CK_FPRINTF_STDERR( "[chuck](parser): nothing to parse (empty code / file)...\n" );
+        CK_FPRINTF_STDERR( "[chuck](parser):  |- no action taken\n" );
         return FALSE;
     }
 
