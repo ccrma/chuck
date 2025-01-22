@@ -2162,6 +2162,9 @@ static int		au_read_header (SF_PRIVATE *psf) ;
 
 /*------------------------------------------------------------------------------
 ** Public function.
+** NOTE: in XCode, this sometimes yields a type conflict with audit_record.h
+** workaround: disable modules in project settings
+**     https://stackoverflow.com/questions/29477856/os-x-conflict-types-for-send
 */
 
 int
