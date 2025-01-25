@@ -68,7 +68,6 @@ t_CKBOOL type_engine_check_break( Chuck_Env * env, a_Stmt_Break br );
 t_CKBOOL type_engine_check_continue( Chuck_Env * env, a_Stmt_Continue cont );
 t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt );
 t_CKBOOL type_engine_check_switch( Chuck_Env * env, a_Stmt_Switch stmt );
-t_CKBOOL type_engine_enact_doc( Chuck_Env * env, a_Stmt_Doc doc );
 t_CKTYPE type_engine_check_exp( Chuck_Env * env, a_Exp exp );
 t_CKTYPE type_engine_check_exp_binary( Chuck_Env * env, a_Exp_Binary binary );
 t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs, a_Exp_Binary binary );
@@ -100,6 +99,10 @@ t_CKBOOL type_engine_check_cast_valid( Chuck_Env * env, t_CKTYPE to, t_CKTYPE fr
 t_CKBOOL type_engine_check_code_segment( Chuck_Env * env, a_Stmt_Code stmt, t_CKBOOL push = TRUE );
 t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
+t_CKBOOL type_engine_remember_doc( Chuck_Env * env, a_Stmt_Doc doc );
+void type_engine_set_doc( Chuck_Env * env, Chuck_Func * func_def );
+void type_engine_set_doc( Chuck_Env * env, Chuck_Type * class_def );
+void type_engine_set_doc( Chuck_Env * env, Chuck_Value * value );
 
 // helpers
 void type_engine_init_op_overload_builtin( Chuck_Env * env );
@@ -1244,7 +1247,7 @@ t_CKBOOL type_engine_check_stmt( Chuck_Env * env, a_Stmt stmt )
             break;
 
         case ae_stmt_doc: // 1.5.4.4 (ge) added
-            ret = type_engine_enact_doc( env, &stmt->stmt_doc );
+            ret = type_engine_remember_doc( env, &stmt->stmt_doc );
             break;
 
         case ae_stmt_if:
@@ -1838,30 +1841,83 @@ t_CKBOOL type_engine_check_return( Chuck_Env * env, a_Stmt_Return stmt )
 
 
 //-----------------------------------------------------------------------------
-// name: type_engine_enact_doc()
-// desc: take action for @doc statement
+// name: type_engine_remember_doc()
+// desc: remember @doc statement for upcoming target | 1.5.4.5 (ge) added
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_enact_doc( Chuck_Env * env, a_Stmt_Doc doc )
+t_CKBOOL type_engine_remember_doc( Chuck_Env * env, a_Stmt_Doc doc )
 {
-    // check if we are in a function
-    if( env->func )
-    {
-        // set the documentation string from first
-        env->func->doc = doc->list ? doc->list->desc : "";
-    }
-    else if( env->class_def )
-    {
-        // set the documentation string from first
-        env->class_def->doc = doc->list ? doc->list->desc : "";
-    }
-    else
+    // get the current context
+    Chuck_Context * context = env->context;
+    // no context?
+    if( !context )
     {
         // error
-        EM_error2( doc->where, "@doc statements used outside class and function definitions");
+        EM_error2( doc->where, "(internal error) @doc encountered NULL file context" );
         return FALSE;
     }
 
+    // check if we already have a pending @doc
+    if( context->stmt_doc )
+    {
+        // error
+        EM_error2( doc->where, "consecutive @doc detected; was expecting a class, function, or variable declaratoin" );
+        return FALSE;
+    }
+
+    // remember
+    context->stmt_doc = doc;
+
+    // done
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_set_doc()
+// desc: take action for @doc statement
+//-----------------------------------------------------------------------------
+void type_engine_set_doc( Chuck_Env * env, Chuck_Func * func_def )
+{
+    // check if we have an outstanding doc stmt
+    if( !env->context || !env->context->stmt_doc ) return;
+    // get the doc
+    a_Stmt_Doc doc = env->context->stmt_doc;
+    // reset the remembered @doc
+    env->context->stmt_doc = NULL;
+    // set the documentation string from first
+    func_def->doc = doc->list ? doc->list->desc : "";
+}
+//-----------------------------------------------------------------------------
+// name: type_engine_set_doc()
+// desc: take action for @doc statement
+//-----------------------------------------------------------------------------
+void type_engine_set_doc( Chuck_Env * env, Chuck_Type * class_def )
+{
+    // check if we have an outstanding doc stmt
+    if( !env->context || !env->context->stmt_doc ) return;
+    // get the doc
+    a_Stmt_Doc doc = env->context->stmt_doc;
+    // reset the remembered @doc
+    env->context->stmt_doc = NULL;
+    // set the documentation string from first
+    class_def->doc = doc->list ? doc->list->desc : "";
+}
+//-----------------------------------------------------------------------------
+// name: type_engine_set_doc()
+// desc: take action for @doc statement
+//-----------------------------------------------------------------------------
+void type_engine_set_doc( Chuck_Env * env, Chuck_Value * value )
+{
+    // check if we have an outstanding doc stmt
+    if( !env->context || !env->context->stmt_doc ) return;
+    // get the doc
+    a_Stmt_Doc doc = env->context->stmt_doc;
+    // reset the remembered @doc
+    env->context->stmt_doc = NULL;
+    // set the documentation string from first
+    value->doc = doc->list ? doc->list->desc : "";
 }
 
 
@@ -4425,6 +4481,8 @@ t_CKTYPE type_engine_check_exp_decl_part2( Chuck_Env * env, a_Exp_Decl decl )
         value = var_decl->value;
         // make sure
         assert( value != NULL );
+        // set ckdoc, if present | 1.5.4.5 (ge) added
+        type_engine_set_doc( env, value );
         // get the type
         type = value->type;
         // make sure
@@ -5382,7 +5440,7 @@ t_CKTYPE type_engine_check_exp_array( Chuck_Env * env, a_Exp_Array array )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_class_def()
-// desc: ...
+// desc: type check a class definition
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
 {
@@ -5406,6 +5464,9 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
         // done
         return FALSE;
     }
+
+    // set ckdoc, if present | 1.5.4.5 (ge)
+    type_engine_set_doc( env, the_class );
 
     // NB the following should be done AFTER the parent is completely defined
     // --
@@ -5744,6 +5805,9 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         // next arg
         arg_list = arg_list->next;
     }
+
+    // set ckdoc, if present | 1.5.4.5 (ge)
+    type_engine_set_doc( env, theFunc );
 
     // type check the code
     assert( f->code == NULL || f->code->s_type == ae_stmt_code );

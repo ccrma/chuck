@@ -1,33 +1,42 @@
-// test adding descriptions with classes and functions using @doc
-// requires: chuck-1.5.4.4 or higher
+// show how to add descriptions with classes and functions
+// using @doc; descriptions added in this manner are associatd
+// with respective classes and functions and will appear in the
+// .help() runtime info mechanism, as well as in documentation
+// generated using CKDoc.
+//
+// requires: chuck-1.5.4.5 or higher
 
+// add inline documenation (processed at compile-time)
+// (@doc must appear right before the class definition)
+@doc "this is a description for the class Foo"
 class Foo
 {
     // add inline documenation (processed at compile-time)
-    // (@doc can appear anywhere within the class definition)
-    @doc "this is a description for the class Foo"
-    
+    // (@doc must appear immediately before the function definition)
+    @doc "a function in Foo, bar() likes calling his friends"
     fun void bar()
     {
         beth();
         kenny();
-
-        // add inline documenation (processed at compile-time)
-        // (@doc can appear anywhere within the function definition)
-        @doc "a function in Foo, bar() likes calling his friends"
     }
 
+    // add inline documenation (processed at compile-time)
+    @doc "beth() is working on a novel about shared memory"
     fun static void beth()
-    {
-        // add inline documenation (processed at compile-time)
-        @doc "beth() is working on a novel about shared memory"
-    }
+    { }
 
+    // add inline documenation (processed at compile-time)
+    @doc "kenny() is fun, and expects nothing in return"
     fun static void kenny()
-    {
-        // add inline documenation (processed at compile-time)
-        @doc "kenny() is fun, and expects nothing in return"
-    }
+    { }
+
+    // add inline documentation for variable
+    @doc "this here is a variable called Foo"
+    5 => int varFoo;
+
+    // add inline documentation for variable
+    @doc "this here is a static variable called Bar"
+    10 => static int varBar;
 }
 
 // print runtime info about Foo...
@@ -40,3 +49,6 @@ class Foo
 Foo f;
 <<< CKDoc.describe( f ) >>>;
 <<< CKDoc.describe( f.bar ) >>>;
+
+// print the ckdoc for Foo
+// Foo.help()

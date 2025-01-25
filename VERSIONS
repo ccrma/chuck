@@ -2,11 +2,37 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.4.5 (January 2025)
+=======
+(reworked) basic @doc functionality for language-defined classes to add
+    inline CKDoc documentation for class definitions and function defintions.
+(reworked; now different from 1.5.4.4)
+    ----------------------------------------
+    // add inline documenation (processed at compile-time)
+    @doc "this is a description for the class Foo"
+    class Foo
+    {
+        // add inline documenation (processed at compile-time)
+        @doc "a function in Foo, bar() likes calling his friends"
+        fun void bar()
+        { }
+
+        // add inline documentation for a class variable
+        @doc "this here is a variable called varFoo"
+        5 => int varFoo;
+    }
+    // these @doc information will appear wherever CKDoc is generated
+    // or displayed, for example:
+    Foo.help();
+    ----------------------------------------
+
+
 1.5.4.4 (January 2025)
 =======
 (added) basic @doc functionality for language-defined classes to add inline
     CKDoc documentation for class definitions and function defintions.
-(added) function to retrive CKDoc descriptions for classes and functions:
+(added, experimental -- NOTE: the semantics of this was rewored in 1.5.4.5)
+    function to retrive CKDoc descriptions for classes and functions:
     string CKDoc.describe( Object target );
     ----------------------------------------
     class Foo

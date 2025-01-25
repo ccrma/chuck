@@ -402,6 +402,8 @@ struct Chuck_Context : public Chuck_VM_Object
 
     // AST (does not persist past context unloading)
     a_Program parse_tree;
+    // ckdoc pending @doc statement for this context | 1.5.4.5 (ge) added
+    a_Stmt_Doc stmt_doc;
 
     // progress
     enum ContextProgress { P_NONE = 0, P_IMPORTING, P_IMPORTED, P_ALL_DONE };
@@ -421,7 +423,8 @@ public:
 
 public:
     // constructor
-    Chuck_Context() { parse_tree = NULL; nspc = new Chuck_Namespace;
+    Chuck_Context () {
+        parse_tree = NULL; stmt_doc = NULL;  nspc = new Chuck_Namespace;
                       has_error = FALSE; progress = P_NONE; }
     // destructor
     virtual ~Chuck_Context();
