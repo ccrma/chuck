@@ -100,6 +100,7 @@ t_CKBOOL type_engine_check_code_segment( Chuck_Env * env, a_Stmt_Code stmt, t_CK
 t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def func_def );
 t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def );
 t_CKBOOL type_engine_remember_doc( Chuck_Env * env, a_Stmt_Doc doc );
+t_CKBOOL type_engine_check_stmt_list_for_doc_only( Chuck_Env * env, a_Stmt_List list );
 void type_engine_set_doc( Chuck_Env * env, Chuck_Func * func_def );
 void type_engine_set_doc( Chuck_Env * env, Chuck_Type * class_def );
 void type_engine_set_doc( Chuck_Env * env, Chuck_Value * value );
@@ -1003,7 +1004,14 @@ t_CKBOOL type_engine_check_context( Chuck_Env * env,
         {
         case ae_section_stmt:
             // if only classes, then skip
-            if( how_much == te_do_import_only ) break;
+            if( how_much == te_do_import_only )
+            {
+                // pick up any @doc statements... the latest is assumed to pertain to an upcoming class | 1.5.4.5 (ge) added
+                // this ensures that @doc (which comes *before* the class def) works for imported class definitions
+                ret = type_engine_check_stmt_list_for_doc_only( env, prog->section->stmt_list );
+                // bypass the rest
+                break;
+            }
             // check the statements
             ret = type_engine_check_stmt_list( env, prog->section->stmt_list );
             break;
@@ -1151,7 +1159,7 @@ t_CKBOOL type_engine_unload_context( Chuck_Env * env )
 
 //-----------------------------------------------------------------------------
 // name: type_engine_check_stmt_list()
-// desc: ...
+// desc: type check a statement list
 //-----------------------------------------------------------------------------
 t_CKBOOL type_engine_check_stmt_list( Chuck_Env * env, a_Stmt_List list )
 {
@@ -1167,6 +1175,45 @@ t_CKBOOL type_engine_check_stmt_list( Chuck_Env * env, a_Stmt_List list )
     }
 
     return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: type_engine_check_stmt_list_for_doc_only() | 1.5.4.5 (ge) added
+// desc: type check a statement list, but only paying attention to @doc statements
+//-----------------------------------------------------------------------------
+t_CKBOOL type_engine_check_stmt_list_for_doc_only( Chuck_Env * env, a_Stmt_List list )
+{
+    // return type
+    t_CKBOOL ret = TRUE;
+
+    // type check the stmt_list
+    while( list && ret )
+    {
+        // check (stmt could be NULL)
+        if( list->stmt )
+        {
+            // the type of stmt
+            switch( list->stmt->s_type )
+            {
+                case ae_stmt_doc: // 1.5.4.5 (ge) added
+                    ret = type_engine_remember_doc( env, &list->stmt->stmt_doc );
+                    // actually, allow doc errors here, for now, including consecutive @doc
+                    if( !ret ) ret = TRUE; // lol
+                    break;
+
+                default:
+                    // 's all good
+                    break;
+            }
+        }
+        // advance to the next statement
+        list = list->next;
+    }
+
+    return ret;
 }
 
 
