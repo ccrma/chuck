@@ -6742,9 +6742,15 @@ Chuck_Type * type_engine_find_type( Chuck_Namespace * npsc, S_Symbol xid )
 // name: type_engine_find_type()
 // desc: find global type
 //-----------------------------------------------------------------------------
-Chuck_Type * type_engine_find_type( Chuck_Env * env, const std::string & name )
+Chuck_Type * type_engine_find_type( Chuck_Env * env, const std::string & name,
+                                    t_CKBOOL expandToUser )
 {
-    return type_engine_find_type( env->global(), insert_symbol(name.c_str()) );
+    // look for type in global namespace
+    Chuck_Type * t = type_engine_find_type( env->global(), insert_symbol(name.c_str()) );
+    // if not found and expand search to user
+    if( !t ) t = type_engine_find_type( env->user(), insert_symbol(name.c_str()) );
+    // return what we got
+    return t;
 }
 
 

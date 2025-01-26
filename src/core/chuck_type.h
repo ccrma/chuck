@@ -1446,7 +1446,8 @@ t_CKBOOL type_engine_is_base_exp_static( Chuck_Env * env, a_Exp_Dot_Member exp )
 t_CKBOOL type_engine_binary_is_func_call( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp rhs ); // 1.5.4.3 (ge) added
 Chuck_Type  * type_engine_find_common_anc( Chuck_Type * lhs, Chuck_Type * rhs );
 Chuck_Type  * type_engine_find_type( Chuck_Env * env, a_Id_List path );
-Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name ); // 1.5.0.0 (ge) added
+// 1.5.0.0 (ge) added | 1.5.4.5 (ge & alex) added expandToUser=TRUE optional argument
+Chuck_Type  * type_engine_find_type( Chuck_Env * env, const std::string & name, t_CKBOOL expandToUser = TRUE );
 Chuck_Value * type_engine_find_value( Chuck_Type * type, const std::string & xid );
 Chuck_Value * type_engine_find_value( Chuck_Type * type, S_Symbol xid );
 Chuck_Value * type_engine_find_value( Chuck_Env * env, const std::string & xid, t_CKBOOL climb, t_CKBOOL stayWithClassDef = FALSE, int linepos = 0 );
