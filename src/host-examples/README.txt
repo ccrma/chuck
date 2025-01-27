@@ -13,7 +13,7 @@ Examples
 ========
 host-1-minimal.cpp -- (no real-time audio) shows the basics of 
 initializing a ChucK instance, and using it to compile and run some ChucK 
-code.
+code
 
 host-2-audio.cpp -- shows integrating the ChucK instance in a host with 
 real-time audio, and shows using the ChucK instance to compile and run 
@@ -26,6 +26,9 @@ ChucK global variables
 host-4-shreds.cpp -- shows high-level shred operations from c++, including
 adding, removing last, and getting the current VM status including info
 about shreds
+
+host-5-custom-api.cpp -- shows binding custom classes from a c++ host, to
+add new custom classes specific to the host, usable from ChucK
 
 ========
 Building
