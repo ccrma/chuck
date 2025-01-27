@@ -25,6 +25,7 @@ ChucK VERSIONS log
     // or displayed, for example:
     Foo.help();
     ----------------------------------------
+(added) examples/basic/blit4.ck
 
 
 1.5.4.4 (January 2025)
