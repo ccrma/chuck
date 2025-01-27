@@ -4,7 +4,8 @@ HOST_EXES= \
 	example-1-minimal \
 	example-2-audio \
 	example-3-globals \
-	example-4-shreds
+	example-4-shreds \
+	example-5-custom-api
 
 # where to find top-level chuck
 CHUCK_DIR=../../../chuck
