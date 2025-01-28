@@ -6,7 +6,8 @@ ChucK VERSIONS log
 =======
 (reworked) basic @doc functionality for language-defined classes to add
     inline CKDoc documentation for class definitions and function defintions.
-(reworked; now different from 1.5.4.4)
+(reworked; now different from 1.5.4.4) @doc now appears *before* the entity
+    to be documented; now @doc can be also used with class variables
     ----------------------------------------
     // add inline documenation (processed at compile-time)
     @doc "this is a description for the class Foo"
@@ -24,6 +25,12 @@ ChucK VERSIONS log
     // these @doc information will appear wherever CKDoc is generated
     // or displayed, for example:
     Foo.help();
+    ----------------------------------------
+(added) the ability to hide variables and functions in ckdoc by adding
+    "(hidden)" in the @doc string, for example:
+    ----------------------------------------
+    @doc "putting (hidden) anywhere in the doc string hides the next thing"
+    15 => int varBarHidden;
     ----------------------------------------
 (added) examples/basic/blit4.ck
 
