@@ -42,6 +42,7 @@
 #include "chuck_symbol.h"
 #include "chuck_vm.h"
 #include "ugen_xxx.h"
+#include "ulib_doc.h" // for CKDoc::shouldSkip()
 #include "util_string.h"
 
 #include <limits.h>
@@ -10881,6 +10882,9 @@ void Chuck_Type::apropos_funcs( std::string & output,
             Chuck_Func * theFunc = *f;
             // check for NULL
             if( theFunc == NULL ) continue;
+            // check if should skip | 1.5.4.5 (ge)
+            if( CKDoc::shouldSkip(theFunc) ) continue;
+
             // see if name appeared before
             if( func_names.count(theFunc->name) )
             {
@@ -11071,6 +11075,8 @@ void Chuck_Type::apropos_vars( std::string & output, const std::string & PREFIX,
             if( value->name[0] == '@' ) continue;
             // see if value is a function
             if( value->func_ref ) continue;
+            // check if should skip | 1.5.4.5 (ge)
+            if( CKDoc::shouldSkip(value) ) continue;
 
             // check for static declaration
             if( value->is_static ) {

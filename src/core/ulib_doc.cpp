@@ -1701,6 +1701,8 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             // value is a function
             if( isa( value->type, value->type->env()->ckt_function ) )
                 continue;
+            // check if should skip | 1.5.4.5 (ge)
+            if( CKDoc::shouldSkip(value) ) continue;
 
             // static or instance?
             if( value->is_static ) svars.push_back( value );
@@ -1714,10 +1716,12 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
             Chuck_Func * func = *f;
 
             // check
-            if(func == NULL) continue;
+            if( func == NULL ) continue;
+            // check if should skip | 1.5.4.5 (ge)
+            if( CKDoc::shouldSkip(func) ) continue;
+
             // if already seen (overloaded?)
-            if( func_names.count(func->name) )
-                continue;
+            if( func_names.count(func->name) ) continue;
             // first one
             func_names[func->name] = 1;
             // static or instance?
@@ -1883,6 +1887,45 @@ string CKDoc::genType( Chuck_Type * type, t_CKBOOL clearOutput )
 
     // return result
     return output->str();
+}
+
+
+
+
+#define CKDOC_HIDDEN_STRING "(hidden)"
+//-----------------------------------------------------------------------------
+// name: shouldSkip()
+// desc: whether to skip an entry in the final output | 1.5.4.5 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::shouldSkip( const std::string & docStr )
+{
+    return docStr.find( CKDOC_HIDDEN_STRING ) != std::string::npos;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shouldSkip()
+// desc: whether to skip a function in the final output | 1.5.4.5 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::shouldSkip( const Chuck_Func * func )
+{
+    if( !func ) return TRUE;
+    return func->doc.find( CKDOC_HIDDEN_STRING ) != std::string::npos;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shouldSkip()
+// desc: whether to skip an entry in the final output | 1.5.4.5 (ge) added
+//-----------------------------------------------------------------------------
+t_CKBOOL CKDoc::shouldSkip( const Chuck_Value * var )
+{
+    if( !var ) return TRUE;
+    return var->doc.find( CKDOC_HIDDEN_STRING ) != std::string::npos;
 }
 
 

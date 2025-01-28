@@ -31,12 +31,16 @@ class Foo
     { }
 
     // add inline documentation for variable
-    @doc "this here is a variable called Foo"
+    @doc "this here is a variable called varFoo"
     5 => int varFoo;
 
     // add inline documentation for variable
-    @doc "this here is a static variable called Bar"
+    @doc "this here is a static variable called varBar"
     10 => static int varBar;
+
+    // add inline documentation for variable (but hide it)
+    @doc "(hidden) this variable is documented but hidden from ckdoc"
+    15 => static int varBarHidden;
 }
 
 // print runtime info about Foo...

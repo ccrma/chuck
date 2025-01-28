@@ -45,6 +45,8 @@ DLL_QUERY ckdoc_query( Chuck_DL_Query * QUERY );
 // forward reference
 struct Chuck_VM;
 struct Chuck_Type;
+struct ChucK_Func;
+struct Chuck_Value;
 struct CKDocGroup;
 class CKDocHTMLOutput;
 
@@ -192,6 +194,14 @@ public:
     std::string genGroup( CKDocGroup * group, t_CKBOOL clearOutput = TRUE );
     // generate documentation for a single Type
     std::string genType( Chuck_Type * type, t_CKBOOL clearOutput = TRUE );
+
+public:
+    // whether to skip an entry in the final output | 1.5.4.5 (ge) added
+    static t_CKBOOL shouldSkip( const std::string & docStr );
+    // whether to skip a function in the final output | 1.5.4.5 (ge) added
+    static t_CKBOOL shouldSkip( const Chuck_Func * func );
+    // whether to skip an entry in the final output | 1.5.4.5 (ge) added
+    static t_CKBOOL shouldSkip( const Chuck_Value * var );
 
 public:
     // sort functions and variables | 1.5.2.5 (@kellyyyyyyyyyyyyyyyy @azaday) added
