@@ -33,6 +33,8 @@ ChucK VERSIONS log
     15 => int varBarHidden;
     ----------------------------------------
 (added) examples/basic/blit4.ck
+(fixed) @import issue that can result in certain entries in import path
+    to be skipped over.
 
 
 1.5.4.4 (January 2025)
