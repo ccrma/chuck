@@ -1,5 +1,6 @@
 *.d
 *.o
+*.os
 
 /src/chuck
 /src/core/chuck.output
