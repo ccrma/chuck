@@ -497,6 +497,11 @@ typedef enum
 #define CHUGIN_INFO_URL            "CHUGIN_INFO_URL"
 #define CHUGIN_INFO_EMAIL          "CHUGIN_INFO_EMAIL"
 #define CHUGIN_INFO_ID             "CHUGIN_INFO_ID"
+// enclosing directory (without the filename) | 1.5.4.5 (ge)
+#define CHUGIN_INFO_INSTALL_DIR    "CHUGIN_INFO_INSTALL_DIR"
+// filename (without the enclosing directory) |  1.5.4.5 (ge)
+#define CHUGIN_INFO_INSTALL_FILE   "CHUGIN_INFO_INSTALL_FILE"
+// reserved
 #define CHUGIN_INFO_EXTRA          "CHUGIN_INFO_EXTRA"
 
 
