@@ -760,10 +760,10 @@ std::string expandFilePathWindows( const string & path )
 
 
 //-----------------------------------------------------------------------------
-// name: get_full_path()
+// name: normalize_filepath_append_ck()
 // desc: get full path to file; if treatAsDir is TRUE, then don't auto-match .ck
 //-----------------------------------------------------------------------------
-std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
+std::string normalize_filepath_append_ck( const std::string & fp )
 {
 #ifndef __PLATFORM_WINDOWS__
 
@@ -771,13 +771,11 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
     char * result = realpath(fp.c_str(), buf);
 
     // try with .ck extension
-    if( result == NULL && !treatAsDir && !extension_matches(fp, ".ck") )
+    if( result == NULL && !extension_matches(fp, ".ck") )
         result = realpath((fp + ".ck").c_str(), buf);
 
     // get the return value
     string ret = result ? buf : fp;
-    // if treat as dir, ensure trailing / 1.5.4.2 (ge & nshaheed) added
-    if( treatAsDir ) ret = normalize_directory_name(ret);
     // return
     return ret;
 
@@ -799,7 +797,7 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
     }
 
     // try with .ck extension
-    if( result == 0 && !treatAsDir && !extension_matches(fp, ".ck") )
+    if( result == 0 && !extension_matches(fp, ".ck") )
     {
 #ifndef __CHUNREAL_ENGINE__
         result = GetFullPathName((fp + ".ck").c_str(), MAX_PATH, buf, NULL);
@@ -811,6 +809,53 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
 
     // get the return value
     string ret = result ? normalize_directory_separator(buf) : fp;
+    // return
+    return ret;
+
+#endif // __PLATFORM_WINDOWS__
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: normalize_filepath()
+// desc: normalize file path e.g., using realpath() on macOS and linux, and
+//       GetFullPathName() on windows | 1.5.4.5 (ge & nshaheed) added
+//-----------------------------------------------------------------------------
+std::string normalize_filepath( const std::string & fp, t_CKBOOL treatAsDir )
+{
+#ifndef __PLATFORM_WINDOWS__
+
+    char buf[PATH_MAX];
+    char * result = realpath(fp.c_str(), buf);
+
+    // get the return value
+    string ret = result ? buf : fp;
+    // in case fp names a directory, this ensures trailing /
+    if( treatAsDir ) ret = normalize_directory_name(ret);
+    // return
+    return ret;
+
+#else // windows
+
+    char buf[MAX_PATH];
+#ifndef __CHUNREAL_ENGINE__
+    DWORD result = GetFullPathName(fp.c_str(), MAX_PATH, buf, NULL);
+#else
+    // #chunreal explicitly use ASCII version
+    DWORD result = GetFullPathNameA(fp.c_str(), MAX_PATH, buf, NULL);
+#endif
+
+    // if successful
+    if( result )
+    {
+        // check if file exists; if not reset result
+        result = ck_fileexists( fp ) ? result : 0;
+    }
+
+    // get the return value
+    string ret = result ? normalize_directory_separator(buf) : fp;
     // if treat as dir, ensure trailing / 1.5.4.2 (ge & nshaheed) added
     if( treatAsDir ) ret = normalize_directory_name(ret);
     // return
@@ -818,7 +863,6 @@ std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDir )
 
 #endif // __PLATFORM_WINDOWS__
 }
-
 
 
 
@@ -955,8 +999,8 @@ std::string transplant_filepath( const std::string & existing, const std::string
         ret = extract_filepath_dir(existing) + inc;
     }
 
-    // get_full_path() will also resolve symlinks . and ..
-    return get_full_path(ret);
+    // normalize_filepath() will also resolve symlinks . and ..
+    return normalize_filepath_append_ck( ret );
 }
 
 

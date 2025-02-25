@@ -3105,7 +3105,7 @@ void * dlopen( const char * path, int mode )
     // if empty string, use current directory
     if( dll_path == "" ) dll_path = ".\\";
     // AddDllDirectory expects only fullpaths
-    dll_path = get_full_path( dll_path, TRUE );
+    dll_path = normalize_filepath( dll_path, TRUE );
     // the relateive _deps directory
     string dll_deps_path = dll_path + "_deps\\";
     // convert to wchar

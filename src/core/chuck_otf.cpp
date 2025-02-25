@@ -211,7 +211,7 @@ t_CKUINT otf_process_msg( Chuck_VM * vm, Chuck_Compiler * compiler,
 
         // construct full path to be associated with the file so me.sourceDir() works
         // (added 1.3.5.2)
-        std::string full_path = get_full_path( msg->buffer );
+        std::string full_path = normalize_filepath_append_ck( msg->buffer );
 
         // construct a target to be compiled | 1.5.4.0 (ge)
         Chuck_CompileTarget * target = new Chuck_CompileTarget();
