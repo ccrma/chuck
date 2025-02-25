@@ -355,7 +355,7 @@ t_CKBOOL Chuck_Compiler::compile_code_opt( const string & codeLiteral,
     else // not empty
     {
         // use the optionally provided path, make into full path if not already
-        opt = get_full_path( opt );
+        opt = normalize_filepath_append_ck( opt );
         // get the path portion of the optionally provide path
         pathBase = extract_filepath_dir( opt );
     }
@@ -649,6 +649,10 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         }
     }
 
+    // filter through realpath | 1.5.4.5 (ge & nshaheed)
+    // NOTE: this ensures consistency, in case transplant_filepath() above normalizes file capitalization
+    absolutePath = normalize_filepath( absolutePath );
+
     // protocol for filename resolution:
     // |- test file existence + directory:
     //    |- use filename as is (e.g., "Foo.ck" or "Foo")
@@ -685,9 +689,9 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
         for( list<string>::iterator it = searchPaths.begin(); it != searchPaths.end(); it++ )
         {
             // construct path; expand path again here in case search path has things like ~
-            // make sure to get_full_path on the directory itself before appending fname,
-            // FYI get_full_path() verifies presence of file, fname could be without extension e.g., @import "Foo"
-            absolutePath = get_full_path( expand_filepath(*it), TRUE ) + fname;
+            // make sure to normalize_filepath on the directory itself before appending fname,
+            // FYI normalize_filepath() verifies presence of file, fname could be without extension e.g., @import "Foo"
+            absolutePath = normalize_filepath( expand_filepath(*it), TRUE ) + fname;
             // try to match, by known extensions if none specified
             hasMatch = matchFilename( absolutePath, extension, exts );
             // log
@@ -695,6 +699,10 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
             // if match found, break out
             if( hasMatch ) break;
         }
+
+        // filter through realpath, part 2 | 1.5.4.5 (ge & nshaheed)
+        // NOTE: this ensures consistency, in case transplant_filepath above normalizes file capitalization
+        absolutePath = normalize_filepath( absolutePath, FALSE );
     }
 
     // log
@@ -1837,7 +1845,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         dl_path = expand_filepath( dl_path );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path );
+        dl_path = normalize_filepath_append_ck( dl_path ); // append ck necessary?
         // check extension, append if no match
         if( !extension_matches( dl_path, extension ) )
             dl_path += extension;
@@ -1852,7 +1860,7 @@ t_CKBOOL Chuck_Compiler::load_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         string dl_path = expand_filepath( *i_sp );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path, TRUE );
+        dl_path = normalize_filepath( dl_path, TRUE );
         // search directory and load contents
         load_external_modules_in_directory( dl_path, extension, recursiveSearch );
     }
@@ -2059,7 +2067,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         dl_path = expand_filepath( dl_path );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path );
+        dl_path = normalize_filepath_append_ck( dl_path ); // append ck necessary?
         // check extension, append if no match
         if( !extension_matches( dl_path, extension ) )
             dl_path += extension;
@@ -2085,7 +2093,7 @@ t_CKBOOL Chuck_Compiler::probe_external_modules( const string & extension,
         // expand the filepath (e.g., ~) | 1.5.2.6 (ge) added
         string dl_path = expand_filepath( *i_sp );
         // get full path | 1.5.4.2 (ge) added
-        dl_path = get_full_path( dl_path, TRUE );
+        dl_path = normalize_filepath( dl_path, TRUE );
         // search directory and load contents
         probe_external_modules_in_directory( dl_path, extension, recursiveSearch, ck_libs );
     }

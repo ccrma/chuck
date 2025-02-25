@@ -2,8 +2,60 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.4.5 (January 2025)
+1.5.5.0 (January 2025)
 =======
+(added) ChuMP: ChucK Manager of Packages! v0.0.1 (alpha)
+    INTRODUCING ChuMP, the official ChucK package manager! ChuMP currently exists
+    as a command-line interface tool (`chump`), which can be used to install,
+    update, and manage ChucK components ranging from chugins to ChucK libraries
+    to datesets. ChuMP also includes tools (e.g., Chumpinate) for creating new
+    packages, which the ChucK community is heartily invited to do
+      |
+    Selected available packages at time of release
+    ------------------------------------------
+    run `chump list` to see a list of pacakges
+    ------------------------------------------
+      * Chumpinate: two classes (Package & PackageVersion) to help create
+        packages for distribution using ChuMP
+      * Smuck: a framework for working with symbolic music notation in ChucK
+        (see below)
+      * FluidSynth: a UGen for loading and rendering FluidSynth soundfonts
+      * Rave: a UGen to load and run RAVE (Realtime Audio Variational autoEncoder)
+      * WarpBuf: a UGen for real-time and high-quality independent time-stretching
+        and pitch shifting of audio files; also supports Ableton .asd files
+      * Hydra: a wrapper around the python configuration framework Hydra
+      * Line: a UGen envelope of arbitrary ramps (ala Max/PD's line~ object)
+      * Patch: a tool for update control values from UGens
+      * PlinkyRev: a stereo reverb UGen; port of the Plinky synth's reverb
+      * Rec: helper functions for recording to audio files. Supports recording
+        from dac, ugens, and arrays of ugens.
+      * (many more packages are on the way!)
+    -------------------------------------------
+      |
+    For more information, please visit:
+    ---------------------------------
+    https://chuck.stanford.edu/chump/
+    ---------------------------------
+(added) SMucK: Symoblic Music in ChucK! v0.0.1 (alpha)
+      |
+    INTRODUCING SMucK, a framework for SMucK is a framework in ChucK for writing,
+    processing, and strongly-timed playback of music written with symbolic music
+    notation.
+      |
+    to install (using ChuMP):
+    -----------------------
+    > `chump install smuck`
+    -----------------------
+      |
+    to start using from ChucK code:
+    ---------------
+    @import "smuck"
+    ---------------
+      |
+    for tutorials, examples, and documentation:
+    ---------------------------------
+    https://chuck.stanford.edu/smuck/
+    ---------------------------------
 (reworked) basic @doc functionality for language-defined classes to add
     inline CKDoc documentation for class definitions and function defintions.
 (reworked; now different from 1.5.4.4) @doc now appears *before* the entity
@@ -35,6 +87,16 @@ ChucK VERSIONS log
 (added) examples/basic/blit4.ck
 (fixed) @import issue that can result in certain entries in import path
     to be skipped over.
+(fixed) @import issue resulting from inconsistent casing in filepaths
+(developer) chugins API now supports querying for the local install path
+    of a chugin, using: QUERY->getinfo(QUERY, CHUGIN_INFO_INSTALL_DIR);
+    NOTE: this requires updated chugin.h header (1.5.4.5 or higher) and
+    the latest chuck host (1.5.4.5 or higher)
+
+
+1.5.4.5 (February)
+=======
+NOTE: 1.5.4.5 is identical to 1.5.5.0 but without ChuMP
 
 
 1.5.4.4 (January 2025)

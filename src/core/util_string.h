@@ -99,8 +99,12 @@ t_CKBOOL extract_args( const std::string & token,
 // take existing path, and attempt to dir up
 std::string dir_go_up( const std::string & dir, t_CKINT numUp );
 
-// get full path to file
-std::string get_full_path( const std::string & fp, t_CKBOOL treatAsDirectory = FALSE );
+// normalize file path (e.g., using realpath() on macOS and linux, and GetFullPathName() on windows) | 1.5.4.5 (ge & nshaheed) added
+std::string normalize_filepath( const std::string & fp, t_CKBOOL treatAsDirectory = FALSE );
+
+// normalize file path, and if not found and without an existing .ck extension, attempt to append ".ck" extension
+// was: get_full_path( const std::string & fp, t_CKBOOL treatAsDirectory = FALSE )
+std::string normalize_filepath_append_ck( const std::string & fp );
 
 // perform filepath expansion (e.g., with ~ on unix systems and some windows)
 std::string expand_filepath( const std::string & fp, t_CKBOOL ensurePathExists = FALSE );
