@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.0 (January 2025)
+1.5.5.0 (February 2025)
 =======
 (added) ChuMP: ChucK Manager of Packages! v0.0.1 (alpha)
     INTRODUCING ChuMP, the official ChucK package manager! ChuMP currently exists
@@ -88,13 +88,18 @@ ChucK VERSIONS log
 (fixed) @import issue that can result in certain entries in import path
     to be skipped over.
 (fixed) @import issue resulting from inconsistent casing in filepaths
+(fixed) an issue with the record-to-WAV-file examples:
+    `rec-auto.ck` and `rec-auto-stereo.ck` where they would output an
+    empty WAV file when trying to record (FYI this was caused by a
+    combination of changes to UGen garbage collection since 1.5.4.2
+    and neglecting to remove the temporary workaround in these example files)
 (developer) chugins API now supports querying for the local install path
     of a chugin, using: QUERY->getinfo(QUERY, CHUGIN_INFO_INSTALL_DIR);
     NOTE: this requires updated chugin.h header (1.5.4.5 or higher) and
     the latest chuck host (1.5.4.5 or higher)
 
 
-1.5.4.5 (February)
+1.5.4.5 (February 2025)
 =======
 NOTE: 1.5.4.5 is identical to 1.5.5.0 but without ChuMP
 
@@ -219,9 +224,10 @@ ChuGL v0.2.5 Release Notes
     GWindow.keysDown()
     GWindow.keysUp()
 (added) new RenderPass methods to set the output resolution, msaa sample 
-    count,target scene and target camera for rendering
-garbage collection mechanism for all UGens(added) HUD pass to ChuGL's default rendergraph. Can now easily add 2d HUD
-    overlay to 3D scenes by grucking ggens to GG.hud()
+    count,target scene and target camera for rendering garbage collection
+    mechanism for all UGens(added) HUD pass to ChuGL's default rendergraph.
+    Can now easily add 2d HUD overlay to 3D scenes by grucking ggens to
+    GG.hud()
 (added) examples/basic/hud.ck
 (fixed) crash caused by ShaderDesc and other internal reference counting
     logic

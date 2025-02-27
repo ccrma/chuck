@@ -23,9 +23,6 @@ dac => Gain g => WvOut w => blackhole;
 // any gain you want for the output
 .5 => g.gain;
 
-// temporary workaround to automatically close file on remove-shred
-null @=> w;
-
 // infinite time loop...
 // ctrl-c will stop it, or modify to desired duration
 while( true ) 1::second => now;
