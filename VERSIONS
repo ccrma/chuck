@@ -15,9 +15,7 @@ ChucK VERSIONS log
     ------------------------------------------
     run `chump list` to see a list of pacakges
     ------------------------------------------
-      * Chumpinate: two classes (Package & PackageVersion) to help create
-        packages for distribution using ChuMP
-      * Smuck: a framework for working with symbolic music notation in ChucK
+      * smuck: a framework for working with symbolic music notation in ChucK
         (see below)
       * FluidSynth: a UGen for loading and rendering FluidSynth soundfonts
       * Rave: a UGen to load and run RAVE (Realtime Audio Variational autoEncoder)
@@ -28,8 +26,11 @@ ChucK VERSIONS log
       * Patch: a tool for update control values from UGens
       * PlinkyRev: a stereo reverb UGen; port of the Plinky synth's reverb
       * Rec: helper functions for recording to audio files. Supports recording
-        from dac, ugens, and arrays of ugens.
+        from dac, ugens, and arrays of ugens
       * (many more packages are on the way!)
+    -------------------------------------------
+      * Chumpinate: two classes (Package & PackageVersion) to help create
+        new packages for distribution using ChuMP
     -------------------------------------------
       |
     For more information, please visit:
