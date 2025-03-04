@@ -15,7 +15,7 @@ ChucK VERSIONS log
     ------------------------------------------
     run `chump list` to see a list of pacakges
     ------------------------------------------
-      * smuck: a framework for working with symbolic music notation in ChucK
+      * smuck: a framework for symbolic music notation and playback in ChucK
         (see below)
       * FluidSynth: a UGen for loading and rendering FluidSynth soundfonts
       * Rave: a UGen to load and run RAVE (Realtime Audio Variational autoEncoder)
@@ -37,11 +37,10 @@ ChucK VERSIONS log
     ---------------------------------
     https://chuck.stanford.edu/chump/
     ---------------------------------
-(added) SMucK: Symoblic Music in ChucK! v0.0.1 (alpha)
+(added) SMucK: Symoblic Music in ChucK! v0.1.0 (alpha)
       |
-    INTRODUCING SMucK, a framework for SMucK is a framework in ChucK for writing,
-    processing, and strongly-timed playback of music written with symbolic music
-    notation.
+    INTRODUCING SMucK, a framework for writing, processing, and playback of symbolic
+    music in ChucK.
       |
     to install (using ChuMP):
     -----------------------
@@ -86,6 +85,9 @@ ChucK VERSIONS log
     15 => int varBarHidden;
     ----------------------------------------
 (added) examples/basic/blit4.ck
+(added) ChAI: PCA reduce function call input dimension check
+(added) ChAI: SVM predict function call input dimension check
+(added) KNN nearest neighbor function call input value check
 (fixed) @import issue that can result in certain entries in import path
     to be skipped over.
 (fixed) @import issue resulting from inconsistent casing in filepaths

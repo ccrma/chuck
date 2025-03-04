@@ -1401,6 +1401,14 @@ public:
         // init
         t_CKINT x_dim = x_.size();
         t_CKINT y_dim = y_.size();
+
+        // check
+        if( x_dim != w->xDim() - 1 || y_dim != w->yDim() )
+        {
+            EM_error3( "SVM predict: input dimension mismatch: %d vs %d", x_dim, w->xDim() - 1 );
+            return FALSE;
+        }
+
         // compute
         for( int i = 0; i < y_dim; i++ )
         {
@@ -1748,6 +1756,13 @@ public:
     // predict
     t_CKBOOL predict( const vector<t_CKFLOAT> & query, t_CKINT k, Chuck_ArrayFloat & prob_ )
     {
+        // check k
+        if( k <= 0 )
+        {
+            EM_error3( "KNN: invalid 'k' value provided: %d", k );
+            return FALSE;
+        }
+
         // TODO: check if model initialized
         // init
         ChaiVectorFast<t_CKINT> indices( k );
@@ -3185,10 +3200,18 @@ public:
     static void transform( Chuck_ArrayInt & input_, t_CKINT npc, Chuck_ArrayInt & output_ )
     {
         ChaiMatrixFast<t_CKFLOAT> * input = chuck2chai( input_ );
+        ChaiMatrixFast<t_CKFLOAT> * output = chuck2chai( output_ );
 
         t_CKINT t, o;
         t_CKINT o1, o2;
-        t_CKINT n = input->xDim(), d = input->yDim();
+        t_CKINT n = input->xDim(), d = input->yDim(), dd = output->yDim();
+
+        // Check output dimension
+        if( npc > dd )
+        {
+            EM_error3( "PCA: number of principal components %d exceeds output dimension %d", npc, dd );
+            return;
+        }
 
         ChaiMatrixFast<t_CKFLOAT> temp_matrix( d, n );
         for( t = 0; t < n; t++ )
