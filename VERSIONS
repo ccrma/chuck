@@ -2,6 +2,16 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.1
+=======
+(fixed) array.zero() now works properly with multi-dimensional arrays; previously
+    it would zero out the top-level array elements (which are actually the next
+    level of inner arrays, since multi-dimensional array in chuck are arrays of
+    arrays of arrays...)
+(updated) examples/array/array_zero.ck now includes example of using .zero() with
+    multi-dimensional arrays (thanks to @terryzfeng for reporting this issue)
+
+
 1.5.5.0 (March 2025)
 =======
 (added) ChuMP: ChucK Manager of Packages! v0.0.1 (alpha)

@@ -1028,6 +1028,48 @@ void Chuck_ArrayInt::clear( )
 
 
 //-----------------------------------------------------------------------------
+// name: zero()
+// desc: zero out an int/object array
+//       1.5.5.1 (ge) handle multidimensional arrays
+//-----------------------------------------------------------------------------
+void Chuck_ArrayInt::zero()
+{
+    // if primitive int
+    if( this->m_is_obj == FALSE )
+    {
+        // zero out
+        this->zero( 0, m_vector.size() );
+        // done
+        return;
+    }
+
+    // array contains object;
+    // check if the objects are themselves arrays | 1.5.5.1 (ge)
+    if( this->type_ref->array_depth > 0 )
+    {
+        // iterate over elements
+        for( t_CKUINT i = 0; i < m_vector.size(); i++ )
+        {
+            // if NULL, move to next
+            if( !m_vector[i] ) continue;
+
+            // cast to base array pointer
+            Chuck_Array * array = (Chuck_Array *)m_vector[i];
+            // call the array's zero()
+            array->zero();
+        }
+    }
+    else // array contains non-array object references
+    {
+        // zero out
+        this->zero( 0, m_vector.size() );
+    }
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: set_capacity()
 // desc: ...
 //-----------------------------------------------------------------------------

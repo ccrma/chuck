@@ -315,7 +315,7 @@ public: // array interface implementation
     // zero out the array by range [start,end)
     virtual void zero( t_CKUINT start, t_CKUINT end );
     // zero out all elements
-    virtual void zero() { this->zero(0, m_vector.size()); }
+    virtual void zero();
 
     // pop the back of the array
     virtual t_CKINT pop_back();
