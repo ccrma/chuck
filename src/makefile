@@ -103,7 +103,7 @@ LD=$(CXX)
 
 ############################# COMPILER FLAGS ##################################
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
-# note: to compile with a specific c++ version
+# note: to compile with a specific c++ version (e.g., c++20) add: -std=c++20
 CXXFLAGS+=-std=c++11
 
 # Code coverage
