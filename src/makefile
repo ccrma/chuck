@@ -103,7 +103,8 @@ LD=$(CXX)
 
 ############################# COMPILER FLAGS ##################################
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
-# note: to compile with a specific c++ version (e.g., c++20) add: -std=c++20
+# Modify CXXFLAGS below to use newer standards
+# Examples: -std=c++14, -std=c++17, -std=c++20, -std=c++23
 CXXFLAGS+=-std=c++11
 
 # Code coverage
@@ -265,8 +266,6 @@ chuck-core:
 	@echo [chuck-core]: compiling...
 	$(MAKE) $(MAKECMDGOALS) -C $(CK_CORE_DIR) $(ARCH_ARGS) CXXFLAGS="$(CXXFLAGS)"
 	@echo -------------
-
- # CFLAGS="$(CFLAGS)"
 
 # host compiler flags
 CFLAGS_HOST=${CFLAGS} -I${RTAUDIO_DIR}
