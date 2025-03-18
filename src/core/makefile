@@ -154,7 +154,7 @@ chuck_yacc.h: chuck.tab.h
 	cat chuck.tab.h > $@
 
 $(CXXOBJS): %.o: %.cpp
-	$(CXX) $(CFLAGS) $(ARCHOPTS) -c $< -o $@
+	$(CXX) $(CFLAGS) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND) $< > $*.d
 
 $(COBJS): %.o: %.c

@@ -102,8 +102,9 @@ LD=$(CXX)
 
 
 ############################# COMPILER FLAGS ##################################
-# note: to compile with a specific c++ version (e.g., c++11) add: -std=c++11
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
+# note: to compile with a specific c++ version
+CXXFLAGS+=-std=c++11
 
 # Code coverage
 
@@ -203,7 +204,7 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 ############################ CHUCK HOST TARGETS ###############################
 # host header include paths
-CXXINC_HOST+= -I${RTAUDIO_DIR} -I${RTAUDIO_DIR}/include
+CXXINC_HOST+= -I$ -I${RTAUDIO_DIR}/include
 # host source
 CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
 	${RTAUDIO_DIR}/RtAudio.cpp
@@ -262,14 +263,16 @@ DIST_ROOT=..
 chuck-core:
 	@echo -------------
 	@echo [chuck-core]: compiling...
-	$(MAKE) $(MAKECMDGOALS) -C $(CK_CORE_DIR) $(ARCH_ARGS)
+	$(MAKE) $(MAKECMDGOALS) -C $(CK_CORE_DIR) $(ARCH_ARGS) CXXFLAGS="$(CXXFLAGS)"
 	@echo -------------
+
+ # CFLAGS="$(CFLAGS)"
 
 # host compiler flags
 CFLAGS_HOST=${CFLAGS} -I${RTAUDIO_DIR}
 CFLAGSDEPEND_HOST=${CFLAGSDEPEND} ${CFLAGS_HOST}
 
-# comile chuck
+# compile chuck
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
@@ -280,7 +283,7 @@ $(COBJS_HOST): %.o: %.c
 
 # build receipt for host c++ objects
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	$(CXX) $(CFLAGS_HOST) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 
