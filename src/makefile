@@ -204,7 +204,7 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 ############################ CHUCK HOST TARGETS ###############################
 # host header include paths
-CXXINC_HOST+= -I$ -I${RTAUDIO_DIR}/include
+CXXINC_HOST+= -I${RTAUDIO_DIR} -I${RTAUDIO_DIR}/include
 # host source
 CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
 	${RTAUDIO_DIR}/RtAudio.cpp
