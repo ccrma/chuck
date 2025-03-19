@@ -471,10 +471,11 @@ RtMidi :: ~RtMidi()
   rtapi_ = 0;
 }
 
-RtMidi::RtMidi(RtMidi&& other) noexcept {
-    rtapi_ = other.rtapi_;
-    other.rtapi_ = nullptr;
-}
+// (chuck 1.5.5.1 modification): commented out
+//RtMidi::RtMidi(RtMidi&& other) noexcept {
+//    rtapi_ = other.rtapi_;
+//    other.rtapi_ = nullptr;
+//}
 
 std::string RtMidi :: getVersion( void ) throw()
 {
@@ -1198,7 +1199,8 @@ void MidiInCore :: openPort( unsigned int portNumber, const std::string &portNam
   }
 
   CFRunLoopRunInMode( kCFRunLoopDefaultMode, 0, false );
-  auto nSrc = MIDIGetNumberOfSources();
+  // (chuck 1.5.5.1 modification): changed `auto` to `long`
+  long nSrc = MIDIGetNumberOfSources();
   if ( nSrc < 1 ) {
     errorString_ = "MidiInCore::openPort: no MIDI input sources found!";
     error( RtMidiError::NO_DEVICES_FOUND, errorString_ );
@@ -1564,7 +1566,8 @@ void MidiOutCore :: openPort( unsigned int portNumber, const std::string &portNa
   }
 
   CFRunLoopRunInMode( kCFRunLoopDefaultMode, 0, false );
-  auto nDest = MIDIGetNumberOfDestinations();
+  // (chuck 1.5.5.1 modification): changed `auto` to `long`
+  long nDest = MIDIGetNumberOfDestinations();
   if (nDest < 1) {
     errorString_ = "MidiOutCore::openPort: no MIDI output destinations found!";
     error( RtMidiError::NO_DEVICES_FOUND, errorString_ );
@@ -4246,10 +4249,21 @@ void MidiInJack:: setClientName( const std::string& )
 
 }
 
+//--------------------------
+#ifndef JACK_HAS_PORT_RENAME
+// (chuck 1.5.5.1 2025) JACK_HAS_PORT_RENAME appears to not be defined
+// even when jack_port_rename() is present in the header; defining
+// here, assuming jack_port_rename() is present as it has been part of
+// the API since 2015; if a compilation error brought you here, try
+// commenting out the following line:
+#define JACK_HAS_PORT_RENAME
+#endif
+//--------------------------
 void MidiInJack :: setPortName( const std::string &portName )
 {
   JackMidiData *data = static_cast<JackMidiData *> (apiData_);
 #ifdef JACK_HAS_PORT_RENAME
+  // if a compiler error brought you, see above comment regarding #define JACK_HAS_PORT_RENAME
   jack_port_rename( data->client, data->port, portName.c_str() );
 #else
   jack_port_set_name( data->port, portName.c_str() );
@@ -4477,11 +4491,13 @@ void MidiOutJack:: setClientName( const std::string& )
 
 }
 
+//--------------------------
 void MidiOutJack :: setPortName( const std::string &portName )
 {
   JackMidiData *data = static_cast<JackMidiData *> (apiData_);
 #ifdef JACK_HAS_PORT_RENAME
-  jack_port_rename( data->client, data->port, portName.c_str() );
+    // if a compiler error brought you, see above comment regarding #define JACK_HAS_PORT_RENAME
+    jack_port_rename( data->client, data->port, portName.c_str() );
 #else
   jack_port_set_name( data->port, portName.c_str() );
 #endif

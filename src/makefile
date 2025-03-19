@@ -102,10 +102,9 @@ LD=$(CXX)
 
 
 ############################# COMPILER FLAGS ##################################
+# note: to compile with a specific c++ version, use the -std flag
+# (e.g., -std=c++14, -std=c++17, -std=c++20, -std=c++23)
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
-# Modify CXXFLAGS below to use newer standards
-# Examples: -std=c++14, -std=c++17, -std=c++20, -std=c++23
-CXXFLAGS+=-std=c++11
 
 # Code coverage
 
