@@ -102,7 +102,8 @@ LD=$(CXX)
 
 
 ############################# COMPILER FLAGS ##################################
-# note: to compile with a specific c++ version (e.g., c++11) add: -std=c++11
+# note: to compile with a specific c++ version, use the -std flag
+# (e.g., -std=c++14, -std=c++17, -std=c++20, -std=c++23)
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
 
 # Code coverage
@@ -262,14 +263,14 @@ DIST_ROOT=..
 chuck-core:
 	@echo -------------
 	@echo [chuck-core]: compiling...
-	$(MAKE) $(MAKECMDGOALS) -C $(CK_CORE_DIR) $(ARCH_ARGS)
+	$(MAKE) $(MAKECMDGOALS) -C $(CK_CORE_DIR) $(ARCH_ARGS) CXXFLAGS="$(CXXFLAGS)"
 	@echo -------------
 
 # host compiler flags
 CFLAGS_HOST=${CFLAGS} -I${RTAUDIO_DIR}
 CFLAGSDEPEND_HOST=${CFLAGSDEPEND} ${CFLAGS_HOST}
 
-# comile chuck
+# compile chuck
 chuck: chuck-core $(COBJS_HOST) $(CXXOBJS_HOST)
 	$(LD) -o chuck $(OBJS) $(LDFLAGS) $(ARCHOPTS)
 
@@ -280,7 +281,7 @@ $(COBJS_HOST): %.o: %.c
 
 # build receipt for host c++ objects
 $(CXXOBJS_HOST): %.o: %.cpp
-	$(CXX) $(CFLAGS_HOST) $(ARCHOPTS) -c $< -o $@
+	$(CXX) $(CFLAGS_HOST) $(CXXFLAGS) $(ARCHOPTS) -c $< -o $@
 	@$(CXX) -MM -MQ "$@" $(CFLAGSDEPEND_HOST) $< > $*.d
 
 
