@@ -83,6 +83,7 @@ public:
     void resign( UINT__ read_offset_index );
 
 protected:
+    BOOL__ isValidIndex( UINT__ read_offset_index );
     BYTE__ * m_data;
     UINT__   m_data_width;
     //UINT__   m_read_offset;
@@ -110,7 +111,22 @@ protected:
     CBufferSimple * m_event_buffer;
 };
 
+//-----------------------------------------------------------------------------
+// name: class CBufferAdvanceVariable
+// desc: circular buffer with variable length elements
+//-----------------------------------------------------------------------------
+class CBufferAdvanceVariable : public CBufferAdvance
+{
+public:
+    BOOL__ initialize( UINT__ buffer_size, CBufferSimple * event_buffer = NULL );
+    UINT__ get( void * data, UINT__ read_offset_index );
+    UINT__ nextSize( UINT__ read_offset_index );
+    void put( void * data, UINT__ size );
+    void cleanup();
 
+protected:
+    UINT__   m_buffer_size;
+};
 
 
 //-----------------------------------------------------------------------------

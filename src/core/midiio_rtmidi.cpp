@@ -50,7 +50,7 @@
 #define MIDI_BUFFER_SIZE 8192
 
 std::vector<RtMidiIn *> MidiInManager::the_mins;
-std::vector< std::map< Chuck_VM *, CBufferAdvance * > > MidiInManager::the_bufs;
+std::vector< std::map< Chuck_VM *, CBufferAdvanceVariable * > > MidiInManager::the_bufs;
 std::vector<RtMidiOut *> MidiOutManager::the_mouts;
 std::map< Chuck_VM *, CBufferSimple * > MidiInManager::m_event_buffers;
 
@@ -543,8 +543,8 @@ t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
     }
 
     // allocate the buffer
-    CBufferAdvance * cbuf = new CBufferAdvance;
-    if( !cbuf->initialize( MIDI_BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
+    CBufferAdvanceVariable * cbuf = new CBufferAdvanceVariable;
+    if( !cbuf->initialize( MIDI_BUFFER_SIZE, m_event_buffers[vm] ) )
     {
         if( !suppress_output )
             EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
@@ -626,7 +626,24 @@ t_CKBOOL MidiIn::empty()
 t_CKUINT MidiIn::recv( MidiMsg * msg )
 {
     if( !m_valid ) return FALSE;
-    return m_buffer->get( msg, 1, m_read_index );
+
+    t_CKUINT size = m_buffer->nextSize(m_read_index);
+
+    if (size > 0)
+    {
+        t_CKBYTE tmp[size];
+
+        m_buffer->get(&tmp, m_read_index);
+
+        for (t_CKUINT i = 0; i < size; i++)
+        {
+            if (i > 2)
+                break;
+            msg->data[i] = tmp[i];
+        }
+    }
+
+    return size;
 }
 
 
@@ -651,21 +668,17 @@ void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> 
         EM_error2( 0, "MidiIn: couldn't find buffers for port %i...", device_num );
         return;
     }
-    MidiMsg m;
-    if( nBytes >= 1 ) m.data[0] = msg->at(0);
-    if( nBytes >= 2 ) m.data[1] = msg->at(1);
-    if( nBytes >= 3 ) m.data[2] = msg->at(2);
 
     // put in all the buffers, make sure not active sensing
-    if( m.data[2] != 0xfe )
+    if( msg->back() != 0xfe )
     {
-        for( std::map< Chuck_VM *, CBufferAdvance * >::iterator it =
+        for( std::map< Chuck_VM *, CBufferAdvanceVariable * >::iterator it =
              the_bufs[device_num].begin(); it != the_bufs[device_num].end(); it++ )
         {
-            CBufferAdvance * cbuf = it->second;
+            CBufferAdvanceVariable * cbuf = it->second;
             if( cbuf != NULL )
             {
-                cbuf->put( &m, 1 );
+                cbuf->put( msg->data(), msg->size() );
             }
         }
     }

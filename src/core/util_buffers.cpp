@@ -300,18 +300,35 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
 }*/
 
 
-BOOL__ CBufferAdvance::empty( UINT__ read_offset_index )
+BOOL__ CBufferAdvance::empty(UINT__ read_offset_index) {
+	// make sure index is valid
+	if (read_offset_index >= m_read_offsets.size())
+		return TRUE;
+	if (m_read_offsets[read_offset_index].read_offset < 0)
+		return TRUE;
+
+	SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
+
+	// see if caught up
+	return m_read_offset == m_write_offset;
+}
+
+
+BOOL__ CBufferAdvance::isValidIndex(UINT__ read_offset_index)
 {
-    // make sure index is valid
     if( read_offset_index >= m_read_offsets.size() )
-        return TRUE;
-    if( m_read_offsets[read_offset_index].read_offset < 0 )
-        return TRUE;
+        return FALSE;
 
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
 
-    // see if caught up
-    return m_read_offset == m_write_offset;
+    if( m_read_offset < 0 )
+        return FALSE;
+
+    // read catch up with write
+    if( m_read_offset == m_write_offset )
+        return FALSE;
+
+    return TRUE;
 }
 
 
@@ -325,15 +342,7 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     m_mutex.acquire();
     #endif
 
-    // make sure index is valid
-    if( read_offset_index >= m_read_offsets.size() )
-    {
-        #ifndef __DISABLE_THREADS__
-        m_mutex.release();
-        #endif
-        return 0;
-    }
-    if( m_read_offsets[read_offset_index].read_offset < 0 )
+    if (!this->isValidIndex(read_offset_index))
     {
         #ifndef __DISABLE_THREADS__
         m_mutex.release();
@@ -342,15 +351,6 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     }
 
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
-
-    // read catch up with write
-    if( m_read_offset == m_write_offset )
-    {
-        #ifndef __DISABLE_THREADS__
-        m_mutex.release();
-        #endif
-        return 0;
-    }
 
     // copy
     for( i = 0; i < num_elem; i++ )
@@ -387,6 +387,129 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
 }
 
 
+BOOL__ CBufferAdvanceVariable::initialize( UINT__ buffer_size, CBufferSimple * event_buffer )
+{
+    CBufferAdvance::initialize( buffer_size, 1, event_buffer );
+    m_buffer_size = buffer_size;
+    return true;
+}
+
+
+void CBufferAdvanceVariable::cleanup()
+{
+    CBufferAdvance::cleanup();
+    m_buffer_size = 0;
+}
+
+
+void CBufferAdvanceVariable::put( void * data, UINT__ size )
+{
+    UINT__ i;
+    BYTE__ * d = (BYTE__ *)data;
+
+    // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
+
+    // first store the size of the message
+    m_data[m_write_offset] = size;
+
+    // copy the data
+    for( i = 0; i < size; i++ )
+    {
+        m_write_offset++;
+
+        if ( m_write_offset >= m_buffer_size )
+        {
+            m_write_offset = 0;
+        }
+        m_data[m_write_offset] = d[i];
+    }
+
+    // move to the next write position
+    m_write_offset++;
+
+    // possibility of expelling evil shreds
+    for( i = 0; i < m_read_offsets.size(); i++ )
+    {
+        if( m_write_offset == m_read_offsets[i].read_offset )
+        {
+            // inform shred with index i that it has lost its privileges?
+            // invalidate its read_offset
+            // m_read_offsets[i].read_offset = -1;
+        }
+
+        if( m_read_offsets[i].event )
+            m_read_offsets[i].event->queue_broadcast( m_event_buffer );
+    }
+
+    // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
+}
+
+
+UINT__ CBufferAdvanceVariable::nextSize( UINT__ read_offset_index )
+{
+    SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
+
+    if( m_read_offset == m_write_offset )
+    {
+        return 0;
+    }
+
+    // get the size of the next messages
+    return m_data[m_read_offset];
+}
+
+
+UINT__ CBufferAdvanceVariable::get( void * data, UINT__ read_offset_index )
+{
+    UINT__ i;
+    BYTE__ * d = (BYTE__ *)data;
+
+    // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
+
+    if (!this->isValidIndex(read_offset_index))
+    {
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
+        return 0;
+    }
+
+    SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
+    UINT__ size = m_data[m_read_offset];
+
+    for( i = 0; i < size; i++ )
+    {
+        m_read_offset++;
+
+        if( m_read_offset >= m_buffer_size )
+        {
+            m_read_offset = 0;
+        }
+        d[i] = m_data[m_read_offset];
+    }
+
+    m_read_offset++;
+
+    // update read offset at given index
+    m_read_offsets[read_offset_index].read_offset = m_read_offset;
+
+    // TODO: necessary?
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
+
+    // return number of elems
+    return size;
+}
 
 
 //-----------------------------------------------------------------------------
