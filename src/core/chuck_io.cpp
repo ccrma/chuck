@@ -811,6 +811,14 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+
+    // add recv()
+    func = make_new_mfun( "int", "recv", MidiIn_recv_bytes );
+    func->add_arg( "int[]", "bytes" );
+    func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", MidiIn_can_wait );
     func->doc = "(internal) used by virtual machine for synthronization.";
@@ -2504,16 +2512,34 @@ CK_DLL_MFUN( MidiIn_recv )
     RETURN->v_int = min->recv( bytes );
     if( RETURN->v_int )
     {
-        t_CKUINT byte;
-        bytes->get(0, &byte);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = byte;
-        bytes->get(1, &byte);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = byte;
-        bytes->get(2, &byte);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = byte;
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = bytes->m_vector[0];
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = bytes->m_vector[1];
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = bytes->m_vector[2];
     }
 }
 
+CK_DLL_MFUN( MidiIn_recv_bytes )
+{
+    MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
+    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)GET_CK_OBJECT(ARGS);
+
+    if( bytes == NULL )
+    {
+        // assing a new array to the pointer
+        bytes = new Chuck_ArrayInt( FALSE );
+        initialize_object( bytes, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
+    }
+
+    RETURN->v_int = min->recv( bytes );
+    // Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+    // Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_bytes);
+    // if( RETURN->v_int )
+    // {
+    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = bytes->m_vector[0];
+    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = bytes->m_vector[1];
+    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = bytes->m_vector[2];
+    // }
+}
 
 CK_DLL_MFUN( MidiIn_can_wait )
 {
