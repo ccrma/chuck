@@ -476,11 +476,13 @@ CK_DLL_MFUN( cherr_writefloat );
 // MidiMsg API
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( MidiMsg_ctor );
+CK_DLL_DTOR( MidiMsg_dtor );
 
 extern t_CKUINT MidiMsg_offset_data1;
 extern t_CKUINT MidiMsg_offset_data2;
 extern t_CKUINT MidiMsg_offset_data3;
 extern t_CKUINT MidiMsg_offset_when;
+extern t_CKUINT MidiMsg_offset_bytes;
 
 #ifndef __DISABLE_MIDI__
 //-----------------------------------------------------------------------------
@@ -544,6 +546,7 @@ CK_DLL_MFUN( MidiOut_name );
 CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
 CK_DLL_MFUN( MidiOut_send_msg );
+CK_DLL_MFUN( MidiOut_send_bytes );
 CK_DLL_MFUN( MidiOut_noteOn );
 CK_DLL_MFUN( MidiOut_noteOff );
 CK_DLL_MFUN( MidiOut_controlChange );

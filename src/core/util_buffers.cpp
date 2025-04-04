@@ -421,9 +421,8 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
         m_write_offset++;
 
         if ( m_write_offset >= m_buffer_size )
-        {
             m_write_offset = 0;
-        }
+
         m_data[m_write_offset] = d[i];
     }
 
@@ -456,9 +455,7 @@ UINT__ CBufferAdvanceVariable::nextSize( UINT__ read_offset_index )
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
 
     if( m_read_offset == m_write_offset )
-    {
         return 0;
-    }
 
     // get the size of the next messages
     return m_data[m_read_offset];
@@ -491,9 +488,8 @@ UINT__ CBufferAdvanceVariable::get( void * data, UINT__ read_offset_index )
         m_read_offset++;
 
         if( m_read_offset >= m_buffer_size )
-        {
             m_read_offset = 0;
-        }
+
         d[i] = m_data[m_read_offset];
     }
 

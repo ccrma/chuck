@@ -87,6 +87,32 @@ MidiOut::~MidiOut()
 
 //-----------------------------------------------------------------------------
 // name: send()
+// desc: send an array of midi bytes
+//-----------------------------------------------------------------------------
+t_CKUINT MidiOut::send( Chuck_ArrayInt * arr )
+{
+    if( !m_valid ) return 0;
+
+    t_CKINT length = arr->size();
+    t_CKUINT byte;
+
+    m_msg.clear();
+
+    for( int i = 0; i < length; i++ )
+    {
+        arr->get(i, &byte);
+        m_msg.push_back( byte );
+    }
+    mout->sendMessage( &m_msg );
+
+    return length;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: send()
 // desc: send 1 byte midi message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiOut::send( t_CKBYTE status )
@@ -623,25 +649,46 @@ t_CKBOOL MidiIn::empty()
 // name: get()
 // desc: get message
 //-----------------------------------------------------------------------------
-t_CKUINT MidiIn::recv( MidiMsg * msg )
+// t_CKUINT MidiIn::recv( MidiMsg * msg )
+// {
+//     if( !m_valid ) return FALSE;
+//
+//     t_CKUINT size = m_buffer->nextSize(m_read_index);
+//
+//     if (size == 0)
+//         return size;
+//
+//     t_CKBYTE tmp[size];
+//
+//     m_buffer->get(&tmp, m_read_index);
+//
+//     for (t_CKUINT i = 0; i < size; i++)
+//     {
+//         if (i > 2)
+//             break;
+//         msg->data[i] = tmp[i];
+//     }
+//
+//     return size;
+// }
+
+t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
 {
     if( !m_valid ) return FALSE;
 
     t_CKUINT size = m_buffer->nextSize(m_read_index);
 
-    if (size > 0)
-    {
-        t_CKBYTE tmp[size];
+    if (size == 0)
+        return size;
 
-        m_buffer->get(&tmp, m_read_index);
+    t_CKBYTE tmp[size];
 
-        for (t_CKUINT i = 0; i < size; i++)
-        {
-            if (i > 2)
-                break;
-            msg->data[i] = tmp[i];
-        }
-    }
+    m_buffer->get(&tmp, m_read_index);
+
+    arr->clear();
+
+    for (t_CKUINT i = 0; i < size; i++)
+        arr->push_back(tmp[i]);
 
     return size;
 }
@@ -676,10 +723,9 @@ void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> 
              the_bufs[device_num].begin(); it != the_bufs[device_num].end(); it++ )
         {
             CBufferAdvanceVariable * cbuf = it->second;
+
             if( cbuf != NULL )
-            {
                 cbuf->put( msg->data(), msg->size() );
-            }
         }
     }
 }

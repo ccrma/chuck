@@ -709,6 +709,7 @@ t_CKUINT MidiMsg_offset_data1 = 0;
 t_CKUINT MidiMsg_offset_data2 = 0;
 t_CKUINT MidiMsg_offset_data3 = 0;
 t_CKUINT MidiMsg_offset_when = 0;
+t_CKUINT MidiMsg_offset_bytes = 0;
 static t_CKUINT MidiOut_offset_data = 0;
 //-----------------------------------------------------------------------------
 // name: init_class_Midi()
@@ -725,7 +726,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // init base class
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, "MidiMsg", "Object",
-                                         env->global(), NULL, NULL, doc.c_str() ) )
+                                         env->global(), MidiMsg_ctor, MidiMsg_dtor, doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -742,6 +743,9 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     doc = "Third byte of a Midi message, usually a velocity value.";
     MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE, doc.c_str() );
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
+
+    MidiMsg_offset_bytes = type_engine_import_mvar( env, "int[]", "bytes", FALSE );
+    if( MidiMsg_offset_bytes == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
     doc = "Duration since the last MidiMsg (only valid for MidiFileIn).";
@@ -879,6 +883,13 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->add_arg( "MidiMsg", "msg" );
     func->doc = "Send out a MIDI message using a MidiMsg.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add send()
+    func = make_new_mfun( "int", "send", MidiOut_send_bytes );
+    func->add_arg( "int[]", "data" );
+    func->doc = "Send out a MIDI message using a MidiMsg.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
 
     // add noteOn() | 1.5.2.5 (cviejo) added
     func = make_new_mfun( "int", "noteOn", MidiOut_noteOn );
@@ -2407,6 +2418,23 @@ CK_DLL_MFUN( cherr_writefloat )
 
 
 #ifndef __DISABLE_MIDI__
+//-----------------------------------------------------------------------------
+// MidiMsg API
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( MidiMsg_ctor )
+{
+    Chuck_ArrayInt * bytes = new Chuck_ArrayInt( FALSE );
+    initialize_object( bytes, VM->env()->ckt_array, SHRED, VM );
+    CK_SAFE_ADD_REF( bytes );
+    OBJ_MEMBER_INT(SELF, MidiMsg_offset_bytes) = (t_CKINT)bytes;
+}
+
+CK_DLL_DTOR( MidiMsg_dtor )
+{
+    // TODO: do we need this, or are these auto-released?
+    CK_SAFE_RELEASE( OBJ_MEMBER_OBJECT( SELF, MidiMsg_offset_bytes ) );
+    OBJ_MEMBER_OBJECT( SELF, MidiMsg_offset_bytes ) = NULL;
+}
 
 //-----------------------------------------------------------------------------
 // MidiIn API
@@ -2472,13 +2500,17 @@ CK_DLL_MFUN( MidiIn_recv )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-    MidiMsg the_msg;
-    RETURN->v_int = min->recv( &the_msg );
+    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_bytes);
+    RETURN->v_int = min->recv( bytes );
     if( RETURN->v_int )
     {
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = the_msg.data[0];
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
+        t_CKUINT byte;
+        bytes->get(0, &byte);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = byte;
+        bytes->get(1, &byte);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = byte;
+        bytes->get(2, &byte);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = byte;
     }
 }
 
@@ -2567,6 +2599,15 @@ CK_DLL_MFUN( MidiOut_send_msg )
     the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
 }
+
+
+CK_DLL_MFUN( MidiOut_send_bytes )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    Chuck_ArrayInt * arr = (Chuck_ArrayInt *) GET_NEXT_OBJECT(ARGS);
+    RETURN->v_int = mout->send( arr );
+}
+
 
 CK_DLL_MFUN( MidiOut_noteOn ) // 1.5.2.5 (cviejo) added
 {

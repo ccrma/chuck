@@ -101,9 +101,11 @@ public:
     { return m_suppress_output; }
 
 public:
+
     t_CKUINT send( t_CKBYTE status );
     t_CKUINT send( t_CKBYTE status, t_CKBYTE data1 );
     t_CKUINT send( t_CKBYTE status, t_CKBYTE data1, t_CKBYTE data2 );
+    t_CKUINT send( Chuck_ArrayInt * arr );
     t_CKUINT send( const MidiMsg * msg );
 
 public:
@@ -153,7 +155,7 @@ public:
 
 public:
     t_CKBOOL empty();
-    t_CKUINT recv( MidiMsg * msg );
+    t_CKUINT recv( Chuck_ArrayInt * msg );
 
 public:
     CBufferAdvanceVariable * m_buffer;
