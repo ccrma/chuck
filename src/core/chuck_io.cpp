@@ -2521,24 +2521,13 @@ CK_DLL_MFUN( MidiIn_recv )
 CK_DLL_MFUN( MidiIn_recv_bytes )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
-    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)GET_CK_OBJECT(ARGS);
-
-    if( bytes == NULL )
-    {
-        // assing a new array to the pointer
-        bytes = new Chuck_ArrayInt( FALSE );
-        initialize_object( bytes, SHRED->vm_ref->env()->ckt_array, SHRED, VM );
+    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
+    if (bytes == NULL) {
+        RETURN->v_int = 0;
     }
-
-    RETURN->v_int = min->recv( bytes );
-    // Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-    // Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_bytes);
-    // if( RETURN->v_int )
-    // {
-    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = bytes->m_vector[0];
-    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = bytes->m_vector[1];
-    //     OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = bytes->m_vector[2];
-    // }
+    else {
+        RETURN->v_int = min->recv( bytes );
+    }
 }
 
 CK_DLL_MFUN( MidiIn_can_wait )
