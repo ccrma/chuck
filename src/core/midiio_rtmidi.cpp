@@ -648,38 +648,44 @@ t_CKBOOL MidiIn::empty()
 //-----------------------------------------------------------------------------
 // name: get()
 // desc: get message
-//-----------------------------------------------------------------------------
-// t_CKUINT MidiIn::recv( MidiMsg * msg )
-// {
-//     if( !m_valid ) return FALSE;
-//
-//     t_CKUINT size = m_buffer->nextSize(m_read_index);
-//
-//     if (size == 0)
-//         return size;
-//
-//     t_CKBYTE tmp[size];
-//
-//     m_buffer->get(&tmp, m_read_index);
-//
-//     for (t_CKUINT i = 0; i < size; i++)
-//     {
-//         if (i > 2)
-//             break;
-//         msg->data[i] = tmp[i];
-//     }
-//
-//     return size;
-// }
+// -----------------------------------------------------------------------------
+t_CKUINT MidiIn::recv( MidiMsg * msg )
+{
+    if( !m_valid ) return FALSE;
+    t_CKUINT size = m_buffer->getNextSize(m_read_index);
+    if (size != 0)
+    {
+        return size;
+    }
+
+    t_CKBYTE tmp[size];
+
+    std::fill(tmp, tmp + size, 0);
+
+    m_buffer->get(&tmp, m_read_index);
+
+    for (t_CKUINT i = 0; i < size && i < 3; i++)
+    {
+        // if (i > 2)
+        // {
+        //     break;
+        // }
+        msg->data[i] = tmp[i];
+    }
+
+    return size;
+}
 
 t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
 {
     if( !m_valid ) return FALSE;
 
-    t_CKUINT size = m_buffer->nextSize(m_read_index);
+    t_CKUINT size = m_buffer->getNextSize(m_read_index);
 
     if (size == 0)
+    {
         return size;
+    }
 
     t_CKBYTE tmp[size];
 
@@ -688,7 +694,9 @@ t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
     arr->clear();
 
     for (t_CKUINT i = 0; i < size; i++)
+    {
         arr->push_back(tmp[i]);
+    }
 
     return size;
 }

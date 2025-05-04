@@ -113,14 +113,15 @@ protected:
 
 //-----------------------------------------------------------------------------
 // name: class CBufferAdvanceVariable
-// desc: circular buffer with variable length elements
+// desc: circular buffer with variable length elements - first byte of each
+//       element is the size of the element
 //-----------------------------------------------------------------------------
 class CBufferAdvanceVariable : public CBufferAdvance
 {
 public:
     BOOL__ initialize( UINT__ buffer_size, CBufferSimple * event_buffer = NULL );
+    UINT__ getNextSize( UINT__ read_offset_index );
     UINT__ get( void * data, UINT__ read_offset_index );
-    UINT__ nextSize( UINT__ read_offset_index );
     void put( void * data, UINT__ size );
     void cleanup();
 

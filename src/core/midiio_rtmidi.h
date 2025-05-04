@@ -155,6 +155,7 @@ public:
 
 public:
     t_CKBOOL empty();
+    t_CKUINT recv( MidiMsg * msg );
     t_CKUINT recv( Chuck_ArrayInt * msg );
 
 public:

@@ -709,7 +709,6 @@ t_CKUINT MidiMsg_offset_data1 = 0;
 t_CKUINT MidiMsg_offset_data2 = 0;
 t_CKUINT MidiMsg_offset_data3 = 0;
 t_CKUINT MidiMsg_offset_when = 0;
-t_CKUINT MidiMsg_offset_bytes = 0;
 static t_CKUINT MidiOut_offset_data = 0;
 //-----------------------------------------------------------------------------
 // name: init_class_Midi()
@@ -726,7 +725,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // init base class
     // TODO: ctor/dtor?
     if( !type_engine_import_class_begin( env, "MidiMsg", "Object",
-                                         env->global(), MidiMsg_ctor, MidiMsg_dtor, doc.c_str() ) )
+                                         env->global(), NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     // add member variable
@@ -743,9 +742,6 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     doc = "Third byte of a Midi message, usually a velocity value.";
     MidiMsg_offset_data3 = type_engine_import_mvar( env, "int", "data3", FALSE, doc.c_str() );
     if( MidiMsg_offset_data3 == CK_INVALID_OFFSET ) goto error;
-
-    MidiMsg_offset_bytes = type_engine_import_mvar( env, "int[]", "bytes", FALSE );
-    if( MidiMsg_offset_bytes == CK_INVALID_OFFSET ) goto error;
 
     // add member variable
     doc = "Duration since the last MidiMsg (only valid for MidiFileIn).";
@@ -2426,23 +2422,6 @@ CK_DLL_MFUN( cherr_writefloat )
 
 
 #ifndef __DISABLE_MIDI__
-//-----------------------------------------------------------------------------
-// MidiMsg API
-//-----------------------------------------------------------------------------
-CK_DLL_CTOR( MidiMsg_ctor )
-{
-    Chuck_ArrayInt * bytes = new Chuck_ArrayInt( FALSE );
-    initialize_object( bytes, VM->env()->ckt_array, SHRED, VM );
-    CK_SAFE_ADD_REF( bytes );
-    OBJ_MEMBER_INT(SELF, MidiMsg_offset_bytes) = (t_CKINT)bytes;
-}
-
-CK_DLL_DTOR( MidiMsg_dtor )
-{
-    // TODO: do we need this, or are these auto-released?
-    CK_SAFE_RELEASE( OBJ_MEMBER_OBJECT( SELF, MidiMsg_offset_bytes ) );
-    OBJ_MEMBER_OBJECT( SELF, MidiMsg_offset_bytes ) = NULL;
-}
 
 //-----------------------------------------------------------------------------
 // MidiIn API
@@ -2508,15 +2487,34 @@ CK_DLL_MFUN( MidiIn_recv )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_bytes);
-    RETURN->v_int = min->recv( bytes );
+    Chuck_ArrayInt bytes(false, 3);
+    RETURN->v_int = min->recv( &bytes );
     if( RETURN->v_int )
     {
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = bytes->m_vector[0];
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = bytes->m_vector[1];
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = bytes->m_vector[2];
+        t_CKUINT val;
+
+        bytes.get(0, &val);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = val;
+        bytes.get(1, &val);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = val;
+        bytes.get(2, &val);
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = val;
     }
 }
+
+// CK_DLL_MFUN( MidiIn_recv )
+// {
+//     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
+//     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
+//     MidiMsg the_msg;
+//     RETURN->v_int = min->recv( &the_msg );
+//     if( RETURN->v_int )
+//     {
+//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = the_msg.data[0];
+//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
+//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
+//     }
+// }
 
 CK_DLL_MFUN( MidiIn_recv_bytes )
 {

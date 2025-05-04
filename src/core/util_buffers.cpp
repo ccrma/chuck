@@ -413,7 +413,7 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
     m_mutex.acquire();
     #endif
 
-    // first store the size of the message
+    // store the size of the message
     m_data[m_write_offset] = size;
 
     // copy the data
@@ -433,13 +433,6 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
     // possibility of expelling evil shreds
     for( i = 0; i < m_read_offsets.size(); i++ )
     {
-        if( m_write_offset == m_read_offsets[i].read_offset )
-        {
-            // inform shred with index i that it has lost its privileges?
-            // invalidate its read_offset
-            // m_read_offsets[i].read_offset = -1;
-        }
-
         if( m_read_offsets[i].event )
             m_read_offsets[i].event->queue_broadcast( m_event_buffer );
     }
@@ -451,14 +444,15 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
 }
 
 
-UINT__ CBufferAdvanceVariable::nextSize( UINT__ read_offset_index )
+UINT__ CBufferAdvanceVariable::getNextSize( UINT__ read_offset_index )
 {
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
 
     if( m_read_offset == m_write_offset )
+    {
         return 0;
+    }
 
-    // get the size of the next messages
     return m_data[m_read_offset];
 }
 
