@@ -811,7 +811,7 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     // add recv()
     func = make_new_mfun( "int", "recv", MidiIn_recv_bytes );
     func->add_arg( "int[]", "bytes" );
-    func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
+    func->doc = "Return into the int[] argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
 
@@ -2487,43 +2487,26 @@ CK_DLL_MFUN( MidiIn_recv )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-    Chuck_ArrayInt bytes(false, 3);
-    RETURN->v_int = min->recv( &bytes );
+    MidiMsg the_msg;
+    RETURN->v_int = min->recv( &the_msg );
     if( RETURN->v_int )
     {
-        t_CKUINT val;
-
-        bytes.get(0, &val);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = val;
-        bytes.get(1, &val);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = val;
-        bytes.get(2, &val);
-        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = val;
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = the_msg.data[0];
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
+        OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
     }
 }
-
-// CK_DLL_MFUN( MidiIn_recv )
-// {
-//     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
-//     Chuck_Object * fake_msg = GET_CK_OBJECT(ARGS);
-//     MidiMsg the_msg;
-//     RETURN->v_int = min->recv( &the_msg );
-//     if( RETURN->v_int )
-//     {
-//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data1) = the_msg.data[0];
-//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data2) = the_msg.data[1];
-//         OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3) = the_msg.data[2];
-//     }
-// }
 
 CK_DLL_MFUN( MidiIn_recv_bytes )
 {
     MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
     Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
-    if (bytes == NULL) {
+    if( bytes == NULL )
+    {
         RETURN->v_int = 0;
     }
-    else {
+    else
+    {
         RETURN->v_int = min->recv( bytes );
     }
 }

@@ -646,46 +646,45 @@ t_CKBOOL MidiIn::empty()
 
 
 //-----------------------------------------------------------------------------
-// name: get()
-// desc: get message
-// -----------------------------------------------------------------------------
+// name: recv()
+// desc: get a 3-byte midi message
+//-----------------------------------------------------------------------------
 t_CKUINT MidiIn::recv( MidiMsg * msg )
 {
     if( !m_valid ) return FALSE;
+
     t_CKUINT size = m_buffer->getNextSize(m_read_index);
-    if (size != 0)
-    {
-        return size;
-    }
+
+    if( size == 0 ) return size;
 
     t_CKBYTE tmp[size];
 
-    std::fill(tmp, tmp + size, 0);
-
     m_buffer->get(&tmp, m_read_index);
+
+    std::fill(msg->data, msg->data + 3, 0);
 
     for (t_CKUINT i = 0; i < size && i < 3; i++)
     {
-        // if (i > 2)
-        // {
-        //     break;
-        // }
         msg->data[i] = tmp[i];
     }
 
     return size;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: recv()
+// desc: get a midi message of any byte length
+//-----------------------------------------------------------------------------
 t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
 {
     if( !m_valid ) return FALSE;
 
     t_CKUINT size = m_buffer->getNextSize(m_read_index);
 
-    if (size == 0)
-    {
-        return size;
-    }
+    if( size == 0 ) return size;
 
     t_CKBYTE tmp[size];
 

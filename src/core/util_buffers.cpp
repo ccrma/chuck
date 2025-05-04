@@ -405,6 +405,8 @@ void CBufferAdvanceVariable::cleanup()
 
 void CBufferAdvanceVariable::put( void * data, UINT__ size )
 {
+    if( size == 0 ) return;
+
     UINT__ i;
     BYTE__ * d = (BYTE__ *)data;
 
