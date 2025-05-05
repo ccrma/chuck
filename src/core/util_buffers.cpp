@@ -300,7 +300,7 @@ void CBufferAdvance::put( void * data, UINT__ num_elem )
 }*/
 
 
-BOOL__ CBufferAdvance::empty(UINT__ read_offset_index)
+BOOL__ CBufferAdvance::empty( UINT__ read_offset_index )
 {
     // make sure index is valid
     if( read_offset_index >= m_read_offsets.size() )
@@ -315,19 +315,25 @@ BOOL__ CBufferAdvance::empty(UINT__ read_offset_index)
 }
 
 
-BOOL__ CBufferAdvance::isValidIndex(UINT__ read_offset_index)
+BOOL__ CBufferAdvance::isValidIndex( UINT__ read_offset_index )
 {
     if( read_offset_index >= m_read_offsets.size() )
+    {
         return FALSE;
+    }
 
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
 
     if( m_read_offset < 0 )
+    {
         return FALSE;
+    }
 
     // read catch up with write
     if( m_read_offset == m_write_offset )
+    {
         return FALSE;
+    }
 
     return TRUE;
 }

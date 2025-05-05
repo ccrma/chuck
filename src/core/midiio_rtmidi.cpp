@@ -570,7 +570,8 @@ t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
 
     // allocate the buffer
     CBufferAdvanceVariable * cbuf = new CBufferAdvanceVariable;
-    if( !cbuf->initialize( MIDI_BUFFER_SIZE, m_event_buffers[vm] ) )
+    // buffer size with an estimate of 3 bytes per message
+    if( !cbuf->initialize( MIDI_BUFFER_SIZE * 3, m_event_buffers[vm] ) )
     {
         if( !suppress_output )
             EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
@@ -732,7 +733,9 @@ void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> 
             CBufferAdvanceVariable * cbuf = it->second;
 
             if( cbuf != NULL )
+            {
                 cbuf->put( msg->data(), msg->size() );
+            }
         }
     }
 }
