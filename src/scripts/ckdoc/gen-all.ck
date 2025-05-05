@@ -39,7 +39,7 @@ doc.addGroup(
     // file name
     "ugens-basic",
     // group description
-    "Basic unit generator (UGen) base classes, simple signal generators, envelopes, and more."
+    "Basic unit generator (UGen) base classes, simple signal generators, envelopes, and more"
 );
 
 // add group
@@ -52,7 +52,7 @@ doc.addGroup(
     // file name
     "ugens-filters",
     // group description
-    "Basic filter unit generators."
+    "Basic filter unit generators"
 );
 
 // add group
@@ -69,7 +69,7 @@ doc.addGroup(
     "Synthesis Toolkit (STK) UGens",
     // file name
     "ugens-stk",
-    "Utilities and physical models from the Synthesis Toolkit (STK) by Perry R. Cook and Gary Scavone."
+    "Utilities and physical models from the Synthesis Toolkit (STK) by Perry R. Cook and Gary Scavone"
 );
 
 // add group
@@ -107,7 +107,7 @@ doc.addGroup(
     // file name
     "uanae",
     // group description
-    "Unit analyzer (<a target=\"_blank\" href=\"../../uana/\">UAna</a>) objects are specialized UGens that can perform audio analysis and pass analysis information to other UAnae. (See also: <a href=\"ai.html\">AI Tools API reference</a>.)"
+    "Unit analyzer (<a target=\"_blank\" href=\"../../uana/\">UAna</a>) objects are specialized UGens that can perform audio analysis and pass analysis information to other UAnae. (See also: <a href=\"ai.html\">AI Tools API reference</a>)"
 );
 
 // add group
@@ -118,7 +118,7 @@ doc.addGroup(
     // file name
     "ai",
     // group description
-    "ChucK for AI (<a target=\"_blank\" href=\"../../chai/\">ChAI</a>) is a set of AI/ML tools for building interactive AI musical instruments and systems. (See also: <a href=\"uanae.html\">Unit Analyzer API reference</a>.)"
+    "ChucK for AI (<a target=\"_blank\" href=\"../../chai/\">ChAI</a>) is a set of AI/ML tools for building interactive AI musical instruments and systems. (See also: <a href=\"uanae.html\">Unit Analyzer API reference</a>)"
 );
 
 // add group
@@ -132,7 +132,7 @@ doc.addGroup(
     // file name
     "io",
     // group descriptions
-    "Communication tools, including file input/output, Open Sound Control, MIDI, MIDI file reading, serial i/o."
+    "Communication tools, including file input/output, Open Sound Control, MIDI, MIDI file reading, serial I/O"
 );
 
 // add group
@@ -147,7 +147,6 @@ doc.addGroup(
     "Additional Utiilities"
 );
 
-
 // add group
 doc.addGroup(
     [ "ABSaturator", "AmbPan3", "Bitcrusher", "Elliptic", "ExpDelay", "ExpEnv", "FIR", 
@@ -159,7 +158,19 @@ doc.addGroup(
     // file name
     "chugins",
     // group descriptions
-    "Base chugins library offering unit generators and utilities."
+    "Base chugins library offering unit generators and utilities"
+);
+
+// add group (external; i.e., API reference root elsewhere)
+doc.addGroupExternal(
+    // group name
+    "Downloadable ChucK Packages",
+    // URL
+    "https://chuck.stanford.edu/release/chump/",
+    // group description
+    "External libraries and tools installable using ChuMP, the ChucK package manager",
+    // long text description
+    "Browse <a target=\"_blank\" href=\"https://chuck.stanford.edu/release/chump/\">all available packages</a> that can be downloaded and installed using ChuMP: ChucK's package manager (<a target=\"_blank\" href=\"../../chump/\">ChuMP homepage</a>). As of ChucK 1.5.5.0, ChuMP is bundled with the ChucK installer on macOS and Windows (Linux users can build from source)."
 );
 
 // to generate JSON
