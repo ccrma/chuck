@@ -658,11 +658,10 @@ t_CKUINT MidiIn::recv( MidiMsg * msg )
 
     if( size == 0 ) return size;
 
-    t_CKBYTE tmp[size];
+    // MSVC doesn't play well with VLAs, don't use t_CKBYTE tmp[size] here
+    std::vector<t_CKBYTE> tmp(size, 0);
 
-    m_buffer->get(&tmp, m_read_index);
-
-    std::fill(msg->data, msg->data + 3, 0);
+    m_buffer->get(tmp.data(), m_read_index);
 
     for (t_CKUINT i = 0; i < size && i < 3; i++)
     {
@@ -685,11 +684,12 @@ t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
 
     t_CKUINT size = m_buffer->getNextSize(m_read_index);
 
-    if( size == 0 ) return size;
+    if( size == 0 ) return 0;
 
-    t_CKBYTE tmp[size];
+    std::vector<t_CKBYTE> tmp(size, 0);
 
-    m_buffer->get(&tmp, m_read_index);
+    // don't pass arr->m_vector.data() directly, that holds longs
+    m_buffer->get(tmp.data(), m_read_index);
 
     arr->clear();
 
