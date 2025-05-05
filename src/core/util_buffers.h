@@ -127,6 +127,10 @@ public:
 
 protected:
     UINT__   m_buffer_size;
+
+private:
+    UINT__ advanceIndex( UINT__ offset_index );
+    BOOL__ hasSpace( UINT__ size );
 };
 
 
