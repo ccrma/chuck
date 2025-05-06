@@ -406,12 +406,11 @@ UINT__ CBufferAdvanceVariable::get( void * data, UINT__ read_offset_index )
     UINT__ i;
     BYTE__ * d = (BYTE__ *)data;
 
-    // TODO: necessary?
     #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
     #endif
 
-    if (!this->isValidIndex(read_offset_index))
+    if ( !this->isValidIndex(read_offset_index) )
     {
         #ifndef __DISABLE_THREADS__
         m_mutex.release();
@@ -429,10 +428,8 @@ UINT__ CBufferAdvanceVariable::get( void * data, UINT__ read_offset_index )
     }
     read_offset = advanceIndex( read_offset );
 
-    // update read offset at given index
     m_read_offsets[read_offset_index].read_offset = read_offset;
 
-    // TODO: necessary?
     #ifndef __DISABLE_THREADS__
     m_mutex.release();
     #endif
@@ -448,7 +445,6 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
     UINT__ i;
     BYTE__ * d = (BYTE__ *)data;
 
-    // TODO: necessary?
     #ifndef __DISABLE_THREADS__
     m_mutex.acquire();
     #endif
@@ -465,22 +461,21 @@ void CBufferAdvanceVariable::put( void * data, UINT__ size )
     // store the size of the message
     m_data[m_write_offset] = size;
 
-    // copy the data
     for( i = 0; i < size; i++ )
     {
         m_write_offset = advanceIndex( m_write_offset );
         m_data[m_write_offset] = d[i];
     }
-    // move to the next write position
     m_write_offset = advanceIndex( m_write_offset );
 
     for( i = 0; i < m_read_offsets.size(); i++ )
     {
         if( m_read_offsets[i].event )
+        {
             m_read_offsets[i].event->queue_broadcast( m_event_buffer );
+        }
     }
 
-    // TODO: necessary?
     #ifndef __DISABLE_THREADS__
     m_mutex.release();
     #endif
@@ -531,7 +526,7 @@ UINT__ CBufferAdvanceVariable::advanceIndex( UINT__ offset_index )
 
 //-----------------------------------------------------------------------------
 // name: hasSpace()
-// desc: Covers an edge case where too many messages have been put into the
+// desc: covers an edge case where too many messages have been put into the
 //       buffer without being read. We check all the write positions to see if
 //       they are already occupied by a read position.
 //-----------------------------------------------------------------------------
