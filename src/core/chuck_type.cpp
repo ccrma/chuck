@@ -2646,7 +2646,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec3; // 1.5.1.7
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec2; // 1.5.1.7 | fixed (1.5.5.1): was erroneously ckt_vec3
         CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
         CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
