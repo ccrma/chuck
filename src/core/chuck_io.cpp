@@ -807,6 +807,14 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->doc = "Return into the MidiMsg argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+
+    // add recv()
+    func = make_new_mfun( "int", "recv", MidiIn_recv_bytes );
+    func->add_arg( "int[]", "bytes" );
+    func->doc = "Return into the int[] argument the next message in the queue from the device. Return 0 if the queue is empty or 1 if a message was in the queue and returned in the argument.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+
     // add can_wait()
     func = make_new_mfun( "int", "can_wait", MidiIn_can_wait );
     func->doc = "(internal) used by virtual machine for synthronization.";
@@ -879,6 +887,13 @@ t_CKBOOL init_class_Midi( Chuck_Env * env )
     func->add_arg( "MidiMsg", "msg" );
     func->doc = "Send out a MIDI message using a MidiMsg.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add send()
+    func = make_new_mfun( "int", "send", MidiOut_send_bytes );
+    func->add_arg( "int[]", "data" );
+    func->doc = "Send out a MIDI message using a MidiMsg.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
 
     // add noteOn() | 1.5.2.5 (cviejo) added
     func = make_new_mfun( "int", "noteOn", MidiOut_noteOn );
@@ -2482,6 +2497,19 @@ CK_DLL_MFUN( MidiIn_recv )
     }
 }
 
+CK_DLL_MFUN( MidiIn_recv_bytes )
+{
+    MidiIn * min = (MidiIn *)OBJ_MEMBER_INT(SELF, MidiIn_offset_data);
+    Chuck_ArrayInt * bytes = (Chuck_ArrayInt *)GET_NEXT_OBJECT(ARGS);
+    if( bytes == NULL )
+    {
+        RETURN->v_int = 0;
+    }
+    else
+    {
+        RETURN->v_int = min->recv( bytes );
+    }
+}
 
 CK_DLL_MFUN( MidiIn_can_wait )
 {
@@ -2567,6 +2595,15 @@ CK_DLL_MFUN( MidiOut_send_msg )
     the_msg.data[2] = (t_CKBYTE)OBJ_MEMBER_INT(fake_msg, MidiMsg_offset_data3);
     RETURN->v_int = mout->send( &the_msg );
 }
+
+
+CK_DLL_MFUN( MidiOut_send_bytes )
+{
+    MidiOut * mout = (MidiOut *)OBJ_MEMBER_INT(SELF, MidiOut_offset_data);
+    Chuck_ArrayInt * arr = (Chuck_ArrayInt *) GET_NEXT_OBJECT(ARGS);
+    RETURN->v_int = mout->send( arr );
+}
+
 
 CK_DLL_MFUN( MidiOut_noteOn ) // 1.5.2.5 (cviejo) added
 {
