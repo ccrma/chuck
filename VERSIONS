@@ -15,6 +15,8 @@ ChucK VERSIONS log
     arrays of arrays...)
 (fixed) -=> for vec2 -=> v (where v is a vec2) was incorrect and would lead to
     a crash
+(fixed) LiSa.playPos reporting; addressed off-by-one error and made consistent
+    reporting semantics for loop/no-loop/bi-dir
 (updated) examples/array/array_zero.ck now includes example of using .zero() with
     multi-dimensional arrays (thanks to @terryzfeng for reporting this issue)
 (developer) added c++ host example #5 to demonstrate adding language APIs
