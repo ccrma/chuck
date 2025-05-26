@@ -13,6 +13,8 @@ ChucK VERSIONS log
     it would zero out the top-level array elements (which are actually the next
     level of inner arrays, since multi-dimensional array in chuck are arrays of
     arrays of arrays...)
+(fixed) -=> for vec2 -=> v (where v is a vec2) was incorrect and would lead to
+    a crash
 (updated) examples/array/array_zero.ck now includes example of using .zero() with
     multi-dimensional arrays (thanks to @terryzfeng for reporting this issue)
 (developer) added c++ host example #5 to demonstrate adding language APIs
