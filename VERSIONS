@@ -9,6 +9,9 @@ ChucK VERSIONS log
     this updates MIDI support, including:
     * (macOS) MIDI timecode is now sent when using MidiOut
     * (inux) JACK MIDI support
+(fixed) chump (package manager, Windows)
+    * now correctly unzips packages for package installation
+    * (updated chump from 0.0.1 to 0.0.2)
 (fixed) array.zero() now works properly with multi-dimensional arrays; previously
     it would zero out the top-level array elements (which are actually the next
     level of inner arrays, since multi-dimensional array in chuck are arrays of
