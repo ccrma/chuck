@@ -2,6 +2,11 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.2
+=======
+(fixed) windows MIDI support (which was previously broken in 1.5.5.1)
+
+
 1.5.5.1
 =======
 (updated) the underlying MIDI implementation been updated 
