@@ -374,19 +374,19 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 //-----------------------------------------------------------------------------
 // note: this must be placed *after* the platform defines above
 //-----------------------------------------------------------------------------
-#ifdef __PLATFORM_MACOS__
+#if defined( __PLATFORM_MACOS__)
   #define CHUCK_PLATFORM_STRING  "mac"
-#elif __PLATFORM_IOS__
+#elif defined(__PLATFORM_IOS__)
   #define CHUCK_PLATFORM_STRING  "ios"
-#elif __PLATFORM_LINUX__
+#elif defined(__PLATFORM_LINUX__)
   #define CHUCK_PLATFORM_STRING  "linux"
-#elif __PLATFORM_WINDOWS__
+#elif defined(__PLATFORM_WINDOWS__)
   #define CHUCK_PLATFORM_STRING  "windows"
-#elif __PLATFORM_CYGWIN__
+#elif defined(__PLATFORM_CYGWIN__)
   #define CHUCK_PLATFORM_STRING  "cygwin"
-#elif __PLATFORM_EMSCRIPTEN__
+#elif defined(__PLATFORM_EMSCRIPTEN__)
   #define CHUCK_PLATFORM_STRING  "web"
-#elif __PLATFORM_ANDROID__
+#elif defined(__PLATFORM_ANDROID__)
   #define CHUCK_PLATFORM_STRING  "android"
 #endif
 //-----------------------------------------------------------------------------
