@@ -42,6 +42,7 @@
 
 #include <string>
 #include <algorithm>
+#include <sys/time.h>
 using namespace std;
 
 // exports
@@ -70,6 +71,9 @@ CK_DLL_SFUN( machine_getloglevel_impl );
 CK_DLL_SFUN( machine_refcount_impl );
 CK_DLL_SFUN( machine_regstack_impl );
 CK_DLL_SFUN( machine_memstack_impl );
+CK_DLL_SFUN( machine_platform_name_impl );     // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_timeofday_impl );         // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_timeofday_precise_impl ); // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_gc );
 CK_DLL_SFUN( machine_opOverloadReset_impl );
 // not used
@@ -280,6 +284,29 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // get mem stack pointer
     QUERY->add_sfun( QUERY, machine_memstack_impl, "int", "sp_mem" );
     QUERY->doc_func( QUERY, "get the calling shred's memory (aka \"mem\") stack pointer; intended for either debugging or curiosity." );
+
+    // get the current platform
+    QUERY->add_sfun( QUERY, machine_platform_name_impl, "string", "platform" );
+    QUERY->doc_func( QUERY, "Get the platform name. Possible values are mac, ios, linus, windows, cygwin, web, android." );
+
+    // get the system time of day
+    QUERY->add_sfun( QUERY, machine_timeofday_impl, "float", "timeOfDay" );
+    QUERY->doc_func( QUERY,
+        "Returns the time in seconds sense the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
+        "The returned time has microsecond resolution and can be used for e.g. synchronizing "
+        "events across machines without the use of networking. "
+    );
+
+    // get the system time of day as a vec2(seconds, microseconds)
+    QUERY->add_sfun( QUERY, machine_timeofday_precise_impl, "vec2", "timeOfDayPrecise" );
+    QUERY->doc_func( QUERY,
+        "Identical to Machine.timeOfDay(), only the return value is a vec2 where "
+        "x is time in seconds, and y is fractional time in microseconds. "
+        "y is guaranteed to be between 0 and 1,000,000. x + y gives total time. "
+        "Useful when you don't have 64-bit precision, e.g. floats in OSC are "
+        "32-bit, so if using OSC you must send the x and y values separately--"
+        "otherwise a significant amount of timing resolution will be lost."
+    );
 
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
@@ -639,6 +666,42 @@ CK_DLL_SFUN( machine_memstack_impl )
 {
     // return mem stack pointer
     RETURN->v_int = (t_CKINT)SHRED->mem->sp;
+}
+
+CK_DLL_SFUN( machine_platform_name_impl )
+{
+    // make chuck string
+    Chuck_String * s = new Chuck_String( CHUCK_PLATFORM_STRING );
+    // initialize
+    initialize_object(s, VM->carrier()->env->ckt_string, SHRED, VM );
+    // return
+    RETURN->v_string = s;
+}
+
+CK_DLL_SFUN( machine_timeofday_impl )
+{
+    timeval tv = {};
+    if ( gettimeofday(&tv, NULL) != 0 ) {
+        perror("Machine.timeOfDay() failed: ");
+        RETURN->v_float = 0;
+        return;
+    }
+
+    RETURN->v_float = tv.tv_sec + (tv.tv_usec / 1000000.0);
+}
+
+CK_DLL_SFUN( machine_timeofday_precise_impl )
+{
+    timeval tv = {};
+    if ( gettimeofday(&tv, NULL) != 0 ) {
+        perror("Machine.timeOfDayPrecise() failed: ");
+        RETURN->v_vec2.x = 0;
+        RETURN->v_vec2.y = 0;
+        return;
+    }
+
+    RETURN->v_vec2.x = tv.tv_sec;
+    RETURN->v_vec2.y = tv.tv_usec;
 }
 
 // gc() | 1.5.2.0 (ge)
