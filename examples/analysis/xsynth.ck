@@ -1,4 +1,3 @@
-// really really bad cross synthesizer...
 
 // source one (mic)
 adc => FFT X => blackhole;
@@ -18,13 +17,14 @@ for( int i; i < blt.size(); i++ )
 }
 
 // set FFT size
+
 1024 => X.size => Y.size => int FFT_SIZE;
 // desired hop size
 FFT_SIZE / 4 => int HOP_SIZE;
 // set window and window size
-Windowing.hann(512) => X.window;
-Windowing.hann(512) => Y.window;
-Windowing.hann(512) => ifft.window;
+Windowing.hann(FFT_SIZE) => X.window;
+Windowing.hann(FFT_SIZE) => Y.window;
+Windowing.hann(FFT_SIZE) => ifft.window;
 // use this to hold contents
 complex Z[FFT_SIZE/2];
 
@@ -35,11 +35,19 @@ while( true )
     X.upchuck();
     Y.upchuck();
     
-    // multiply in frequency domain
-    for( int i; i < X.size()/2; i++ )
-        Math.sqrt((Y.cval(i)$polar).mag) * X.cval(i) => Z[i];
-        // 2 * Y.cval(i) * X.cval(i) => Z[i];
     
+    for( int i; i < Z.size(); i++ ){
+        X.cval(i).re => float realX;
+        X.cval(i).im => float imagX;
+        Math.sqrt(realX*realX + imagX*imagX) => float magX;
+        Y.cval(i).re => float realY;
+        Y.cval(i).im => float imagY;
+        Math.sqrt(realY*realY + imagY*imagY) => float magY;
+        
+        // multiply in frequency domain 
+        #(magX*magY, magX*magY) => Z[i];
+    }
+        
     // take ifft
     ifft.transform( Z );
     
