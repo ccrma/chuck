@@ -2,12 +2,17 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.2
+1.5.5.2 (July 2025)
 =======
 (fixed) windows MIDI support (which was previously broken in 1.5.5.1)
+(fixed) examples/xsynth.ck (thanks to Celeste Betancur and Andrew Zhu Aday)
+    * now performs a proper multi-band cross-synthesis using the magnitude
+      in each band of signl X to modulate the corresponding frequency bin
+      in signal Y to produce output Z
+(added) examples/xsynth.ck-stereo.ck is the above, with stereo delay added
 
 
-1.5.5.1
+1.5.5.1 (May 2025)
 =======
 (updated) the underlying MIDI implementation been updated 
     (updated RtMidi from 1.0.4 to 6.0.0 | thanks to @cviejo)
