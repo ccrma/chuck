@@ -39,41 +39,14 @@
 #include "chuck.h"
 
 #include "util_string.h"
+#include "util_platforms.h"
 
 #include <string>
 #include <algorithm>
-
-#ifdef __PLATFORM_WINDOWS__
-typedef struct timeval {
-    long tv_sec;
-    long tv_usec;
-} timeval;
-
-int gettimeofday(struct timeval * tp, struct timezone * tzp)
-{
-    // Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
-    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
-    // until 00:00:00 January 1, 1970 
-    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
-
-    SYSTEMTIME  system_time;
-    FILETIME    file_time;
-    uint64_t    time;
-
-    GetSystemTime( &system_time );
-    SystemTimeToFileTime( &system_time, &file_time );
-    time =  ((uint64_t)file_time.dwLowDateTime )      ;
-    time += ((uint64_t)file_time.dwHighDateTime) << 32;
-
-    tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
-    tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
-    return 0;
-}
-#else
-#include <sys/time.h>
-#endif
-
 using namespace std;
+
+
+
 
 // exports
 CK_DLL_SFUN( machine_crash_impl );
@@ -316,25 +289,25 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->doc_func( QUERY, "get the calling shred's memory (aka \"mem\") stack pointer; intended for either debugging or curiosity." );
 
     // get the current platform
-    QUERY->add_sfun( QUERY, machine_platform_name_impl, "string", "platform" );
-    QUERY->doc_func( QUERY, "Get the platform name. Possible values are mac, ios, linus, windows, cygwin, web, android." );
+    QUERY->add_sfun( QUERY, machine_platform_name_impl, "string", "os" );
+    QUERY->doc_func( QUERY, "get the underlying operating system name; possible values include \"mac\", \"linux\", \"windows\", \"web\", \"ios\", \"android\", \"unknown\"" );
 
     // get the system time of day
     QUERY->add_sfun( QUERY, machine_timeofday_impl, "float", "timeOfDay" );
     QUERY->doc_func( QUERY,
-        "Returns the time in seconds sense the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
-        "The returned time has microsecond resolution and can be used for e.g. synchronizing "
+        "returns the time in seconds since the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
+        "The returned time has microsecond resolution and could be used for e.g. synchronizing "
         "events across machines without the use of networking. "
     );
 
     // get the system time of day as a vec2(seconds, microseconds)
     QUERY->add_sfun( QUERY, machine_timeofday_precise_impl, "vec2", "timeOfDayPrecise" );
     QUERY->doc_func( QUERY,
-        "Identical to Machine.timeOfDay(), only the return value is a vec2 where "
+        "identical to Machine.timeOfDay(), only the return value is a vec2 where "
         "x is time in seconds, and y is fractional time in microseconds. "
-        "y is guaranteed to be between 0 and 1,000,000. x + y gives total time. "
-        "Useful when you don't have 64-bit precision, e.g. floats in OSC are "
-        "32-bit, so if using OSC you must send the x and y values separately--"
+        "y is guaranteed to be between 0 and 1,000,000. x + y yields the total time. "
+        "Useful for situations needing less than 64-bit precision e.g., floats in OSC are "
+        "32-bit and one must send the x and y values separately -- "
         "otherwise a significant amount of timing resolution will be lost."
     );
 
@@ -710,26 +683,32 @@ CK_DLL_SFUN( machine_platform_name_impl )
 
 CK_DLL_SFUN( machine_timeofday_impl )
 {
-    timeval tv = {};
-    if ( gettimeofday(&tv, NULL) != 0 ) {
-        perror("Machine.timeOfDay() failed: ");
+    timeval tv;
+    // get time of day
+    if( ck_gettimeofday( &tv, NULL ) != 0 )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDay() failed...\n" );
         RETURN->v_float = 0;
         return;
     }
 
+    // return value
     RETURN->v_float = tv.tv_sec + (tv.tv_usec / 1000000.0);
 }
 
 CK_DLL_SFUN( machine_timeofday_precise_impl )
 {
-    timeval tv = {};
-    if ( gettimeofday(&tv, NULL) != 0 ) {
-        perror("Machine.timeOfDayPrecise() failed: ");
+    timeval tv;
+    // get time of day
+    if( ck_gettimeofday( &tv, NULL ) != 0 )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDayPrecise() failed...\n" );
         RETURN->v_vec2.x = 0;
         RETURN->v_vec2.y = 0;
         return;
     }
 
+    // return value
     RETURN->v_vec2.x = tv.tv_sec;
     RETURN->v_vec2.y = tv.tv_usec;
 }

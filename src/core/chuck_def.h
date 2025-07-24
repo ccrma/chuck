@@ -368,25 +368,3 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #endif // __arm__
 
 #endif
-
-//-----------------------------------------------------------------------------
-// Chuck platform string | 1.5.5.2 (azaday)
-//-----------------------------------------------------------------------------
-// note: this must be placed *after* the platform defines above
-//-----------------------------------------------------------------------------
-#if defined( __PLATFORM_MACOS__)
-  #define CHUCK_PLATFORM_STRING  "mac"
-#elif defined(__PLATFORM_IOS__)
-  #define CHUCK_PLATFORM_STRING  "ios"
-#elif defined(__PLATFORM_LINUX__)
-  #define CHUCK_PLATFORM_STRING  "linux"
-#elif defined(__PLATFORM_WINDOWS__)
-  #define CHUCK_PLATFORM_STRING  "windows"
-#elif defined(__PLATFORM_CYGWIN__)
-  #define CHUCK_PLATFORM_STRING  "cygwin"
-#elif defined(__PLATFORM_EMSCRIPTEN__)
-  #define CHUCK_PLATFORM_STRING  "web"
-#elif defined(__PLATFORM_ANDROID__)
-  #define CHUCK_PLATFORM_STRING  "android"
-#endif
-//-----------------------------------------------------------------------------
