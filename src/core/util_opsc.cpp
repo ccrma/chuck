@@ -953,7 +953,7 @@ static int OSC_WritePadding(char *dest, int i)
 // FROM PLATFORM.H -UDP TRANSMITTER / RECEIVER
 
 #if defined(__PLATFORM_WINDOWS__)
-#include <winsock.h>
+#include <winsock2.h> // changed to winsock2.h | 1.5.5.2 (ge)
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
