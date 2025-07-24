@@ -5,11 +5,26 @@ ChucK VERSIONS log
 1.5.5.2 (July 2025)
 =======
 (fixed) windows MIDI support (which was previously broken in 1.5.5.1)
-(fixed) examples/xsynth.ck (thanks to Celeste Betancur and Andrew Zhu Aday)
+(fixed) examples/analysis/xsynth.ck (thanks to Celeste Betancur and Andrew Zhu Aday)
     * now performs a proper multi-band cross-synthesis using the magnitude
       in each band of signl X to modulate the corresponding frequency bin
       in signal Y to produce output Z
-(added) examples/xsynth.ck-stereo.ck is the above, with stereo delay added
+(added) examples/analysis/xsynth.ck-stereo.ck is the above, with stereo delay added
+(added) examples/machine/platform.ck -- getting underlying OS name + system time
+(added) Machine methods
+    string Machine.os()
+        get the underlying operating system name; possible values include 
+        "mac", "linux", "windows", "web", "ios", "android", "unknown"
+    float Machine.timeOfDay()
+        returns the time in seconds since the Epoch 1970-01-01 00:00:00 +0000 (UTC).
+        The returned time has microsecond resolution
+    vec2 Machine.timeOfDay2()
+        identical to Machine.timeOfDay(), only the return value is a vec2 where
+        x is time in seconds, and y is fractional time in microseconds.
+        y is guaranteed to be between 0 and 1,000,000. x + y yields the total time.
+        Useful for situations needing less than 64-bit precision e.g., floats in OSC are
+        32-bit and one must send the x and y values separately --
+        otherwise a significant amount of timing resolution would be lost
 
 
 1.5.5.1 (May 2025)

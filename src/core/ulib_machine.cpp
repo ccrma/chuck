@@ -301,14 +301,14 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     );
 
     // get the system time of day as a vec2(seconds, microseconds)
-    QUERY->add_sfun( QUERY, machine_timeofday_precise_impl, "vec2", "timeOfDayPrecise" );
+    QUERY->add_sfun( QUERY, machine_timeofday_precise_impl, "vec2", "timeOfDay2" );
     QUERY->doc_func( QUERY,
         "identical to Machine.timeOfDay(), only the return value is a vec2 where "
         "x is time in seconds, and y is fractional time in microseconds. "
         "y is guaranteed to be between 0 and 1,000,000. x + y yields the total time. "
         "Useful for situations needing less than 64-bit precision e.g., floats in OSC are "
         "32-bit and one must send the x and y values separately -- "
-        "otherwise a significant amount of timing resolution will be lost."
+        "otherwise a significant amount of timing resolution would be lost."
     );
 
     // add examples

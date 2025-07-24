@@ -454,8 +454,8 @@ void ck_usleep( t_CKUINT microseconds )
 int ck_gettimeofday( long * tv_sec, long * tv_usec, void * tzp )
 {
     // zero out
-    if( tv_sec ) *tv_sec = 0;
-    if( tv_usec ) *tv_usec = 0;
+    *tv_sec = 0;
+    *tv_usec = 0;
 
 #ifndef __PLATFORM_WINDOWS__
     // timeval

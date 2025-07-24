@@ -22,4 +22,4 @@
 // than 64-bit precision e.g., floats in OSC are 32-bit and one
 // must send the x and y values separately -- otherwise a
 // significant amount of timing resolution will be lost
-<<< "machine time (added precision):", Machine.timeOfDayPrecise() >>>;
+<<< "machine time (added precision):", Machine.timeOfDay2() >>>;
