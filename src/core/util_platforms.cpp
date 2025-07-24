@@ -38,6 +38,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
+
 #ifdef __PLATFORM_WINDOWS__
 
   #ifndef __CHUNREAL_ENGINE__
@@ -53,6 +54,7 @@
 
   #include <unistd.h>
   #include <sys/ioctl.h>
+  #include <sys/time.h>
 
 #endif // #ifdef __PLATFORM_WINDOWS__
 
@@ -439,35 +441,55 @@ void ck_usleep( t_CKUINT microseconds )
 
 
 //-----------------------------------------------------------------------------
+// FYI timeval is defined in sys/time.h (non-windows)
+// FYI timeval is defined in winsock.h AND winsock2.h (windows)
+//     including winsock.h BEFORE winsock2.h could result in compiler errors
+//     (but not vice versa)
+//-----------------------------------------------------------------------------
+// typedef struct timeval { long tv_sec; long tv_usec; } timeval;
+//-----------------------------------------------------------------------------
 // name: ck_gettimeofday()
 // desc: get underlying operating system absolute time
 //-----------------------------------------------------------------------------
-int ck_gettimeofday( struct timeval * tv, void * tzp )
+int ck_gettimeofday( long * tv_sec, long * tv_usec, void * tzp )
 {
+    // zero out
+    if( tv_sec ) *tv_sec = 0;
+    if( tv_usec ) *tv_usec = 0;
+
 #ifndef __PLATFORM_WINDOWS__
+    // timeval
+    timeval tv;
     // call on through
-    return gettimeofday( tv, tzp );
+    int retval = gettimeofday( &tv, tzp );
+    // check it
+    if( retval ) return retval;
+    // set return values
+    *tv_sec = tv.tv_sec;
+    *tv_usec = tv.tv_usec;
+    // return (success code)
+    return retval;
+
 #else // windows
-    int gettimeofday( struct timeval * tp, void * tzp)
-    {
-        // NOTE: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
-        // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
-        // until 00:00:00 January 1, 1970
-        static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+    // NOTE: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+    // This magic number is the number of 100 nanosecond intervals since January 1, 1601 (UTC)
+    // until 00:00:00 January 1, 1970
+    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
 
-        SYSTEMTIME  system_time;
-        FILETIME    file_time;
-        uint64_t    time;
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    uint64_t    time;
 
-        GetSystemTime( &system_time );
-        SystemTimeToFileTime( &system_time, &file_time );
-        time =  ((uint64_t)file_time.dwLowDateTime )      ;
-        time += ((uint64_t)file_time.dwHighDateTime) << 32;
+    GetSystemTime( &system_time );
+    SystemTimeToFileTime( &system_time, &file_time );
+    time =  ((uint64_t)file_time.dwLowDateTime )      ;
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
 
-        tp->tv_sec  = (long) ((time - EPOCH) / 10000000L);
-        tp->tv_usec = (long) (system_time.wMilliseconds * 1000);
-        return 0;
-    }
+    *tv_sec  = (long)((time - EPOCH) / 10000000L);
+    *tv_usec = (long)(system_time.wMilliseconds * 1000);
+
+    // return success
+    return 0;
 #endif
 }
 

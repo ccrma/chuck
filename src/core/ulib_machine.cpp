@@ -683,9 +683,11 @@ CK_DLL_SFUN( machine_platform_name_impl )
 
 CK_DLL_SFUN( machine_timeofday_impl )
 {
-    timeval tv;
+    long tv_sec = 0;
+    long tv_usec = 0;
+
     // get time of day
-    if( ck_gettimeofday( &tv, NULL ) != 0 )
+    if( ck_gettimeofday( &tv_sec, &tv_usec, NULL ) != 0 )
     {
         CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDay() failed...\n" );
         RETURN->v_float = 0;
@@ -693,14 +695,16 @@ CK_DLL_SFUN( machine_timeofday_impl )
     }
 
     // return value
-    RETURN->v_float = tv.tv_sec + (tv.tv_usec / 1000000.0);
+    RETURN->v_float = tv_sec + (tv_usec / 1000000.0);
 }
 
 CK_DLL_SFUN( machine_timeofday_precise_impl )
 {
-    timeval tv;
+    long tv_sec = 0;
+    long tv_usec = 0;
+
     // get time of day
-    if( ck_gettimeofday( &tv, NULL ) != 0 )
+    if( ck_gettimeofday( &tv_sec, &tv_usec, NULL ) != 0 )
     {
         CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDayPrecise() failed...\n" );
         RETURN->v_vec2.x = 0;
@@ -709,8 +713,8 @@ CK_DLL_SFUN( machine_timeofday_precise_impl )
     }
 
     // return value
-    RETURN->v_vec2.x = tv.tv_sec;
-    RETURN->v_vec2.y = tv.tv_usec;
+    RETURN->v_vec2.x = tv_sec;
+    RETURN->v_vec2.y = tv_usec;
 }
 
 // gc() | 1.5.2.0 (ge)

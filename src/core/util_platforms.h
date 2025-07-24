@@ -77,19 +77,8 @@ size_t ck_getline( char ** lineptr, size_t * n, FILE * stream );
 // sleep
 void ck_usleep( t_CKUINT microseconds );
 
-
-// typedef struct timeval { long tv_sec; long tv_usec; } timeval;
-#ifndef __PLATFORM_WINDOWS__
-  // FYI timeval is defined in sys/time.h (non-windows)
-  #include <sys/time.h>
-#else // windows
-  // FYI timeval is defined in winsock.h AND winsock2.h (windows)
-  // FYI including winsock.h BEFORE winsock2.h could result in compiler errors
-  //     (but not vice versa)
-  #include <winsock2.h>
-#endif
 // gettimeofday
-int ck_gettimeofday( struct timeval * tv, void * tzp );
+int ck_gettimeofday( long * tv_sec, long * tv_usec, void * tzp );
 
 
 
