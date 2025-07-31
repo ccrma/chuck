@@ -50,7 +50,7 @@
 #define MIDI_BUFFER_SIZE 8192
 
 std::vector<RtMidiIn *> MidiInManager::the_mins;
-std::vector< std::map< Chuck_VM *, CBufferAdvance * > > MidiInManager::the_bufs;
+std::vector< std::map< Chuck_VM *, CBufferAdvanceVariable * > > MidiInManager::the_bufs;
 std::vector<RtMidiOut *> MidiOutManager::the_mouts;
 std::map< Chuck_VM *, CBufferSimple * > MidiInManager::m_event_buffers;
 
@@ -80,6 +80,32 @@ MidiOut::~MidiOut()
 {
     if( mout ) this->close();
 //    CK_SAFE_DELETE( mout );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: send()
+// desc: send an array of midi bytes
+//-----------------------------------------------------------------------------
+t_CKUINT MidiOut::send( Chuck_ArrayInt * arr )
+{
+    if( !m_valid ) return 0;
+
+    t_CKINT length = arr->size();
+    t_CKUINT byte;
+
+    m_msg.clear();
+
+    for( int i = 0; i < length; i++ )
+    {
+        arr->get(i, &byte);
+        m_msg.push_back( byte );
+    }
+    mout->sendMessage( &m_msg );
+
+    return length;
 }
 
 
@@ -543,8 +569,9 @@ t_CKBOOL MidiInManager::add_vm( Chuck_VM * vm, t_CKINT device_num,
     }
 
     // allocate the buffer
-    CBufferAdvance * cbuf = new CBufferAdvance;
-    if( !cbuf->initialize( MIDI_BUFFER_SIZE, sizeof(MidiMsg), m_event_buffers[vm] ) )
+    CBufferAdvanceVariable * cbuf = new CBufferAdvanceVariable;
+    // buffer size with an estimate of 3 bytes per message
+    if( !cbuf->initialize( MIDI_BUFFER_SIZE * 3, m_event_buffers[vm] ) )
     {
         if( !suppress_output )
             EM_error2( 0, "MidiIn: couldn't allocate CBuffer for port %i...", device_num );
@@ -620,13 +647,58 @@ t_CKBOOL MidiIn::empty()
 
 
 //-----------------------------------------------------------------------------
-// name: get()
-// desc: get message
+// name: recv()
+// desc: get a 3-byte midi message
 //-----------------------------------------------------------------------------
 t_CKUINT MidiIn::recv( MidiMsg * msg )
 {
     if( !m_valid ) return FALSE;
-    return m_buffer->get( msg, 1, m_read_index );
+
+    t_CKUINT size = m_buffer->getNextSize(m_read_index);
+
+    if( size == 0 ) return size;
+
+    // MSVC doesn't play well with VLAs, don't use t_CKBYTE tmp[size] here
+    std::vector<t_CKBYTE> tmp(size, 0);
+
+    m_buffer->get(tmp.data(), m_read_index);
+
+    for (t_CKUINT i = 0; i < size && i < 3; i++)
+    {
+        msg->data[i] = tmp[i];
+    }
+
+    return size;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: recv()
+// desc: get a midi message of any byte length
+//-----------------------------------------------------------------------------
+t_CKUINT MidiIn::recv( Chuck_ArrayInt * arr )
+{
+    if( !m_valid ) return FALSE;
+
+    t_CKUINT size = m_buffer->getNextSize(m_read_index);
+
+    if( size == 0 ) return 0;
+
+    std::vector<t_CKBYTE> tmp(size, 0);
+
+    // don't pass arr->m_vector.data() directly, that holds longs
+    m_buffer->get(tmp.data(), m_read_index);
+
+    arr->clear();
+
+    for (t_CKUINT i = 0; i < size; i++)
+    {
+        arr->push_back(tmp[i]);
+    }
+
+    return size;
 }
 
 
@@ -651,21 +723,18 @@ void MidiInManager::cb_midi_input( double deltatime, std::vector<unsigned char> 
         EM_error2( 0, "MidiIn: couldn't find buffers for port %i...", device_num );
         return;
     }
-    MidiMsg m;
-    if( nBytes >= 1 ) m.data[0] = msg->at(0);
-    if( nBytes >= 2 ) m.data[1] = msg->at(1);
-    if( nBytes >= 3 ) m.data[2] = msg->at(2);
 
     // put in all the buffers, make sure not active sensing
-    if( m.data[2] != 0xfe )
+    if( msg->back() != 0xfe )
     {
-        for( std::map< Chuck_VM *, CBufferAdvance * >::iterator it =
+        for( std::map< Chuck_VM *, CBufferAdvanceVariable * >::iterator it =
              the_bufs[device_num].begin(); it != the_bufs[device_num].end(); it++ )
         {
-            CBufferAdvance * cbuf = it->second;
+            CBufferAdvanceVariable * cbuf = it->second;
+
             if( cbuf != NULL )
             {
-                cbuf->put( &m, 1 );
+                cbuf->put( msg->data(), msg->size() );
             }
         }
     }
