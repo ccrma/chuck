@@ -4346,7 +4346,8 @@ struct LiSaMulti_data
     t_CKFLOAT voiceGain[LiSa_MAXVOICES]; // gain control for each voice
     t_CKFLOAT voicePan[LiSa_MAXVOICES];  // pan control for each voice; places voice between any pair of channels.
     t_CKFLOAT channelGain[LiSa_MAXVOICES][LiSa_MAXCHANNELS];
-    t_CKDOUBLE p_inc[LiSa_MAXVOICES], pindex[LiSa_MAXVOICES]; // playback increment
+    // 1.5.5.1 (ge & nick) added pindex_now to address discrepancy of pindex between getNextSample and playPos
+    t_CKDOUBLE p_inc[LiSa_MAXVOICES], pindex[LiSa_MAXVOICES], pindex_now[LiSa_MAXVOICES]; // playback increment
 
     // ramp stuff
     t_CKDOUBLE rampup_len[LiSa_MAXVOICES], rampdown_len[LiSa_MAXVOICES], rec_ramplen, rec_ramplen_inv;
@@ -4375,6 +4376,7 @@ struct LiSaMulti_data
         memset( channelGain, 0, sizeof(channelGain) );
         memset( p_inc, 0, sizeof(p_inc) );
         memset( pindex, 0, sizeof(pindex) );
+        memset( pindex, 0, sizeof(pindex_now) );
         memset( rampup_len, 0, sizeof(rampup_len) );
         memset( rampdown_len, 0, sizeof(rampdown_len) );
         memset( rampup_len_inv, 0, sizeof(rampup_len_inv) );
@@ -4399,6 +4401,7 @@ struct LiSaMulti_data
         for( t_CKINT i=0; i < LiSa_MAXVOICES; i++ )
         {
             pindex[i] = rindex = 0;
+            pindex_now[i] = pindex[i]; // added 1.5.5.1 (ge & nick)
             play[i] = record = bi[i] = false;
             looprec = loopplay[i] = true;
             coeff = 0.;
@@ -4534,6 +4537,9 @@ struct LiSaMulti_data
             return (SAMPLE) 0.;
         }
 
+        // update pindex_now for accurate play position reporting between calls to this function | 1.5.5.1 (ge & nick)
+        pindex_now[which] = pindex[which];
+
         // interp
         t_CKINT whereTrunc = (t_CKINT) pindex[which];
         t_CKDOUBLE whereFrac = pindex[which] - (t_CKDOUBLE)whereTrunc;
@@ -4556,6 +4562,7 @@ struct LiSaMulti_data
             }
         }
 
+        // advance play position
         pindex[which] += p_inc[which];
 
         t_CKDOUBLE outsample;
@@ -5037,8 +5044,21 @@ CK_DLL_CTRL( LiSaMulti_ctrl_pindex )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
-    d->pindex[which] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
 
+    // 1.5.5.1 (ge & nick) check for bounds
+    if( which < 0 || which >= LiSa_MAXVOICES )
+    {
+        // print warning
+        CK_STDCERR << "[chuck] LiSa.playPos(int, dur) voice argument '" << which << "' out of expected range [0," << LiSa_MAXVOICES-1 << "]" << CK_STDENDL;
+        // return 0
+        RETURN->v_dur = 0;
+        // bail out
+        return;
+    }
+
+    // set the play position
+    d->pindex[which] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
+    // NOTE: this is returning pindex and not the new (1.5.5.1) pindex_now, the latter is for cget only
     RETURN->v_dur = (t_CKDUR)d->pindex[which];
 }
 
@@ -5046,8 +5066,10 @@ CK_DLL_CTRL( LiSaMulti_ctrl_pindex )
 CK_DLL_CTRL( LiSaMulti_ctrl_pindex0 )
 {
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
-    d->pindex[0] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
 
+    // set the play position
+    d->pindex[0] = (t_CKDOUBLE)GET_NEXT_DUR(ARGS);
+    // NOTE: this is returning pindex and not the new (1.5.5.1) pindex_now, the latter is for cget only
     RETURN->v_dur = (t_CKDUR)d->pindex[0];
 }
 
@@ -5063,8 +5085,19 @@ CK_DLL_CGET( LiSaMulti_cget_pindex )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
     t_CKINT which = GET_NEXT_INT(ARGS);
 
+    // 1.5.5.1 (ge & nick) check for bounds
+    if( which < 0 || which >= LiSa_MAXVOICES )
+    {
+        // print warning
+        CK_STDCERR << "[chuck] Lisa.playPos(int) argument '" << which << "' out of expected range [0," << LiSa_MAXVOICES-1 << "]" << CK_STDENDL;
+        // return 0
+        RETURN->v_dur = 0;
+        // bail out
+        return;
+    }
+
     // return
-    RETURN->v_dur = (t_CKDUR)d->pindex[which];
+    RETURN->v_dur = (t_CKDUR)d->pindex_now[which];
 }
 
 
@@ -5073,7 +5106,7 @@ CK_DLL_CGET( LiSaMulti_cget_pindex0 )
     LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
 
     // return
-    RETURN->v_dur = (t_CKDUR)d->pindex[0];
+    RETURN->v_dur = (t_CKDUR)d->pindex_now[0];
 }
 
 
@@ -5095,7 +5128,7 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rindex )
 
 
 //-----------------------------------------------------------------------------
-// name: LiSaMulti_cget_pindex()
+// name: LiSaMulti_cget_rindex()
 // desc: CGET function
 //-----------------------------------------------------------------------------
 CK_DLL_CGET( LiSaMulti_cget_rindex )

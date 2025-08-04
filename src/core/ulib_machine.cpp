@@ -39,10 +39,14 @@
 #include "chuck.h"
 
 #include "util_string.h"
+#include "util_platforms.h"
 
 #include <string>
 #include <algorithm>
 using namespace std;
+
+
+
 
 // exports
 CK_DLL_SFUN( machine_crash_impl );
@@ -70,6 +74,9 @@ CK_DLL_SFUN( machine_getloglevel_impl );
 CK_DLL_SFUN( machine_refcount_impl );
 CK_DLL_SFUN( machine_regstack_impl );
 CK_DLL_SFUN( machine_memstack_impl );
+CK_DLL_SFUN( machine_platform_name_impl );     // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_timeofday_impl );         // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_timeofday_precise_impl ); // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_gc );
 CK_DLL_SFUN( machine_opOverloadReset_impl );
 // not used
@@ -281,6 +288,29 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, machine_memstack_impl, "int", "sp_mem" );
     QUERY->doc_func( QUERY, "get the calling shred's memory (aka \"mem\") stack pointer; intended for either debugging or curiosity." );
 
+    // get the current platform
+    QUERY->add_sfun( QUERY, machine_platform_name_impl, "string", "os" );
+    QUERY->doc_func( QUERY, "get the underlying operating system name; possible values include \"mac\", \"linux\", \"windows\", \"web\", \"ios\", \"android\", \"unknown\"" );
+
+    // get the system time of day
+    QUERY->add_sfun( QUERY, machine_timeofday_impl, "float", "timeOfDay" );
+    QUERY->doc_func( QUERY,
+        "returns the time in seconds since the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
+        "The returned time has microsecond resolution and could be used for e.g. synchronizing "
+        "events across machines without the use of networking. "
+    );
+
+    // get the system time of day as a vec2(seconds, microseconds)
+    QUERY->add_sfun( QUERY, machine_timeofday_precise_impl, "vec2", "timeOfDay2" );
+    QUERY->doc_func( QUERY,
+        "identical to Machine.timeOfDay(), only the return value is a vec2 where "
+        "x is time in seconds, and y is fractional time in microseconds. "
+        "y is guaranteed to be between 0 and 1,000,000. x + y yields the total time. "
+        "Useful for situations needing less than 64-bit precision e.g., floats in OSC are "
+        "32-bit and one must send the x and y values separately -- "
+        "otherwise a significant amount of timing resolution would be lost."
+    );
+
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
     QUERY->add_ex( QUERY, "machine/eval-global.ck" );
@@ -288,6 +318,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     QUERY->add_ex( QUERY, "machine/is-realtime.ck" );
     QUERY->add_ex( QUERY, "machine/machine-help.ck" );
     QUERY->add_ex( QUERY, "machine/machine-shred.ck" );
+    QUERY->add_ex( QUERY, "machine/platform.ck" );
     QUERY->add_ex( QUERY, "machine/version.ck" );
     QUERY->add_ex( QUERY, "book/digital-artists/chapter9/DrumMachine" );
     QUERY->add_ex( QUERY, "book/digital-artists/chapter9/SmartMandolin/initialize.ck" );
@@ -639,6 +670,52 @@ CK_DLL_SFUN( machine_memstack_impl )
 {
     // return mem stack pointer
     RETURN->v_int = (t_CKINT)SHRED->mem->sp;
+}
+
+CK_DLL_SFUN( machine_platform_name_impl )
+{
+    // make chuck string
+    Chuck_String * s = new Chuck_String( CHUCK_PLATFORM_STRING );
+    // initialize
+    initialize_object(s, VM->carrier()->env->ckt_string, SHRED, VM );
+    // return
+    RETURN->v_string = s;
+}
+
+CK_DLL_SFUN( machine_timeofday_impl )
+{
+    long tv_sec = 0;
+    long tv_usec = 0;
+
+    // get time of day
+    if( ck_gettimeofday( &tv_sec, &tv_usec, NULL ) != 0 )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDay() failed...\n" );
+        RETURN->v_float = 0;
+        return;
+    }
+
+    // return value
+    RETURN->v_float = tv_sec + (tv_usec / 1000000.0);
+}
+
+CK_DLL_SFUN( machine_timeofday_precise_impl )
+{
+    long tv_sec = 0;
+    long tv_usec = 0;
+
+    // get time of day
+    if( ck_gettimeofday( &tv_sec, &tv_usec, NULL ) != 0 )
+    {
+        CK_FPRINTF_STDERR( "[chuck]: Machine.timeOfDayPrecise() failed...\n" );
+        RETURN->v_vec2.x = 0;
+        RETURN->v_vec2.y = 0;
+        return;
+    }
+
+    // return value
+    RETURN->v_vec2.x = tv_sec;
+    RETURN->v_vec2.y = tv_usec;
 }
 
 // gc() | 1.5.2.0 (ge)

@@ -58,6 +58,18 @@
   #endif
 #endif
 
+// (chuck-specific) translate window macros | added 1.5.5.2 (ge)
+#if defined __WINDOWS_DS__ || defined __WINDOWS_ASIO__
+  #ifndef __WINDOWS_MM__
+    #define __WINDOWS_MM__ // windows multimedia
+  #endif
+
+// uncomment this for UWP (requires c++17)
+// #ifndef __WINDOWS_UWP__
+//   #define __WINDOWS_UWP__ // universal windows platform MIDI api
+// #endif
+#endif
+
 #define RTMIDI_VERSION_MAJOR 6
 #define RTMIDI_VERSION_MINOR 0
 #define RTMIDI_VERSION_PATCH 0

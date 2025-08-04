@@ -2646,7 +2646,7 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
         CK_LR( te_polar, te_polar ) return env->ckt_polar;
         // CK_COMMUTE( te_float, te_complex ) return env->ckt_complex;
         // CK_COMMUTE( te_float, te_polar ) return env->ckt_polar;
-        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec3; // 1.5.1.7
+        CK_LR( te_vec2, te_vec2 ) return env->ckt_vec2; // 1.5.1.7 | fixed (1.5.5.1): was erroneously ckt_vec3
         CK_LR( te_vec3, te_vec3 ) return env->ckt_vec3; // 1.3.5.3
         CK_LR( te_vec4, te_vec4 ) return env->ckt_vec4; // 1.3.5.3
         CK_COMMUTE( te_vec2, te_vec3 ) return env->ckt_vec3; // 1.5.1.7
@@ -5947,12 +5947,12 @@ Chuck_Namespace::~Chuck_Namespace()
 // name: add_type()
 // desc: add type to name space
 //-----------------------------------------------------------------------------
-void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * type )
+void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * theType )
 {
     // log it
-    EM_log( CK_LOG_DEBUG, "namespace '%s' adding type '%s'->'%s'", this->name.c_str(), xid.c_str(), type->name().c_str() );
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding type '%s'->'%s'", this->name.c_str(), xid.c_str(), theType->name().c_str() );
     // add it
-    this->type.add( xid, type );
+    this->type.add( xid, theType );
 }
 
 
@@ -5962,12 +5962,12 @@ void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * type )
 // name: add_value()
 // desc: add value to name space
 //-----------------------------------------------------------------------------
-void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * value )
+void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * theValue )
 {
     // log it
-    EM_log( CK_LOG_DEBUG, "namespace '%s' adding value '%s'->'%s'", this->name.c_str(), xid.c_str(), value->name.c_str() );
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding value '%s'->'%s'", this->name.c_str(), xid.c_str(), theValue->name.c_str() );
     // add it
-    this->value.add( xid, value );
+    this->value.add( xid, theValue );
 }
 
 
@@ -5977,12 +5977,12 @@ void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * value )
 // name: add_func()
 // desc: add type to name space
 //-----------------------------------------------------------------------------
-void Chuck_Namespace::add_func( const std::string & xid, Chuck_Func * func )
+void Chuck_Namespace::add_func( const std::string & xid, Chuck_Func * theFunc )
 {
     // log it
-    EM_log( CK_LOG_DEBUG, "namespace '%s' adding func '%s'->'%s'", this->name.c_str(), xid.c_str(), func->base_name.c_str() );
+    EM_log( CK_LOG_DEBUG, "namespace '%s' adding func '%s'->'%s'", this->name.c_str(), xid.c_str(), theFunc->base_name.c_str() );
     // add it
-    this->func.add( xid, func );
+    this->func.add( xid, theFunc );
 }
 
 
