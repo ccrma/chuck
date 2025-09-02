@@ -7832,6 +7832,9 @@ t_CKBOOL GetMonitorRealResolution( HMONITOR monitor, t_CKFLOAT * pixelsWidth, t_
 
 #endif
 
+
+
+
 //-----------------------------------------------------------------------------
 // unified easy mouse functions
 //-----------------------------------------------------------------------------
@@ -7843,6 +7846,7 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
     t_CKVEC2 retval; retval.x = retval.y = 0;
 
 #ifdef __PLATFORM_APPLE__
+  #if defined(__PLATFORM_MACOS__) // macOS
     // get screen coords
     CGEventRef cg_event = CGEventCreate(NULL);
     CGPoint mouseLocation = CGEventGetLocation(cg_event);
@@ -7862,6 +7866,10 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
 
     // reclaim
     CFRelease( cg_event );
+  #elif defined(__PLATFORM_IOS__) // iOS
+    // TODO: figure out how / whether to support iOS
+    // for now, return @(0,0)
+  #endif
 #elif defined(__PLATFORM_WINDOWS__)
 
     t_CKINT x = 0, y = 0;
@@ -7911,7 +7919,7 @@ t_CKVEC2 ck_get_mouse_xy_normalize()
     {
         // print error
         std::cerr << "Mouse cannot open display (X server)..." << std::endl;
-	goto done;
+        goto done;
     }
     // get root window
     root = DefaultRootWindow( display );
@@ -7944,6 +7952,7 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
 {
     t_CKVEC2 retval; retval.x = retval.y = 0;
 #ifdef __PLATFORM_APPLE__
+  #if defined(__PLATFORM_MACOS__) // macOS
     // get screen coords
     CGEventRef cg_event = CGEventCreate(NULL);
     CGPoint mouseLocation = CGEventGetLocation(cg_event);
@@ -7952,6 +7961,10 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
     retval.y = (t_CKFLOAT)mouseLocation.y;
     // reclaim
     CFRelease( cg_event );
+  #elif defined(__PLATFORM_IOS__) // iOS
+    // TODO: figure out how / whether to support iOS
+    // for now, return @(0,0)
+  #endif
 #elif defined(__PLATFORM_WINDOWS__)
     // get screen coords
     POINT pt;
@@ -7974,7 +7987,7 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
     {
         // print error
         std::cerr << "Mouse cannot open display (X server)..." << std::endl;
-	goto done;
+        goto done;
     }
     // get root window
     root = DefaultRootWindow( display );

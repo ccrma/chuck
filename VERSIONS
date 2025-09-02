@@ -2,13 +2,109 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.1
+1.5.5.2 (July 2025)
+=======
+--> new ChuGL v0.2.6 (see ChuGL release notes below)
+~~~~~
+ChucK 1.5.5.2
+=============
+(fixed) windows MIDI support (which was previously broken in 1.5.5.1)
+(fixed) examples/analysis/xsynth.ck (thanks Celeste Betancur & Andrew Zhu Aday)
+    * now performs a proper multi-band cross-synthesis using the magnitude
+      in each band of signl X to modulate the corresponding frequency bin
+      in signal Y to produce output Z
+(added) examples/analysis/xsynth.ck-stereo.ck same as above + stereo delay
+(added) examples/machine/platform.ck -- get underlying OS name + system time
+(added) Machine methods
+    string Machine.os()
+        get the underlying operating system name; possible values include 
+        "mac", "linux", "windows", "web", "ios", "android", "unknown"
+    float Machine.timeOfDay()
+        returns the time in seconds since Epoch 1970-01-01 00:00:00 +0000 (UTC).
+        The returned time has microsecond resolution
+    vec2 Machine.timeOfDay2()
+        identical to Machine.timeOfDay(), only the return value is a vec2
+        where x is time in seconds, and y is fractional time in microseconds.
+        y is guaranteed to be between 0 and 1,000,000. x + y yields the total
+        time. Useful for situations needing less than 64-bit precision e.g., 
+        floats in OSC are 32-bit and one must send the x and y values 
+        separately -- otherwise a significant amount of timing resolution
+        would be lost
+============
+ChuGL v0.2.6
+============
+(added) Transparency!! (alpha-blended and sorted back to front)
+  - See examples/basic/transparency.ck
+(added) Shadow Mapping (a basic first version)
+  - Implemented shadow mapping for GDirLight and GSpotLight
+    (GPointLight currently not supported)
+  - See examples/deep/shadows.ck
+(reworked) Render graph API
+  - `RenderPass` is now the base class of `ScenePass` (which renderas a GScene
+    to a target texture, formerly this was called `RenderPass`) and
+    `ScreenPass` (which renders a full-screen quad, useful for post processing
+    effects)
+  - Added new `RenderPass` methods `.clear()`, `.scissor()`,
+    `.scissorNormalized()`, `.viewport()` and `.viewportNormalized()` 
+  - Added `ScenePass.msaa(int)` which can be used to toggle MSAA antialiasing
+  - Add resolution, time, delta_time, frame_count, mouse state, and chuck VM
+    sample rate info to shader #FRAME_UNIFORMS. Simplifies writing generative
+    shaders in shadertoy-style.
+(added) UI improvements:
+  - Add `UI.knob(...)` widgets
+  - Add `UI.image(...)` and `UI.imageButton(...)` methods, which allow adding
+    ChuGL Textures to UI. 
+(update) Textures
+  - Changed `TextureDesc.mips()` semantics. Set to `true` to generate a full
+    mip chain, set to `false` to not create any mips beyond level 0.
+  - Add `TextureDesc.resizable`, `TextureDesc.widthRatio` and
+    `TextureDesc.heightRatio` to create resizable textures, i.e. textures that
+    change in dimensions relative to window resolution. (helpful to make your
+    app robust against changing screen sizes)
+  - Add `Texture.write(int ptr)` which copies data from a pointer from a
+    separate ChuGin. Use with caution!
+  - change default surface texture to be non-srgb, add `OutputPass.gamma()` to
+    control whether or not to apply gamma correction. (this simplifies getting
+    accurate colors in basic 2D scenes without complex lighting.
+(updated) various bug fixes
+  - fix `GGen.lookAt(vec3 pos)` bug when up vector and forward vectors were
+    collinear.
+  - added `GGen.lookAt(vec3 pos, vec3 up)` which takes a custom up vector.
+  - fix `GText.defaultFont()` not setting custom font path correctly
+  - fix segfault caused by sending large amount of data to `UI.plotLines()`
+  - setting `TextureLoadDesc.gen_mips` to false no longer erroneously
+    generates a mip chain
+  - fix `UI.beginChild(...)` not properly returning a value
+  - Add normal matrix to #DRAW_UNIFORMS shader include to enable correct
+    calculations of normal vectors for Meshes with non-uniform scale
+(added) GText: Add antialias method `GText.antialias()`
+(added) New Examples
+  - basic/transparency.ck
+    how to use transparent materials
+  - rendergraph/slime.ck
+    slime mold simulation using compute passes!
+  - deep/pokemon_cries.ck
+    Gameboy APU emulator that synthesis all Gen I pokemon cries!
+  - deep/shadows.ck
+    shadowmapping for directional and spot lights!
+(updated) Under the Hood
+  - Large architecture refactor to use a rendergraph + gpu resource cache
+    + sorted drawcall structs to organize and dispatch GPU commands.
+  - Caching GPU resources (namely BindGroups and TextureViews) significantly
+    improves performance and increases the maximum number of draw calls that
+    can be issued each frame
+
+
+1.5.5.1 (May 2025)
 =======
 (updated) the underlying MIDI implementation been updated 
     (updated RtMidi from 1.0.4 to 6.0.0 | thanks to @cviejo)
     this updates MIDI support, including:
     * (macOS) MIDI timecode is now sent when using MidiOut
     * (inux) JACK MIDI support
+(fixed) chump (package manager, Windows)
+    * now correctly unzips packages for package installation
+    * (updated chump from 0.0.1 to 0.0.2)
 (fixed) array.zero() now works properly with multi-dimensional arrays; previously
     it would zero out the top-level array elements (which are actually the next
     level of inner arrays, since multi-dimensional array in chuck are arrays of
