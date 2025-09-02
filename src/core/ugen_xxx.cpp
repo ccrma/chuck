@@ -390,6 +390,30 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     while( true ) { 100::ms => now; }
     */
 
+    //! GainDB
+    doc = "a gain control unit generator that uses the deciBel scale rather than linear scaling";
+    if( !type_engine_import_ugen_begin( env, "GainDB", "UGen", env->global(),
+                                        NULL, NULL, NULL, NULL, doc.c_str() ) )
+        return FALSE;
+
+    func = make_new_ctor( gainDB_ctor );
+    func->doc = "construct a GainDB with default value.";
+    func->add_arg( "float", "gain" );
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "gain", gainDB_set_gain );
+    func->add_arg( "float", "gain" );
+    func->doc = "Set gain (in dB)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "gain", gainDB_get_gain );
+    func->doc = "Get gain (in dB)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // end import
+    if( !type_engine_import_class_end( env ) )
+        return FALSE;
+
     //! \section wave forms
 
     // add noise
@@ -1366,16 +1390,16 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     func->doc = "For particular voice (arg 1), get panning value.";
     func->add_arg( "int", "voice" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
-	
-	func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan0 );
+
+    func = make_new_mfun( "float", "pan", LiSaMulti_ctrl_voicepan0 );
     func->doc = "For voice 0, set panning value [0.0, number of channels - 1.0].";
     func->add_arg( "float", "val" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "pan", LiSaMulti_cget_voicepan0);
     func->doc = "For voice 0, get panning value.";
-	if( !type_engine_import_mfun( env, func ) ) goto error;
-	
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // set record feedback coefficient
     func = make_new_mfun( "float", "feedback", LiSaMulti_ctrl_coeff );
     func->doc = "Set feedback amount when overdubbing (loop recording; how much to retain).";
@@ -1995,6 +2019,57 @@ CK_DLL_MFUN( gain_ctor_1 )
 
 
 //-----------------------------------------------------------------------------
+// name: GainDB( float gain )
+// desc: GainDB constructor that takes a float
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( gainDB_ctor )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set from constructor arg
+    t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
+    ugen->m_gain = pow(10.0, gain / 10.0); // dB power scaling
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: GainDB.gain( float gain )
+// desc: Set GainDB gain (in dB)
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( gainDB_set_gain )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set from constructor arg
+    t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
+    ugen->m_gain = pow(10.0, gain / 10.0); // dB power scaling
+
+    RETURN->v_float = gain;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: GainDB.gain()
+// desc: Get GainDB gain (in dB)
+//-----------------------------------------------------------------------------
+CK_DLL_MFUN( gainDB_get_gain )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set from constructor arg
+    t_CKFLOAT dB = 10 * log10(ugen->m_gain); // dB power scaling
+
+    RETURN->v_float = dB;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: pan2_ctor()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -2065,7 +2140,7 @@ public:
     }
     // CK_FPRINTF_STDERR( "random bits - %d", rand_bits );
     setMode ( "pink" );
-  } 
+  }
   ~CNoise_Data() {
       // 1.5.0.1 (anthonyhawes) added
       CK_SAFE_FREE( pink_array );
@@ -3592,7 +3667,7 @@ CK_DLL_CTRL( sndbuf_ctrl_read )
 
     // log
     EM_log( CK_LOG_INFO, "(sndbuf): reading '%s'...", filename );
-    
+
     // copy in the chunks size | 1.5.0.0 (ge)
     d->chunks = d->chunks_on_next_load;
 
