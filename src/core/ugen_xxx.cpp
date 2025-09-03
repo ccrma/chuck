@@ -2028,7 +2028,7 @@ CK_DLL_CTOR( gainDB_ctor )
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // set from constructor arg
     t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
-    ugen->m_gain = pow(10.0, gain / 10.0); // dB power scaling
+    ugen->m_gain = pow(10.0, gain / 20.0); // dB power scaling
 }
 
 
@@ -2044,7 +2044,7 @@ CK_DLL_MFUN( gainDB_set_gain )
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // set from constructor arg
     t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
-    ugen->m_gain = pow(10.0, gain / 10.0); // dB power scaling
+    ugen->m_gain = pow(10.0, gain / 20.0); // dB power scaling
 
     RETURN->v_float = gain;
 }
@@ -2061,7 +2061,7 @@ CK_DLL_MFUN( gainDB_get_gain )
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     // set from constructor arg
-    t_CKFLOAT dB = 10 * log10(ugen->m_gain); // dB power scaling
+    t_CKFLOAT dB = 20 * log10(ugen->m_gain); // dB power scaling
 
     RETURN->v_float = dB;
 }
