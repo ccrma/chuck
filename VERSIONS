@@ -2,6 +2,52 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.5 (September 2025)
+=======
+--> "ChucK to School 2025" ChuGL v0.2.7 release!
+============
+ChuGL v0.2.7
+============
+(added) `GModel` for loading 3D asset models (currently supports OBJ)
+(added) `GPolyhedron` and `PolyhedronGeometry` for builtin platonic solids
+(added) `GG.bloom()` and `GG.bloomPass()` to streamline adding bloom to the default scene
+(added) `GWindow.files()` to detect draggin+dropping files onto the screen (see basic/gwindow.ck example!)
+(added) `Material.wireframe(int)` to easily toggle whether a mesh is rendered as a wireframe
+(added) `Texture.save(string)` to save a GPU texture to a .png
+(added) `Geometry.indexCount()` to control the number of indices drawn in an indexed draw
+(added) `GWindow.droppedFiles()` to handle drag+dropping files onto the window
+(added) new `GText` features
+  - `GText.characters(int)` to control the number of characters rendered on a GText
+  - `GText.width(int)` to set text wrap width
+  - `GText.align(int)` to set left/center/right alignment
+  - `GText.size(int)` to scale text size while respecting wrap and alignment
+(added) `Material.wireframe(int)` to render meshes as wireframes
+(added) "the Kunwoo Kim Collection" -- NEW interactive visualizers for teaching
+  - education/additive-synthesis.ck
+  - education/basic-filters.ck
+  - education/granular-synthesis.ck
+  - education/karplus-strong.ck
+  - education/panning.ck
+  - education/spectrum-interp.ck
+  - education/thx-visual.ck
+  - education/vocoder.ck
+  - education/fm-synthesis.ck
+(updated) examples:
+  - basic/gmodel.ck (introducing GModel, an asset loading GGen)
+  - basic/gtext.ck (added new GText features)
+  - basic/gwindow.ck (added new GWindow features)
+  - basic/ggen-primitives.ck (see new GPolyhedron)
+  - basic/geo-and-mat.ck (see new PolyhedronGeometry)
+(updated) all ChuGL examples have been updated, streamlined, and commented
+  - https://chuck.stanford.edu/chugl/examples/
+(added) external data files for specific examples:
+  - https://chuck.stanford.edu/chugl/examples/data/
+(fixed) major bugs addressed:
+  - incorrect transparency sorting on scenes with a large number of materials
+  - scene background color not affecting clearcolor, causing semi-transparent objects (e.g. GText) to render incorrectly
+
+
+
 1.5.5.2 (July 2025)
 =======
 --> new ChuGL v0.2.6 (see ChuGL release notes below)
