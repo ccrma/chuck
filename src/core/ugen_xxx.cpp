@@ -380,6 +380,16 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "gain" );
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    // set gain in dB rather than linearly
+    func = make_new_mfun( "float", "db", gain_set_db );
+    func->add_arg( "float", "db" );
+    func->doc = "Set gain (in dB)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "float", "db", gain_get_db );
+    func->doc = "Get gain (in dB)";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -391,24 +401,15 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     */
 
     //! GainDB
-    doc = "a gain control unit generator that uses the deciBel scale rather than linear scaling";
-    if( !type_engine_import_ugen_begin( env, "GainDB", "UGen", env->global(),
+    doc = "The same as the Gain UGen, but the constructor sets the gain in deciBels rather than linear scaling.";
+    if( !type_engine_import_ugen_begin( env, "GainDB", "Gain", env->global(),
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     func = make_new_ctor( gainDB_ctor );
-    func->doc = "construct a GainDB with default value.";
-    func->add_arg( "float", "gain" );
+    func->doc = "construct a GainDB with default value (in deciBels).";
+    func->add_arg( "float", "db" );
     if( !type_engine_import_ctor( env, func ) ) goto error;
-
-    func = make_new_mfun( "float", "gain", gainDB_set_gain );
-    func->add_arg( "float", "gain" );
-    func->doc = "Set gain (in dB)";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
-
-    func = make_new_mfun( "float", "gain", gainDB_get_gain );
-    func->doc = "Get gain (in dB)";
-    if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -2019,26 +2020,10 @@ CK_DLL_MFUN( gain_ctor_1 )
 
 
 //-----------------------------------------------------------------------------
-// name: GainDB( float gain )
-// desc: GainDB constructor that takes a float
+// name: Gain.db( float db )
+// desc: Set Gain gain (in dB)
 //-----------------------------------------------------------------------------
-CK_DLL_CTOR( gainDB_ctor )
-{
-    // get ugen
-    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    // set from constructor arg
-    t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
-    ugen->m_gain = pow(10.0, gain / 20.0); // dB power scaling
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: GainDB.gain( float gain )
-// desc: Set GainDB gain (in dB)
-//-----------------------------------------------------------------------------
-CK_DLL_MFUN( gainDB_set_gain )
+CK_DLL_MFUN( gain_set_db )
 {
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
@@ -2053,10 +2038,10 @@ CK_DLL_MFUN( gainDB_set_gain )
 
 
 //-----------------------------------------------------------------------------
-// name: GainDB.gain()
-// desc: Get GainDB gain (in dB)
+// name: Gain.gain()
+// desc: Get Gain gain (in dB)
 //-----------------------------------------------------------------------------
-CK_DLL_MFUN( gainDB_get_gain )
+CK_DLL_MFUN( gain_get_db )
 {
     // get ugen
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
@@ -2064,6 +2049,22 @@ CK_DLL_MFUN( gainDB_get_gain )
     t_CKFLOAT dB = 20 * log10(ugen->m_gain); // dB power scaling
 
     RETURN->v_float = dB;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: GainDB( float gain )
+// desc: GainDB constructor that takes a dB float
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( gainDB_ctor )
+{
+    // get ugen
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set from constructor arg
+    t_CKFLOAT gain = GET_NEXT_FLOAT(ARGS);
+    ugen->m_gain = pow(10.0, gain / 20.0); // dB power scaling
 }
 
 
