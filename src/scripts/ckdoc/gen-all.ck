@@ -29,9 +29,9 @@ doc.addGroup(
 // add group
 doc.addGroup(
     // class names
-    [ "UGen", "Gain", "Impulse", "Step", "SndBuf", "SndBuf2", "ADSR", "Envelope",
-      "Delay", "DelayL", "DelayA", /*"DelayP",*/ "Echo", "Noise", "CNoise",
-      "Osc", "SinOsc", "TriOsc", "SawOsc", "PulseOsc", "SqrOsc", "Phasor",
+    [ "UGen", "Gain", "GainDB", "Impulse", "Step", "SndBuf", "SndBuf2", "ADSR", "Envelope",
+      "Delay", "DelayL", "DelayA", /*"DelayP",*/ "Echo", "Noise", "CNoise", "Osc",
+      "SinOsc", "TriOsc", "SawOsc", "PulseOsc", "SqrOsc", "Phasor",
       "HalfRect", "FullRect", "Chugraph", "Chugen", "UGen_Multi",
       "UGen_Stereo", "Mix2", "Pan2" ],
     // group name

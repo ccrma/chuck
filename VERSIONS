@@ -2,6 +2,21 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.6
+=======
+(added) `GainDB` unit generator (nshaheed)
+    the same as the Gain UGen, but the constructor sets the gain in deciBels rather
+    than linear scaling.
+    GainDB( float dbVal )
+        the constructor
+    float .db( float val )
+        set gain (in dB)
+    float .db()
+        get gain (in dB)
+(added) `Gain` has gained the above .db methods as well
+(added) examples/basic/gain.ck
+
+
 1.5.5.5 (September 2025)
 =======
 --> "ChucK to School 2025" ChuGL v0.2.7 release!

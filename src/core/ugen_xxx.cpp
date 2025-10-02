@@ -372,6 +372,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
 
+    // examples
+    if( !type_engine_import_add_ex( env, "basic/gain.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "basic/i-robot.ck" ) ) goto error;
 
     // add ctrl: fprob
@@ -383,11 +385,11 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // set gain in dB rather than linearly
     func = make_new_mfun( "float", "db", gain_set_db );
     func->add_arg( "float", "db" );
-    func->doc = "Set gain (in dB)";
+    func->doc = "set gain (in dB)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "float", "db", gain_get_db );
-    func->doc = "Get gain (in dB)";
+    func->doc = "get gain (in dB)";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -401,11 +403,14 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     */
 
     //! GainDB
-    doc = "The same as the Gain UGen, but the constructor sets the gain in deciBels rather than linear scaling.";
+    doc = "the same as the Gain UGen, but the constructor sets the gain in deciBels rather than linear scaling.";
     if( !type_engine_import_ugen_begin( env, "GainDB", "Gain", env->global(),
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
 
+    // example
+    if( !type_engine_import_add_ex( env, "basic/gain.ck" ) ) goto error;
+    
     func = make_new_ctor( gainDB_ctor );
     func->doc = "construct a GainDB with default value (in deciBels).";
     func->add_arg( "float", "db" );
