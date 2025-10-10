@@ -912,6 +912,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->doc = "get total number of sample frames in the file; same as .frames().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    func = make_new_mfun( "int", "samplerate", sndbuf_cget_samplerate );
+    func->doc = "get sample rate of audio buffer.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add cget: frames
     func = make_new_mfun( "int", "frames", sndbuf_cget_samples );
     func->doc = "get total number of sample frames in the file; same as .samples().";
@@ -4071,6 +4075,13 @@ CK_DLL_CGET( sndbuf_cget_samples )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     //SET_NEXT_INT( out, d->num_frames );
     RETURN->v_int = d->num_frames;
+}
+
+CK_DLL_CGET( sndbuf_cget_samplerate )
+{
+    sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    //SET_NEXT_INT( out, d->num_frames );
+    RETURN->v_int = d->samplerate;
 }
 
 CK_DLL_CGET( sndbuf_cget_length )
