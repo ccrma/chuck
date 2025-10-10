@@ -4087,7 +4087,6 @@ CK_DLL_CGET( sndbuf_cget_samples )
 CK_DLL_CGET( sndbuf_cget_samplerate )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
-    //SET_NEXT_INT( out, d->num_frames );
     RETURN->v_int = d->samplerate;
 }
 
