@@ -79,6 +79,11 @@ CK_DLL_CGET( mix2_cget_value );
 // Gain
 CK_DLL_MFUN( gain_ctor_1 );
 
+// GainDB
+CK_DLL_CTOR( gainDB_ctor );
+CK_DLL_MFUN( gain_set_db );
+CK_DLL_MFUN( gain_get_db );
+
 // noise
 CK_DLL_TICK( noise_tick );
 
