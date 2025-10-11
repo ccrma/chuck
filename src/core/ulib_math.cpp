@@ -157,6 +157,47 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance sqrt(x*x+y*y)." );
 
+    // Fast versions of trig functions!!!
+    // Warning: not always accurate
+
+    // sin
+    QUERY->add_sfun( QUERY, fast_sin_impl, "float", "ssin" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute sine of x (measured in radians)." );
+
+    // cos
+    QUERY->add_sfun( QUERY, fast_cos_impl, "float", "scos" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute cosine of x (measured in radians)." );
+
+    // tan
+    QUERY->add_sfun( QUERY, fast_tan_impl, "float", "stan" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute tangent of x (measured in radians)." );
+
+    // sinh
+    QUERY->add_sfun( QUERY, fast_sinh_impl, "float", "ssinh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute the hyperbolic sine of x." );
+
+    // cosh
+    QUERY->add_sfun( QUERY, fast_cosh_impl, "float", "scosh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute the hyperbolic cosine of x." );
+
+    // tanh
+    QUERY->add_sfun( QUERY, fast_tanh_impl, "float", "stanh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute the hyperbolic tangent of x." );
+
+    // exp
+    QUERY->add_sfun( QUERY, fast_exp_impl, "float", "sexp" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Compute e^x, the base-e exponential of x." );
+
+
+    // End of fast implementations of trig functions
+
     // pow
     QUERY->add_sfun( QUERY, pow_impl, "float", "pow" );
     QUERY->add_arg( QUERY, "float", "x" );
@@ -601,6 +642,80 @@ CK_DLL_SFUN( tanh_impl )
 {
     RETURN->v_float = ::tanh( GET_CK_FLOAT(ARGS) );
 }
+
+// Fast versions of trig functions!!
+
+// sin
+CK_DLL_SFUN( fast_sin_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -x * (-11511339840 + x2 * (1640635920 + x2 * (-52785432 + x2 * 479249)));
+  t_CKFLOAT denominator = 11511339840 + x2 * (277920720 + x2 * (3177720 + x2 * 18361));
+  RETURN->v_float = numerator / denominator;
+}
+
+// cos
+CK_DLL_SFUN( fast_cos_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -(-39251520 + x2 * (18471600 + x2 * (-1075032 + 14615 * x2)));
+  t_CKFLOAT denominator = 39251520 + x2 * (1154160 + x2 * (16632 + x2 * 127));
+  RETURN->v_float = numerator / denominator;
+}
+
+// tan
+CK_DLL_SFUN( fast_tan_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = x * (-135135 + x2 * (17325 + x2 * (-378 + x2)));
+  t_CKFLOAT denominator = -135135 + x2 * (62370 + x2 * (-3150 + 28 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+
+// sinh
+CK_DLL_SFUN( fast_sinh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -x * (11511339840 + x2 * (1640635920 + x2 * (52785432 + x2 * 479249)));
+  t_CKFLOAT denominator = -11511339840 + x2 * (277920720 + x2 * (-3177720 + x2 * 18361));
+  RETURN->v_float = numerator / denominator;
+}
+
+// cosh
+CK_DLL_SFUN( fast_cosh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -(39251520 + x2 * (18471600 + x2 * (1075032 + 14615 * x2)));
+  t_CKFLOAT denominator = -39251520 + x2 * (1154160 + x2 * (-16632 + 127 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+// tanh
+CK_DLL_SFUN( fast_tanh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = x * (135135 + x2 * (17325 + x2 * (378 + x2)));
+  t_CKFLOAT denominator = 135135 + x2 * (62370 + x2 * (3150 + 28 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+// exp
+CK_DLL_SFUN( fast_exp_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT numerator = 1680 + x * (840 + x * (180 + x * (20 + x)));
+  t_CKFLOAT denominator = 1680 + x *(-840 + x * (180 + x * (-20 + x)));
+  RETURN->v_float = numerator / denominator;
+}
+
+// end of fast versions of trig functions
 
 // hypot
 CK_DLL_SFUN( hypot_impl )
