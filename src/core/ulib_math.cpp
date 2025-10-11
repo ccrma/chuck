@@ -471,6 +471,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg(QUERY, "int", "order");
     QUERY->add_arg(QUERY, "float", "azimuth");
     QUERY->add_arg(QUERY, "float", "zenith");
+    QUERY->doc_func(QUERY, "Given an azimuth and zenith, all spherical harmonics of a given order are calculated, with SN3D normalization.");
 
     // pi
     //! see \example math.ck
