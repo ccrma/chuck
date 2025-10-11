@@ -390,6 +390,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "db", gain_get_db );
     func->doc = "get gain (in dB)";
+
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -404,6 +405,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     //! GainDB
     doc = "the same as the Gain UGen, but the constructor sets the gain in deciBels rather than linear scaling.";
+
     if( !type_engine_import_ugen_begin( env, "GainDB", "Gain", env->global(),
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
@@ -915,6 +917,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     // add cget: samples
     func = make_new_mfun( "int", "samples", sndbuf_cget_samples );
     func->doc = "get total number of sample frames in the file; same as .frames().";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "sampleRate", sndbuf_cget_samplerate );
+    func->doc = "get sample rate of the source audio.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: frames
@@ -4076,6 +4082,12 @@ CK_DLL_CGET( sndbuf_cget_samples )
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
     //SET_NEXT_INT( out, d->num_frames );
     RETURN->v_int = d->num_frames;
+}
+
+CK_DLL_CGET( sndbuf_cget_samplerate )
+{
+    sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    RETURN->v_int = d->samplerate;
 }
 
 CK_DLL_CGET( sndbuf_cget_length )
