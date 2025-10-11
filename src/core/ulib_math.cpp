@@ -88,6 +88,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_ex( QUERY, "math/maybe.ck" );
     QUERY->add_ex( QUERY, "math/int-dist.ck" );
     QUERY->add_ex( QUERY, "math/map.ck" );
+	QUERY->add_ex( QUERY, "spatial/spherical-harmonics.ck"); // spherical harmonics example (everett)
 
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
