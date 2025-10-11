@@ -919,8 +919,8 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->doc = "get total number of sample frames in the file; same as .frames().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "int", "samplerate", sndbuf_cget_samplerate );
-    func->doc = "get sample rate of audio buffer.";
+    func = make_new_mfun( "int", "sampleRate", sndbuf_cget_samplerate );
+    func->doc = "get sample rate of the source audio.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add cget: frames
