@@ -163,42 +163,42 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     // sin
     QUERY->add_sfun( QUERY, fast_sin_impl, "float", "ssin" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute sine of x (measured in radians)." );
+    QUERY->doc_func( QUERY, "Speedy approximation of sine (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi and +pi." );
 
     // cos
     QUERY->add_sfun( QUERY, fast_cos_impl, "float", "scos" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute cosine of x (measured in radians)." );
+    QUERY->doc_func( QUERY, "Speedy approximation of cosine (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi and +pi." );
 
     // tan
     QUERY->add_sfun( QUERY, fast_tan_impl, "float", "stan" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute tangent of x (measured in radians)." );
+    QUERY->doc_func( QUERY, "Speedy approximation of tangent (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi/2 and +pi/2." );
 
     // sinh
     QUERY->add_sfun( QUERY, fast_sinh_impl, "float", "ssinh" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute the hyperbolic sine of x." );
+    QUERY->doc_func( QUERY, "Speedy approximation of hyperbolic sine. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
 
     // cosh
     QUERY->add_sfun( QUERY, fast_cosh_impl, "float", "scosh" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute the hyperbolic cosine of x." );
+    QUERY->doc_func( QUERY, "Speedy approximation of the hyperbolic cosine. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
 
     // tanh
     QUERY->add_sfun( QUERY, fast_tanh_impl, "float", "stanh" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute the hyperbolic tangent of x." );
+    QUERY->doc_func( QUERY, "Speedy approximation of the hyperbolic tangent. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
 
     // exp
     QUERY->add_sfun( QUERY, fast_exp_impl, "float", "sexp" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "Compute e^x, the base-e exponential of x." );
+    QUERY->doc_func( QUERY, "Speedy approximation of e^x, the base-e exponential. Uses a Padé approximant, and is recommended to only use inputs between -6 and +4." );
 
     // fast inverse-square root
     QUERY->add_sfun( QUERY, fast_inv_sqrt, "float", "sinsqrt" );
     QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->doc_func( QUERY, "A speed (fast) approximation of the inverse square root. Popularized by Quake" );
+    QUERY->doc_func( QUERY, "A speedy (fast) approximation of the inverse square root. Popularized by Quake" );
 
 
     // End of fast implementations of trig functions
