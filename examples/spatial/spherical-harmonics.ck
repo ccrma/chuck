@@ -32,3 +32,9 @@ for(int i; i < m_sh.size(); i++)
 {
     cherr <= "ACN: " <= i <= " // " <= m_sh[i] <= IO.newline();
 }
+
+while(true) // let homer sing
+{
+    5::second => now;
+    me.exit();
+}
