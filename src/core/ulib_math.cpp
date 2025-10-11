@@ -471,7 +471,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg(QUERY, "int", "order");
     QUERY->add_arg(QUERY, "float", "azimuth");
     QUERY->add_arg(QUERY, "float", "zenith");
-    QUERY->doc_func(QUERY, "Given an azimuth and zenith, all spherical harmonics of a given order are calculated, with SN3D normalization.");
+    QUERY->doc_func(QUERY, "Given an azimuth and zenith, all spherical harmonics of a given order are calculated, with SN3D normalization. Returned in ACN order, Y^0_0, Y^-1_1, Y^0_1, Y^1_1,...");
 
     // pi
     //! see \example math.ck
@@ -1293,9 +1293,8 @@ CK_DLL_SFUN(spherical_harmony)
     t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
     if (order > 12)
     {
-        API->vm->throw_exception("Invalid Order", "Sorry, only up to the 12th order supported currently. If you have 169 speakers, email the dev...", nullptr);
-        RETURN->v_int = false;
-        return;
+        API->vm->throw_exception("Math.sh() : Invalid Order", "Up to 12th order supported", nullptr);
+        RETURN->v_int = 0;
     }
     unsigned size = (order + 1) * (order + 1);
     std::vector<float> coord = SH(order, direction, elevation, 0);
