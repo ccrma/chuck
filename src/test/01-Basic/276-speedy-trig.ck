@@ -58,13 +58,14 @@ while (i < dest) {
       inc +=> i;
 }
 
+<<< "success" >>>;
 
 
 fun int testEquality(float input, float x, float y, string fname) {
     if (!fequals(x,y)) {
        cherr <= "ERROR: speed approximation of " <= fname <= " are too different at input "
              <= input <= ". Expected "
-       	     <= x <= ", but got " <= y <= IO.newline();
+	     <= x <= ", but got " <= y <= IO.newline();
        return false;
     }
     return true;
