@@ -1126,6 +1126,8 @@ public:
         ShredApi();
         // get shred parent
         Chuck_VM_Shred * (CK_DLL_CALL * const parent)( Chuck_VM_Shred * shred );
+        // (NEW) get shred parent
+        // Chuck_VM_Shred * (CK_DLL_CALL * const set_immediate_mode)( Chuck_VM_Shred * shred, t_CKBOOL value );
     } * const shred;
 
     // constructor

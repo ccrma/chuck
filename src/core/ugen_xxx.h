@@ -79,6 +79,11 @@ CK_DLL_CGET( mix2_cget_value );
 // Gain
 CK_DLL_MFUN( gain_ctor_1 );
 
+// GainDB
+CK_DLL_CTOR( gainDB_ctor );
+CK_DLL_MFUN( gain_set_db );
+CK_DLL_MFUN( gain_get_db );
+
 // noise
 CK_DLL_TICK( noise_tick );
 
@@ -194,6 +199,7 @@ CK_DLL_CTRL( sndbuf_ctrl_chunks );
 CK_DLL_CGET( sndbuf_cget_chunks );
 CK_DLL_CTRL( sndbuf_ctrl_phase_offset );
 CK_DLL_CGET( sndbuf_cget_samples );
+CK_DLL_CGET( sndbuf_cget_samplerate );
 CK_DLL_CGET( sndbuf_cget_length );
 CK_DLL_CGET( sndbuf_cget_channels );
 CK_DLL_CGET( sndbuf_cget_valueAt );

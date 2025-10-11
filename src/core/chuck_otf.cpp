@@ -693,7 +693,7 @@ t_CKINT otf_send_cmd( t_CKINT argc, const char ** argv, t_CKINT & i,
         otf_ntoh( &msg );
         if( !msg.param )
         {
-            EM_error2( 0, "REMOTE oeration failed..." );
+            EM_error2( 0, "REMOTE operation failed..." );
             EM_error2( 0, "reason: %s",
                 ( strstr( (char *)msg.buffer, ":" ) ? strstr( (char *)msg.buffer, ":" ) + 1 : (char *)msg.buffer ) );
         }
