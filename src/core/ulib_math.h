@@ -61,6 +61,7 @@ CK_DLL_SFUN( fast_sinh_impl );
 CK_DLL_SFUN( fast_cosh_impl );
 CK_DLL_SFUN( fast_tanh_impl );
 CK_DLL_SFUN( fast_exp_impl );
+CK_DLL_SFUN( fast_inv_sqrt );
 
 // Normal not-fast not-approximations
 CK_DLL_SFUN( pow_impl );

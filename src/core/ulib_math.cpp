@@ -195,6 +195,11 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->doc_func( QUERY, "Compute e^x, the base-e exponential of x." );
 
+    // fast inverse-square root
+    QUERY->add_sfun( QUERY, fast_inv_sqrt, "float", "sinsqrt" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "A speed (fast) approximation of the inverse square root. Popularized by Quake" );
+
 
     // End of fast implementations of trig functions
 
@@ -714,6 +719,30 @@ CK_DLL_SFUN( fast_exp_impl )
   t_CKFLOAT denominator = 1680 + x *(-840 + x * (180 + x * (-20 + x)));
   RETURN->v_float = numerator / denominator;
 }
+
+
+// fast inverse square root (of quake fame)
+CK_DLL_SFUN( fast_inv_sqrt )
+{
+  t_CKFLOAT num = GET_CK_FLOAT(ARGS);
+
+  int i;
+  float x, y;
+  x = num * 0.5;
+  y = num;
+  i = *(int*)&y; // copy bits from y into i so we can bit shift
+
+  i = 0x5f3759df - (i >> 1); // original, has .175% error
+  i = 0x5F375A86 - (i >> 1); // Chris Lomont's updated magic number, .09% error after 1 newton iteration
+
+  y = *(float*)&i; // copy back into float
+
+  // newton iteration
+  y = (y * (1.5 - (x * y * y)));
+  y = (y * (1.5 - (x * y * y))); // optional, improves accuracy
+  RETURN->v_float = num * y;
+}
+
 
 // end of fast versions of trig functions
 
