@@ -200,6 +200,9 @@ CK_DLL_CTRL( BiQuad_cget_zrad );
 
 // Chorus
 CK_DLL_CTOR( Chorus_ctor );
+CK_DLL_CTOR( Chorus_ctor_freq );
+CK_DLL_CTOR( Chorus_ctor_freq_depth );
+CK_DLL_CTOR( Chorus_ctor_freq_depth_mix );
 CK_DLL_DTOR( Chorus_dtor );
 CK_DLL_TICK( Chorus_tick );
 CK_DLL_PMSG( Chorus_pmsg );
@@ -429,6 +432,7 @@ CK_DLL_PMSG( BlitSquare_pmsg );
 
 // JCRev
 CK_DLL_CTOR( JCRev_ctor );
+CK_DLL_CTOR( JCRev_ctor_mix );
 CK_DLL_DTOR( JCRev_dtor );
 CK_DLL_TICK( JCRev_tick );
 CK_DLL_PMSG( JCRev_pmsg );
@@ -437,6 +441,7 @@ CK_DLL_CGET( JCRev_cget_mix );
 
 // NRev
 CK_DLL_CTOR( NRev_ctor );
+CK_DLL_CTOR( NRev_ctor_mix );
 CK_DLL_DTOR( NRev_dtor );
 CK_DLL_TICK( NRev_tick );
 CK_DLL_PMSG( NRev_pmsg );
@@ -445,6 +450,7 @@ CK_DLL_CGET( NRev_cget_mix );
 
 // PRCRev
 CK_DLL_CTOR( PRCRev_ctor );
+CK_DLL_CTOR( PRCRev_ctor_mix );
 CK_DLL_DTOR( PRCRev_dtor );
 CK_DLL_TICK( PRCRev_tick );
 CK_DLL_PMSG( PRCRev_pmsg );
@@ -562,6 +568,9 @@ CK_DLL_CGET( FormSwep_cget_sweepTime );
 
 // Modulate
 CK_DLL_CTOR( Modulate_ctor );
+CK_DLL_CTOR( Modulate_ctor_rate );
+CK_DLL_CTOR( Modulate_ctor_rate_gain );
+CK_DLL_CTOR( Modulate_ctor_rate_gain_random );
 CK_DLL_DTOR( Modulate_dtor );
 CK_DLL_TICK( Modulate_tick );
 CK_DLL_PMSG( Modulate_pmsg );
@@ -574,6 +583,8 @@ CK_DLL_CGET( Modulate_cget_randomGain );
 
 // PitShift
 CK_DLL_CTOR( PitShift_ctor );
+CK_DLL_CTOR( PitShift_ctor_shift );
+CK_DLL_CTOR( PitShift_ctor_shift_mix );
 CK_DLL_DTOR( PitShift_dtor );
 CK_DLL_TICK( PitShift_tick );
 CK_DLL_PMSG( PitShift_pmsg );
@@ -4523,6 +4534,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     JCRev_offset_data = type_engine_import_mvar ( env, "int", "@JCRev_data", FALSE );
     if( JCRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( JCRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a JCRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", JCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4556,6 +4574,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     NRev_offset_data = type_engine_import_mvar ( env, "int", "@NRev_data", FALSE );
     if( NRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( NRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct an NRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", NRev_ctrl_mix ); // set effect mix
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4589,6 +4614,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     PRCRev_offset_data = type_engine_import_mvar ( env, "int", "@PRCRev_data", FALSE );
     if( PRCRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( PRCRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a PRCRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", PRCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4621,6 +4653,28 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     Chorus_offset_data = type_engine_import_mvar ( env, "int", "@Chorus_data", FALSE );
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float modFreq )
+    func = make_new_ctor( Chorus_ctor_freq );
+    func->add_arg( "float", "modFreq" );
+    func->doc = "construct a Chorus with specified modulation frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float modFreq, float modDepth )
+    func = make_new_ctor( Chorus_ctor_freq_depth );
+    func->add_arg( "float", "modFreq" );
+    func->add_arg( "float", "modDepth" );
+    func->doc = "construct a Chorus with specified modulation frequency and modulation depth.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float modFreq, float modDepth, float mix )
+    func = make_new_ctor( Chorus_ctor_freq_depth_mix );
+    func->add_arg( "float", "modFreq" );
+    func->add_arg( "float", "modDepth" );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a Chorus with specified modulation frequency, modulation depth, and effect mix.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "modFreq", Chorus_ctrl_modFreq ); //! modulation frequency
     func->add_arg( "float", "value" );
     func->doc = "set modulation frequency.";
@@ -4684,6 +4738,28 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     Modulate_offset_data = type_engine_import_mvar ( env, "int", "@Modulate_data", FALSE );
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float vibratoRate )
+    func = make_new_ctor( Modulate_ctor_rate );
+    func->add_arg( "float", "vibratoRate" );
+    func->doc = "construct a Modulate with specified vibrato rate.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float vibratoRate, float vibratoGain )
+    func = make_new_ctor( Modulate_ctor_rate_gain );
+    func->add_arg( "float", "vibratoRate" );
+    func->add_arg( "float", "vibratoGain" );
+    func->doc = "construct a Modulate with specified vibrato rate and vibrato gain.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float vibratoRate, float vibratoGain, float randomGain )
+    func = make_new_ctor( Modulate_ctor_rate_gain_random );
+    func->add_arg( "float", "vibratoRate" );
+    func->add_arg( "float", "vibratoGain" );
+    func->add_arg( "float", "randomGain" );
+    func->doc = "construct a Modulate with specified vibrato rate, vibrato gain, and random contribution gain.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "vibratoRate", Modulate_ctrl_vibratoRate );  //! set rate of vibrato
     func->add_arg( "float", "value" );
     func->doc = "set rate for vibrato.";
@@ -4733,6 +4809,20 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     PitShift_offset_data = type_engine_import_mvar ( env, "int", "@PitShift_data", FALSE );
     if( PitShift_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float shift )
+    func = make_new_ctor( PitShift_ctor_shift );
+    func->add_arg( "float", "shift" );
+    func->doc = "construct a PitShift with specified degree of pitch shifting.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float shift, float mix )
+    func = make_new_ctor( PitShift_ctor_shift_mix );
+    func->add_arg( "float", "shift" );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a PitShift with specified degree of pitch shifting and effect mix.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "shift", PitShift_ctrl_shift ); //! degree of pitch shifting
     func->add_arg( "float", "value" );
     func->doc = "set degree of pitch shifting";
@@ -21957,6 +22047,42 @@ CK_DLL_CTOR( Chorus_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq_depth()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq_depth )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+    c->setModDepth( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq_depth_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq_depth_mix )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+    c->setModDepth( GET_NEXT_FLOAT(ARGS) );
+    c->setEffectMix( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: Chorus_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -26870,11 +26996,22 @@ CK_DLL_PMSG( FormSwep_pmsg )
 //-----------------------------------------------------------------------------
 // name: JCRev_ctor()
 // desc: CTOR function ...
-//-----------------------------------------------------------------------------
+//---------------------------------x--------------------------------------------
 CK_DLL_CTOR( JCRev_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, JCRev_offset_data) = (t_CKUINT)new JCRev( 4.0f );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: JCRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( JCRev_ctor_mix )
+{
+    JCRev * j = (JCRev*)OBJ_MEMBER_UINT(SELF, JCRev_offset_data);
+    j->setEffectMix( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -27143,6 +27280,42 @@ CK_DLL_CTOR( Modulate_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, Modulate_offset_data) = (t_CKUINT) new Modulate( );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate_gain()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate_gain )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+    m->setVibratoGain( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate_gain_random()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate_gain_random )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+    m->setVibratoGain( GET_NEXT_FLOAT(ARGS) );
+    m->setRandomGain( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -27516,6 +27689,17 @@ CK_DLL_CTOR( NRev_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: NRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( NRev_ctor_mix )
+{
+    NRev * n = (NRev*)OBJ_MEMBER_UINT(SELF, NRev_offset_data);
+    n->setEffectMix( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: NRev_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -27582,6 +27766,29 @@ CK_DLL_CTOR( PitShift_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, PitShift_offset_data) = (t_CKUINT)new PitShift( );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PitShift_ctor_shift()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PitShift_ctor_shift )
+{
+    PitShift * p = (PitShift*)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
+    p->setShift( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PitShift_ctor_shift_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PitShift_ctor_shift_mix )
+{
+    PitShift * p = (PitShift*)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
+    p->setShift( GET_NEXT_FLOAT(ARGS) );
+    p->setEffectMix( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -27676,6 +27883,17 @@ CK_DLL_CTOR( PRCRev_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, PRCRev_offset_data) = (t_CKUINT)new PRCRev( 4.0f );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PRCRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PRCRev_ctor_mix )
+{
+    PRCRev * p = (PRCRev*)OBJ_MEMBER_UINT(SELF, PRCRev_offset_data);
+    p->setEffectMix( GET_NEXT_FLOAT(ARGS) );
 }
 
 
