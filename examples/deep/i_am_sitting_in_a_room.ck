@@ -27,11 +27,11 @@ while (true) {
     // State 1: loop1 will play back audio and loop2 will record
     false => loop2.play => loop1.record;
     true => loop1.play => loop2.record;
-    loop1.duration() => now;
+    loopDur => now;
     
     // State 2: loop2 will play back audio and loop1 will record
     false => loop1.play => loop2.record;
     true => loop2.play => loop1.record;
     
-    loop1.duration() => now;
+    loopDur => now;
 }
