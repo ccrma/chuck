@@ -53,6 +53,14 @@ void osc_srate_update_cb( t_CKUINT srate, void * userdata ) { g_srateOsc = srate
 
 
 //-----------------------------------------------------------------------------
+//  | 1.5.5.6 (nshaheed) used to generate and store the sinosc wavetable
+//-----------------------------------------------------------------------------
+static t_CKFLOAT* sinosc_wavetable = 0;
+const unsigned int sinosc_table_size = 128; // Table size of wavetable
+static void _sinosc_generate_wavetable( );
+
+
+//-----------------------------------------------------------------------------
 // name: osc_query()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -199,6 +207,13 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     func->add_arg( "float", "phase" );
     func->doc = "construct SinOsc at specified frequency and phase.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "mode", sinosc_mode );
+    func->add_arg( "int", "mode" );
+    func->doc = "set oscillator rendering method. 0: old, slower approach. 1: new faster wavetable synthesis.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+
 
     // add examples | 1.5.0.0 (ge)
     type_engine_import_add_ex( env, "otf_05.ck" );
@@ -393,6 +408,7 @@ struct Osc_Data
     t_CKFLOAT num;
     t_CKFLOAT freq;
     t_CKINT sync;
+    t_CKINT mode; // std trig function (0) or wavetable synthesis (1). For SinOsc
     t_CKINT srate;
     t_CKFLOAT width;
 
@@ -403,6 +419,7 @@ struct Osc_Data
         num = 0.0;
         freq = 220.0;
         sync = 0; // internal
+	mode = 0;
         width = 0.5;
         srate = g_srateOsc;
         phase = 0.0;
@@ -418,6 +435,7 @@ struct Osc_Data
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( osc_ctor )
 {
+    _sinosc_generate_wavetable();
     Osc_Data * d = new Osc_Data;
     Chuck_DL_Return r;
     // return data to be used later
@@ -434,10 +452,14 @@ CK_DLL_CTOR( osc_ctor )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( oscx_ctor_1 )
 {
+  CK_FPRINTF_STDOUT( "calling ctor1\n" );
     // return (dummy struct since ctors don't return stuff)
     Chuck_DL_Return r;
     // set freq
     osc_ctrl_freq( SELF, ARGS, &r, VM, SHRED, API );
+    std::cout << "fjdiosjfiodsj\n";
+    // generate wavetable if needed
+    _sinosc_generate_wavetable();
 }
 
 
@@ -449,6 +471,7 @@ CK_DLL_CTOR( oscx_ctor_1 )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( oscx_ctor_2 )
 {
+  CK_FPRINTF_STDOUT( "calling ctor2\n" );
     // return (dummy struct since ctors don't return stuff)
     Chuck_DL_Return r;
     // set freq
@@ -563,6 +586,53 @@ CK_DLL_TICK( osc_tick )
 
 
 //-----------------------------------------------------------------------------
+// name: sinosc_mode()
+// desc: sets the rendering mode of the sine oscillator to either:
+//   0: Old, slow approach (calling std::sin)
+//   1: New, uses wavetable lookup
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( sinosc_mode )
+{
+    // get the data
+    Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
+    t_CKINT mode = GET_NEXT_INT(ARGS);
+
+    if (mode != 0 && mode != 1) {
+      CK_FPRINTF_STDERR( "[chuck](via SinOsc): mode should either be 0 or 1\n" );
+      RETURN->v_int = 0;
+    }
+
+    d->mode = mode;
+
+    RETURN->v_int = (t_CKINT)d->mode;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: _sinosc_generate_wavetable()
+// desc: generates a wavetable of a sine wave once and stores it globally.
+//-----------------------------------------------------------------------------
+static void _sinosc_generate_wavetable( )
+{
+  // CK_FPRINTF_STDERR("entering wavetable...\n");
+  // don't generate wavetable if it exists already
+  if (sinosc_wavetable != nullptr) return;
+
+  CK_FPRINTF_STDERR("generating wavetable...\n");
+
+  sinosc_wavetable = new t_CKFLOAT [sinosc_table_size];
+
+  t_CKFLOAT angleDelta = CK_TWO_PI / (double) (sinosc_table_size - 1);
+  t_CKFLOAT currentAngle = 0.0;
+  for (unsigned int i = 0; i < sinosc_table_size; ++i) {
+    t_CKFLOAT sample = ::sin (currentAngle);
+    sinosc_wavetable[i] = (t_CKFLOAT) sample;
+    currentAngle += angleDelta;
+  }
+}
+
+//-----------------------------------------------------------------------------
 // name: sinosc_tick()
 // desc: ...
 //-----------------------------------------------------------------------------
@@ -614,7 +684,25 @@ CK_DLL_TICK( sinosc_tick )
     }
 
     // set output
-    *out = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
+    if (d->mode) // use wavetable lookup
+    {
+      t_CKFLOAT point = d->phase * sinosc_table_size;
+
+      int index0 = floor( point );
+      int index1 = (index0 + 1) % sinosc_table_size;
+      t_CKFLOAT frac = point - index0;
+      t_CKFLOAT value0 = sinosc_wavetable[index0];
+      t_CKFLOAT value1 = sinosc_wavetable[index1];
+      t_CKFLOAT currentSample = value0 + frac * (value1 - value0);
+
+      *out = (SAMPLE) currentSample;
+    }
+    else // use std::sin
+    {
+      *out = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
+    }
+
+
 
     if( inc_phase )
     {
