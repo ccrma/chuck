@@ -32,6 +32,5 @@ while (true) {
     // State 2: loop2 will play back audio and loop1 will record
     false => loop1.play => loop2.record;
     true => loop2.play => loop1.record;
-    
     loopDur => now;
 }
