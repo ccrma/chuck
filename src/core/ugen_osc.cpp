@@ -621,7 +621,9 @@ static void _sinosc_generate_wavetable( )
 
   CK_FPRINTF_STDERR("generating wavetable...\n");
 
-  sinosc_wavetable = new t_CKFLOAT [sinosc_table_size];
+  // have one additional value at the end of wavetable so that
+  // on looping of table read the value can be accessed w/o modulo or branch.
+  sinosc_wavetable = new t_CKFLOAT [sinosc_table_size+1];
 
   t_CKFLOAT angleDelta = CK_TWO_PI / (double) (sinosc_table_size - 1);
   t_CKFLOAT currentAngle = 0.0;
@@ -630,6 +632,8 @@ static void _sinosc_generate_wavetable( )
     sinosc_wavetable[i] = (t_CKFLOAT) sample;
     currentAngle += angleDelta;
   }
+  // populate last value with first value
+  sinosc_wavetable[sinosc_table_size] = sinosc_wavetable[0];
 }
 
 //-----------------------------------------------------------------------------
@@ -688,8 +692,8 @@ CK_DLL_TICK( sinosc_tick )
     {
       t_CKFLOAT point = d->phase * sinosc_table_size;
 
-      int index0 = floor( point );
-      int index1 = (index0 + 1) % sinosc_table_size;
+      int index0 = point;
+      int index1 = (index0 + 1);
       t_CKFLOAT frac = point - index0;
       t_CKFLOAT value0 = sinosc_wavetable[index0];
       t_CKFLOAT value1 = sinosc_wavetable[index1];
