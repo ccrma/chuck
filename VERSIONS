@@ -15,6 +15,8 @@ ChucK VERSIONS log
         get gain (in dB)
 (added) `Gain` has gained the above .db methods as well
 (added) examples/basic/gain.ck
+(fixed) overloaded contructors memory leaks for Delay, DelayA, DelayL, Echo, ADSR
+(fixed) inaccuracies in setting delay values in certain Delay-based contructors
 
 
 1.5.5.5 (September 2025)
