@@ -23817,16 +23817,17 @@ CK_DLL_CTOR( Delay_ctor )
 
 //-----------------------------------------------------------------------------
 // name: Delay_ctor_delay()
-// desc: CTOR function ...
+// desc: CTOR function (because this is a pre-ctro, it is already run)
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Delay_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+
+    // internal object should already be instantiated in pre-ctor
+    DelayBase * d = (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    // set delay (again) and max, unit is in samples
+    d->set( (long)(delay+.5), (long)(delay+.5) );
 }
 
 
@@ -23840,10 +23841,10 @@ CK_DLL_CTOR( Delay_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayBase * d = (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    // set delay (again) and max, unit is in samples
+    d->set( (long)(delay+.5), (long)(max+.5) );
 }
 
 
@@ -23957,32 +23958,34 @@ CK_DLL_CGET( Delay_clear )
 // DelayA
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor )
 {
+    // instantiate internal object; this is DelayA's pre-ctor, which means
+    // it will always be run before any overloaded contructors
     OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)new DelayA;
 }
 
 
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor_delay()
-// desc: CTOR function ...
+// desc: overloaded CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayA * d = new DelayA( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayA * d = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(delay+.5) );
 }
 
 
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor_delay_max()
-// desc: CTOR function ...
+// desc: overloaded CTOR function ...
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor_delay_max )
 {
@@ -23990,10 +23993,10 @@ CK_DLL_CTOR( DelayA_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayA * d = new DelayA( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayA * d = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -24123,10 +24126,10 @@ CK_DLL_CTOR( DelayL_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayL * d = new DelayL( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayL * d = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(delay+.5) );
 }
 
 
@@ -24140,10 +24143,10 @@ CK_DLL_CTOR( DelayL_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayL * d = new DelayL( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayL * d = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -24274,12 +24277,10 @@ CK_DLL_CTOR( Echo_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    Echo * d = new Echo( (long)(delay+.5) );
-    // set delay
-    d->setDelay( (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    Echo * d = (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
+    // set echo delay max (double); unit is samps
+    d->set( delay );
 }
 
 
@@ -24293,12 +24294,13 @@ CK_DLL_CTOR( Echo_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    Echo * d = new Echo( (long)(max+.5) );
-    // set delay
-    d->setDelay( (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+
+    // internal object should already be instantiated in pre-ctor
+    Echo * d = (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
+    // set echo delay max (double); unit is samps
+    d->set( max );
+    // set echo delay; unit is samps
+    d->setDelay( delay );
 }
 
 
@@ -24422,7 +24424,7 @@ CK_DLL_CGET( Echo_cget_mix )
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // name: Envelope_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor )
 {
@@ -24432,7 +24434,7 @@ CK_DLL_CTOR( Envelope_ctor )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_dtor()
-// desc: DTOR function ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( Envelope_dtor )
 {
@@ -24443,7 +24445,7 @@ CK_DLL_DTOR( Envelope_dtor )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_tick()
-// desc: TICK function ...
+// desc: TICK function
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( Envelope_tick )
 {
@@ -24455,7 +24457,7 @@ CK_DLL_TICK( Envelope_tick )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_pmsg()
-// desc: PMSG function ...
+// desc: PMSG function
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( Envelope_pmsg )
 {
@@ -24469,6 +24471,7 @@ CK_DLL_PMSG( Envelope_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_duration )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     // prep (without triggering envelope)
     d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
@@ -24481,6 +24484,7 @@ CK_DLL_CTOR( Envelope_ctor_duration )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_float )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     // prep (without triggering envelope)
     d->prepTime( GET_NEXT_FLOAT(ARGS) );
@@ -24493,6 +24497,7 @@ CK_DLL_CTOR( Envelope_ctor_float )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_duration_target )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
     d->prepTarget( GET_NEXT_FLOAT(ARGS) );
@@ -24505,6 +24510,7 @@ CK_DLL_CTOR( Envelope_ctor_duration_target )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_float_target )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     d->prepTime( GET_NEXT_FLOAT(ARGS) );
     d->prepTarget( GET_NEXT_FLOAT(ARGS) );
@@ -24724,15 +24730,19 @@ CK_DLL_CTRL( Envelope_ctrl_keyOff )
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // name: ADSR_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor )
 {
     // TODO: fix this horrid thing
     Envelope * e = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    // ugh, delete the internal object for Envelope
     CK_SAFE_DELETE(e);
 
+    // allocate internal object for ADSR
     OBJ_MEMBER_UINT(SELF, Envelope_offset_data) = (t_CKUINT)new ADSR;
+
+    // this is highly non-aesthetic but seems to work robustly
 }
 
 
@@ -24775,6 +24785,7 @@ CK_DLL_PMSG( ADSR_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor_floats )
 {
+    // internal object should be already instantiated in pre-ctor
     ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     t_CKFLOAT a = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT d = GET_NEXT_FLOAT(ARGS);
@@ -24792,6 +24803,7 @@ CK_DLL_CTOR( ADSR_ctor_floats )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor_durs )
 {
+    // internal object should be already instantiated in pre-ctor
     ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     t_CKDUR a = GET_NEXT_DUR(ARGS);
     t_CKDUR d = GET_NEXT_DUR(ARGS);
