@@ -166,6 +166,7 @@ public:
     static t_CKUINT bps() { return m_bps; }
     static t_CKUINT frame_size() { return m_frame_size; }
     static t_CKUINT num_buffers() { return m_num_buffers; }
+    static const ma_device * device() { return &m_device; }
 
     static void set_extern( SAMPLE * in, SAMPLE * out )
         { m_extern_in = in; m_extern_out = out; }
@@ -182,7 +183,7 @@ public: // data
     static t_CKBOOL m_expand_in_mono2stereo; // 1.4.0.1 for in:1 out:2
     static t_CKUINT m_num_channels_out;
     static t_CKUINT m_num_channels_in;
-    static t_CKUINT m_sample_rate;
+    static t_CKUINT m_sample_rate; // system sample rate (ChucK VM)
     static t_CKUINT m_bps;
     static t_CKUINT m_frame_size;
     static t_CKUINT m_num_buffers;

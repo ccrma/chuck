@@ -41,6 +41,7 @@
 #include "util_platforms.h"
 #include <limits.h>
 
+#include <iostream>
 #include <string>
 using namespace std;
 
@@ -846,18 +847,50 @@ t_CKBOOL ChuckAudio::watchdog_stop()
 
 
 
+//-----------------------------------------------------------------------------
+// name: device_support_channel_count()
+// desc: test if a device supports a particular number of channels
+//-----------------------------------------------------------------------------
+//static t_CKBOOL device_support_channel_count( ma_device_info * info, t_CKUINT channels, const char * msg = "" )
+//{
+//    cerr << msg << " " << info->name << " count: " << info->nativeDataFormatCount << endl;
+//    for( long i = 0; i < info->nativeDataFormatCount; i++ )
+//    {
+//        cerr << "channels: " << info->nativeDataFormats[i].channels << " : " << channels << endl;
+//        // support at least the desired # of channels
+//        if( info->nativeDataFormats[i].channels >= channels )
+//            return TRUE;
+//        // support "any" # of channels
+//        if( info->nativeDataFormats[i].channels == 0 )
+//            return TRUE;
+//    }
+//
+//    return FALSE;
+//}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: device_support_channel_count()
 // desc: test if a device supports a particular number of channels
 //-----------------------------------------------------------------------------
-static t_CKBOOL device_support_channel_count( ma_device_info * info, t_CKUINT channels )
+static t_CKBOOL device_support_channel_count( ma_device_info * info, t_CKUINT channels, t_CKUINT srate, t_CKBOOL isOutput )
 {
+    // iterate over supported data formats
     for( long i = 0; i < info->nativeDataFormatCount; i++ )
     {
-        // support at least the desired # of channels
-        if( info->nativeDataFormats[i].channels >= channels )
+        // for output, match only on channels
+        if( isOutput && info->nativeDataFormats[i].channels >= channels )
             return TRUE;
+
+        // for input, match on channels rate
+        // this is to handle the case where a bluetooth headset runs as 16K or 24K input
+        // but say the laptop microphone can run at a higher rate
+        if( !isOutput && info->nativeDataFormats[i].channels >= channels
+                      && info->nativeDataFormats[i].sampleRate >= srate )
+            return TRUE;
+
         // support "any" # of channels
         if( info->nativeDataFormats[i].channels == 0 )
             return TRUE;
@@ -924,7 +957,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
 {
     // check if already initialized
     if( m_init ) return FALSE;
-
+    
     m_dac_n = dac_device;
     m_adc_n = adc_device;
     m_dac_name = "[no output device]";
@@ -981,7 +1014,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
 
     // populate input device infos
     for( ma_uint32 input_idx = 0; input_idx < input_count; input_idx++) {
-        ma_device_info* device = input_infos + input_idx;
+        ma_device_info * device = input_infos + input_idx;
         ma_context_get_device_info( &m_context, ma_device_type_capture, &device->id, device );
         if( device->isDefault ) default_input_device = input_idx;
     }
@@ -1000,7 +1033,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     EM_log( CK_LOG_FINE, "initializing real-time audio..." );
     // push indent
     EM_pushlog();
-
+    
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
     // note: this is to preserve previous devices numbering after RtAudio change
     if( m_num_channels_out > 0 )
@@ -1008,14 +1041,31 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         // ensure correct channel count if default device is requested
         if( useDefaultOut )
         {
+            // special (common) caes
+            if( (output_infos + default_output_device)->nativeDataFormatCount > 0 && m_num_channels_out == 2 )
+            {
+                // all good; take no further action here
+
+                // (output) always "support" stereo
+                // 1) for bluetooh devices, operatings systems (macOS, Windows) may
+                //    automaticall switch between two profiles
+                //    "Advanced Audio Distribution Profile" (A2DP) -- high quality stereo output
+                //    and "Hands-Free Profile (HFP)" -- lower quailty, duplex, mono output
+                // 2) this causes miniaudio to sometimes report output channels as 1 only,
+                //    especially right after quiting from an application, including chuck,
+                //    that previously used the bluetooth devices' microphone
+                // 3) in this scenario, however, we can open the bluetooth device using 2 anyway
+                //    and miniaudio (apparently) is okay and possible multiplexes actual channels
+                //    to application channels
+            }
             // check for output (channels)
-            if( !device_support_channel_count( output_infos + default_output_device, m_num_channels_out ) )
+            else if( !device_support_channel_count( output_infos + default_output_device, m_num_channels_out, m_sample_rate, true ) )
             {
                 // find first device with at least the requested channel count
                 m_dac_n = -1;
                 for( long i = 0; i < output_count; i++ )
                 {
-                    if( device_support_channel_count( output_infos + i, m_num_channels_out ) )
+                    if( device_support_channel_count( output_infos + i, m_num_channels_out, m_sample_rate, true ) )
                     {
                         // turn off default flag since we are no longer using the default output device
                         useDefaultOut = FALSE;
@@ -1055,21 +1105,24 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         if( useDefaultIn )
         {
             // check for input (channels)
-            if( !device_support_channel_count( input_infos + default_input_device, m_num_channels_in ) )
+            if( !device_support_channel_count( input_infos + default_input_device, m_num_channels_in, m_sample_rate, false ) )
             {
                 // special case: for systems with 1-channel default input audio device -- e.g., some MacOS laptops
-                if( m_num_channels_in == 2 && device_support_channel_count( input_infos + default_input_device, 1 ) )
+                if( m_num_channels_in == 2 && device_support_channel_count( input_infos + default_input_device, 1, m_sample_rate, false ) )
                 {
                     // it's okay to use default; miniaudio should be able to open mono input device using 2 channels
                 }
                 else // need further matching
                 {
+                    // the channel count to match against
+                    t_CKUINT matchChannels = m_num_channels_in != 2 ? m_num_channels_in : 1;
+
                     // find first device with at least the requested channel count
                     m_adc_n = -1;
                     for( long i = 0; i < input_count; i++ )
                     {
                         // check device support
-                        if( device_support_channel_count( input_infos + i, m_num_channels_in ) )
+                        if( device_support_channel_count( input_infos + i, matchChannels, m_sample_rate, false ) )
                         {
                             // turn off default flag since we are no longer using the default input device
                             useDefaultIn = FALSE;
@@ -1160,16 +1213,18 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     deviceConfig.sampleRate         = (ma_uint32)sample_rate;
     // I/O buffer size (this is a hint to miniaudio; actual frame sizes could vary)
     deviceConfig.periodSizeInFrames = (ma_uint32)frame_size;
-
+    
+    // initialize the device
     // initialize the device
     result = ma_device_init( &m_context, &deviceConfig, &m_device );
     if( result != MA_SUCCESS ) {
         // print error
         EM_error2( 0, "(audio) error initializing device..." );
-        EM_error2( 0, "(audio) |- devices output: '%d:%s' input: '%d:%s'", m_dac_n+1, m_dac_name.c_str(), m_adc_n+1, m_adc_name.c_str() );
-        EM_error2( 0, "(audio) |- channels out: '%d' input: '%d'", m_num_channels_out, m_num_channels_in );
-        EM_error2( 0, "(audio) |- sample rate: '%d'", m_sample_rate );
+        // EM_error2( 0, "(audio) |- devices output: '%d:%s' input: '%d:%s'", m_dac_n+1, m_dac_name.c_str(), m_adc_n+1, m_adc_name.c_str() );
+        // EM_error2( 0, "(audio) |- channels out: '%d' input: '%d'", m_num_channels_out, m_num_channels_in );
+        // EM_error2( 0, "(audio) |- sample rate: '%d'", m_sample_rate );
         EM_error2( 0, "(audio) |- '%s'", ma_result_description( result ) );
+        goto error;
     }
 
     // only if m_num_channels_in is set to 1

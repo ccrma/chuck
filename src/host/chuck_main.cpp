@@ -1302,7 +1302,7 @@ t_CKBOOL go( int argc, const char ** argv )
     
     // remember this, since adc_chans could be altered when initialization real-time audio
     adc_chans_before_rtaudio = adc_chans;
-
+    
     // initialize audio system
     if( g_enable_realtime_audio )
     {
@@ -1314,12 +1314,11 @@ t_CKBOOL go( int argc, const char ** argv )
         {
             // 1.5.2.5 (ge) update to always print (not log) on error
             CK_FPRINTF_STDERR( "[chuck]: attempting to initialize real-time audio I/O...\n" );
-            // log
             CK_FPRINTF_STDERR( "[chuck]:  | real-time audio: %s\n", g_enable_realtime_audio ? "YES" : "NO" );
             CK_FPRINTF_STDERR( "[chuck]:  | mode: %s\n", block ? "BLOCKING" : "CALLBACK" );
             CK_FPRINTF_STDERR( "[chuck]:  | sample rate: %ld\n", srate );
             CK_FPRINTF_STDERR( "[chuck]:  | buffer size: %ld\n", buffer_size );
-            CK_FPRINTF_STDERR( "[chuck]:  | num buffers: %ld\n", num_buffers );
+            // CK_FPRINTF_STDERR( "[chuck]:  | num buffers: %ld\n", num_buffers );
             CK_FPRINTF_STDERR( "[chuck]:  | adaptive block processing: %ld\n", adaptive_size > 1 ? adaptive_size : 0 );
             CK_FPRINTF_STDERR( "[chuck]:  | audio driver: %s\n", audio_driver != "" ? audio_driver.c_str() : "(unspecified)");
             CK_FPRINTF_STDERR( "[chuck]:  | adc:%d \"%s\"\n", adc, ChuckAudio::m_adc_name.c_str() );
@@ -1405,11 +1404,13 @@ t_CKBOOL go( int argc, const char ** argv )
     // log
     EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
     EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
-    EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
+    EM_log( CK_LOG_SYSTEM, "sample rate (chuck VM): %ld", srate );
+    EM_log( CK_LOG_SYSTEM, "sample rate (audio I/O) in: %ld out: %ld",
+            ChuckAudio::device()->capture.internalSampleRate, ChuckAudio::device()->playback.internalSampleRate );
     EM_log( CK_LOG_SYSTEM, "I/O frame size (hint): %ld", buffer_size );
     if( g_enable_realtime_audio )
     {
-        EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
+        // EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );
         EM_log( CK_LOG_SYSTEM, "adaptive block processing: %ld", adaptive_size > 1 ? adaptive_size : 0 );
         EM_log( CK_LOG_SYSTEM, "audio driver: %s", audio_driver != "" ? audio_driver.c_str() : "(unspecified)");
         EM_log( CK_LOG_SYSTEM, "adc:%d \"%s\"", adc, adc_device_name.c_str() );
@@ -1417,6 +1418,8 @@ t_CKBOOL go( int argc, const char ** argv )
         // EM_log( CK_LOG_SYSTEM, "adc: %ld dac: %d", adc, dac );
     }
     EM_log( CK_LOG_SYSTEM, "channels in: %ld out: %ld", adc_chans, dac_chans );
+    EM_log( CK_LOG_SYSTEM, "channels (audio I/O) in: %ld out: %ld",\
+            ChuckAudio::device()->capture.internalChannels, ChuckAudio::device()->playback.internalChannels );
     // pop
     EM_poplog();
 
