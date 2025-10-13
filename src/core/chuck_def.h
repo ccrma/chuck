@@ -163,6 +163,9 @@ typedef const char *                c_constr;
 #endif
 //-------------------------------------------
 #define t_CKSAMPLE                  SAMPLE
+// explicit sized sample types
+#define SAMPLE32                    float
+#define SAMPLE64                    double
 
 // sample complex
 typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
@@ -191,6 +194,8 @@ typedef struct { SAMPLE re ; SAMPLE im ; } t_CKCOMPLEX_SAMPLE;
 #define CK_SAFE_FREE(x)             do { if(x){ free(x); (x) = NULL; } } while(0)
 #define CK_SAFE_UNLOCK_DELETE(x)    do { if(x){ (x)->unlock(); delete (x); (x) = NULL; } } while(0)
 #define CK_SAFE_UNLOCK_RELEASE(x)   do { if(x){ (x)->unlock(); (x)->release(); (x) = NULL; } } while(0)
+// zero out struct
+#define CK_ZERO_STRUCT(x)           do { memset( &x, 0, sizeof(x) ); } while(0)
 
 // max + min
 #define ck_max(x,y)                 ( (x) >= (y) ? (x) : (y) )

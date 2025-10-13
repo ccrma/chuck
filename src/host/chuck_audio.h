@@ -25,19 +25,21 @@
 
 //-----------------------------------------------------------------------------
 // name: chuck_audio.h
-// desc: chuck host digital audio I/O, using RtAudio (from Gary Scavone)
+// desc: chuck host digital audio I/O, using miniaudio.h
 //
 // author: Ge Wang (ge@ccrma.stanford.edu | gewang@cs.princeton.edu)
+//         Andrew Zhu Aday (azaday@ccrma.stanford.edu)
+//         Nick Shaheed (nshaheed@ccrma.stanford.edu)
 //         Spencer Salazar (spencer@ccrma.stanford.edu)
-// RtAudio by: Gary Scavone
-// date: Spring 2004
+// miniaudio by: David Reid (https://github.com/mackron/miniaudio)
+//   date: Fall 2025
 //-----------------------------------------------------------------------------
 #ifndef __CHUCK_AUDIO_H__
 #define __CHUCK_AUDIO_H__
 
 #include "chuck_def.h"
 #include <string>
-#include "RtAudio/RtAudio.h"
+#include "miniaudio/miniaudio.h"
 
 
 
@@ -49,7 +51,7 @@
 #if defined(__PLATFORM_LINUX__)         // linux
   #define CK_SAMPLE_RATE_DEFAULT        48000
   #define CK_BUFFER_SIZE_DEFAULT        256
-#elif defined(__PLATFORM_APPLE__)      // macOS
+#elif defined(__PLATFORM_APPLE__)       // macOS
   #define CK_SAMPLE_RATE_DEFAULT        44100
   #define CK_BUFFER_SIZE_DEFAULT        256
 #else                                   // windows & everywhere else
@@ -87,9 +89,7 @@ extern t_CKFLOAT g_watchdog_timeout;
 //-----------------------------------------------------------------------------
 struct ChuckAudioDriverInfo
 {
-    // driver API ID; e.g., RtAudio::Api values
-    // RtAudio::MACOSX_CORE or RtAudio::WINDOWS_DS or RtAudio::UNIX_JACK
-    // (see RtAudio.h for full list)
+    // driver API ID; e.g., ma_backend_coreaudio
     t_CKUINT driver;
     // a short name of the driver, e.g., "DS"
     std::string name;
@@ -119,7 +119,7 @@ public:
                                 t_CKUINT num_dac_channels,
                                 t_CKUINT num_adc_channels,
                                 t_CKUINT sample_rate,
-                                t_CKUINT buffer_size,
+                                t_CKUINT frame_size,
                                 t_CKUINT num_buffers,
                                 ck_f_audio_cb callback,
                                 void * data,
@@ -136,27 +136,26 @@ public: // watchdog stuff
 
 public: // driver related operations
     // default audio driver number
-    static RtAudio::Api defaultDriverApi();
+    static t_CKUINT defaultDriverApi();
     // default audio driver name
     static const char * defaultDriverName();
     // get API/driver enum from name
-    static RtAudio::Api driverNameToApi( const char * driver = NULL );
-    // get API/drive name from int assumed to be RtAudio::Api enum
+    static t_CKUINT driverNameToApi( const char * driver = NULL );
+    // get API/drive name from int assumed to be miniaudio ma_backend enum
     static const char * driverApiToName( t_CKUINT driverNum );
     // get number of compiled audio driver APIs
     static t_CKUINT numDrivers();
     // get info on a particular driver
-    static ChuckAudioDriverInfo getDriverInfo( t_CKUINT n );
+    // static ChuckAudioDriverInfo getDriverInfo( t_CKUINT n );
 
 public: // audio device related operations
     // probe audio devices; NULL for driver means default for build
     static void probe( const char * driver );
     // get device number by name?
     // 1.4.2.0: changed return type from t_CKUINT to t_CKINT
-    static t_CKINT device_named( const char * driver,
-                                 const std::string & name,
-                                 t_CKBOOL needs_dac = FALSE,
-                                 t_CKBOOL needs_adc = FALSE );
+    // 1.5.6.0: separate out into output and input (azaday, ge)
+    static t_CKINT output_device_named( const std::string & driver, const std::string & name );
+    static t_CKINT input_device_named( const std::string & driver, const std::string & name );
 
 public:
     static t_CKUINT srate() { return m_sample_rate; }
@@ -165,14 +164,15 @@ public:
     static t_CKUINT dac_num() { return m_dac_n; }
     static t_CKUINT adc_num() { return m_adc_n; }
     static t_CKUINT bps() { return m_bps; }
-    static t_CKUINT buffer_size() { return m_buffer_size; }
+    static t_CKUINT frame_size() { return m_frame_size; }
     static t_CKUINT num_buffers() { return m_num_buffers; }
-    static RtAudio * audio() { return m_rtaudio; }
 
     static void set_extern( SAMPLE * in, SAMPLE * out )
         { m_extern_in = in; m_extern_out = out; }
-    static int cb( void * output_buffer, void * input_buffer, unsigned int buffer_size,
-        double streamTime, RtAudioStreamStatus status, void * user_data );
+    // typedef void (* ma_device_data_proc)(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
+    static void cb( ma_device * pDevice, void * pOutput, const void * pInput, ma_uint32 frameCount );
+    // ensure buffer frame size; grow if necessary
+    static t_CKUINT ensureBuffers( t_CKUINT frameSize );
 
 public: // data
     static t_CKBOOL m_init;
@@ -182,24 +182,27 @@ public: // data
     static t_CKBOOL m_expand_in_mono2stereo; // 1.4.0.1 for in:1 out:2
     static t_CKUINT m_num_channels_out;
     static t_CKUINT m_num_channels_in;
-    static t_CKUINT m_num_channels_max; // the max of out/in
     static t_CKUINT m_sample_rate;
     static t_CKUINT m_bps;
-    static t_CKUINT m_buffer_size;
+    static t_CKUINT m_frame_size;
     static t_CKUINT m_num_buffers;
     static SAMPLE * m_buffer_out;
     static SAMPLE * m_buffer_in;
     static SAMPLE * m_extern_in; // for things like audicle
     static SAMPLE * m_extern_out; // for things like audicle
 
-    static RtAudio * m_rtaudio;
     static t_CKINT m_dac_n; // 1.5.0.3 (ge) changed to signed
     static t_CKINT m_adc_n; // 1.5.0.3 (ge) changed to signed
     static std::string m_dac_name;
     static std::string m_adc_name;
     static std::string m_driver_name;
     static ck_f_audio_cb m_audio_cb;
-    static void * m_cb_user_data;
+    // static void * m_cb_user_data; // not used in miniaudio
+    
+    // miniaudio context
+    static ma_context m_context;
+    // miniaudio device
+    static ma_device m_device;
 };
 
 

@@ -1229,8 +1229,8 @@ t_CKBOOL go( int argc, const char ** argv )
     // find dac_name if appropriate (added 1.3.0.0)
     if( !probe_chugs && dac_name.size() > 0 )
     {
-        // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( audio_driver.c_str(), dac_name, TRUE, FALSE );
+        // find output device by name (exact then fuzzy match)
+        t_CKINT dev = ChuckAudio::output_device_named( audio_driver, dac_name );
         if( dev >= 0 )
         {
             dac = dev;
@@ -1247,8 +1247,8 @@ t_CKBOOL go( int argc, const char ** argv )
     // find adc_name if appropriate (added 1.3.0.0)
     if( !probe_chugs && adc_name.size() > 0 )
     {
-        // check with RtAudio
-        t_CKINT dev = ChuckAudio::device_named( audio_driver.c_str(), adc_name, FALSE, TRUE );
+        // find input device by name (exact then fuzzy match)
+        t_CKINT dev = ChuckAudio::input_device_named( audio_driver, adc_name );
         if( dev >= 0 )
         {
             adc = dev;
@@ -1354,7 +1354,7 @@ t_CKBOOL go( int argc, const char ** argv )
         adc_device_name = ChuckAudio::m_adc_name;
         dac_device_name = ChuckAudio::m_dac_name;
         srate = ChuckAudio::m_sample_rate;
-        buffer_size = ChuckAudio::buffer_size();
+        buffer_size = ChuckAudio::frame_size();
         num_buffers = ChuckAudio::num_buffers();
     }
     
@@ -1406,7 +1406,7 @@ t_CKBOOL go( int argc, const char ** argv )
     EM_log( CK_LOG_SYSTEM, "real-time audio: %s", g_enable_realtime_audio ? "YES" : "NO" );
     EM_log( CK_LOG_SYSTEM, "mode: %s", block ? "BLOCKING" : "CALLBACK" );
     EM_log( CK_LOG_SYSTEM, "sample rate: %ld", srate );
-    EM_log( CK_LOG_SYSTEM, "buffer size: %ld", buffer_size );
+    EM_log( CK_LOG_SYSTEM, "I/O frame size (hint): %ld", buffer_size );
     if( g_enable_realtime_audio )
     {
         EM_log( CK_LOG_SYSTEM, "num buffers: %ld", num_buffers );

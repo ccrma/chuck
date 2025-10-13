@@ -40,7 +40,9 @@
 #include "util_thread.h"
 #include "util_platforms.h"
 #include <limits.h>
-#include "rtmidi.h"
+
+#include <string>
+using namespace std;
 
 #if (defined(__PLATFORM_WINDOWS__) && !defined(__WINDOWS_PTHREAD__))
   #include <windows.h>
@@ -51,12 +53,6 @@
 #endif
 
 
-// sample
-#if defined(__CHUCK_USE_64_BIT_SAMPLE__)
-#define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT64
-#else
-#define CK_RTAUDIO_FORMAT RTAUDIO_FLOAT32
-#endif
 
 
 // real-time watch dog
@@ -81,9 +77,9 @@ t_CKBOOL ChuckAudio::m_silent = FALSE;
 t_CKBOOL ChuckAudio::m_expand_in_mono2stereo= FALSE;
 t_CKUINT ChuckAudio::m_num_channels_out = CK_NUM_CHANNELS_DEFAULT;
 t_CKUINT ChuckAudio::m_num_channels_in = CK_NUM_CHANNELS_DEFAULT;
-t_CKUINT ChuckAudio::m_num_channels_max = CK_NUM_CHANNELS_DEFAULT;
+// t_CKUINT ChuckAudio::m_num_channels_max = CK_NUM_CHANNELS_DEFAULT;
 t_CKUINT ChuckAudio::m_sample_rate = CK_SAMPLE_RATE_DEFAULT;
-t_CKUINT ChuckAudio::m_buffer_size = CK_BUFFER_SIZE_DEFAULT;
+t_CKUINT ChuckAudio::m_frame_size = CK_BUFFER_SIZE_DEFAULT;
 t_CKUINT ChuckAudio::m_num_buffers = CK_NUM_BUFFERS_DEFAULT;
 SAMPLE * ChuckAudio::m_buffer_out = NULL;
 SAMPLE * ChuckAudio::m_buffer_in = NULL;
@@ -94,9 +90,10 @@ t_CKINT ChuckAudio::m_adc_n = 0;
 std::string ChuckAudio::m_dac_name = "";
 std::string ChuckAudio::m_adc_name = "";
 std::string ChuckAudio::m_driver_name = "";
-RtAudio * ChuckAudio::m_rtaudio = NULL;
 ck_f_audio_cb ChuckAudio::m_audio_cb = NULL;
-void * ChuckAudio::m_cb_user_data = NULL;
+// void * ChuckAudio::m_cb_user_data = NULL;
+ma_context ChuckAudio::m_context;
+ma_device ChuckAudio::m_device;
 
 
 
@@ -104,9 +101,12 @@ void * ChuckAudio::m_cb_user_data = NULL;
 //-----------------------------------------------------------------------------
 // global symbols expected from RtAudio | 1.5.0.1 (ge) added
 //-----------------------------------------------------------------------------
-extern "C" const unsigned int rtaudio_num_compiled_apis;
-extern "C" const unsigned int rtaudio_compiled_apis[];
-extern "C" const char* rtaudio_api_names[][2];
+//extern "C" const unsigned int audio_num_compiled_apis;
+//extern "C" const unsigned int audio_compiled_apis[];
+//extern "C" const char * audio_api_names[][2];
+
+// function prototype
+static bool open_context( const char * driver, ma_context & pContext );
 
 
 
@@ -115,77 +115,79 @@ extern "C" const char* rtaudio_api_names[][2];
 // name: driverNameToApi()
 // desc: look up from driver name to API/driver
 //-----------------------------------------------------------------------------
-static RtAudio::Api driverNameToApi( const char * driver )
+static t_CKUINT driverNameToApi( const char * driver )
 {
-    RtAudio::Api api = RtAudio::UNSPECIFIED;
+    t_CKUINT api = ma_backend_null;
     if( driver )
     {
+        // TODO: add more supported backends?
+
         // get lowercase version
         std::string driverLower = ::tolower(::trim(driver));
         // from what is available, match by driver name
     #if defined(__WINDOWS_ASIO__)
         if( driverLower == "asio" )
-            api = RtAudio::WINDOWS_ASIO;
+            api = ma_backend_custom; // TODO: backend
     #endif
     #if defined(__WINDOWS_DS__)
-        if( driverLower == "ds" || driverLower == "directsound" )
-            api = RtAudio::WINDOWS_DS;
+        if( driverLower == "ds" || driverLower == "directsound" || driverLower == "dsound" )
+            api = ma_backend_dsound;
     #endif
     #if defined(__WINDOWS_WASAPI__)
         if( driverLower == "wasapi" )
-            api = RtAudio::WINDOWS_WASAPI;
+            api = ma_backend_wasapi;
     #endif
     #if defined(__LINUX_ALSA__)
         if( driverLower == "alsa" )
-            api = RtAudio::LINUX_ALSA;
+            api = ma_backend_alsa;
     #endif
     #if defined(__LINUX_PULSE__)
-        if( driverLower == "pulse" )
-            api = RtAudio::LINUX_PULSE;
+        if( driverLower == "pulse" || driverLower == "pulseaudio")
+            api = ma_backend_pulseaudio;
     #endif
     #if defined(__LINUX_OSS__)
         if( driverLower == "oss" )
-            api = RtAudio::LINUX_OSS;
+            api = ma_backend_oss;
     #endif
     #if defined(__UNIX_JACK__)
         if( driverLower == "jack" )
-            api = RtAudio::UNIX_JACK;
+            api = ma_backend_jack;
     #endif
     #if defined(__MACOSX_CORE__)
-        if( driverLower == "coreaudio" || driverLower == "core" )
-            api = RtAudio::MACOSX_CORE;
+        if( driverLower == "coreaudio" || driverLower == "core" || driverLower == "core audio" )
+            api = ma_backend_coreaudio;
     #endif
 
         // check for Dummy
         if( driverLower == "(dummy)" )
-            api = RtAudio::RTAUDIO_DUMMY;
+            api = ma_backend_custom; // TODO
 
         // XXX: add swap between ALSA, PULSE, OSS? and JACK
-        if( api == RtAudio::UNSPECIFIED ) 
+        if( api == ma_backend_null )
         {
             EM_error2( 0, "unsupported audio driver: %s", driver );
         }
     }
 
-    // 1.5.0.0 (nshaheed) If the audio driver is UNSPECIFIED then
+    // 1.5.0.0 (nshaheed) if the audio driver is UNSPECIFIED then
     // return a default driver. This will depend on OS and, in the
     // case of linux, which drivers chuck is being compiled with.
-    if( api == RtAudio::UNSPECIFIED )
+    if( api == ma_backend_null )
     {
     #if defined(__PLATFORM_WINDOWS__)
         // traditional chuck default behavior:
         // DirectSound is most general albeit high-latency
-        api = RtAudio::WINDOWS_DS;
+        api = ma_backend_dsound;
     #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_ALSA__)
-        api = RtAudio::LINUX_ALSA;
+        api = ma_backend_alsa;
     #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_PULSE__)
-        api = RtAudio::LINUX_PULSE;
+        api = ma_backend_pulseaudio;
     #elif defined(__PLATFORM_LINUX__) && defined(__LINUX_OSS__)
-        api = RtAudio::LINUX_OSS;
+        api = ma_backend_oss;
     #elif defined(__PLATFORM_LINUX__) && defined(__UNIX_JACK__)
-        api = RtAudio::UNIX_JACK;
+        api = ma_backend_jack;
     #elif defined(__MACOSX_CORE__)
-        api = RtAudio::MACOSX_CORE;
+        api = ma_backend_coreaudio;
     #endif
     }
 
@@ -199,27 +201,28 @@ static RtAudio::Api driverNameToApi( const char * driver )
 // name: apiToDriverName()
 // desc: get driver name from API
 //-----------------------------------------------------------------------------
-static const char * apiToDriverName( RtAudio::Api api )
+static const char * apiToDriverName( t_CKUINT api )
 {
-    static const char * const drivers[] = {
-        "(Unspecified)",
-        "ALSA",
-        "Pulse",
-        "OSS",
-        "Jack",
-        "CoreAudio",
-        "WASAPI",
-        "ASIO",
-        "DirectSound", // DirectSound
-        "(DUMMY)"
-    };
+    return ma_get_backend_name( (ma_backend)api );
+}
 
-    // cast and check
-    t_CKINT index = (t_CKINT)api;
-    if( index < 0 || index >= sizeof(drivers) / sizeof(const char *) ) return NULL;
 
-    // return
-    return drivers[index];
+
+
+//-----------------------------------------------------------------------------
+// name: ma_format_name()
+// desc: retrive human-readable description of sample format
+//-----------------------------------------------------------------------------
+const char* ma_format_name(ma_format format) {
+    switch (format) {
+        case ma_format_unknown:  return "all";
+        case ma_format_u8:  return "8-bit uint";
+        case ma_format_s16: return "16-bit int";
+        case ma_format_s24: return "24-bit int";
+        case ma_format_s32: return "32-bit int";
+        case ma_format_f32: return "32-bit float";
+        default: return "unknown";
+    }
 }
 
 
@@ -229,65 +232,31 @@ static const char * apiToDriverName( RtAudio::Api api )
 // name: print()
 // desc: print info for an audio device
 //-----------------------------------------------------------------------------
-void print( const RtAudio::DeviceInfo & info )
+void print( const ma_device_info * info, bool isOutput )
 {
-    EM_error2b( 0, "device name = \"%s\"", info.name.c_str() );
-    if (!info.probed)
+    EM_error2b( 0, "device name (%s) = \"%s\"", isOutput ? "output" : "input", info->name );
+    bool probed = (info->nativeDataFormatCount > 0);
+    if( !probed ) {
         EM_error2b( 0, "probe [failed]..." );
-    else
-    {
-        EM_error2b( 0, "probe [success]..." );
-        EM_error2b( 0, "# output channels = %d", info.outputChannels );
-        EM_error2b( 0, "# input channels  = %d", info.inputChannels );
-        EM_error2b( 0, "# duplex Channels = %d", info.duplexChannels );
-        if( info.isDefaultOutput ) EM_error2b( 0, "default output = YES" );
-        else EM_error2b( 0, "default output = NO" );
-        if( info.isDefaultInput ) EM_error2b( 0, "default input = YES" );
-        else EM_error2b( 0, "default input = NO" );
-        if( info.nativeFormats == 0 ) EM_error2b( 0, "no natively supported data formats(?)!" );
-        else
-        {
-            EM_error2b( 0,  "natively supported data formats:" );
-            if( info.nativeFormats & RTAUDIO_SINT8 )   EM_error2b( 0, "   8-bit int" );
-            if( info.nativeFormats & RTAUDIO_SINT16 )  EM_error2b( 0, "  16-bit int" );
-            if( info.nativeFormats & RTAUDIO_SINT24 )  EM_error2b( 0, "  24-bit int" );
-            if( info.nativeFormats & RTAUDIO_SINT32 )  EM_error2b( 0, "  32-bit int" );
-            if( info.nativeFormats & RTAUDIO_FLOAT32 ) EM_error2b( 0, "  32-bit float" );
-            if( info.nativeFormats & RTAUDIO_FLOAT64 ) EM_error2b( 0, "  64-bit float" );
-        }
-        if ( info.sampleRates.size() < 1 ) EM_error2b( 0,"no supported sample rates found!" );
-        else
-        {
-            EM_error2b( 0, "supported sample rates:" );
-            for( unsigned int j = 0; j < info.sampleRates.size(); j++ )
-                EM_error2b( 0, "  %d Hz", info.sampleRates[j] );
-        }
+        return;
     }
-}
 
+    EM_error2b( 0, "probe [success]..." );
+    EM_error2b( 0, "default (%s): %s", isOutput ? "output" : "input", info->isDefault ? "YES" : "NO");
+    EM_error2b( 0, "natively supported formats: " );
 
-
-
-//-----------------------------------------------------------------------------
-// name: rtAudioErrorHandler()
-// desc: the RtAudio error handler
-//-----------------------------------------------------------------------------
-static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorText )
-{
-    // check if empty string
-    if( errorText.empty() ) return;
-
-    // check if warning or not a warning
-    if( t == RTAUDIO_WARNING )
+    // data formats on device
+    for( int i = 0; i < info->nativeDataFormatCount; ++i )
     {
-        // output to warning log level
-        EM_log( CK_LOG_WARNING, "%s", errorText.c_str() );
-    }
-    else
-    {
-        // output as error
-        EM_error2( 0, "%s", errorText.c_str() );
-        // NOTE: problem finding audio devices, likely
+        string s;
+        // add data format
+        s += ma_format_name(info->nativeDataFormats[i].format);
+        s += ", channels: ";
+        s += (info->nativeDataFormats[i].channels == 0) ? "(any)" : std::to_string(info->nativeDataFormats[i].channels);
+        s += ", sample rate: ";
+
+        // if set to 0, all sample rates are supported
+        s += (info->nativeDataFormats[i].sampleRate == 0) ? "(any)" : std::to_string(info->nativeDataFormats[i].sampleRate) + " Hz";
     }
 }
 
@@ -300,55 +269,108 @@ static void rtAudioErrorHandler( RtAudioErrorType t, const std::string & errorTe
 //-----------------------------------------------------------------------------
 void ChuckAudio::probe( const char * driver )
 {
-    // get the audio driver enum by name; handles driver == NULL case
-    RtAudio::Api api = driverNameToApi( driver );
-    // go back from driver enum to driver name
-    const char * dnm = apiToDriverName( api );
-    // rtaudio pointer
-    RtAudio * audio = NULL;
-    // device info struct
-    RtAudio::DeviceInfo info;
-    
-    // allocate RtAudio
-    audio = new RtAudio( api, rtAudioErrorHandler );
-    if( !audio )
-    {
-        // error reported by our errorHandler
-        return;
+    // the context
+    ma_context context;
+    // open context
+    if( !open_context( driver, context ) ) return;
+
+    // get backend name string
+    const char * backend_name = apiToDriverName( context.backend );
+
+    // output devices
+    ma_device_info * output_infos = NULL;
+    // number of audio output devices
+    ma_uint32 output_count = 0;
+    // input devices
+    ma_device_info * input_infos = NULL;
+    // number of audio input devices
+    ma_uint32 input_count = 0;
+
+    // get devices
+    ma_result res = ma_context_get_devices( &context, &output_infos, &output_count, &input_infos, &input_count );
+    if( res != MA_SUCCESS ) {
+        EM_error2( 0, "(audio) probe error..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        goto done;
     }
 
-    // get count
-    int devices = audio->getDeviceCount();
-    EM_error2b( 0, "[%s] driver found %d audio device(s)...", TC::green(dnm,TRUE).c_str(), devices );
+    // print
+    EM_error2b( 0, "[%s] driver found %d audio output device(s)...", TC::green(backend_name,TRUE).c_str(), output_count );
     EM_error2b( 0, "" );
 
-    // reset -- what does this do
-    EM_reset_msg();
-    
-    // loop over devices
-    for( int i = 0; i < devices; i++ )
+    // loop over output devices
+    for( ma_uint32 output_idx = 0; output_idx < output_count; output_idx++ )
     {
-        info = audio->getDeviceInfo(i);
-        if (!info.probed) { // errorHandle reports issues above
-            EM_error2b(0, "");
-            EM_reset_msg();
-            continue;
-        }
-        
+        // get device info pointer from array
+        ma_device_info * device = output_infos + output_idx;
         // print
-        EM_print2blue( "------( audio device: %d )------", i+1 );
-        print( info );
-        // skip
-        if( i < devices ) EM_error2b( 0, "" );
-        
-        // reset
-        EM_reset_msg();
+        EM_print2blue( "------( audio output device: %d )------\n", output_idx+1 );
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
+        // print the device info
+        print( device, true );
     }
 
-    // done
-    CK_SAFE_DELETE( audio );
+    // reset -- what does this do -- not sure, therefore let's keep it
+    EM_reset_msg();
 
-    return;
+    // print
+    EM_error2b( 0, "[%s] driver found %d audio input device(s)...", TC::green(backend_name,TRUE).c_str(), input_count );
+    EM_error2b( 0, "" );
+
+    // loop over output devices
+    for( ma_uint32 input_idx = 0; input_idx < input_count; input_idx++ )
+    {
+        // get device info pointer from array
+        ma_device_info* device = input_infos + input_idx;
+        // print
+        EM_print2blue( "------( audio input device: %d )------\n", input_idx+1 );
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_capture, &device->id, device );
+        // print the device info
+        print( device, false );
+    }
+
+done:
+    // clean up the context
+    ma_context_uninit(&context);
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: open_context()
+// desc: open an audio context
+//-----------------------------------------------------------------------------
+static bool open_context( const char * driver, ma_context & context )
+{
+    // get backend driver by name
+    ma_backend backend = (ma_backend)driverNameToApi(driver);
+
+    // check
+    if( backend == ma_backend_null )
+    {
+        // output as error
+        EM_error2( 0, "unrecognized driver name '%s'", driver ? driver : "[NULL]" );
+        // done
+        return false;
+    }
+
+    // context config
+    ma_context_config config = ma_context_config_init();
+    // set client name (useful for JACK only)
+    config.jack.pClientName = "ChucK";
+    // initialize context
+    ma_result res = ma_context_init( &backend, 1, &config, &context );
+    if( res != MA_SUCCESS )
+    {
+        EM_error2( 0, "(audio) initialization error..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -359,76 +381,152 @@ void ChuckAudio::probe( const char * driver )
 // desc: get device number by name; needs_dac/adc prompts further checks on
 //       requested device having > 0 channels
 //-----------------------------------------------------------------------------
-t_CKINT ChuckAudio::device_named( const char * driver,
-                                  const std::string & name,
-                                  t_CKBOOL needs_dac,
-                                  t_CKBOOL needs_adc )
+t_CKINT ChuckAudio::output_device_named( const std::string & driver, const std::string & name )
 {
-    // rtaudio pointer
-    RtAudio * audio = NULL;
-    // device info struct
-    RtAudio::DeviceInfo info;
-    RtAudio::Api api = driverNameToApi(driver); // handles driver=NULL case
-    // const char * dnm = apiToDriverName(api);
+    // the context
+    ma_context context;
+    // open context
+    if( !open_context( driver.c_str(), context ) ) return -1;
+
+    // output devices
+    ma_device_info * output_infos = NULL;
+    // number of audio output devices
+    ma_uint32 output_count = 0;
+    // input devices
+    ma_device_info * input_infos_NO = NULL;
+    // number of audio input devices
+    ma_uint32 input_count_NO = 0;
     
-    // allocate RtAudio
-    audio = new RtAudio(api, rtAudioErrorHandler);
-    if(!audio)
-        return -1; // reporting in errorHandler
-    
-    // get count    
-    int devices = audio->getDeviceCount();
+    // the device number
     int device_no = -1;
-    
-    // loop
-    for( int i = 0; i < devices; i++ )
-    {
-        // get info
-        info = audio->getDeviceInfo(i);
-        if(!info.probed)
-        {
-            // reportError handles problem
-            break;
-        }
 
-        // compare name
-        if( info.name.compare(name) == 0 )
+    // get devices
+    ma_result res = ma_context_get_devices( &context, &output_infos, &output_count, &input_infos_NO, &input_count_NO );
+    if( res != MA_SUCCESS ) {
+        EM_error2( 0, "(audio) error getting devices..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        goto done;
+    }
+
+    // loop over output devices
+    for( ma_uint32 output_idx = 0; output_idx < output_count; output_idx++ )
+    {
+        // get device info pointer from array
+        ma_device_info * device = output_infos + output_idx;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
+        // c++ string
+        string lhs = tolower(string(device->name));
+        string rhs = tolower(name);
+        // direct comparison
+        if( lhs == rhs )
         {
-            // found!
-            device_no = i+1;
-            break;
+            device_no = output_idx + 1;
+            goto done;
         }
     }
     
-    // not found, yet
-    if( device_no == -1 )
+    // loop over output devices
+    for( ma_uint32 output_idx = 0; output_idx < output_count; output_idx++ )
     {
-        // no exact match found; try partial match
-        for( int i = 0; i < devices; i++ )
+        // get device info pointer from array
+        ma_device_info * device = output_infos + output_idx;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
+        // c++ string
+        string lhs = tolower(string(device->name));
+        string rhs = tolower(name);
+        // substring search
+        if( lhs.find(rhs) != std::string::npos )
         {
-            info = audio->getDeviceInfo(i);
-            if(!info.probed)
-            {
-                // errorHandler reports issues
-                break;
-            }
-            
-            if( info.name.find(name) != std::string::npos )
-            {
-                // skip over ones with 0 channels, if needed
-                if( (needs_dac && info.outputChannels == 0) ||
-                    (needs_adc && info.inputChannels == 0) )
-                    continue;
-                // found
-                device_no = i+1;
-                break;
-            }
+            device_no = output_idx + 1;
+            goto done;
         }
     }
 
-    // clean up
-    CK_SAFE_DELETE( audio );
+done:
+    // uninit
+    ma_context_uninit( &context );
+
+    // done
+    return device_no;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: device_named()
+// desc: get device number by name; needs_dac/adc prompts further checks on
+//       requested device having > 0 channels
+//-----------------------------------------------------------------------------
+t_CKINT ChuckAudio::input_device_named( const std::string & driver, const std::string & name )
+{
+    // the context
+    ma_context context;
+    // open context
+    if( !open_context( driver.c_str(), context ) ) return -1;
+
+    // output devices
+    ma_device_info * output_infos_NO = NULL;
+    // number of audio output devices
+    ma_uint32 output_count_NO = 0;
+    // input devices
+    ma_device_info * input_infos = NULL;
+    // number of audio input devices
+    ma_uint32 input_count = 0;
+
+    // the device number
+    int device_no = -1;
+
+    // get devices
+    ma_result res = ma_context_get_devices( &context, &output_infos_NO, &output_count_NO, &input_infos, &input_count );
+    if( res != MA_SUCCESS ) {
+        EM_error2( 0, "(audio) error getting devices..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        goto done;
+    }
+
+    // loop over input devices
+    for( ma_uint32 input_idx = 0; input_idx < input_count; input_idx++ )
+    {
+        // get device info pointer from array
+        ma_device_info * device = input_infos + input_idx;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
+        // c++ string
+        string lhs = tolower(string(device->name));
+        string rhs = tolower(name);
+        // direct comparison
+        if( lhs == rhs )
+        {
+            device_no = input_idx + 1;
+            goto done;
+        }
+    }
     
+    // loop over output devices
+    for( ma_uint32 input_idx = 0; input_idx < input_count; input_idx++ )
+    {
+        // get device info pointer from array
+        ma_device_info * device = input_infos + input_idx;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
+        // c++ string
+        string lhs = tolower(string(device->name));
+        string rhs = tolower(name);
+        // substring search
+        if( lhs.find(rhs) != std::string::npos )
+        {
+            device_no = input_idx + 1;
+            goto done;
+        }
+    }
+
+done:
+    // clean up context
+    ma_context_uninit( &context );
+
     // done
     return device_no;
 }
@@ -440,7 +538,7 @@ t_CKINT ChuckAudio::device_named( const char * driver,
 // name: defaultDriverApi()
 // desc: get default audio driver number, i.e., RtAudio::Api enum
 //-----------------------------------------------------------------------------
-RtAudio::Api ChuckAudio::defaultDriverApi()
+t_CKUINT ChuckAudio::defaultDriverApi()
 {
     return driverNameToApi( NULL );
 }
@@ -464,7 +562,7 @@ const char * ChuckAudio::defaultDriverName()
 // name: driverNameToApi()
 // desc: get API/driver enum
 //-----------------------------------------------------------------------------
-RtAudio::Api ChuckAudio::driverNameToApi( const char * driver )
+t_CKUINT ChuckAudio::driverNameToApi( const char * driver )
 {
     // if empty string, make the pointer null, which will retrieve default
     if( driver != NULL && driver[0] == '\0' ) driver = NULL;
@@ -482,7 +580,7 @@ RtAudio::Api ChuckAudio::driverNameToApi( const char * driver )
 const char * ChuckAudio::driverApiToName( t_CKUINT num )
 {
     // pass it on
-    return apiToDriverName( (RtAudio::Api)num );
+    return apiToDriverName( num );
 }
 
 
@@ -494,7 +592,12 @@ const char * ChuckAudio::driverApiToName( t_CKUINT num )
 //-----------------------------------------------------------------------------
 t_CKUINT ChuckAudio::numDrivers()
 {
-    return (t_CKUINT)rtaudio_num_compiled_apis;
+    // get enabled backends
+    size_t enabledBackendCount = 0;
+    ma_get_enabled_backends( NULL, MA_BACKEND_COUNT, &enabledBackendCount );
+
+    // done
+    return (t_CKUINT)enabledBackendCount;
 }
 
 
@@ -504,18 +607,18 @@ t_CKUINT ChuckAudio::numDrivers()
 // name: getDriver()
 // desc: get info on a particular driver
 //-----------------------------------------------------------------------------
-ChuckAudioDriverInfo ChuckAudio::getDriverInfo( t_CKUINT n )
-{
-    // check
-    if( n >= numDrivers() ) return ChuckAudioDriverInfo();
-
-    ChuckAudioDriverInfo info;
-    info.driver = rtaudio_compiled_apis[n];
-    info.name = rtaudio_api_names[info.driver][0];
-    info.userFriendlyName = rtaudio_api_names[info.driver][1];
-
-    return info;
-}
+//ChuckAudioDriverInfo ChuckAudio::getDriverInfo( t_CKUINT n )
+//{
+//    // check
+//    if( n >= numDrivers() ) return ChuckAudioDriverInfo();
+//
+//    ChuckAudioDriverInfo info;
+//    info.driver = rtaudio_compiled_apis[n];
+//    info.name = rtaudio_api_names[info.driver][0];
+//    info.userFriendlyName = rtaudio_api_names[info.driver][1];
+//
+//    return info;
+//}
 
 
 
@@ -680,21 +783,21 @@ t_CKBOOL ChuckAudio::watchdog_stop()
 // desc: does a device (which can potentially support multiple sample rates)
 //       support a particular sample rate? 1.5.0.0 (ge) | added
 //-----------------------------------------------------------------------------
-static t_CKBOOL supportSampleRate( RtAudio::DeviceInfo & device_info, t_CKINT sample_rate )
-{
-    // loop over supported sample rates for a device
-    for( t_CKINT i = 0; i < device_info.sampleRates.size(); i++ )
-    {
-        // look for a match
-        if( device_info.sampleRates[i] == sample_rate )
-        {
-            return TRUE;
-        }
-    }
-
-    // no match
-    return FALSE;
-}
+//static t_CKBOOL supportSampleRate( RtAudio::DeviceInfo & device_info, t_CKINT sample_rate )
+//{
+//    // loop over supported sample rates for a device
+//    for( t_CKINT i = 0; i < device_info.sampleRates.size(); i++ )
+//    {
+//        // look for a match
+//        if( device_info.sampleRates[i] == sample_rate )
+//        {
+//            return TRUE;
+//        }
+//    }
+//
+//    // no match
+//    return FALSE;
+//}
 
 
 
@@ -704,37 +807,96 @@ static t_CKBOOL supportSampleRate( RtAudio::DeviceInfo & device_info, t_CKINT sa
 // desc: find an input device with matching chans and sample rate
 //       1.5.0.0 (ge) | added
 //-----------------------------------------------------------------------------
-static t_CKINT findMatchingInputDevice( RtAudio * rtaudio, t_CKINT numInputChans,
-                                        t_CKINT sample_rate, t_CKBOOL allowMoreChans )
-{
-    // get number of devices
-    t_CKINT num_devices = rtaudio->getDeviceCount();
-    // struct to hold info for a device
-    RtAudio::DeviceInfo device_info;
+//static t_CKINT findMatchingInputDevice( RtAudio * rtaudio, t_CKINT numInputChans,
+//                                        t_CKINT sample_rate, t_CKBOOL allowMoreChans )
+//{
+//    // get number of devices
+//    t_CKINT num_devices = rtaudio->getDeviceCount();
+//    // struct to hold info for a device
+//    RtAudio::DeviceInfo device_info;
+//
+//    // find first device with at least the requested channel count (and sample rate match)
+//    for( t_CKUINT i = 0; i < num_devices; i++ )
+//    {
+//        // get device info
+//        device_info = rtaudio->getDeviceInfo((unsigned int)i);
+//        // check sample rate
+//        if( supportSampleRate( device_info, sample_rate ) )
+//        {
+//            // check channels; the allowMoreChans toggles exact match or lenient match
+//            if( (allowMoreChans == FALSE && device_info.inputChannels == numInputChans) ||
+//                (allowMoreChans == TRUE && device_info.inputChannels >= numInputChans) )
+//            {
+//                // log
+//                EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
+//                // return device number
+//                return i;
+//            }
+//        }
+//    }
+//
+//    // no match
+//    return -1;
+//}
 
-    // find first device with at least the requested channel count (and sample rate match)
-    for( t_CKUINT i = 0; i < num_devices; i++ )
+
+
+
+//-----------------------------------------------------------------------------
+// name: device_support_channel_count()
+// desc: test if a device supports a particular number of channels
+//-----------------------------------------------------------------------------
+static t_CKBOOL device_support_channel_count( ma_device_info * info, t_CKUINT channels )
+{
+    for( long i = 0; i < info->nativeDataFormatCount; i++ )
     {
-        // get device info
-        device_info = rtaudio->getDeviceInfo((unsigned int)i);
-        // check sample rate
-        if( supportSampleRate( device_info, sample_rate ) )
-        {
-            // check channels; the allowMoreChans toggles exact match or lenient match
-            if( (allowMoreChans == FALSE && device_info.inputChannels == numInputChans) ||
-                (allowMoreChans == TRUE && device_info.inputChannels >= numInputChans) )
-            {
-                // log
-                EM_log( CK_LOG_INFO, "found alternate input device: %d...", i );
-                // return device number
-                return i;
-            }
-        }
+        // support at least the desired # of channels
+        if( info->nativeDataFormats[i].channels >= channels )
+            return TRUE;
+        // support "any" # of channels
+        if( info->nativeDataFormats[i].channels == 0 )
+            return TRUE;
     }
 
-    // no match
-    return -1;
+    return FALSE;
 }
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ensureBuffers()
+// desc: ensure that chuck audio buffers are big enough for a given frame size
+//       if not, will re-allocate audio buffers
+//-----------------------------------------------------------------------------
+t_CKBOOL ChuckAudio::ensureBuffers( t_CKUINT frameSize )
+{
+    // check
+    if( frameSize <= m_frame_size ) return TRUE;
+
+    // update to max of old*2 vs new
+    m_frame_size = ck_max(m_frame_size*2,frameSize);
+
+    // greater of dac/adc channels, and no less than 2
+    t_CKUINT num_channels_max = ck_min( ck_max( m_num_channels_out, m_num_channels_out ), 2 );
+
+    // log
+    EM_log( CK_LOG_HERALD, "allocating audio buffers for %d x %d samples...",
+            m_frame_size, num_channels_max );
+
+    // realloc
+    m_buffer_out = (SAMPLE *)realloc( m_buffer_out, m_frame_size*num_channels_max*sizeof(SAMPLE) );
+    m_buffer_in = (SAMPLE *)realloc( m_buffer_in, m_frame_size*num_channels_max*sizeof(SAMPLE) );
+
+    // allocate buffers
+    m_buffer_out = new SAMPLE[m_frame_size*num_channels_max];
+    m_buffer_in = new SAMPLE[m_frame_size*num_channels_max];
+    memset( m_buffer_out, 0, m_frame_size * sizeof(SAMPLE) * num_channels_max );
+    memset( m_buffer_in, 0, m_frame_size * sizeof(SAMPLE) * num_channels_max );
+
+    return TRUE;
+}
+
 
 
 
@@ -748,7 +910,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                                  t_CKUINT num_dac_channels,
                                  t_CKUINT num_adc_channels,
                                  t_CKUINT sample_rate,
-                                 t_CKUINT buffer_size,
+                                 t_CKUINT frame_size,
                                  t_CKUINT num_buffers,
                                  ck_f_audio_cb callback,
                                  void * data,
@@ -765,7 +927,9 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     m_num_channels_out = num_dac_channels;
     m_num_channels_in = num_adc_channels;
     m_sample_rate = sample_rate;
-    m_buffer_size = buffer_size;
+    // zero out for now
+    m_frame_size = 0;
+    // not used in miniaudio backend
     m_num_buffers = num_buffers;
     m_start = 0;
     m_go = 0;
@@ -774,14 +938,49 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     // remember callback
     m_audio_cb = callback;
     // remember user data to pass to callback
-    m_cb_user_data = data;
+    // m_cb_user_data = data;
 
-    // audio device probe results
-    RtAudio::DeviceInfo dac_info;
-    RtAudio::DeviceInfo adc_info;
+    // open context
+    if( !open_context( driver, m_context ) ) return FALSE;
 
-    // variable to pass by reference into RtAudio
-    unsigned int bufsize = (unsigned int)m_buffer_size;
+    // get backend name string
+    m_driver_name = apiToDriverName( m_context.backend );
+
+    // output devices
+    ma_device_info * output_infos = NULL;
+    // number of audio output devices
+    ma_uint32 output_count = 0;
+    // input devices
+    ma_device_info * input_infos = NULL;
+    // number of audio input devices
+    ma_uint32 input_count = 0;
+
+    // default device indices
+    t_CKINT default_output_device = -1;
+    t_CKINT default_input_device = -1;
+
+    // get devices
+    ma_result res = ma_context_get_devices( &m_context, &output_infos, &output_count, &input_infos, &input_count );
+    if( res != MA_SUCCESS ) {
+        EM_error2( 0, "(audio) error enumerating devices..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        return FALSE;
+    }
+
+    // populate output device infos
+    for( ma_uint32 output_idx = 0; output_idx < output_count; output_idx++ ) {
+        ma_device_info * device = output_infos + output_idx;
+        ma_context_get_device_info( &m_context, ma_device_type_playback, &device->id, device );
+        if( device->isDefault ) default_output_device = output_idx;
+    }
+
+    // populate input device infos
+    for( ma_uint32 input_idx = 0; input_idx < input_count; input_idx++) {
+        ma_device_info* device = input_infos + input_idx;
+        ma_context_get_device_info( &m_context, ma_device_type_capture, &device->id, device );
+        if( device->isDefault ) default_input_device = input_idx;
+    }
+
     // check output device number; 0 means "default"
     bool useDefaultOut = ( m_dac_n == 0 );
     // check input device number; 0 means "default"
@@ -789,58 +988,37 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     // total number of audio devices (input and output)
     unsigned int num_devices = 0;
 
+    // miniaudio parameters to be used later
+    ma_result result;
+    ma_device_config deviceConfig;
+    ma_device_type flow;
+
     // log
-    EM_log( CK_LOG_FINE, "initializing RtAudio..." );
+    EM_log( CK_LOG_FINE, "initializing real-time audio..." );
     // push indent
     EM_pushlog();
-
-    // allocate RtAudio
-    RtAudio::Api api = driverNameToApi(driver);
-    m_driver_name = apiToDriverName(api);
-    RtAudioErrorType code = RTAUDIO_NO_ERROR;
-    m_rtaudio = new RtAudio(api, rtAudioErrorHandler);
-    if(!m_rtaudio)
-    {
-        // error reported above
-        goto error; // to clean up
-    }
-
-    // get number of audio devices
-    num_devices = m_rtaudio->getDeviceCount();
 
     // convert 1-based ordinal to 0-based ordinal (added 1.3.0.0)
     // note: this is to preserve previous devices numbering after RtAudio change
     if( m_num_channels_out > 0 )
     {
-        // default (refactor 1.3.1.2)
-        if( useDefaultOut )
-        {
-            // get the default
-            // FYI: getDefaultInputDevice returns 0 either as a valid index OR if no default/any devices
-            m_dac_n = m_rtaudio->getDefaultOutputDevice();
-        }
-        else
-        {
-            m_dac_n -= 1;
-        }
-
-        // get device info
-        RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
-        
         // ensure correct channel count if default device is requested
         if( useDefaultOut )
         {
             // check for output (channels)
-            if( device_info.outputChannels < m_num_channels_out )
+            if( !device_support_channel_count( output_infos + default_output_device, m_num_channels_out ) )
             {
                 // find first device with at least the requested channel count
                 m_dac_n = -1;
-                for( int i = 0; i < num_devices; i++ )
+                for( long i = 0; i < output_count; i++ )
                 {
-                    device_info = m_rtaudio->getDeviceInfo(i);
-                    if(device_info.outputChannels >= m_num_channels_out)
+                    if( device_support_channel_count( output_infos + i, m_num_channels_out ) )
                     {
+                        // turn off default flag since we are no longer using the default output device
+                        useDefaultOut = FALSE;
+                        // set new output device index
                         m_dac_n = i;
+                        // done
                         break;
                     }
                 }
@@ -854,74 +1032,16 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
                     goto error;
                 }
             }
-        }
-
-        // index of closest sample rate
-        long closestIndex = -1;
-        // difference of closest so far
-        long closestDiff = LONG_MAX;
-        // the next highest
-        long nextHighest = -1;
-        // diff to next highest so far
-        long diffToNextHighest = LONG_MAX;
-        // check if request sample rate in support rates (added 1.3.1.2)
-        for( long i = 0; i < device_info.sampleRates.size(); i++ )
-        {
-            // difference
-            long diff = device_info.sampleRates[i] - sample_rate;
-            // check // ge: changed from abs to labs, 2015.11
-            if( ::labs(diff) < closestDiff )
-            {
-                // remember index
-                closestIndex = i;
-                // update diff
-                closestDiff = ::labs(diff);
-            }
-
-            // for next highest
-            if( diff > 0 && diff < diffToNextHighest )
-            {
-                // remember index
-                nextHighest = i;
-                // update diff
-                diffToNextHighest = diff;
-            }
-        }
-            
-        // see if we found exact match (added 1.3.1.2)
-        if( closestDiff != 0 )
-        {
-            // check
-            if( force_srate )
-            {
-                // request sample rate not found, error out
-                EM_error2( 0, "unsupported sample rate (%d) requested...", sample_rate );
-                EM_error2( 0, "| (try --probe to enumerate available sample rates)" );
-                // clean up
-                goto error;
-            }
-
-            // use next highest if available
-            if( nextHighest >= 0 )
-            {
-                // log
-                EM_log( CK_LOG_HERALD, "new sample rate (next highest): %d -> %d",
-                        sample_rate, device_info.sampleRates[nextHighest] );
-                // update sampling rate
-                m_sample_rate = sample_rate = device_info.sampleRates[nextHighest];
-            }
-            else if( closestIndex >= 0 ) // nothing higher
-            {
-                // log
-                EM_log( CK_LOG_HERALD, "new sample rate (closest): %d -> %d",
-                        sample_rate, device_info.sampleRates[closestIndex] );
-                // update sampling rate
-                m_sample_rate = sample_rate = device_info.sampleRates[closestIndex];
-            }
             else
             {
-                // nothing to do (will fail and throw error message when opening)
+                // set device to default output device index
+                m_dac_n = default_output_device;
             }
+        }
+        else
+        {
+            // offset to 0-index device number
+            m_dac_n--;
         }
     }
         
@@ -931,197 +1051,144 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         // if we are requesting the default input device
         if( useDefaultIn )
         {
-            // get default input device
-            // FYI getDefaultInputDevice returns 0 either as a valid index OR if no default/any devices
-            m_adc_n = m_rtaudio->getDefaultInputDevice();
-            // ensure correct channel count if default device is requested
-            RtAudio::DeviceInfo device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-
-            // remember
-            t_CKUINT inChannelsRequested = m_num_channels_in;
-
-            // check if input channels > 0 || sample rate does not match
-            if( device_info.inputChannels < m_num_channels_in )
+            // check for input (channels)
+            if( !device_support_channel_count( input_infos + default_input_device, m_num_channels_in ) )
             {
-                // 1.4.2.0 (ge) | added: a specific but possible common case
-                // for systems that have a 1-channel default input audio device -- e.g., some MacOS systems
-                if( m_num_channels_in == 2 && device_info.inputChannels == 1
-                    && supportSampleRate( device_info, sample_rate ) ) // try to stay on device if possible
+                // special case: for systems with 1-channel default input audio device -- e.g., some MacOS laptops
+                if( m_num_channels_in == 2 && device_support_channel_count( input_infos + default_input_device, 1 ) )
                 {
-                    // nothing more for now here
-                    // the code here to set the m_expand_in_mono2stereo flag has been moved below
+                    // it's okay to use default; miniaudio should be able to open mono input device using 2 channels
                 }
                 else // need further matching
                 {
-                    // special case | 1.5.0.0 (ge) -- in this case of default input device,
-                    // first try to match using the current default input device channels.
-                    // This is to handle the situation in macOS and using bluetooth earbuds
-                    // or headphones and the highest supported input sample rate is lower than
-                    // the desired chuck sample rate (e.g., some input devices only support 24K);
-                    // in this case, look for devices with match sample rates AND inherit the
-                    // default input devices's actual channel count. This heuristic is so that
-                    // on most Apple laptops since macOS 11, this will end up choosing the
-                    // the onboard laptop microphone. This will hopefully serve many students
-                    // working in the above setup; of course, power users can explicitly choose
-                    // the input and output devices using command-line flags or other settings
-                    // -
-                    // special case | 1.4.0.1 (ge) -- check if the sample rate is supported
-                    // this is to catch the case where the default device has
-                    // insufficient channels (e.g., 1 on MacOS), finds secondary device
-                    // (e.g., ZoomAudioDevice on MacOS) that has enough channels
-                    // but does not support the desired sample rate
-                    // amended 1.4.2.0 -- the behavior is modified above, where chuck
-                    // will first check if the default input device has only 1 channel
-                    // while we are requesting 2 channels...
-                    // -
-
-                    // if non-zero input channels
-                    if( device_info.inputChannels > 0 )
+                    // find first device with at least the requested channel count
+                    m_adc_n = -1;
+                    for( long i = 0; i < input_count; i++ )
                     {
-                        // find a device with *exactly* the current device input channels
-                        m_adc_n = findMatchingInputDevice( m_rtaudio, device_info.inputChannels, sample_rate, FALSE );
-                    }
-                    else  // if device input channel count is 0
-                    {
-                        // find a device with *exactly* the requested channel count
-                        m_adc_n = findMatchingInputDevice( m_rtaudio, m_num_channels_in, sample_rate, FALSE);
-                    }
-                    
-                    // check if match
-                    if( m_adc_n >= 0 )
-                    {
-                        // get updated device info (since m_adc_n may be updated by this point)
-                        device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-                        // update the request input channel request
-                        m_num_channels_in = device_info.inputChannels;
-                    }
-                    else
-                    {
-                        // find a device with *at least* the requested channel count
-                        m_adc_n = findMatchingInputDevice(m_rtaudio, m_num_channels_in, sample_rate, TRUE );
-
-                        // changed 1.3.1.2 (ge): for input, if no match found by this point, we just gonna try to open half-duplex
-                        if( m_adc_n < 0 )
+                        // check device support
+                        if( device_support_channel_count( input_infos + i, m_num_channels_in ) )
                         {
-                            // set to 0
-                            m_num_channels_in = 0;
-                            // log
-                            EM_log( CK_LOG_HERALD, "cannot find compatible audio input device..." );
-                            EM_pushlog();
-                                EM_log(CK_LOG_HERALD, "defaulting to half-duplex (no audio input)...");
-                            EM_poplog();
-
-                            // problem finding audio devices, most likely
-                            // EM_error2( 0, "unable to find audio input device with requested channel count (%i)...",
-                            //               m_num_channels_in);
-                            // clean up
-                            // goto error;
+                            // turn off default flag since we are no longer using the default input device
+                            useDefaultIn = FALSE;
+                            // set device number
+                            m_adc_n = i;
+                            // done
+                            break;
                         }
+                    }
+
+                    // for input, if no match found by this point, we just gonna try to open half-duplex
+                    if( m_adc_n < 0 )
+                    {
+                        // set to 0
+                        m_num_channels_in = 0;
+                        // log
+                        EM_log( CK_LOG_HERALD, "cannot find compatible audio input device..." );
+                        EM_pushlog();
+                            EM_log(CK_LOG_HERALD, "defaulting to half-duplex (no audio input)...");
+                        EM_poplog();
                     }
                 }
             }
-
-            // if we ended up with a match
-            if( m_dac_n >= 0 )
+            else
             {
-                // get info for the input device we ended up using
-                device_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-                // check channel situation look for specific arrangement; we should have a sample rate match if we get here
-                if( inChannelsRequested == 2 && device_info.inputChannels == 1 )
-                {
-                    // flag this for expansion in the callback
-                    m_expand_in_mono2stereo = TRUE;
-                    // log
-                    EM_log( CK_LOG_INFO, "using 1-channel default input device (instead of requested 2-channel)..." );
-                    EM_log( CK_LOG_INFO, "simulating stereo input from mono audio device..." );
-                }
+                // set device to default input device index
+                m_adc_n = default_input_device;
             }
         }
         else
         {
             // offset to 0-index device number
-            m_adc_n -= 1;
+            m_adc_n--;
         }
     }
-
+    
     // the dac and adc devices we've chosen to initialize | 1.5.0.0 (ge)
     if( m_num_channels_out > 0 && m_dac_n < num_devices )
     {
-        // get device info
-        dac_info = m_rtaudio->getDeviceInfo((unsigned int)m_dac_n);
+        // check we have a valid output device number
+        assert( m_dac_n >= 0 );
+        // get the device info
+        ma_device_info * dac_info = output_infos + m_dac_n;
         // copy names (if valid)
-        if( dac_info.probed ) m_dac_name = dac_info.name;
+        m_dac_name = dac_info->name;
     }
     if( m_num_channels_in > 0 && m_adc_n < num_devices )
     {
-        // get device info
-        adc_info = m_rtaudio->getDeviceInfo((unsigned int)m_adc_n);
-        if( adc_info.probed ) m_adc_name = adc_info.name;
+        // check we have a valid input device number
+        assert( m_adc_n >= 0 );
+        // get the device info
+        ma_device_info * adc_info = input_infos + m_adc_n;
+        // copy names (if valid)
+        m_adc_name = adc_info->name;
     }
 
-    // open device
-    { // was: try {
-        // log
-        EM_log( CK_LOG_FINE, "[%s] driver trying %d input %d output...",
-                m_driver_name.c_str(), m_num_channels_in, m_num_channels_out );
+    // log
+    EM_log( CK_LOG_FINE, "[%s] driver opening %d input %d output...",
+            m_driver_name.c_str(), m_num_channels_in, m_num_channels_out );
 
-        RtAudio::StreamParameters output_parameters;
-        output_parameters.deviceId = (unsigned int)m_dac_n;
-        output_parameters.nChannels = (unsigned int)m_num_channels_out;
-        output_parameters.firstChannel = 0;
-        
-        RtAudio::StreamParameters input_parameters;
-        input_parameters.deviceId = (unsigned int)m_adc_n;
-        input_parameters.nChannels = (unsigned int)(m_expand_in_mono2stereo ? 1 : m_num_channels_in);
-        input_parameters.firstChannel = 0;
-        
-        RtAudio::StreamOptions stream_options;
-        stream_options.flags = 0;
-        stream_options.numberOfBuffers = (unsigned int)num_buffers;
-        stream_options.streamName = "ChucK";
-        stream_options.priority = 0;
-            
-        // open audio stream
-        code = m_rtaudio->openStream(
-            m_num_channels_out > 0 ? &output_parameters : NULL,
-            m_num_channels_in > 0 ? &input_parameters : NULL,
-            CK_RTAUDIO_FORMAT, (unsigned int)sample_rate, &bufsize,
-            cb, m_cb_user_data,
-            &stream_options
-        );
+    // how to open device; default to full duplex
+    flow = ma_device_type_duplex;
+    // check for playback only
+    if( m_num_channels_out && !m_num_channels_in ) flow = ma_device_type_playback;
+    // check for capture only
+    else if( !m_num_channels_out && m_num_channels_in ) flow = ma_device_type_capture;
 
-        // check error code
-        if( code > RTAUDIO_WARNING ) // was: } catch( RtAudioErrorType ) {
-        {
-            // RtAudio no longer throws, errors reported via errorHandler
-            CK_SAFE_DELETE( m_rtaudio );
-            // clean up
-            goto error;
-        }
+    // initialize device config
+    deviceConfig = ma_device_config_init( flow );
+    // IMPORTANT: if NULL...
+    // 1) this will open to the default outut device AND
+    // 2) will attempt to track if user switches system default output device
+    // TODO: see if this a problem for channels > 2 (e.g., laptop orchestra hemis)
+    deviceConfig.playback.pDeviceID  = useDefaultOut ? NULL : &((output_infos+m_dac_n)->id);
+    // use 32-bit float; (there is no option currently for 64-bit float)
+    deviceConfig.playback.format     = ma_format_f32;
+    // # of outuput channels; should be verified by this point
+    deviceConfig.playback.channels   = (ma_uint32) m_num_channels_out;
+    // (see playback above)
+    deviceConfig.capture.pDeviceID   = useDefaultIn ? NULL : &((input_infos+m_adc_n)->id);
+    // same format as output
+    deviceConfig.capture.format      = deviceConfig.playback.format;
+    // # of input channels
+    deviceConfig.capture.channels    = (ma_uint32) m_num_channels_in;
+    // the audio callback function pointer
+    deviceConfig.dataCallback       = cb;
+    // system sample rate (miniaudio could implicitly convert to match this sample rate)
+    deviceConfig.sampleRate         = (ma_uint32)sample_rate;
+    // I/O buffer size (this is a hint to miniaudio; actual frame sizes could vary)
+    deviceConfig.periodSizeInFrames = (ma_uint32)frame_size;
+
+    // initialize the device
+    result = ma_device_init( &m_context, &deviceConfig, &m_device );
+    if( result != MA_SUCCESS ) {
+        // print error
+        EM_error2( 0, "(audio) error initializing device..." );
+        EM_error2( 0, "(audio) |- devices output: '%d:%s' input: '%d:%s'", m_dac_n+1, m_dac_name.c_str(), m_adc_n+1, m_adc_name.c_str() );
+        EM_error2( 0, "(audio) |- channels out: '%d' input: '%d'", m_num_channels_out, m_num_channels_in );
+        EM_error2( 0, "(audio) |- sample rate: '%d'", m_sample_rate );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( result ) );
     }
-        
-    // check bufsize
-    if( bufsize != (int)m_buffer_size )
+
+    // only if m_num_channels_in is set to 1
+    if( m_num_channels_in == 1 )
     {
-        EM_log( CK_LOG_HERALD, "new buffer size: %d -> %i", m_buffer_size, bufsize );
-        m_buffer_size = bufsize;
+        // flag this for expansion in the callback
+        m_expand_in_mono2stereo = TRUE;
+        // log
+        EM_log( CK_LOG_INFO, "using 1-channel audio input; will copy to stereo..." );
     }
 
     // pop indent
     EM_poplog();
 
-    // greater of dac/adc channels
-    m_num_channels_max = num_dac_channels > num_adc_channels ?
-                         num_dac_channels : num_adc_channels;
-    // log
-    EM_log( CK_LOG_HERALD, "allocating buffers for %d x %d samples...",
-            m_buffer_size, m_num_channels_max );
-
-    // allocate buffers
-    m_buffer_in = new SAMPLE[m_buffer_size * m_num_channels_max];
-    m_buffer_out = new SAMPLE[m_buffer_size * m_num_channels_max];
-    memset( m_buffer_in, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
-    memset( m_buffer_out, 0, m_buffer_size * sizeof(SAMPLE) * m_num_channels_max );
+    // ensure buffers
+    if( !ensureBuffers( frame_size ) )
+    {
+        // print error
+        EM_error2( 0, "(audio) cannot allocate buffers..." );
+        EM_error2( 0, "(audio) |- out of memory (framesize: %d)", frame_size );
+        goto error;
+    }
 
     // set flag and return
     return m_init = TRUE;
@@ -1130,6 +1197,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
 error:
     // pop log indent (added 1.4.1.0)
     EM_poplog();
+
     // set flag and return
     return m_init = FALSE;
 }
@@ -1138,14 +1206,17 @@ error:
 
 
 //-----------------------------------------------------------------------------
-// name: cb2()
-// desc: ...
+// name: cb()
+// desc: callback function from the underlying audio backend
 //-----------------------------------------------------------------------------
-int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buffer_size,
-                    double streamTime, RtAudioStreamStatus status, void * user_data )
+void ChuckAudio::cb( ma_device * pDevice, void * pOutput,
+                     const void * pInput, ma_uint32 frameSize )
 {
+    // check and if needed re-alloc audio buffers
+    ensureBuffers( frameSize );
+
     // length, in bytes of output
-    t_CKUINT len = buffer_size * sizeof(SAMPLE) * m_num_channels_out;
+    t_CKUINT len = frameSize * sizeof(SAMPLE) * m_num_channels_out;
     
     // priority boost
     if( !m_go && XThreadUtil::our_priority != 0x7fffffff )
@@ -1167,8 +1238,13 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
 
         // TODO: close the duplicate handle?
 #endif
-        XThreadUtil::set_priority( XThreadUtil::our_priority );
-        memset( output_buffer, 0, len );
+        // set audio thread priority; NOTE: disabled as miniaudio seems to handle this
+        // XThreadUtil::set_priority( XThreadUtil::our_priority );
+
+        // zero out the first output buffer
+        memset( pOutput, 0, frameSize * sizeof(SAMPLE32) * m_num_channels_out );
+
+        // set flag
         m_go = TRUE;
 
         // start watchdog
@@ -1181,8 +1257,12 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
         }
 
         // let it go the first time
-        return 0;
+        return;
     }
+
+    // we are expecting 32-bit float ALWAYS, regardless of __CHUCK_USE_64_BIT_SAMPLE__
+    SAMPLE32 * theInput = (SAMPLE32 *)pInput;
+    SAMPLE32 * theOutput = (SAMPLE32 *)pOutput;
 
     // copy input to local buffer
     if( m_num_channels_in )
@@ -1190,42 +1270,60 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
         // added 1.4.0.1 (ge) -- special case in=1; out=2
         if( m_expand_in_mono2stereo )
         {
-            for( int i = 0; i < buffer_size; i++ )
+            for( int i = 0; i < frameSize; i++ )
             {
                 // copy mono sample into stereo buffer
-                m_buffer_in[i*2] = m_buffer_in[i*2+1] = ((SAMPLE *)input_buffer)[i];
+                m_buffer_in[i*2] = m_buffer_in[i*2+1] = (SAMPLE)theInput[i];
             }
         }
         else
         {
-            memcpy( m_buffer_in, input_buffer, len );
+#ifdef __CHUCK_USE_64_BIT_SAMPLE__
+            for( t_CKUINT i = 0; i < frameSize*m_num_channels_in; i++ ) {
+                // copy next sample, converting 32-bit to 64-bit
+                m_buffer_in[i] = (SAMPLE)theInput[i];
+            }
+#else
+            // assume 32-bit
+            memcpy( m_buffer_in, theInput, len );
+#endif
+
+            // copy to extern
+            if( m_extern_in ) memcpy( m_extern_in, m_buffer_in, len );
         }
-        // copy to extern
-        if( m_extern_in ) memcpy( m_extern_in, input_buffer, len );
     }
 
     // timestamp
     if( g_do_watchdog ) g_watchdog_time = get_current_time( TRUE );
-    // call the audio cb
-    m_audio_cb( m_buffer_in, m_buffer_out, buffer_size,
-        m_num_channels_in, m_num_channels_out, m_cb_user_data );
+
+    // call the audio cb (in which the chuck VM will run and fill the output buffer)
+    m_audio_cb( m_buffer_in, m_buffer_out, frameSize,
+        m_num_channels_in, m_num_channels_out, NULL );
 
     // copy local buffer to be rendered
     // REFACTOR-2017: TODO: m_end was the signal to end, what should it be now?
     if( m_start ) // REFACTOR-2017: now using m_start to gate this
     {
-        memcpy( output_buffer, m_buffer_out, len );
+#ifdef __CHUCK_USE_64_BIT_SAMPLE__
+            for( t_CKUINT i = 0; i < frameSize*m_num_channels_out; i++ ) {
+                // copy next sample, converting 64-bit to 32-bit
+                theOutput[i] = (SAMPLE32)m_buffer_out[i];
+            }
+#else
+            // assume 32-bit
+            memcpy( theOutput, m_buffer_out, len );
+#endif
+
     }
     // set all elements of local buffer to silence
     else
     {
-        memset( output_buffer, 0, len );
+        // zero out; NOTE: explicitly use SAMPLE32 here
+        memset( theOutput, 0, frameSize * sizeof(SAMPLE32) * m_num_channels_out );
     }
 
     // copy to extern
-    if( m_extern_out ) memcpy( m_extern_out, output_buffer, len );
-
-    return 0;
+    if( m_extern_out ) memcpy( m_extern_out, m_buffer_out, len );
 }
 
 
@@ -1237,18 +1335,26 @@ int ChuckAudio::cb( void * output_buffer, void * input_buffer, unsigned int buff
 //-----------------------------------------------------------------------------
 t_CKBOOL ChuckAudio::start( )
 {
-    try {
-        if( !m_start )
-            m_rtaudio->startStream();
-        m_start = TRUE;
-    }
-    catch( RtAudioErrorType )
+    // check if already started
+    if( m_start ) return TRUE;
+
+    // start device
+    ma_result res = ma_device_start( &m_device );
+    // check
+    if( res != MA_SUCCESS )
     {
-        // RtAudio no longer throws, case shouldn't happen
+        EM_error2( 0, "(audio) cannot start device..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        EM_error2( 0, "(audio) |- devices output: '%d:%s' input: '%d:%s'", m_dac_n+1, m_dac_name.c_str(), m_adc_n+1, m_adc_name.c_str() );
+        EM_error2( 0, "(audio) |- channels out: '%d' input: '%d'", m_num_channels_out, m_num_channels_in );
+        EM_error2( 0, "(audio) |- sample rate: '%d'", m_sample_rate );
         return FALSE;
     }
 
-    return m_start;
+    // set to true
+    m_start = TRUE;
+
+    return TRUE;
 }
 
 
@@ -1260,21 +1366,28 @@ t_CKBOOL ChuckAudio::start( )
 //-----------------------------------------------------------------------------
 t_CKBOOL ChuckAudio::stop( )
 {
-    try {
-        if( m_start )
-            m_rtaudio->stopStream();
-        m_start = FALSE;
-    }
-    catch( RtAudioErrorType)
+    // check if already started
+    if( !m_start ) return TRUE;
+
+    // start device
+    ma_result res = ma_device_stop( &m_device );
+    // check
+    if( res != MA_SUCCESS )
     {
-        // RtAudio no longer throws, case shouldn't happen
+        EM_error2( 0, "(audio) cannot stop device..." );
+        EM_error2( 0, "(audio) |- '%s'", ma_result_description( res ) );
+        EM_error2( 0, "(audio) |- devices output: '%d:%s' input: '%d:%s'", m_dac_n+1, m_dac_name.c_str(), m_adc_n+1, m_adc_name.c_str() );
+        EM_error2( 0, "(audio) |- channels out: '%d' input: '%d'", m_num_channels_out, m_num_channels_in );
+        EM_error2( 0, "(audio) |- sample rate: '%d'", m_sample_rate );
         return FALSE;
     }
-    
+
     // REFACTOR-2017: set end flag
     m_silent = TRUE;
+    // set to true
+    m_start = FALSE;
 
-    return !m_start;
+    return TRUE;
 }
 
 
@@ -1296,22 +1409,24 @@ void ChuckAudio::shutdown( t_CKUINT msWait )
     // check if started
     if( m_start )
     {
-        // m_rtaudio->cancelStreamCallback();
-        // m_rtaudio->stopStream();
+        // stop the audio
         stop();
 
         // wait for thread to wrap up | 1.5.1.3 (ge) added
         if( msWait > 0 ) ck_usleep( msWait * 1000 );
     }
 
-    // close stream
-    m_rtaudio->closeStream();
-    // cleanup
-    CK_SAFE_DELETE( m_rtaudio );
+    // clean up device
+    ma_device_uninit( &m_device );
+    // clean up context
+    ma_context_uninit( &m_context );
+    // zero out structs
+    CK_ZERO_STRUCT( m_device );
+    CK_ZERO_STRUCT( m_context );
 
     // deallocate | 1.5.0.0 (ge) added
-    CK_SAFE_DELETE( m_buffer_in );
-    CK_SAFE_DELETE( m_buffer_out );
+    CK_SAFE_FREE( m_buffer_in );
+    CK_SAFE_FREE( m_buffer_out );
 
     // unflag
     m_init = FALSE;

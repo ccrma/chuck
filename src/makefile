@@ -15,6 +15,8 @@ CK_CORE_DIR=core
 CK_HOST_DIR=host
 # where to find RtAudio
 RTAUDIO_DIR=RtAudio
+# where to find miniaudio
+MINIAUDIO_DIR=miniaudio
 # chuck version
 CK_VERSION=1.5.5.6-dev
 
@@ -204,10 +206,10 @@ LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \
 
 ############################ CHUCK HOST TARGETS ###############################
 # host header include paths
-CXXINC_HOST+= -I${RTAUDIO_DIR} -I${RTAUDIO_DIR}/include
+CXXINC_HOST+= -I${MINIAUDIO_DIR} -I${RTAUDIO_DIR} -I${RTAUDIO_DIR}/include
 # host source
 CXXSRCS_HOST+= chuck_main.cpp chuck_audio.cpp chuck_console.cpp \
-	${RTAUDIO_DIR}/RtAudio.cpp
+	${MINIAUDIO_DIR}/miniaudio.cpp ${RTAUDIO_DIR}/RtAudio.cpp
 # NB on some windows builds, ASIO src in RTAUDIO_DIR/include should be added
 
 
@@ -267,7 +269,7 @@ chuck-core:
 	@echo -------------
 
 # host compiler flags
-CFLAGS_HOST=${CFLAGS} -I${RTAUDIO_DIR}
+CFLAGS_HOST=${CFLAGS} -I${MINIAUDIO_DIR} -I${RTAUDIO_DIR}
 CFLAGSDEPEND_HOST=${CFLAGSDEPEND} ${CFLAGS_HOST}
 
 # compile chuck

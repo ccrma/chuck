@@ -86,6 +86,7 @@
 		8615DFF9264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		8615DFFA264D9AE20084EF86 /* chuck_globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8615DFF7264D9AE20084EF86 /* chuck_globals.cpp */; };
 		864617FA29F24FC60018DC65 /* ulib_doc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 864617F929F24FC60018DC65 /* ulib_doc.cpp */; };
+		86863AD92E9C772300E7576C /* miniaudio.c in Sources */ = {isa = PBXBuildFile; fileRef = 86863AD72E9C772300E7576C /* miniaudio.c */; };
 		8689D7912A4C13C9003BF32E /* util_platforms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8689D7902A4C13C9003BF32E /* util_platforms.cpp */; };
 		86D8F47429419EBB00954EF4 /* ulib_ai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86D8F47329419EBB00954EF4 /* ulib_ai.cpp */; };
 /* End PBXBuildFile section */
@@ -433,6 +434,8 @@
 		8615DFF8264D9AE20084EF86 /* chuck_globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chuck_globals.h; path = ../core/chuck_globals.h; sourceTree = "<group>"; };
 		864617F829F24FC60018DC65 /* ulib_doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_doc.h; path = ../core/ulib_doc.h; sourceTree = "<group>"; };
 		864617F929F24FC60018DC65 /* ulib_doc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ulib_doc.cpp; path = ../core/ulib_doc.cpp; sourceTree = "<group>"; };
+		86863AD62E9C772300E7576C /* miniaudio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = miniaudio.h; sourceTree = "<group>"; };
+		86863AD72E9C772300E7576C /* miniaudio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = miniaudio.c; sourceTree = "<group>"; };
 		8689D78F2A4C13C9003BF32E /* util_platforms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util_platforms.h; path = ../core/util_platforms.h; sourceTree = "<group>"; };
 		8689D7902A4C13C9003BF32E /* util_platforms.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util_platforms.cpp; path = ../core/util_platforms.cpp; sourceTree = "<group>"; };
 		86D8F47229419EBB00954EF4 /* ulib_ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ulib_ai.h; path = ../core/ulib_ai.h; sourceTree = "<group>"; };
@@ -473,6 +476,7 @@
 		04393ABF1F7332B3008E9322 /* host */ = {
 			isa = PBXGroup;
 			children = (
+				86863AD82E9C772300E7576C /* miniaudio */,
 				09A5C88413DDFB350082DF50 /* RtAudio */,
 				04393AC01F733300008E9322 /* chuck_audio.cpp */,
 				04393AC11F733300008E9322 /* chuck_audio.h */,
@@ -937,8 +941,8 @@
 				09A40B590A9A54DA007604EA /* util_math.h */,
 				09A40B5A0A9A54DA007604EA /* util_network.c */,
 				09A40B5B0A9A54DA007604EA /* util_network.h */,
-				09A40B5C0A9A54DA007604EA /* util_opsc.cpp */,
 				09A40B5D0A9A54DA007604EA /* util_opsc.h */,
+				09A40B5C0A9A54DA007604EA /* util_opsc.cpp */,
 				8689D7902A4C13C9003BF32E /* util_platforms.cpp */,
 				8689D78F2A4C13C9003BF32E /* util_platforms.h */,
 				09A40B5E0A9A54DA007604EA /* util_raw.c */,
@@ -1029,6 +1033,16 @@
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
+		};
+		86863AD82E9C772300E7576C /* miniaudio */ = {
+			isa = PBXGroup;
+			children = (
+				86863AD62E9C772300E7576C /* miniaudio.h */,
+				86863AD72E9C772300E7576C /* miniaudio.c */,
+			);
+			name = miniaudio;
+			path = ../host/miniaudio;
+			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -1177,6 +1191,7 @@
 				04393AC51F733300008E9322 /* chuck_audio.cpp in Sources */,
 				0916775E1F7CAFC800248F78 /* chuck_main.cpp in Sources */,
 				0916775F1F7CAFCC00248F78 /* RtAudio.cpp in Sources */,
+				86863AD92E9C772300E7576C /* miniaudio.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
