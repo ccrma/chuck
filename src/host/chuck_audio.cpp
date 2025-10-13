@@ -241,8 +241,8 @@ void print( const ma_device_info * info, bool isOutput )
         return;
     }
 
-    EM_error2b( 0, "probe [success]..." );
-    EM_error2b( 0, "default (%s): %s", isOutput ? "output" : "input", info->isDefault ? "YES" : "NO");
+    // EM_error2b( 0, "probe [success]..." );
+    EM_error2b( 0, "default (%s): %s", isOutput ? "output" : "input", info->isDefault ? TC::orange("YES",true).c_str() : "NO");
     EM_error2b( 0, "natively supported formats: " );
 
     // data formats on device
@@ -257,6 +257,7 @@ void print( const ma_device_info * info, bool isOutput )
 
         // if set to 0, all sample rates are supported
         s += (info->nativeDataFormats[i].sampleRate == 0) ? "(any)" : std::to_string(info->nativeDataFormats[i].sampleRate) + " Hz";
+        EM_error2b( 0, "  %s", s.c_str() );
     }
 }
 
@@ -304,11 +305,13 @@ void ChuckAudio::probe( const char * driver )
         // get device info pointer from array
         ma_device_info * device = output_infos + output_idx;
         // print
-        EM_print2blue( "------( audio output device: %d )------\n", output_idx+1 );
+        EM_print2blue( "------( audio output device: %d )------", output_idx+1 );
         // retrieve device info
         ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
         // print the device info
         print( device, true );
+        // newline
+        EM_error2( 0, "" );
     }
 
     // reset -- what does this do -- not sure, therefore let's keep it
@@ -324,11 +327,13 @@ void ChuckAudio::probe( const char * driver )
         // get device info pointer from array
         ma_device_info* device = input_infos + input_idx;
         // print
-        EM_print2blue( "------( audio input device: %d )------\n", input_idx+1 );
+        EM_print2blue( "------( audio input device: %d )------", input_idx+1 );
         // retrieve device info
         ma_context_get_device_info( &context, ma_device_type_capture, &device->id, device );
         // print the device info
         print( device, false );
+        // newline
+        EM_error2( 0, "" );
     }
 
 done:
@@ -985,8 +990,6 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     bool useDefaultOut = ( m_dac_n == 0 );
     // check input device number; 0 means "default"
     bool useDefaultIn = ( m_adc_n == 0 );
-    // total number of audio devices (input and output)
-    unsigned int num_devices = 0;
 
     // miniaudio parameters to be used later
     ma_result result;
@@ -1104,7 +1107,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     }
     
     // the dac and adc devices we've chosen to initialize | 1.5.0.0 (ge)
-    if( m_num_channels_out > 0 && m_dac_n < num_devices )
+    if( m_num_channels_out > 0 && m_dac_n >= 0 )
     {
         // check we have a valid output device number
         assert( m_dac_n >= 0 );
@@ -1113,7 +1116,7 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
         // copy names (if valid)
         m_dac_name = dac_info->name;
     }
-    if( m_num_channels_in > 0 && m_adc_n < num_devices )
+    if( m_num_channels_in > 0 && m_adc_n >= 0 )
     {
         // check we have a valid input device number
         assert( m_adc_n >= 0 );
