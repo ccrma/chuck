@@ -1,24 +1,12 @@
-// name: xsynth.ck
-// desc: a FFT-based cross-synthesizer
-//       => input X modulates a second input Y,
-//          carried out in the frequency domain
-//
-// authors: Ge Wang
-//          Rebecca Fiebrink
-//          Celeste Betancur
-//          Andrew Zhu Aday
-//
-// date: 2007 initial (really bad) version
-//       2025 made less bad
 
-// input x (mic)
+// source one (mic)
 adc => FFT X => blackhole;
 // source two (to be connected below)
 FFT Y => blackhole;
 // synthesis
 IFFT ifft => dac;
 
-// input y
+// what to cross
 BlitSquare blt[6];
 [ 40, 46, 52, 60, 64, 87] @=> int pitches[];
 for( int i; i < blt.size(); i++ )
@@ -29,6 +17,7 @@ for( int i; i < blt.size(); i++ )
 }
 
 // set FFT size
+
 1024 => X.size => Y.size => int FFT_SIZE;
 // desired hop size
 FFT_SIZE / 4 => int HOP_SIZE;
@@ -45,13 +34,20 @@ while( true )
     // take ffts
     X.upchuck();
     Y.upchuck();
-
-    // multiply in frequency domain
-    // NOTE: using input X's magnitude to modulate input Y's signal
-    //       X and Y are NOT commutative
-    for( int i; i < Z.size(); i++ )
-        (X.cval(i)$polar).mag * Y.cval(i) => Z[i];
-
+    
+    
+    for( int i; i < Z.size(); i++ ){
+        X.cval(i).re => float realX;
+        X.cval(i).im => float imagX;
+        Math.sqrt(realX*realX + imagX*imagX) => float magX;
+        Y.cval(i).re => float realY;
+        Y.cval(i).im => float imagY;
+        Math.sqrt(realY*realY + imagY*imagY) => float magY;
+        
+        // multiply in frequency domain 
+        #(magX*magY, magX*magY) => Z[i];
+    }
+        
     // take ifft
     ifft.transform( Z );
     
