@@ -1259,6 +1259,8 @@ t_CKBOOL ChuckAudio::initialize( t_CKUINT dac_device,
     deviceConfig.sampleRate         = (ma_uint32)sample_rate;
     // I/O buffer size (this is a hint to miniaudio; actual frame sizes could vary)
     deviceConfig.periodSizeInFrames = (ma_uint32)frame_size;
+    // (windows WASAPI only: enable high-priority pro-audio usage)
+    deviceConfig.wasapi.usage = ma_wasapi_usage_pro_audio;
     
     // initialize the device
     // initialize the device
