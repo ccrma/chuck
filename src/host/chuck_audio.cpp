@@ -40,6 +40,7 @@
 #include "util_thread.h"
 #include "util_platforms.h"
 #include <limits.h>
+#include <stdlib.h> // for qsort
 
 #include <iostream>
 #include <string>
@@ -108,8 +109,6 @@ ma_device ChuckAudio::m_device;
 
 // function prototype
 static bool open_context( const char * driver, ma_context & pContext );
-
-
 
 
 //-----------------------------------------------------------------------------
@@ -265,6 +264,40 @@ void print( const ma_device_info * info, bool isOutput )
 
 
 
+// matches the anonymous struct nativeDataFormat in ma_device_info 
+struct ma_native_data_format {
+    ma_format format;       
+    ma_uint32 channels;     
+    ma_uint32 sampleRate;   
+    ma_uint32 flags;        
+};
+//-----------------------------------------------------------------------------
+// name: compare_device_info()
+// desc: comparison function for sorting the supported data formats of 
+//       ma_device_info by #channels, srate, and data format
+//-----------------------------------------------------------------------------
+static int compare_device_info( const void* a, const void* b ) {
+    ma_native_data_format* info_a = (ma_native_data_format*)a;
+    ma_native_data_format* info_b = (ma_native_data_format*)b;
+    
+    // compare channels
+    if ( info_a->channels < info_b->channels ) return -1;
+    if ( info_a->channels > info_b->channels ) return 1;
+
+    // compare srate
+    if ( info_a->sampleRate < info_b->sampleRate ) return -1;
+    if ( info_a->sampleRate > info_b->sampleRate ) return 1;
+
+    // compare fomat
+    if ( info_a->format < info_b->format ) return -1;
+    if ( info_a->format > info_b->format ) return 1;
+    
+    // equal
+    return 0;
+}
+
+
+
 //-----------------------------------------------------------------------------
 // name: probe()
 // desc: probe audio devices by driver
@@ -296,6 +329,22 @@ void ChuckAudio::probe( const char * driver )
         goto done;
     }
 
+    // sort each device's array of supported formats
+    for ( int i = 0; i < output_count; i++ ) {
+        ma_device_info* info = output_infos + i;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_playback, &info->id, info );
+        // sort
+        qsort( info->nativeDataFormats, info->nativeDataFormatCount, sizeof(info->nativeDataFormats[0]), compare_device_info ); 
+    }
+    for ( int i = 0; i < input_count; i++ ) {
+        ma_device_info* info = input_infos + i;
+        // retrieve device info
+        ma_context_get_device_info( &context, ma_device_type_capture, &info->id, info );
+        // sort
+        qsort( info->nativeDataFormats, info->nativeDataFormatCount, sizeof(info->nativeDataFormats[0]), compare_device_info ); 
+    }
+
     // print
     EM_error2b( 0, "[%s] driver found %d audio output device(s)...", TC::green(backend_name,TRUE).c_str(), output_count );
     EM_error2b( 0, "" );
@@ -307,8 +356,6 @@ void ChuckAudio::probe( const char * driver )
         ma_device_info * device = output_infos + output_idx;
         // print
         EM_print2blue( "------( audio output device: %d )------", output_idx+1 );
-        // retrieve device info
-        ma_context_get_device_info( &context, ma_device_type_playback, &device->id, device );
         // print the device info
         print( device, true );
         // newline
@@ -329,8 +376,6 @@ void ChuckAudio::probe( const char * driver )
         ma_device_info* device = input_infos + input_idx;
         // print
         EM_print2blue( "------( audio input device: %d )------", input_idx+1 );
-        // retrieve device info
-        ma_context_get_device_info( &context, ma_device_type_capture, &device->id, device );
         // print the device info
         print( device, false );
         // newline

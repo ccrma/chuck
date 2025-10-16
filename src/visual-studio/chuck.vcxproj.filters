@@ -208,6 +208,9 @@
     <ClCompile Include="..\core\util_platforms.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\host\miniaudio\miniaudio.cpp">
+      <Filter>host\miniaudio</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h">
@@ -447,6 +450,9 @@
     <ClInclude Include="..\core\util_platforms.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="..\host\miniaudio\miniaudio.h">
+      <Filter>host\miniaudio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
@@ -460,6 +466,9 @@
     </Filter>
     <Filter Include="host\RtAudio">
       <UniqueIdentifier>{f903c727-2038-4fe8-9639-90e8150dbf94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="host\miniaudio">
+      <UniqueIdentifier>{1ee47e84-22f3-457c-8059-53d2275642ec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
