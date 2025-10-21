@@ -64,7 +64,7 @@ CK_DLL_CTOR( oscx_ctor_1 );
 CK_DLL_CTOR( oscx_ctor_2 );
 
 // sinosc
-CK_DLL_TICK( sinosc_tick );
+CK_DLL_TICKV( sinosc_tick );
 CK_DLL_CTRL( sinosc_mode );
 
 // pulseosc

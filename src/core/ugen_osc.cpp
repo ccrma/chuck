@@ -190,9 +190,16 @@ DLL_QUERY osc_query( Chuck_DL_Query * QUERY )
     // sinosc
     //---------------------------------------------------------------------
     doc = "a sine wave oscillator.";
+    //if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(),
+    //                                    NULL, NULL, sinosc_tick, NULL,
+    //                                    doc.c_str() ) )
+    // if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(),
+    //                                     NULL, NULL,
+    //                                     NULL, sinosc_tick, NULL, 1, 1, doc.c_str() ) )
+
     if( !type_engine_import_ugen_begin( env, "SinOsc", "Osc", env->global(),
-                                        NULL, NULL, sinosc_tick, NULL,
-                                        doc.c_str() ) )
+                                        NULL, NULL,
+                                        NULL, sinosc_tick, NULL, doc.c_str() ) )      
         return FALSE;
 
     // overload constructor (float freq)
@@ -640,56 +647,62 @@ static void _sinosc_generate_wavetable( )
 // name: sinosc_tick()
 // desc: ...
 //-----------------------------------------------------------------------------
-CK_DLL_TICK( sinosc_tick )
+CK_DLL_TICKV( sinosc_tick )
 {
     // get the data
     Osc_Data * d = (Osc_Data *)OBJ_MEMBER_UINT(SELF, osc_offset_data );
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     t_CKBOOL inc_phase = TRUE;
 
-    // if input
-    if( ugen->m_num_src )
-    {
-        // sync frequency to input
-        if( d->sync == 0 )
-        {
-            // set freq
-            d->freq = in;
-            // phase increment
-            d->num = d->freq / d->srate;
-            // bound it
-            if( d->num >= 1.0 ) d->num -= floor( d->num );
-            else if( d->num <= -1.0 ) d->num += floor( d->num );
-        }
-        // sync phase to input
-        else if( d->sync == 1 )
-        {
-            // set freq
-            d->phase = in;
-            inc_phase = FALSE;
-        }
-        // FM synthesis
-        else if( d->sync == 2 )
-        {
-            // set freq
-            t_CKFLOAT freq = d->freq + in;
-            // phase increment
-            d->num = freq / d->srate;
-            // bound it
-            if( d->num >= 1.0 ) d->num -= floor( d->num );
-            else if( d->num <= -1.0 ) d->num += floor( d->num );
-        }
-        // sync phase to now
-        // else if( d->sync == 3 )
-        // {
-        //     d->phase = now * d->num;
-        //     inc_phase = FALSE;
-        // }
-    }
+    // for (int i; i < nframes; i++)
+    // {
+      // if input
+    //   if( ugen->m_num_src )
+    //   {
+    //     // sync frequency to input
+    //     if( d->sync == 0 )
+    //     {
+    //       // set freq
+    //       d->freq = in[i];
+    //       // phase increment
+    //       d->num = d->freq / d->srate;
+    //       // bound it
+    //       if( d->num >= 1.0 ) d->num -= floor( d->num );
+    //       else if( d->num <= -1.0 ) d->num += floor( d->num );
+    //     }
+    //     // sync phase to input
+    //     else if( d->sync == 1 )
+    //     {
+    //       // set freq
+    //       d->phase = in[i];
+    //       inc_phase = FALSE;
+    //     }
+    //     // FM synthesis
+    //     else if( d->sync == 2 )
+    //     {
+    //       // set freq
+    //       t_CKFLOAT freq = d->freq + in[i];
+    //       // phase increment
+    //       d->num = freq / d->srate;
+    //       // bound it
+    //       if( d->num >= 1.0 ) d->num -= floor( d->num );
+    //       else if( d->num <= -1.0 ) d->num += floor( d->num );
+    //     }
+    //     // sync phase to now
+    //     // else if( d->sync == 3 )
+    //     // {
+    //     //     d->phase = now * d->num;
+    //     //     inc_phase = FALSE;
+    //     // }
+    // }
 
+    std::cout << "Here\n" << std::endl;
+    CK_FPRINTF_STDOUT( "nframes: (%d)", nsamps );
+    std::cout << nsamps << std::endl;
     // set output
     if (d->mode) // use wavetable lookup
     {
+      for (int i = 0; i < nsamps; i++) {
       t_CKFLOAT point = d->phase * sinosc_table_size;
 
       int index0 = point;
@@ -699,23 +712,38 @@ CK_DLL_TICK( sinosc_tick )
       t_CKFLOAT value1 = sinosc_wavetable[index1];
       t_CKFLOAT currentSample = value0 + frac * (value1 - value0);
 
-      *out = (SAMPLE) currentSample;
+      out[i] = (SAMPLE) currentSample;
+
+      // phase incrementing
+      // d->phase += d->num;
+      // d->phase = d->phase - (int)(d->phase);
+
+      // if( inc_phase )
+      // 	{
+	  // next phase
+	  d->phase += d->num;
+	  // keep the phase between 0 and 1
+	  if( d->phase > 1.0 ) d->phase -= 1.0;
+	  else if( d->phase < 0.0 ) d->phase += 1.0;
+      // 	}      
+      }
     }
     else // use std::sin
     {
-      *out = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
+      // out[i] = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
     }
 
 
 
-    if( inc_phase )
-    {
-        // next phase
-        d->phase += d->num;
-        // keep the phase between 0 and 1
-        if( d->phase > 1.0 ) d->phase -= 1.0;
-        else if( d->phase < 0.0 ) d->phase += 1.0;
-    }
+    // if( inc_phase )
+    // {
+    //     // next phase
+    //     d->phase += d->num;
+    //     // keep the phase between 0 and 1
+    //     if( d->phase > 1.0 ) d->phase -= 1.0;
+    //     else if( d->phase < 0.0 ) d->phase += 1.0;
+    // }
+    // }
 
     return TRUE;
 }

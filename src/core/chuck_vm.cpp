@@ -680,6 +680,7 @@ t_CKBOOL Chuck_VM::run( t_CKINT N, const SAMPLE * input, SAMPLE * output )
         // compute shreds
         if( !compute() ) goto vm_stop;
 
+        // m_shreduler->m_adaptive = true;
         // advance the shreduler
         if( !m_shreduler->m_adaptive )
         {
