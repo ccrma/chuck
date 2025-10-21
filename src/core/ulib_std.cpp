@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <string>
 
 #ifdef __PLATFORM_WINDOWS__
   #ifndef __CHUNREAL_ENGINE__
@@ -113,6 +114,7 @@ static t_CKUINT Skot_offset_data = 0;
 
 // StrTok functions
 CK_DLL_CTOR( StrTok_ctor );
+CK_DLL_CTOR( StrTok_ctor_arg );
 CK_DLL_DTOR( StrTok_dtor );
 CK_DLL_MFUN( StrTok_set );
 CK_DLL_MFUN( StrTok_reset );
@@ -122,6 +124,8 @@ CK_DLL_MFUN( StrTok_next2 );
 CK_DLL_MFUN( StrTok_get );
 CK_DLL_MFUN( StrTok_get2 );
 CK_DLL_MFUN( StrTok_size );
+CK_DLL_MFUN( StrTok_get_delim );
+CK_DLL_MFUN( StrTok_set_delim );
 
 static t_CKUINT StrTok_offset_data = 0;
 
@@ -182,7 +186,7 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
     QUERY->add_arg( QUERY, "int", "value" );
     QUERY->doc_func( QUERY, "Return absolute value of integer." );
-    
+
     // add fabs
     QUERY->add_sfun( QUERY, fabs_impl, "float", "fabs" );
     QUERY->add_arg( QUERY, "float", "value" );
@@ -482,6 +486,12 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
                                          "Break a string into tokens. This uses whitespace as the delimiter." ) )
         return FALSE;
 
+    // overload ctor( char delim )
+    func = make_new_ctor( StrTok_ctor_arg );
+    func->add_arg( "int", "delim" );
+    func->doc = "construct a StringTokenizer with a character delimiter (defaults to whitespace).";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add member variable
     StrTok_offset_data = type_engine_import_mvar( env, "int", "@StrTok_data", FALSE );
     if( StrTok_offset_data == CK_INVALID_OFFSET ) goto error;
@@ -529,6 +539,16 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // add size()
     func = make_new_mfun( "int", "size", StrTok_size );
     func->doc = "Returns the number of token strings that the set string can be broken into.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // (1.5.5.6) nshaheed add delimiter get and set
+    func = make_new_mfun( "int", "delimiter", StrTok_get_delim );
+    func->doc = "Returns the string delimination character.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "int", "delimiter", StrTok_set_delim );
+    func->add_arg( "int", "delim" );
+    func->doc = "Sets the string delimination character.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -1531,6 +1551,7 @@ class StrTok
 {
 public:
     StrTok();
+    StrTok( char delim );
     ~StrTok();
 
 public:
@@ -1540,10 +1561,13 @@ public:
     string next();
     string get( t_CKINT index );
     t_CKINT size();
+    t_CKINT delim();
+    t_CKINT delim( char delim );
 
 protected:
     istringstream * m_ss;
     string m_next;
+    char m_delim;
     vector<string> m_tokens;
     vector<string>::size_type m_index;
 };
@@ -1552,6 +1576,14 @@ StrTok::StrTok()
 {
     m_ss = NULL;
     m_index = 0;
+    m_delim = 0;
+}
+
+StrTok::StrTok(char delim)
+{
+    m_ss = NULL;
+    m_index = 0;
+    m_delim = delim;
 }
 
 StrTok::~StrTok()
@@ -1570,8 +1602,15 @@ void StrTok::set( const string & line )
     // read
     reset();
     m_tokens.clear();
-    while( (*m_ss) >> s )
+
+    // 1.5.5.6 (nshaheed) if no delimiter is set, then the whitespace as delimiter
+    if (m_delim) {
+      while (std::getline(*m_ss, s, m_delim))
         m_tokens.push_back( s );
+    } else {
+      while( (*m_ss) >> s )
+        m_tokens.push_back( s );
+    }
 }
 
 void StrTok::reset()
@@ -1601,9 +1640,28 @@ t_CKINT StrTok::size()
     return (t_CKINT)m_tokens.size();
 }
 
+t_CKINT StrTok::delim()
+{
+    return m_delim;
+}
+
+t_CKINT StrTok::delim( char delim )
+{
+    m_delim = delim;
+    return m_delim;
+}
+
 CK_DLL_CTOR( StrTok_ctor )
 {
     StrTok * tokens = new StrTok;
+    OBJ_MEMBER_INT(SELF, StrTok_offset_data) = (t_CKINT)tokens;
+}
+
+CK_DLL_CTOR( StrTok_ctor_arg )
+{
+    t_CKINT delim = GET_NEXT_INT(ARGS);
+    StrTok * tokens = new StrTok(delim);
+
     OBJ_MEMBER_INT(SELF, StrTok_offset_data) = (t_CKINT)tokens;
 }
 
@@ -1674,6 +1732,19 @@ CK_DLL_MFUN( StrTok_size )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     RETURN->v_int = tokens->size();
+}
+
+CK_DLL_MFUN( StrTok_get_delim )
+{
+    StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
+    RETURN->v_int = tokens->delim();
+}
+
+CK_DLL_MFUN( StrTok_set_delim )
+{
+    StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
+    t_CKINT delim = GET_NEXT_INT(ARGS);
+    RETURN->v_int = tokens->delim(delim);
 }
 
 
