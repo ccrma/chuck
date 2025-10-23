@@ -52,7 +52,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <string>
+#include <cstring>
 
 #ifdef __PLATFORM_WINDOWS__
   #ifndef __CHUNREAL_ENGINE__
@@ -114,7 +114,8 @@ static t_CKUINT Skot_offset_data = 0;
 
 // StrTok functions
 CK_DLL_CTOR( StrTok_ctor );
-CK_DLL_CTOR( StrTok_ctor_arg );
+CK_DLL_CTOR( StrTok_ctor_line );
+CK_DLL_CTOR( StrTok_ctor_line_delims );
 CK_DLL_DTOR( StrTok_dtor );
 CK_DLL_MFUN( StrTok_set );
 CK_DLL_MFUN( StrTok_reset );
@@ -124,8 +125,8 @@ CK_DLL_MFUN( StrTok_next2 );
 CK_DLL_MFUN( StrTok_get );
 CK_DLL_MFUN( StrTok_get2 );
 CK_DLL_MFUN( StrTok_size );
-CK_DLL_MFUN( StrTok_get_delim );
-CK_DLL_MFUN( StrTok_set_delim );
+CK_DLL_MFUN( StrTok_get_delims );
+CK_DLL_MFUN( StrTok_set_delims );
 
 static t_CKUINT StrTok_offset_data = 0;
 
@@ -483,13 +484,20 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     // begin class (StrTok)
     if( !type_engine_import_class_begin( env, "StringTokenizer", "Object",
                                          env->global(), StrTok_ctor, StrTok_dtor,
-                                         "Break a string into tokens. This uses whitespace as the delimiter." ) )
+                                         "Break a string into tokens, using (by default) whitespace characters as delimiters. Use the overloaded constructors StringTokenizer(string line) or StringTokenizer( string line, string delims ) to initialize with specific line and delimiters." ) )
         return FALSE;
 
-    // overload ctor( char delim )
-    func = make_new_ctor( StrTok_ctor_arg );
-    func->add_arg( "int", "delim" );
-    func->doc = "construct a StringTokenizer with a character delimiter (defaults to whitespace).";
+    // overload ctor( string line )
+    func = make_new_ctor( StrTok_ctor_line );
+    func->add_arg( "string", "line" );
+    func->doc = "construct a StringTokenizer with a string to tokenize; this will use the default whitespace delimiters.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( string line, string delims )
+    func = make_new_ctor( StrTok_ctor_line_delims );
+    func->add_arg( "string", "line" );
+    func->add_arg( "string", "delimiters" );
+    func->doc = "construct a StringTokenizer with a string to tokenize, as well as custom delimiters; if the latter is empty string, default whitespace characters will be used.";
     if ( !type_engine_import_ctor( env, func ) ) goto error;
 
     // add member variable
@@ -542,13 +550,13 @@ DLL_QUERY libstd_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // (1.5.5.6) nshaheed add delimiter get and set
-    func = make_new_mfun( "int", "delimiter", StrTok_get_delim );
-    func->doc = "Returns the string delimination character.";
+    func = make_new_mfun( "string", "delims", StrTok_get_delims );
+    func->doc = "Returns the string delimination characters.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
-    func = make_new_mfun( "int", "delimiter", StrTok_set_delim );
-    func->add_arg( "int", "delim" );
-    func->doc = "Sets the string delimination character.";
+    func = make_new_mfun( "string", "delims", StrTok_set_delims );
+    func->add_arg( "string", "delimiters" );
+    func->doc = "Sets the delimination characters as a string. If the argument is an empty string, default whitespace characters \" \\f\\n\\r\\t\\v\" will be used. Also, calling this method resets the state for the token retrieval loop (e.g., .more() and .next())";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add examples
@@ -1551,65 +1559,69 @@ class StrTok
 {
 public:
     StrTok();
-    StrTok( char delim );
+    StrTok( const string & delimiters );
     ~StrTok();
 
 public:
-    void set( const string & line );
+    void setLine( const string & line );
+    string setDelims( const string & delimiters );
+    string getDelims() const;
     void reset();
     t_CKBOOL more();
     string next();
     string get( t_CKINT index );
     t_CKINT size();
-    t_CKINT delim();
-    t_CKINT delim( char delim );
 
 protected:
-    istringstream * m_ss;
+    string m_line;
+    string m_delims;
     string m_next;
-    char m_delim;
     vector<string> m_tokens;
     vector<string>::size_type m_index;
 };
 
 StrTok::StrTok()
 {
-    m_ss = NULL;
     m_index = 0;
-    m_delim = 0;
+    // set default delims with empty string
+    setDelims( "" );
 }
 
-StrTok::StrTok(char delim)
+StrTok::StrTok( const string & delims )
 {
-    m_ss = NULL;
     m_index = 0;
-    m_delim = delim;
+    // set delims
+    setDelims( delims );
 }
 
 StrTok::~StrTok()
-{
-    CK_SAFE_DELETE( m_ss );
-}
+{ }
 
-void StrTok::set( const string & line )
+void StrTok::setLine( const string & line )
 {
-    string s;
-
-    // delete
-    CK_SAFE_DELETE( m_ss );
-    // alloc
-    m_ss = new istringstream( line );
-    // read
+    // reset index
     reset();
+    // clear tokens list
     m_tokens.clear();
+    // copy the line
+    m_line = line;
 
-    // 1.5.5.6 (nshaheed) if no delimiter is set, then the whitespace as delimiter
-    if (m_delim) {
-      while (std::getline(*m_ss, s, m_delim))
-        m_tokens.push_back( s );
-    } else {
-      while( (*m_ss) >> s )
-        m_tokens.push_back( s );
+    // "c string"
+    std::vector<char> cstr( line.length() + 1 );
+    // copy
+    strncpy( cstr.data(), line.c_str(), line.length()+1 );
+    // delimiters
+    const char * delimiter = m_delims.c_str();
+
+    // first call
+    char * token = strtok( cstr.data(), delimiter );
+    // loop
+    while( token != NULL )
+    {
+        // append token
+        m_tokens.push_back( token );
+        // subsequent calls
+        token = strtok( NULL, delimiter );
     }
 }
 
@@ -1640,15 +1652,30 @@ t_CKINT StrTok::size()
     return (t_CKINT)m_tokens.size();
 }
 
-t_CKINT StrTok::delim()
+string StrTok::getDelims() const
 {
-    return m_delim;
+    return m_delims;
 }
 
-t_CKINT StrTok::delim( char delim )
+string StrTok::setDelims( const string & delims )
 {
-    m_delim = delim;
-    return m_delim;
+    // copy
+    m_delims = delims;
+
+    // if empty string, use default
+    // ' 'space,
+    // \f form feed
+    // \n line feed
+    // \r carriage return
+    // \t horizontal tab
+    // \v vertical tab
+    if( m_delims == "" ) m_delims = " \f\n\r\t\v";
+
+    // re-tokenize
+    setLine( m_line );
+
+    // done
+    return m_delims;
 }
 
 CK_DLL_CTOR( StrTok_ctor )
@@ -1657,12 +1684,22 @@ CK_DLL_CTOR( StrTok_ctor )
     OBJ_MEMBER_INT(SELF, StrTok_offset_data) = (t_CKINT)tokens;
 }
 
-CK_DLL_CTOR( StrTok_ctor_arg )
+CK_DLL_CTOR( StrTok_ctor_line )
 {
-    t_CKINT delim = GET_NEXT_INT(ARGS);
-    StrTok * tokens = new StrTok(delim);
+    StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
+    Chuck_String * line = GET_NEXT_STRING(ARGS);
+    tokens->setLine( line ? line->c_str() : "" );
+}
 
-    OBJ_MEMBER_INT(SELF, StrTok_offset_data) = (t_CKINT)tokens;
+CK_DLL_CTOR( StrTok_ctor_line_delims )
+{
+    StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
+    // line
+    Chuck_String * line = GET_NEXT_STRING(ARGS);
+    tokens->setLine( line ? line->c_str() : "" );
+    // delims
+    Chuck_String * delims = GET_NEXT_STRING(ARGS);
+    tokens->setDelims( delims ? delims->c_str() : "" );
 }
 
 CK_DLL_DTOR( StrTok_dtor )
@@ -1675,8 +1712,7 @@ CK_DLL_MFUN( StrTok_set )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
     Chuck_String * s = GET_CK_STRING(ARGS);
-    if( s ) tokens->set( s->str() );
-    else tokens->set( "" );
+    tokens->setLine( s ? s->str() : "" );
 }
 
 CK_DLL_MFUN( StrTok_reset )
@@ -1734,17 +1770,20 @@ CK_DLL_MFUN( StrTok_size )
     RETURN->v_int = tokens->size();
 }
 
-CK_DLL_MFUN( StrTok_get_delim )
+CK_DLL_MFUN( StrTok_get_delims )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
-    RETURN->v_int = tokens->delim();
+    Chuck_String * a = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
+    a->set( tokens->getDelims() );
+    RETURN->v_string = a;
 }
 
-CK_DLL_MFUN( StrTok_set_delim )
+CK_DLL_MFUN( StrTok_set_delims )
 {
     StrTok * tokens = (StrTok *)OBJ_MEMBER_INT(SELF, StrTok_offset_data);
-    t_CKINT delim = GET_NEXT_INT(ARGS);
-    RETURN->v_int = tokens->delim(delim);
+    Chuck_String * ckstr = GET_CK_STRING(ARGS);
+    tokens->setDelims( ckstr ? ckstr->c_str() : "" );
+    RETURN->v_string = ckstr;
 }
 
 
