@@ -106,7 +106,8 @@ CK_DLL_SFUN( euclidean4d_impl );
 CK_DLL_SFUN( map_impl );
 CK_DLL_SFUN( map2_impl );
 
-
+// everett's spherical harmonics
+CK_DLL_SFUN(spherical_harmony);
 
 
 #endif
