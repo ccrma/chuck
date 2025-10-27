@@ -7822,7 +7822,9 @@ Chuck_Func * Chuck_Instr_Dot_Member_Func_Super::get_func( Chuck_Object * obj ) c
     Chuck_Func * func = obj->vtable->funcs[m_offset];
     // move up until the type matches, or we it can no longer go up
     while( func->value_ref->owner_class != m_type && func->up )
+    {
         func = func->up->owner->obj_v_table.funcs[m_offset];
+    }
     return func;
 }
 
