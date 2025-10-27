@@ -3750,6 +3750,10 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
             // TODO: verify this is in the right scope
             emit->append( new Chuck_Instr_Reg_Push_This );
         }
+        else if( exp->var == insert_symbol( "super" ) )
+        {
+            emit->append( new Chuck_Instr_Reg_Push_Super( emit->env->class_def->parent_type ) );
+        }
         else if( exp->var == insert_symbol( "me" ) )
         {
             emit->append( new Chuck_Instr_Reg_Push_Me );
@@ -4837,6 +4841,12 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
             {
                 // emit the base
                 if( !emit_engine_emit_exp( emit, member->base ) ) { return FALSE; }
+                // check if the last instruction was super (as opposed to this)
+                // (niccolo) this seems like not the right way to do this but it works
+                const auto* super_instr = dynamic_cast<Chuck_Instr_Reg_Push_Super*>(emit->code->code.back());
+                const Chuck_Type* super_type = super_instr ? super_instr->type() : nullptr;
+                // if there is a super_instr it should also have a non-null type
+                assert( (super_instr == nullptr) == (super_type == nullptr) );
                 // check if we are part of a function call vs. function as value
                 // 1.5.4.3 (ge) added as part of #2024-func-call-update
                 if( member->self->emit_as_funccall )
@@ -4847,7 +4857,10 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 // find the offset for virtual table
                 offset = func->vt_index;
                 // emit the function
-                emit->append( instr = new Chuck_Instr_Dot_Member_Func( offset ) );
+                if (super_instr)
+                    emit->append( instr = new Chuck_Instr_Dot_Member_Func_Super( offset, super_type ) );
+                else
+                    emit->append( instr = new Chuck_Instr_Dot_Member_Func( offset ) );
                 instr->set_linepos( member->line );
             }
             else

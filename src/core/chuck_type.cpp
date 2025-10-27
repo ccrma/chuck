@@ -3632,6 +3632,37 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // whatever the class is
                 t = env->class_def;
             }
+            else if( str == "super" )
+            {
+                // in class def
+                if( !env->class_def )
+                {
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot used outside class definition" );
+                    return NULL;
+                }
+
+                // in member func
+                if( env->func && !env->func->is_member )
+                {
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot be used inside static functions" );
+                    return NULL;
+                }
+                
+                // class extends another class
+                if ( env->class_def->parent_type->base_name == "Object" )
+                {   
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot be used in a class that doesn't extend" );
+                    return NULL;
+                }
+
+                // not assignable
+                exp->self->s_meta = ae_meta_value;
+                // parent class type
+                t = env->class_def->parent_type;
+            }
             else if( str == "me" ) // me
             {
                 // not assignable

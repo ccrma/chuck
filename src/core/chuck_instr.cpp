@@ -2565,6 +2565,22 @@ void Chuck_Instr_Reg_Push_This::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
+void Chuck_Instr_Reg_Push_Super::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
+    t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
+
+    // push val into reg stack
+    push_( reg_sp, *(mem_sp) );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKTIME *& reg_sp = (t_CKTIME *&)shred->reg->sp;
@@ -7753,6 +7769,61 @@ error:
     // do something!
     shred->is_running = FALSE;
     shred->is_done = TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Dot_Member_Func_Super::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    // register stack pointer
+    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    // the pointer
+    t_CKUINT data;
+
+    // pop the object pointer
+    pop_( sp, 1 );
+    // get the object pointer
+    Chuck_Object * obj = (Chuck_Object *)(*sp);
+    // check
+    if( !obj ) goto error;
+    // make sure we are in range
+    assert( m_offset < obj->vtable->funcs.size() );
+    // calculate the data pointer
+    data = (t_CKUINT)get_func( obj );
+    
+    // push the address
+    push_( sp, data );
+
+    return;
+
+error:
+    // we have a problem
+    EM_exception(
+        "NullPointer: on line[%lu] in shred[id=%lu:%s]",
+        m_linepos, shred->xid, shred->name.c_str() );
+
+    // do something!
+    shred->is_running = FALSE;
+    shred->is_done = TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// name: get_func()
+// desc: recursively, move up until the function from the correct type is found
+//-----------------------------------------------------------------------------
+Chuck_Func * Chuck_Instr_Dot_Member_Func_Super::get_func( Chuck_Object * obj ) const
+{
+    // current func and type
+    Chuck_Func * func = obj->vtable->funcs[m_offset];
+    // move up until the type matches, or we it can no longer go up
+    while( func->value_ref->owner_class != m_type && func->up )
+        func = func->up->owner->obj_v_table.funcs[m_offset];
+    return func;
 }
 
 
