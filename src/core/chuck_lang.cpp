@@ -956,8 +956,14 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
 
     // add charAt()
     func = make_new_mfun( "int", "charAt", string_charAt );
-    func->add_arg("int", "index");
-    func->doc = "get a character at the specified index.";
+    func->add_arg( "int", "index" );
+    func->doc = "get the character at the specified index.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add charAt2()
+    func = make_new_mfun( "string", "charAt2", string_charAt2 );
+    func->add_arg( "int", "index" );
+    func->doc = "get the character at the specified index, and return it as a string";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add setCharAt()
@@ -965,6 +971,13 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg("int", "index");
     func->add_arg("int", "theChar");
     func->doc = "set the character at the specified index.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    // add setCharAt2()
+    func = make_new_mfun( "string", "setCharAt2", string_setCharAt2 );
+    func->add_arg("int", "index");
+    func->add_arg("string", "theChar");
+    func->doc = "set the character (as a string) at the specified index; if `theChar` is an empty string, the character in question is erased from the string; if `theChar` is longer than 1 character, only its first character will be used";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // add append()
@@ -2894,13 +2907,34 @@ CK_DLL_MFUN(string_charAt)
     RETURN->v_int = str->str().at(index);
 }
 
+CK_DLL_MFUN(string_charAt2)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT index = GET_NEXT_INT(ARGS);
+
+    // NOTE: no checking for bounds; will return "" if index out of bounds
+
+    // the string to be changed
+    std::string s = str->str();
+    // make a new string for the return value
+    Chuck_String * rs = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
+
+    // check index
+    if( index < 0 || index >= s.length() ) rs->set( "" );
+    else rs->set( std::string( 1, s[index] ) );
+
+    // return value;
+    RETURN->v_string = rs;
+}
+
 CK_DLL_MFUN(string_setCharAt)
 {
     Chuck_String * str = (Chuck_String *) SELF;
     t_CKINT index = GET_NEXT_INT(ARGS);
     t_CKINT the_char = GET_NEXT_INT(ARGS);
 
-    if(index < 0 || index >= str->str().length())
+    // check bounds
+    if( index < 0 || index >= str->str().length() )
     {
         ck_throw_exception(SHRED, "IndexOutOfBounds", index);
         RETURN->v_int = -1;
@@ -2913,6 +2947,54 @@ CK_DLL_MFUN(string_setCharAt)
     str->set( s );
     RETURN->v_int = str->str().at(index);
 }
+
+CK_DLL_MFUN(string_setCharAt2)
+{
+    Chuck_String * str = (Chuck_String *) SELF;
+    t_CKINT index = GET_NEXT_INT(ARGS);
+    Chuck_String * charAsStr = GET_NEXT_STRING(ARGS);
+
+    // check for bounds
+    if( index < 0 || index >= str->str().length() )
+    {
+        ck_throw_exception(SHRED, "IndexOutOfBounds", index);
+        return;
+    }
+
+    // the string to be changed
+    std::string s = str->str();
+    // check if empty string
+    if( charAsStr == NULL )
+    {
+        ck_throw_exception(SHRED, "NullPointer");
+        return;
+    }
+
+    // the char as string
+    std::string cs = charAsStr->str();
+    // empty string
+    if( cs == "" )
+    {
+        // erase the character
+        s.erase( index, 1 );
+    }
+    else
+    {
+        // replace character with first character
+        s.at(index) = cs[0];
+    }
+
+    // copy into chuck string
+    str->set( s );
+
+    // make a new string for the return value
+    Chuck_String * rs = (Chuck_String *)instantiate_and_initialize_object( SHRED->vm_ref->env()->ckt_string, SHRED );
+    // set it with what was replaced
+    rs->set( cs == "" ? "" : std::string( 1, cs[0]) );
+    // return
+    RETURN->v_string = rs;
+}
+
 
 CK_DLL_MFUN(string_appendChar)
 {
