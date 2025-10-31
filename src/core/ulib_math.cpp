@@ -36,6 +36,10 @@
 #include "chuck_compile.h"
 #include "util_math.h"
 
+// everett's spherical harmonics
+#include "chuckSH.h"
+#include "SHCT.h"
+
 #include <float.h>
 #include <stdlib.h>
 #include <time.h>
@@ -84,6 +88,7 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_ex( QUERY, "math/maybe.ck" );
     QUERY->add_ex( QUERY, "math/int-dist.ck" );
     QUERY->add_ex( QUERY, "math/map.ck" );
+	QUERY->add_ex( QUERY, "spatial/spherical-harmonics.ck"); // spherical harmonics example (everett)
 
     // add abs
     QUERY->add_sfun( QUERY, abs_impl, "int", "abs" );
@@ -461,6 +466,13 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "min" );
     QUERY->add_arg( QUERY, "float", "max" );
     QUERY->doc_func( QUERY, "Clamp a float to range [min,max]." );
+
+    // everett's spherical harmonics
+    QUERY->add_sfun(QUERY, spherical_harmony, "float[]", "sh");
+    QUERY->add_arg(QUERY, "int", "order");
+    QUERY->add_arg(QUERY, "float", "azimuth");
+    QUERY->add_arg(QUERY, "float", "zenith");
+    QUERY->doc_func(QUERY, "Given an azimuth and zenith, all spherical harmonics of a given order are calculated, with SN3D normalization. Returned in ACN order, Y^0_0, Y^-1_1, Y^0_1, Y^1_1,...");
 
     // pi
     //! see \example math.ck
@@ -1272,4 +1284,28 @@ CK_DLL_SFUN( map2_impl )
     // std::cerr << v << " " << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
     // remap
     RETURN->v_float = x2 + (v-x1)/(y1-x1)*(y2-x2);
+}
+
+// everett's spherical harmonics
+CK_DLL_SFUN(spherical_harmony)
+{
+    t_CKINT order = GET_NEXT_INT(ARGS);
+    t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
+    if (order > 12)
+    {
+        API->vm->throw_exception("Math.sh() : Invalid Order", "Up to 12th order supported", nullptr);
+        RETURN->v_int = 0;
+    }
+    unsigned size = (order + 1) * (order + 1);
+    std::vector<float> coord = SH(order, direction, elevation, 0);
+    // Create a float[] array
+    Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
+    Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
+    for (int i = 0; i < size; i++)
+    {
+        API->object->array_float_push_back(coordinatearray, coord[i]);
+    }
+    // Need to cast back to object due to lost inheirtience structure
+    RETURN->v_object = (Chuck_Object*)coordinatearray;
 }
