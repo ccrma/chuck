@@ -4459,6 +4459,7 @@ t_CKBOOL initialize_object( Chuck_Object * object, Chuck_Type * type, Chuck_VM_S
         if( type->ugen_info->tick ) ugen->tick = type->ugen_info->tick;
         // added 1.3.0.0 -- tickf for multi-channel tick
         if( type->ugen_info->tickf ) ugen->tickf = type->ugen_info->tickf;
+        if( type->ugen_info->tickv ) ugen->tickv = type->ugen_info->tickv;
         if( type->ugen_info->pmsg ) ugen->pmsg = type->ugen_info->pmsg;
         // TODO: another hack!
         if( type->ugen_info->tock ) ((Chuck_UAna *)ugen)->tock = type->ugen_info->tock;

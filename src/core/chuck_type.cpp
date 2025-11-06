@@ -7367,6 +7367,56 @@ Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
 
 
 
+//-----------------------------------------------------------------------------
+// name: type_engine_import_ugen_begin()
+// desc: ...
+// note: tickv added 1.5.5.6
+//-----------------------------------------------------------------------------
+Chuck_Type * type_engine_import_ugen_begin( Chuck_Env * env, const char * name,
+                                            const char * parent, Chuck_Namespace * where,
+                                            f_ctor pre_ctor, f_dtor dtor,
+                                            f_tick tick, f_tickv tickv, f_pmsg pmsg,
+                                            const char * doc )
+{
+    Chuck_Type * type = NULL;
+    Chuck_UGen_Info * info = NULL;
+
+    // construct class
+    type = type_engine_import_class_begin( env, name, parent, where, pre_ctor, dtor, doc );
+    if( !type ) return NULL;
+
+    // make sure parent is ugen
+    assert( type->parent_type != NULL );
+    if( !isa( type->parent_type, env->ckt_ugen ) )
+    {
+        // error
+        EM_error2( 0,
+            "imported class '%s' adds ugen_func() but is not a 'UGen'",
+            type->c_name() );
+        return NULL;
+    }
+
+    // do the ugen part
+    info = new Chuck_UGen_Info;
+    info->add_ref();
+    info->tick = type->parent_type->ugen_info->tick;
+    info->tickv = type->parent_type->ugen_info->tickv; // added 1.5.5.6
+    info->pmsg = type->parent_type->ugen_info->pmsg;
+    info->num_ins = type->parent_type->ugen_info->num_ins;
+    info->num_outs = type->parent_type->ugen_info->num_outs;
+    if( tick ) info->tick = tick;
+    if( tickv ) { info->tickv = tickv; info->tick = NULL; } // added 1.3.0.0
+    if( pmsg ) info->pmsg = pmsg;
+    // if( num_ins != CK_NO_VALUE ) info->num_ins = num_ins;
+    // if( num_outs != CK_NO_VALUE ) info->num_outs = num_outs;
+    // set in type
+    type->ugen_info = info;
+
+    return type;
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // name: type_engine_import_ugen_begin()
