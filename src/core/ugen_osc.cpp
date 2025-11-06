@@ -654,55 +654,51 @@ CK_DLL_TICKV( sinosc_tick )
     Chuck_UGen * ugen = (Chuck_UGen *)SELF;
     t_CKBOOL inc_phase = TRUE;
 
-    // for (int i; i < nframes; i++)
-    // {
+    for (int i = 0; i < nsamps; i++)
+    {
       // if input
-    //   if( ugen->m_num_src )
-    //   {
-    //     // sync frequency to input
-    //     if( d->sync == 0 )
-    //     {
-    //       // set freq
-    //       d->freq = in[i];
-    //       // phase increment
-    //       d->num = d->freq / d->srate;
-    //       // bound it
-    //       if( d->num >= 1.0 ) d->num -= floor( d->num );
-    //       else if( d->num <= -1.0 ) d->num += floor( d->num );
-    //     }
-    //     // sync phase to input
-    //     else if( d->sync == 1 )
-    //     {
-    //       // set freq
-    //       d->phase = in[i];
-    //       inc_phase = FALSE;
-    //     }
-    //     // FM synthesis
-    //     else if( d->sync == 2 )
-    //     {
-    //       // set freq
-    //       t_CKFLOAT freq = d->freq + in[i];
-    //       // phase increment
-    //       d->num = freq / d->srate;
-    //       // bound it
-    //       if( d->num >= 1.0 ) d->num -= floor( d->num );
-    //       else if( d->num <= -1.0 ) d->num += floor( d->num );
-    //     }
-    //     // sync phase to now
-    //     // else if( d->sync == 3 )
-    //     // {
-    //     //     d->phase = now * d->num;
-    //     //     inc_phase = FALSE;
-    //     // }
-    // }
+      if( ugen->m_num_src )
+      {
+        // sync frequency to input
+        if( d->sync == 0 )
+        {
+          // set freq
+          d->freq = in[i];
+          // phase increment
+          d->num = d->freq / d->srate;
+          // bound it
+          if( d->num >= 1.0 ) d->num -= floor( d->num );
+          else if( d->num <= -1.0 ) d->num += floor( d->num );
+        }
+        // sync phase to input
+        else if( d->sync == 1 )
+        {
+          // set freq
+          d->phase = in[i];
+          inc_phase = FALSE;
+        }
+        // FM synthesis
+        else if( d->sync == 2 )
+        {
+          // set freq
+          t_CKFLOAT freq = d->freq + in[i];
+          // phase increment
+          d->num = freq / d->srate;
+          // bound it
+          if( d->num >= 1.0 ) d->num -= floor( d->num );
+          else if( d->num <= -1.0 ) d->num += floor( d->num );
+        }
+        // sync phase to now
+        // else if( d->sync == 3 )
+        // {
+        //     d->phase = now * d->num;
+        //     inc_phase = FALSE;
+        // }
+      }
 
-    std::cout << "Here\n" << std::endl;
-    CK_FPRINTF_STDOUT( "nframes: (%d)", nsamps );
-    std::cout << nsamps << std::endl;
     // set output
     if (d->mode) // use wavetable lookup
     {
-      for (int i = 0; i < nsamps; i++) {
       t_CKFLOAT point = d->phase * sinosc_table_size;
 
       int index0 = point;
@@ -713,41 +709,28 @@ CK_DLL_TICKV( sinosc_tick )
       t_CKFLOAT currentSample = value0 + frac * (value1 - value0);
 
       out[i] = (SAMPLE) currentSample;
-
-      // phase incrementing
-      // d->phase += d->num;
-      // d->phase = d->phase - (int)(d->phase);
-
-      // if( inc_phase )
-      // 	{
-	  // next phase
-	  d->phase += d->num;
-	  // keep the phase between 0 and 1
-	  if( d->phase > 1.0 ) d->phase -= 1.0;
-	  else if( d->phase < 0.0 ) d->phase += 1.0;
-      // 	}      
-      }
     }
     else // use std::sin
     {
-      // out[i] = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
+      out[i] = (SAMPLE) ::sin( d->phase * CK_TWO_PI );
     }
 
 
 
-    // if( inc_phase )
-    // {
-    //     // next phase
-    //     d->phase += d->num;
-    //     // keep the phase between 0 and 1
-    //     if( d->phase > 1.0 ) d->phase -= 1.0;
-    //     else if( d->phase < 0.0 ) d->phase += 1.0;
-    // }
-    // }
+    if( inc_phase )
+    {
+        // next phase
+        d->phase += d->num;
+        // keep the phase between 0 and 1
+        // if( d->phase > 1.0 ) d->phase -= 1.0;
+        // else if( d->phase < 0.0 ) d->phase += 1.0;
+	d->phase -= floor(d->phase);
+	
+    }
+    }
 
     return TRUE;
 }
-
 
 
 

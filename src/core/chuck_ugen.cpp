@@ -1337,8 +1337,9 @@ t_CKBOOL Chuck_UGen::system_tick_v( t_CKTIME now, t_CKUINT numFrames )
         if( m_op > 0 )  // UGEN_OP_TICK
         {
             // tick the ugen (Chuck_DL_Api::instance() added 1.3.0.0)
-            if( tickv)
-	      m_valid = tickv( this, m_sum_v, m_current_v, numFrames, Chuck_DL_Api::instance() );
+            if( tickv ) {
+		m_valid = tickv( this, m_sum_v, m_current_v, numFrames, Chuck_DL_Api::instance() );
+            }
             if( tick )
                 for( j = 0; j < numFrames; j++ ) // REFACTOR-2017: remove NULL shred
                     m_valid = tick( this, m_sum_v[j], &(m_current_v[j]), Chuck_DL_Api::instance() );
