@@ -10,7 +10,7 @@
 StringTokenizer strtok;
 
 // set the string
-strtok.set( "Tokenize me please!" );
+strtok.set( "Tokenize me, please!" );
 
 // check how many tokens there are
 <<< "tokens found:", strtok.size() >>>;
@@ -37,3 +37,13 @@ strtok.next( foo );
 // get last token and pass it to foo
 strtok.get( strtok.size() - 1, foo );
 <<< "last token:", foo >>>;
+
+// update delimiters
+strtok.delims( " ,!" );
+<<< "using , and ! as delimters...", "" >>>;
+// iterate through the tokens
+while( strtok.more() )
+{
+    // print current token
+    <<< strtok.next(), "" >>>;
+}

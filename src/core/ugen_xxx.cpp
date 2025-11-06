@@ -2171,16 +2171,17 @@ public:
 };
 
 
+// pre-constructor
 CK_DLL_CTOR( cnoise_ctor )
 {
+    // create cnoise internal object
     OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)new CNoise_Data;
 }
 
 CK_DLL_CTOR( cnoise_ctor_mode )
 {
-    // create cnoise internal object
-    CNoise_Data * n = new CNoise_Data;
-    OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)n;
+    // 1.5.5.6 | internal object should be already created in pre-ctor
+    CNoise_Data * n = (CNoise_Data *)OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
     // get arg
     Chuck_String * ckstr = GET_NEXT_STRING(ARGS);
     // set
@@ -2451,7 +2452,7 @@ CK_DLL_CGET( impulse_cget_next )
 
 //-----------------------------------------------------------------------------
 // name: step_ctor()
-// desc: base constructor (always run)
+// desc: base/pre constructor (always run)
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( step_ctor )
 {
@@ -2478,6 +2479,9 @@ CK_DLL_DTOR( step_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( step_ctor_value )
 {
+    // NOTE internal state should be already allocated in pre-ctor
+
+    // call next() to set the value
     Chuck_DL_Return RETURN;
     step_ctrl_next( SELF, ARGS, &RETURN, VM, SHRED, API );
 }
@@ -3184,6 +3188,8 @@ CK_DLL_DTOR( sndbuf_dtor )
 
 CK_DLL_CTOR( sndbuf_ctor_path )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
@@ -3191,6 +3197,8 @@ CK_DLL_CTOR( sndbuf_ctor_path )
 
 CK_DLL_CTOR( sndbuf_ctor_path_rate )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
@@ -3203,6 +3211,8 @@ CK_DLL_CTOR( sndbuf_ctor_path_rate )
 
 CK_DLL_CTOR( sndbuf_ctor_path_rate_pos )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
