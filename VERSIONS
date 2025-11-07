@@ -15,8 +15,40 @@ ChucK VERSIONS log
         get gain (in dB)
 (added) `Gain` has gained the above .db methods as well
 (added) examples/basic/gain.ck
-(fixed) overloaded contructors memory leaks for Delay, DelayA, DelayL, Echo, ADSR
-(fixed) inaccuracies in setting delay values in certain Delay-based contructors
+(added) StringTokenizer custom delimiters
+    StringTokenizer( string line )
+        construct a StringTokenizer with a string to tokenize;
+        this will use the default whitespace delimiters.
+    StringTokenizer( string line, string delimiters )
+        construct a StringTokenizer with a string to tokenize, as well as custom delimiters; if the latter is empty string, default
+        whitespace characters will be used.
+    string delims( string delimiters )
+        sets the delimination characters as a string. If the argument
+        is an empty string, default whitespace characters " \f\n\r\t\v"
+        will be used. Also, calling this method resets the state for
+        the token retrieval loop (e.g., .more() and .next())"
+    string delims()
+        returns the string delimination characters as a string.
+(updated) examples/string/token.ck
+    shows additional string tokenizer functionality
+(added) string methods to replace a character using a string; previously
+    characters can only be replaced using an integer with the corresponding
+    ASCII code.
+    string charAt2( int index, string theCar )
+        set the character (as a string) at the specified index;
+        if `theChar` is an empty string, the character in question is
+        erased from the string; if `theChar` is longer than 1 character,
+        only its first character will be used.
+    string charAt2()
+        get the character at the specified index, and return it as a string.
+(updated) examples/string/strops2.ck
+    shows the charAt2() and charAt2( int, string ) methods in action
+(added) examples/deep/cage.ck
+    two implementation of 4'33", accompanied by philosophical pondering...
+(fixed) overloaded contructors memory leaks for Delay, DelayA, DelayL,
+    Echo, ADSR
+(fixed) inaccuracies in setting delay values in certain Delay-based
+    contructors
 
 
 1.5.5.5 (September 2025)
