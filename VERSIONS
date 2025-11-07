@@ -43,8 +43,14 @@ ChucK VERSIONS log
         get the character at the specified index, and return it as a string.
 (updated) examples/string/strops2.ck
     shows the charAt2() and charAt2( int, string ) methods in action
+(added) Math.equals( float lhs, float rhs, float epsilon)
+    an overloaded version of Math.equals( float, float) with custom epsilon
 (added) examples/deep/cage.ck
     two implementation of 4'33", accompanied by philosophical pondering...
+(added) examples/deep/room.ck
+    a ChucK implementation of Alvin Lucier's "I am sitting in a room"
+(added) examples/deep/young.ck
+    an interactive implementation of La Monte Young's Composition 1960 #7
 (fixed) overloaded contructors memory leaks for Delay, DelayA, DelayL,
     Echo, ADSR
 (fixed) inaccuracies in setting delay values in certain Delay-based
