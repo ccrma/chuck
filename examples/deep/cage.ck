@@ -17,12 +17,12 @@
 // The one-line alternate version (above) could be considered the most
 // minimal version possible -- perhaps the Platonic ideal of 4'33" as
 // expressed in the strongly-timed syntax and semantics of the ChucK
-// programming language, in sofar as the program *is* the passage of
-// a specific duration of time "in silence"; the absence of unit
+// programming language, in sofar as the above program *is* the passage
+// of a specific duration of time "in silence"; the absence of unit
 // generators implies a zero-amplitude audio output. The computer musician
 // writing/running this code draws parallels to the pianist sitting in
 // front of a piano, which is not only capable of making sound but also
-// carryies deep culture expections to make sound, and yet the pianist
+// carries strong culture expections to make sound, and yet the pianist
 // chooses, in this case, to proactively NOT make sound. This implementation,
 // therefore, could be an embodiment of 4'33" from the point of view of the 
 // performer(s) onstage.
