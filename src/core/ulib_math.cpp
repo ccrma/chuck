@@ -260,10 +260,18 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->doc_func( QUERY, "Return true if x is not a number, else return false.");
 
+    // equals() for float
     QUERY->add_sfun( QUERY, equal_impl, "int", "equal" );
-    QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->add_arg( QUERY, "float", "lhs" );
+    QUERY->add_arg( QUERY, "float", "rhs" );
     QUERY->doc_func( QUERY, "Return whether two floats are considered equal." );
+
+    // equals() for float with eqsilon
+    QUERY->add_sfun( QUERY, equale_impl, "int", "equal" );
+    QUERY->add_arg( QUERY, "float", "lhs" );
+    QUERY->add_arg( QUERY, "float", "rhs" );
+    QUERY->add_arg( QUERY, "float", "epsilon" );
+    QUERY->doc_func( QUERY, "Return whether two floats are considered equal, with a third argument to specify the epsilon (the default in Math.equals(float,float) is 1e-8)" );
 
     // nextpow2
     QUERY->add_sfun( QUERY, nextpow2_impl, "int", "nextpow2" );
@@ -758,10 +766,22 @@ CK_DLL_SFUN( isnan_impl )
 CK_DLL_SFUN( equal_impl )
 {
     // get arguments
-    t_CKFLOAT x = GET_CK_FLOAT(ARGS);
-    t_CKFLOAT y = *((t_CKFLOAT *)ARGS + 1);
+    t_CKFLOAT x = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT y = GET_NEXT_FLOAT(ARGS);
     // equal
     RETURN->v_int = ck_equals(x,y);
+}
+
+// equal( x, y, e ) -- 1.5.5.6 (added ge)
+// returns whether x and y (floats) are considered equal, with custom epsilon
+CK_DLL_SFUN( equale_impl )
+{
+    // get arguments
+    t_CKFLOAT x = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT y = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT e = GET_NEXT_FLOAT(ARGS);
+    // equals with epsilon
+    RETURN->v_int = ck_equals_ex(x,y,e);
 }
 
 // floatMax

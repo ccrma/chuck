@@ -72,6 +72,7 @@ CK_DLL_SFUN( max_int_impl );
 CK_DLL_SFUN( isinf_impl );
 CK_DLL_SFUN( isnan_impl );
 CK_DLL_SFUN( equal_impl );
+CK_DLL_SFUN( equale_impl );
 CK_DLL_SFUN( floatMax_impl );
 CK_DLL_SFUN( intMax_impl );
 
