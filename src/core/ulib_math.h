@@ -52,6 +52,18 @@ CK_DLL_SFUN( cosh_impl );
 CK_DLL_SFUN( tanh_impl );
 CK_DLL_SFUN( hypot_impl );
 
+// fast approximations of the above trig functions
+CK_DLL_SFUN( fast_sin_impl );
+CK_DLL_SFUN( fast_cos_impl );
+CK_DLL_SFUN( fast_tan_impl );
+CK_DLL_SFUN( fast_cot_impl );
+CK_DLL_SFUN( fast_sinh_impl );
+CK_DLL_SFUN( fast_cosh_impl );
+CK_DLL_SFUN( fast_tanh_impl );
+CK_DLL_SFUN( fast_exp_impl );
+CK_DLL_SFUN( fast_inv_sqrt );
+
+// Normal not-fast not-approximations
 CK_DLL_SFUN( pow_impl );
 CK_DLL_SFUN( sqrt_impl );
 CK_DLL_SFUN( exp_impl );
@@ -72,6 +84,7 @@ CK_DLL_SFUN( max_int_impl );
 CK_DLL_SFUN( isinf_impl );
 CK_DLL_SFUN( isnan_impl );
 CK_DLL_SFUN( equal_impl );
+CK_DLL_SFUN( equale_impl );
 CK_DLL_SFUN( floatMax_impl );
 CK_DLL_SFUN( intMax_impl );
 

@@ -267,7 +267,16 @@ unsigned long ck_ensurepow2( unsigned long n )
 
 
 
-
+//-----------------------------------------------------------------------------
+// overloaded; uses default epsilon of 1e-8
+//-----------------------------------------------------------------------------
+t_CKBOOL ck_equals( t_CKFLOAT x, t_CKFLOAT y )
+{
+    // a small number 1e-8
+    const t_CKFLOAT epsilon = .00000001;
+    // call with default epsilon
+    return ck_equals_ex( x, y, epsilon );
+}
 //-----------------------------------------------------------------------------
 // equal( x, y ) -- 1.4.1.1 (added ge)
 // returns whether x and y (floats) are considered equal
@@ -277,9 +286,8 @@ unsigned long ck_ensurepow2( unsigned long n )
 // based on Knuth section 4.2.2 pages 217-218
 // https://www.cs.technion.ac.il/users/yechiel/c++-faq/floating-point-arith.html
 //-----------------------------------------------------------------------------
-t_CKBOOL ck_equals( t_CKFLOAT x, t_CKFLOAT y )
+t_CKBOOL ck_equals_ex( t_CKFLOAT x, t_CKFLOAT y, t_CKFLOAT epsilon )
 {
-    const t_CKFLOAT epsilon = .00000001; // a small number 1e-8
     // absolute values
     t_CKFLOAT abs_x = (x >= 0.0 ? x : -x);
     t_CKFLOAT abs_y = (y >= 0.0 ? y : -y);

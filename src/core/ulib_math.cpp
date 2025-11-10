@@ -157,6 +157,52 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "y" );
     QUERY->doc_func( QUERY, "Compute the euclidean distance sqrt(x*x+y*y)." );
 
+    // Fast versions of trig functions!!!
+    // Warning: not always accurate
+
+    // sin
+    QUERY->add_sfun( QUERY, fast_sin_impl, "float", "ssin" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of sine (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi and +pi." );
+
+    // cos
+    QUERY->add_sfun( QUERY, fast_cos_impl, "float", "scos" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of cosine (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi and +pi." );
+
+    // tan
+    QUERY->add_sfun( QUERY, fast_tan_impl, "float", "stan" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of tangent (measured in radians). Uses a Padé approximant, and is recommended to only use inputs between -pi/2 and +pi/2." );
+
+    // sinh
+    QUERY->add_sfun( QUERY, fast_sinh_impl, "float", "ssinh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of hyperbolic sine. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
+
+    // cosh
+    QUERY->add_sfun( QUERY, fast_cosh_impl, "float", "scosh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of the hyperbolic cosine. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
+
+    // tanh
+    QUERY->add_sfun( QUERY, fast_tanh_impl, "float", "stanh" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of the hyperbolic tangent. Uses a Padé approximant, and is recommended to only use inputs between -5 and +5." );
+
+    // exp
+    QUERY->add_sfun( QUERY, fast_exp_impl, "float", "sexp" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "Speedy approximation of e^x, the base-e exponential. Uses a Padé approximant, and is recommended to only use inputs between -6 and +4." );
+
+    // fast inverse-square root
+    QUERY->add_sfun( QUERY, fast_inv_sqrt, "float", "sinsqrt" );
+    QUERY->add_arg( QUERY, "float", "x" );
+    QUERY->doc_func( QUERY, "A speedy (fast) approximation of the inverse square root. Popularized by Quake" );
+
+
+    // End of fast implementations of trig functions
+
     // pow
     QUERY->add_sfun( QUERY, pow_impl, "float", "pow" );
     QUERY->add_arg( QUERY, "float", "x" );
@@ -260,10 +306,18 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "float", "x" );
     QUERY->doc_func( QUERY, "Return true if x is not a number, else return false.");
 
+    // equals() for float
     QUERY->add_sfun( QUERY, equal_impl, "int", "equal" );
-    QUERY->add_arg( QUERY, "float", "x" );
-    QUERY->add_arg( QUERY, "float", "y" );
+    QUERY->add_arg( QUERY, "float", "lhs" );
+    QUERY->add_arg( QUERY, "float", "rhs" );
     QUERY->doc_func( QUERY, "Return whether two floats are considered equal." );
+
+    // equals() for float with eqsilon
+    QUERY->add_sfun( QUERY, equale_impl, "int", "equal" );
+    QUERY->add_arg( QUERY, "float", "lhs" );
+    QUERY->add_arg( QUERY, "float", "rhs" );
+    QUERY->add_arg( QUERY, "float", "epsilon" );
+    QUERY->doc_func( QUERY, "Return whether two floats are considered equal, with a third argument to specify the epsilon (the default in Math.equals(float,float) is 1e-8)" );
 
     // nextpow2
     QUERY->add_sfun( QUERY, nextpow2_impl, "int", "nextpow2" );
@@ -602,6 +656,104 @@ CK_DLL_SFUN( tanh_impl )
     RETURN->v_float = ::tanh( GET_CK_FLOAT(ARGS) );
 }
 
+// Fast versions of trig functions!!
+
+// sin
+CK_DLL_SFUN( fast_sin_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -x * (-11511339840 + x2 * (1640635920 + x2 * (-52785432 + x2 * 479249)));
+  t_CKFLOAT denominator = 11511339840 + x2 * (277920720 + x2 * (3177720 + x2 * 18361));
+  RETURN->v_float = numerator / denominator;
+}
+
+// cos
+CK_DLL_SFUN( fast_cos_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -(-39251520 + x2 * (18471600 + x2 * (-1075032 + 14615 * x2)));
+  t_CKFLOAT denominator = 39251520 + x2 * (1154160 + x2 * (16632 + x2 * 127));
+  RETURN->v_float = numerator / denominator;
+}
+
+// tan
+CK_DLL_SFUN( fast_tan_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = x * (-135135 + x2 * (17325 + x2 * (-378 + x2)));
+  t_CKFLOAT denominator = -135135 + x2 * (62370 + x2 * (-3150 + 28 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+
+// sinh
+CK_DLL_SFUN( fast_sinh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -x * (11511339840 + x2 * (1640635920 + x2 * (52785432 + x2 * 479249)));
+  t_CKFLOAT denominator = -11511339840 + x2 * (277920720 + x2 * (-3177720 + x2 * 18361));
+  RETURN->v_float = numerator / denominator;
+}
+
+// cosh
+CK_DLL_SFUN( fast_cosh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = -(39251520 + x2 * (18471600 + x2 * (1075032 + 14615 * x2)));
+  t_CKFLOAT denominator = -39251520 + x2 * (1154160 + x2 * (-16632 + 127 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+// tanh
+CK_DLL_SFUN( fast_tanh_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT x2 = x * x;
+  t_CKFLOAT numerator = x * (135135 + x2 * (17325 + x2 * (378 + x2)));
+  t_CKFLOAT denominator = 135135 + x2 * (62370 + x2 * (3150 + 28 * x2));
+  RETURN->v_float = numerator / denominator;
+}
+
+// exp
+CK_DLL_SFUN( fast_exp_impl )
+{
+  t_CKFLOAT x = GET_CK_FLOAT(ARGS);
+  t_CKFLOAT numerator = 1680 + x * (840 + x * (180 + x * (20 + x)));
+  t_CKFLOAT denominator = 1680 + x *(-840 + x * (180 + x * (-20 + x)));
+  RETURN->v_float = numerator / denominator;
+}
+
+
+// fast inverse square root (of quake fame)
+CK_DLL_SFUN( fast_inv_sqrt )
+{
+  t_CKFLOAT num = GET_CK_FLOAT(ARGS);
+
+  int i;
+  float x, y;
+  x = num * 0.5;
+  y = num;
+  i = *(int*)&y; // copy bits from y into i so we can bit shift
+
+  i = 0x5f3759df - (i >> 1); // original, has .175% error
+  i = 0x5F375A86 - (i >> 1); // Chris Lomont's updated magic number, .09% error after 1 newton iteration
+
+  y = *(float*)&i; // copy back into float
+
+  // newton iteration
+  y = (y * (1.5 - (x * y * y)));
+  y = (y * (1.5 - (x * y * y))); // optional, improves accuracy
+  RETURN->v_float = num * y;
+}
+
+
+// end of fast versions of trig functions
+
 // hypot
 CK_DLL_SFUN( hypot_impl )
 {
@@ -758,10 +910,22 @@ CK_DLL_SFUN( isnan_impl )
 CK_DLL_SFUN( equal_impl )
 {
     // get arguments
-    t_CKFLOAT x = GET_CK_FLOAT(ARGS);
-    t_CKFLOAT y = *((t_CKFLOAT *)ARGS + 1);
+    t_CKFLOAT x = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT y = GET_NEXT_FLOAT(ARGS);
     // equal
     RETURN->v_int = ck_equals(x,y);
+}
+
+// equal( x, y, e ) -- 1.5.5.6 (added ge)
+// returns whether x and y (floats) are considered equal, with custom epsilon
+CK_DLL_SFUN( equale_impl )
+{
+    // get arguments
+    t_CKFLOAT x = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT y = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT e = GET_NEXT_FLOAT(ARGS);
+    // equals with epsilon
+    RETURN->v_int = ck_equals_ex(x,y,e);
 }
 
 // floatMax

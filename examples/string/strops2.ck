@@ -10,15 +10,25 @@
 <<< "str:", str >>>;
 
 // read the first char (as int)
-<<< "str.charAt( 0 ):", str.charAt( 0 ) >>>;
+<<< "\nstr.charAt( 0 ):", str.charAt( 0 ) >>>;
 // read 10th char
 <<< "str.charAt( 10 ):", str.charAt( 10 ) >>>;
-// test character by index
+// set character by index
 str.setCharAt( 0, 'T' );
 <<< "str.setCharAt( 0, 'T' ):", str >>>;
+//-----------------------------------------------
+// same as above, but using strings as characters
+//-----------------------------------------------
+// read the first char (as string)
+<<< "str.charAt2( 0 ):", str.charAt2( 0 ) >>>;
+// read 10th char (as string)
+<<< "str.charAt2( 10 ):", str.charAt2( 10 ) >>>;
+// set character by index (using a string)
+str.setCharAt2( 0, "t" );
+<<< "str.setCharAt2( 0, \"t\" ):", str >>>;
 
 // test substring -- from the 10th char
-<<< "str.substring( 10 ):", str.substring( 10 ) >>>;
+<<< "\nstr.substring( 10 ):", str.substring( 10 ) >>>;
 // test substring -- from 10th char, for 10 chars
 <<< "str.substring( 10, 10 ):", str.substring(10, 10) >>>;
 
@@ -42,7 +52,7 @@ str.replace( 4, 5, "slow" );
 // <<< "str.replace( \"slow brown\", \"hungry\" ):", str >>>;
 
 // test find -- index of letter, return -1 if not found
-<<< "str.find('x'):", str.find('x') >>>;
+<<< "\nstr.find('x'):", str.find('x') >>>;
 // test find
 <<< "str.find('x', 15):", str.find('x', 15) >>>;
 // test find
