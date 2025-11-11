@@ -4442,7 +4442,7 @@ LiSa updates/fixes:
 */
 
 #define LiSa_MAXVOICES 256 // 1.4.1.0 (ge) increased from 200
-#define LiSa_MAXBUFSIZE 44100000
+#define LiSa_MAXBUFSIZE 441000000 // 1.5.5.6 (nshaheed) increased by an order of magnitude from 44100000
 //-----------------------------------------------------------------------------
 // name: LiSaMulti_data
 // desc: ...
@@ -6207,7 +6207,13 @@ CK_DLL_CTRL( LiSaMulti_ctrl_read )
         }
 
 
-	if( !d->buffer_alloc(info.frames) ) return;
+	t_CKDUR buflen = info.frames;
+	if( buflen > LiSa_MAXBUFSIZE )
+	{
+	    CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing to %i...\n", LiSa_MAXBUFSIZE );
+	    buflen = LiSa_MAXBUFSIZE;
+	}
+	if( !d->buffer_alloc(buflen) ) return;
 
 	// copy file to buffer, if file is multichannel, store a mono mixdown.
 	float multi_data[2048];
