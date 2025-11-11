@@ -412,7 +412,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     // example
     if( !type_engine_import_add_ex( env, "basic/gain.ck" ) ) goto error;
-    
+
     func = make_new_ctor( gainDB_ctor );
     func->doc = "construct a GainDB with default value (in deciBels).";
     func->add_arg( "float", "db" );
@@ -1194,6 +1194,12 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb-interp.ck" ) ) goto error;
 
+    // add ctor( string path )
+    func = make_new_ctor( LiSaMulti_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa with the 'path' to a sound file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
     func->doc = "Set buffer size; required to allocate memory, also resets all parameter values to default.";
@@ -1201,6 +1207,11 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "dur", "duration", LiSaMulti_cget_size );
     func->doc = "Get buffer size.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "read", LiSaMulti_ctrl_read );
+    func->add_arg( "string", "read" );
+    func->doc = "read file into buffer.";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // start/stop recording
@@ -4918,6 +4929,35 @@ CK_DLL_CTOR( LiSaMulti_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: LiSaMulti_ctor_path()
+// desc: 1.5.5.6 (nshaheed) Constructor that takes a path and load the file into the buffer
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSaMulti_ctor_path )
+{
+    // instantiate an internal LiSa implementation instance
+    LiSaMulti_data * f = new LiSaMulti_data;
+    // get the LiSa object in ChucK
+    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
+    // set channel information
+    f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
+    // CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
+    // allocate array of samples based on channel information
+    f->outsamples = new SAMPLE[f->num_chans];
+    // zero out
+    memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
+
+    // remember implementation instance in address space of LiSa object in ChucK
+    OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = (t_CKUINT)f;
+
+    Chuck_DL_Return RETURN;
+    // read it
+    LiSaMulti_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: LiSaMulti_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -5955,6 +5995,249 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
 
     // return
     RETURN->v_int = d->play[voice];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: LiSaMulti_ctrl_read()
+// desc: 1.5.5.6 (nshaheed) Read audio file into lisa buffer ala SndBuf
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( LiSaMulti_ctrl_read )
+{
+    LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
+
+    Chuck_String * ckfilename = GET_CK_STRING(ARGS);
+    const char * filename = NULL;
+
+    // set return value
+    RETURN->v_string = ckfilename;
+
+    // check to avert crash on null argument
+    if( !ckfilename )
+    {
+        CK_FPRINTF_STDERR( "[chuck] LiSa.read() given null argument; nothing read...\n" );
+        return;
+    }
+    // get filename c string
+    filename = ckfilename->str().c_str();
+
+    // log
+    EM_log( CK_LOG_INFO, "(LiSa): reading '%s'...", filename );
+
+    // built in
+    if( strstr(filename, "special:") )
+    {
+        // TODO how to handle special?
+        SAMPLE * rawdata = NULL;
+        t_CKUINT rawsize = 0;
+        t_CKUINT srate = 22050;
+
+        // which
+        if( strstr(filename, "special:sinewave") ) {
+            rawsize = 1024; rawdata = NULL;
+        }
+        else if( strstr(filename, "special:aaa") ||
+                 strstr(filename, "special:aah") ||
+                 strstr(filename, "special:ahh") )
+        {
+            rawsize = ahh_size; rawdata = ahh_data;
+        }
+        else if( strstr(filename, "special:britestk") ) {
+            rawsize = britestk_size; rawdata = britestk_data;
+        }
+        else if( strstr(filename, "special:doh") || strstr(filename, "special:dope") ) {
+            rawsize = dope_size; rawdata = dope_data;
+        }
+        else if( strstr(filename, "special:eee") ) {
+            rawsize = eee_size; rawdata = eee_data;
+        }
+        else if( strstr(filename, "special:fwavblnk") ) {
+            rawsize = fwavblnk_size; rawdata = fwavblnk_data;
+        }
+        else if( strstr(filename, "special:halfwave") ) {
+            rawsize = halfwave_size; rawdata = halfwave_data;
+        }
+        else if( strstr(filename, "special:impuls10") ) {
+            rawsize = impuls10_size; rawdata = impuls10_data;
+        }
+        else if( strstr(filename, "special:impuls20") ) {
+            rawsize = impuls20_size; rawdata = impuls20_data;
+        }
+        else if( strstr(filename, "special:impuls40") ) {
+            rawsize = impuls40_size; rawdata = impuls40_data;
+        }
+        else if( strstr(filename, "special:mand1") ) {
+            rawsize = mand1_size; rawdata = mand1_data;
+        }
+        else if( strstr(filename, "special:mandpluk") ) {
+            rawsize = mandpluk_size; rawdata = mandpluk_data;
+        }
+        else if( strstr(filename, "special:marmstk1") ) {
+            rawsize = marmstk1_size; rawdata = marmstk1_data;
+        }
+        else if( strstr(filename, "special:ooo") ) {
+            rawsize = ooo_size; rawdata = ooo_data;
+        }
+        else if( strstr(filename, "special:peksblnk") ) {
+            rawsize = peksblnk_size; rawdata = peksblnk_data;
+        }
+        else if( strstr(filename, "special:ppksblnk") ) {
+            rawsize = ppksblnk_size; rawdata = ppksblnk_data;
+        }
+        else if( strstr(filename, "special:silence") ) {
+            rawsize = silence_size; rawdata = silence_data;
+        }
+        else if( strstr(filename, "special:sineblnk") ) {
+            rawsize = sineblnk_size; rawdata = sineblnk_data;
+        }
+        else if( strstr(filename, "special:sinewave") ) {
+            rawsize = sinewave_size; rawdata = sinewave_data;
+        }
+        else if( strstr(filename, "special:snglpeak") ) {
+            rawsize = snglpeak_size; rawdata = snglpeak_data;
+        }
+        else if( strstr(filename, "special:twopeaks") ) {
+            rawsize = twopeaks_size; rawdata = twopeaks_data;
+        }
+        else if( strstr(filename, "special:glot_ahh") ) {
+            rawsize = glot_ahh_size; rawdata = glot_ahh_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_eee") ) {
+            rawsize = glot_eee_size; rawdata = glot_eee_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_ooo") ) {
+            rawsize = glot_ooo_size; rawdata = glot_ooo_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_pop") ) {
+            rawsize = glot_pop_size; rawdata = glot_pop_data; srate = 44100;
+        }
+
+        if( rawdata ) {
+            float ratio = g_srateXxx / srate;
+	    int interp_size = (int) ratio * rawsize;
+
+            if( !d->buffer_alloc(interp_size) ) return;
+
+	    // linearly interpolate special audio into runtime srate
+            for( t_CKUINT j = 0; j < interp_size; j++ ) {
+	      int point_left;
+	      float weight;
+	      float pos = j / ratio;
+	      point_left = (int)pos;
+	      weight = pos - point_left;
+
+	      SAMPLE samp = (SAMPLE)rawdata[point_left] * (1 - weight) + (rawdata[point_left] + 1) * weight;
+
+	      d->mdata[j] = samp / (SAMPLE)SHRT_MAX;
+	    }
+        }
+        else if( strstr(filename, "special:sinewave") ) {
+	    if( !d->buffer_alloc(rawsize+1) ) return;
+            for( t_CKUINT j = 0; j < rawsize; j++ )
+                d->mdata[j] = sin(2*CK_ONE_PI*j/rawsize);
+        }
+        else {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): cannot load '%s'\n", filename );
+            return;
+        }
+    }
+    else // read file
+    {
+#ifdef __ANDROID__
+        bool is_jar_url = strstr(filename, "jar:") == filename;
+        int jar_fd = 0;
+        if( is_jar_url )
+        {
+            if( !ChuckAndroid::copyJARURLFileToTemporary(filename, &jar_fd) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): could not download file '%s' from JAR\n", filename );
+                return;
+            }
+        }
+        else
+#endif
+        {
+            // check if file exists
+            struct stat s;
+            if( stat( filename, &s ) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via LiSa): cannot open file '%s'...\n", filename );
+                return;
+            }
+        }
+
+        // open it
+        SF_INFO info;
+	SNDFILE * fd;
+        info.format = 0;
+        const char * format = (const char *)strrchr( filename, '.');
+        if( format && strcmp( format, ".raw" ) == 0 )
+        {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa) %s :: type is '.raw'...\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via LiSa)  |- assuming 16 bit signed mono (PCM)\n]" );
+            info.format = SF_FORMAT_RAW | SF_FORMAT_PCM_16 | SF_ENDIAN_CPU ;
+            info.channels = 1;
+            info.samplerate = 44100;
+        }
+
+        // open the handle
+#ifdef __ANDROID__
+        if( is_jar_url )
+        {
+            d->fd = sf_open_fd( jar_fd, SFM_READ, &info, 0 );
+        }
+        else
+#endif
+        {
+            fd = sf_open( filename, SFM_READ, &info );
+        }
+        t_CKINT er = sf_error( fd );
+        if( er )
+        {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): sndfile error '%li' opening '%s'...\n", er, filename );
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): ...(reason: %s)\n", sf_strerror( fd ) );
+            if( fd )
+            {
+                sf_close( fd );
+            }
+            // escape
+            return;
+        }
+
+
+	if( !d->buffer_alloc(info.frames) ) return;
+
+	// copy file to buffer, if file is multichannel, store a mono mixdown.
+	float multi_data[2048];
+	int frames_read;
+	sf_count_t dataout = 0;
+
+	while(dataout < info.frames)
+	{
+	  int this_read;
+	  if (2048 / info.channels < info.frames - dataout)
+	    this_read = 2048 / info.channels;
+	  else
+	    this_read = info.frames - dataout;
+
+	  frames_read = sf_readf_float(fd, multi_data, this_read);
+	  if (frames_read == 0)
+	    break;
+
+	  // mixdown each channel into mono
+	  for (int i = 0; i < frames_read; i++) {
+	    float mix = 0.0;
+
+	    for (int ch = 0 ; ch < info.channels ; ch++)
+	      mix += multi_data [i * info.channels + ch];
+	    d->mdata[dataout + i] = mix / info.channels;
+	  }
+
+	  dataout += frames_read ;
+	}
+    }
 }
 
 
