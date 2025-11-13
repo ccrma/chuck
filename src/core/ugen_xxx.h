@@ -64,7 +64,7 @@ CK_DLL_TICK( bunghole_tick );
 // subgraph; release and cleanup subgraph inlet/outlet
 void ck_subgraph_cleaup_inlet_outlet( Chuck_UGen * ugen );
 
-// pan2
+// Pan2
 CK_DLL_CTOR( pan2_ctor );
 CK_DLL_DTOR( pan2_dtor );
 CK_DLL_CTRL( pan2_ctrl_value );
@@ -84,10 +84,10 @@ CK_DLL_CTOR( gainDB_ctor );
 CK_DLL_MFUN( gain_set_db );
 CK_DLL_MFUN( gain_get_db );
 
-// noise
+// Noise
 CK_DLL_TICK( noise_tick );
 
-// cnoise
+// CNoise
 CK_DLL_CTOR( cnoise_ctor );
 CK_DLL_CTOR( cnoise_ctor_mode );
 CK_DLL_DTOR( cnoise_dtor );
@@ -95,14 +95,14 @@ CK_DLL_TICK( cnoise_tick );
 CK_DLL_CTRL( cnoise_ctrl_mode );
 CK_DLL_CTRL( cnoise_ctrl_fprob );
 
-// impulse
+// Impulse
 CK_DLL_CTOR( impulse_ctor );
 CK_DLL_DTOR( impulse_dtor );
 CK_DLL_TICK( impulse_tick );
 CK_DLL_CTRL( impulse_ctrl_next );
 CK_DLL_CGET( impulse_cget_next );
 
-// step
+// Step
 CK_DLL_CTOR( step_ctor );
 CK_DLL_CTOR( step_ctor_value );
 CK_DLL_DTOR( step_dtor );
@@ -110,14 +110,14 @@ CK_DLL_TICK( step_tick );
 CK_DLL_CTRL( step_ctrl_next );
 CK_DLL_CGET( step_cget_next );
 
-// gain
+// Gain
 CK_DLL_CTOR( gain_ctor );
 CK_DLL_DTOR( gain_dtor );
 CK_DLL_TICK( gain_tick );
 CK_DLL_CTRL( gain_ctrl_value );
 CK_DLL_CGET( gain_cget_value );
 
-// dyno (Matt Hoffman + Graham Coleman)
+// Dyno (Matt Hoffman + Graham Coleman)
 // TODO: add soft knee option
 CK_DLL_CTOR( dyno_ctor );
 CK_DLL_DTOR( dyno_dtor );
@@ -144,18 +144,18 @@ CK_DLL_CGET( dyno_cget_externalSideInput );
 CK_DLL_CTRL( dyno_ctrl_sideInput );
 CK_DLL_CGET( dyno_cget_sideInput );
 
-// halfrect
+// HalfRect
 CK_DLL_TICK( halfrect_tick );
 
-// fullrect
+// FullRect
 CK_DLL_TICK( fullrect_tick );
 
-// zerox
+// ZeroX
 // CK_DLL_CTOR( zerox_ctor );
 // CK_DLL_DTOR( zerox_dtor );
 // CK_DLL_TICK( zerox_tick );
 
-// delayp
+// DelayP
 CK_DLL_CTOR( delayp_ctor );
 CK_DLL_DTOR( delayp_dtor );
 CK_DLL_PMSG( delayp_pmsg );
@@ -167,7 +167,7 @@ CK_DLL_CGET( delayp_cget_window );
 CK_DLL_CTRL( delayp_ctrl_max );
 CK_DLL_CGET( delayp_cget_max );
 
-// sndbuf
+// SndBuf
 CK_DLL_CTOR( sndbuf_ctor );
 CK_DLL_CTOR( sndbuf_ctor_path );
 CK_DLL_CTOR( sndbuf_ctor_path_rate );
@@ -203,6 +203,10 @@ CK_DLL_CGET( sndbuf_cget_samplerate );
 CK_DLL_CGET( sndbuf_cget_length );
 CK_DLL_CGET( sndbuf_cget_channels );
 CK_DLL_CGET( sndbuf_cget_valueAt );
+// SndBuf2
+CK_DLL_CTOR( sndbuf2_ctor_path );
+CK_DLL_CTOR( sndbuf2_ctor_path_rate );
+CK_DLL_CTOR( sndbuf2_ctor_path_rate_pos );
 
 // Identity2
 CK_DLL_TICKF( Identity2_tickf );
@@ -275,6 +279,13 @@ CK_DLL_CTRL( LiSaMulti_ctrl_rampdown );
 CK_DLL_CTRL( LiSaMulti_ctrl_rampup0 );
 CK_DLL_CTRL( LiSaMulti_ctrl_rampdown0 );
 CK_DLL_CTRL( LiSaMulti_ctrl_rec_ramplen );
+// variations
+CK_DLL_CTOR( LiSa2_ctor_path );
+CK_DLL_CTOR( LiSa4_ctor_path );
+CK_DLL_CTOR( LiSa6_ctor_path );
+CK_DLL_CTOR( LiSa8_ctor_path );
+CK_DLL_CTOR( LiSa10_ctor_path );
+CK_DLL_CTOR( LiSa16_ctor_path );
 
 
 

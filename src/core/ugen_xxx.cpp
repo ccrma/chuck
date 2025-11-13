@@ -958,6 +958,28 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         NULL, sndbuf_tickf, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
 
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf2_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path, float rate )
+    func = make_new_ctor( sndbuf2_ctor_path_rate );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read, and a default playback 'rate' (1.0 is normal rate)";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf2_ctor_path_rate_pos );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->add_arg( "int", "pos" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read, a default playback 'rate' (1.0 is normal rate), and starting at sample position 'pos'";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+
     // end import
     if( !type_engine_import_class_end( env ) )
         return FALSE;
@@ -1526,6 +1548,12 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
         return FALSE;
 
+    // add ctor( string path )
+    func = make_new_ctor( LiSa2_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa2 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
 
@@ -1541,6 +1569,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 4, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa4_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa4 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1552,6 +1587,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 6, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa6_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa6 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1563,6 +1605,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 8, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa8_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa8 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1575,6 +1624,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 10, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa10_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa10 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1586,6 +1642,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, LiSa_MAXCHANNELS, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa16_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa16 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -4136,6 +4199,24 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     RETURN->v_float = ( frame >= d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
 }
 
+CK_DLL_CTOR( sndbuf2_ctor_path )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf2_ctor_path_rate )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path_rate( SELF, ARGS, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf2_ctor_path_rate_pos )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path_rate_pos( SELF, ARGS, VM, SHRED, API );
+}
+
 #endif // __DISABLE_SNDBUF__
 
 
@@ -4930,30 +5011,68 @@ CK_DLL_CTOR( LiSaMulti_ctor )
 
 //-----------------------------------------------------------------------------
 // name: LiSaMulti_ctor_path()
-// desc: 1.5.5.6 (nshaheed) Constructor that takes a path and load the file into the buffer
+// desc: 1.5.5.6 (nshaheed) constructor that takes a path and load the file into the buffer
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( LiSaMulti_ctor_path )
 {
-    // instantiate an internal LiSa implementation instance
-    LiSaMulti_data * f = new LiSaMulti_data;
-    // get the LiSa object in ChucK
-    Chuck_UGen * ugen = (Chuck_UGen *)SELF;
-    // set channel information
-    f->num_chans = ugen->m_multi_chan_size > 0 ? ugen->m_multi_chan_size : 1;
-    // CK_FPRINTF_STDERR( "LiSa: number of channels = %d\n", f->num_chans );
-    // allocate array of samples based on channel information
-    f->outsamples = new SAMPLE[f->num_chans];
-    // zero out
-    memset( f->outsamples, 0, (f->num_chans)*sizeof(SAMPLE) );
-
-    // remember implementation instance in address space of LiSa object in ChucK
-    OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = (t_CKUINT)f;
-
     Chuck_DL_Return RETURN;
     // read it
     LiSaMulti_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
 }
-
+//-----------------------------------------------------------------------------
+// name: LiSa2_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa2_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa4_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa4_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa6_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa6_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa8_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa8_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa10_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa10_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa16_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa16_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
 
 
 

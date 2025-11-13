@@ -2,7 +2,7 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.6
+1.5.5.6 (November 2025)
 =======
 (added) LiSa now has a .read( string filename ) function as well as an overloaded constructor
     that can directly read into an audio file into LiSa (without needing a separate SndBuf);
@@ -11,6 +11,13 @@ ChucK VERSIONS log
         construct a LiSa with the 'path' to a sound file to read.
     string .read( string path )
         read audio file at 'path' into LiSa
+(added) similar overloaded contructors for multichannel LiSa
+    LiSa2( string path )
+    LiSa4( string path )
+    LiSa6( string path )
+    LiSa8( string path )
+    LiSa10( string path )
+    LiSa16( string path )
 (updated) examples using the new LiSa file loading
     examples/special/LiSa-load.ck
     examples/special/LiSa-track4.ck
@@ -30,6 +37,7 @@ ChucK VERSIONS log
         get gain (in dB)
 (added) `Gain` has gained the above .db methods as well
 (added) examples/basic/gain.ck
+(added) SndBuf2( string path ) overloaded constructor
 (added) StringTokenizer custom delimiters
     StringTokenizer( string line )
         construct a StringTokenizer with a string to tokenize;
