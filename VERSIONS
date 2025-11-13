@@ -12,11 +12,13 @@ ChucK VERSIONS log
     string .read( string path )
         read audio file at 'path' into LiSa
 (updated) examples using the new LiSa file loading
-    examples/LiSa-load.ck
-    examples/LiSa-track4.ck
-    examples/LiSa-track5.ck
-(added) examples/LiSa-load-classic.ck (to commemorate the old ways that we have all been
-    using since 2007)
+    examples/special/LiSa-load.ck
+    examples/special/LiSa-track4.ck
+    examples/special/LiSa-track5.ck
+(added) examples/special/LiSa-load-classic.ck (to commemorate the old ways that we have all
+    been using since 2007)
+(added) new Paulstretch extreme time-stretching
+    see example/analysis/paulstretch.ck
 (added) `GainDB` unit generator (nshaheed)
     the same as the Gain UGen, but the constructor sets the gain in deciBels rather
     than linear scaling.
