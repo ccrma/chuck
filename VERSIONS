@@ -4,6 +4,19 @@ ChucK VERSIONS log
 
 1.5.5.6
 =======
+(added) LiSa now has a .read( string filename ) function as well as an overloaded constructor
+    that can directly read into an audio file into LiSa (without needing a separate SndBuf);
+    this now only shortens the code, but offers 100X performance increase during file loading
+    LiSa( string path )
+        construct a LiSa with the 'path' to a sound file to read.
+    string .read( string path )
+        read audio file at 'path' into LiSa
+(updated) examples using the new LiSa file loading
+    examples/LiSa-load.ck
+    examples/LiSa-track4.ck
+    examples/LiSa-track5.ck
+(added) examples/LiSa-load-classic.ck (to commemorate the old ways that we have all been
+    using since 2007)
 (added) `GainDB` unit generator (nshaheed)
     the same as the Gain UGen, but the constructor sets the gain in deciBels rather
     than linear scaling.

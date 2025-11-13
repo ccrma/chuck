@@ -1197,7 +1197,7 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     // add ctor( string path )
     func = make_new_ctor( LiSaMulti_ctor_path );
     func->add_arg( "string", "path" );
-    func->doc = "construct a LiSa with the 'path' to a sound file to read.";
+    func->doc = "construct a LiSa with the 'path' to an audio file to read.";
     if( !type_engine_import_ctor( env, func ) ) goto error;
 
     // set/get buffer size
@@ -1210,8 +1210,8 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     func = make_new_mfun( "string", "read", LiSaMulti_ctrl_read );
-    func->add_arg( "string", "read" );
-    func->doc = "read file into buffer.";
+    func->add_arg( "string", "path" );
+    func->doc = "read audio file at 'path' into LiSa";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // start/stop recording
