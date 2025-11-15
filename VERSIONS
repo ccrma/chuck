@@ -73,6 +73,9 @@ ChucK 1.5.5.6
     shows the charAt2() and charAt2( int, string ) methods in action
 (added) Math.equals( float lhs, float rhs, float epsilon)
     an overloaded version of Math.equals( float, float) with custom epsilon
+(added) overloaded consstructors ctor(freq) and ctor(freq, Q) for following filters:
+    LPF, HPF, BPF, BRF, RLPF, RHPF, ResonZ, in the form of
+    CTOR( float freq ) CTOR( float freq, float Q )
 (added) overloaded constructors for the following STK effects:
     JCRev ( float mix )
     NRev ( float mix )
