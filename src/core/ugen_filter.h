@@ -37,12 +37,13 @@
 
 #include "chuck_dl.h"
 
-
 // query
 DLL_QUERY filter_query( Chuck_DL_Query * query );
 
 // FilterBasic
 CK_DLL_CTOR( FilterBasic_ctor );
+CK_DLL_CTOR( FilterBasic_ctor_freq );
+CK_DLL_CTOR( FilterBasic_ctor_freq_Q );
 CK_DLL_DTOR( FilterBasic_dtor );
 CK_DLL_TICK( FilterBasic_tick );
 CK_DLL_PMSG( FilterBasic_pmsg );
@@ -70,6 +71,8 @@ CK_DLL_CGET( HPF_cget_freq );
 
 // BPF
 CK_DLL_CTOR( BPF_ctor );
+CK_DLL_CTOR( BPF_ctor_freq );
+CK_DLL_CTOR( BPF_ctor_freq_Q );
 CK_DLL_DTOR( BPF_dtor );
 CK_DLL_TICK( BPF_tick );
 CK_DLL_PMSG( BPF_pmsg );
@@ -81,6 +84,8 @@ CK_DLL_CTRL( BPF_ctrl_set );
 
 // BRF
 CK_DLL_CTOR( BRF_ctor );
+CK_DLL_CTOR( BRF_ctor_freq );
+CK_DLL_CTOR( BRF_ctor_freq_Q );
 CK_DLL_DTOR( BRF_dtor );
 CK_DLL_TICK( BRF_tick );
 CK_DLL_PMSG( BRF_pmsg );
@@ -92,6 +97,8 @@ CK_DLL_CTRL( BRF_ctrl_set );
 
 // RLPF
 CK_DLL_CTOR( RLPF_ctor );
+CK_DLL_CTOR( RLPF_ctor_freq );
+CK_DLL_CTOR( RLPF_ctor_freq_Q );
 CK_DLL_DTOR( RLPF_dtor );
 CK_DLL_TICK( RLPF_tick );
 CK_DLL_PMSG( RLPF_pmsg );
@@ -103,6 +110,8 @@ CK_DLL_CTRL( RLPF_ctrl_set );
 
 // RHPF
 CK_DLL_CTOR( RHPF_ctor );
+CK_DLL_CTOR( RHPF_ctor_freq );
+CK_DLL_CTOR( RHPF_ctor_freq_Q );
 CK_DLL_DTOR( RHPF_dtor );
 CK_DLL_TICK( RHPF_tick );
 CK_DLL_PMSG( RHPF_pmsg );
@@ -114,6 +123,8 @@ CK_DLL_CTRL( RHPF_ctrl_set );
 
 // ResonZ
 CK_DLL_CTOR( ResonZ_ctor );
+CK_DLL_CTOR( ResonZ_ctor_freq );
+CK_DLL_CTOR( ResonZ_ctor_freq_Q );
 CK_DLL_DTOR( ResonZ_dtor );
 CK_DLL_TICK( ResonZ_tick );
 CK_DLL_PMSG( ResonZ_pmsg );

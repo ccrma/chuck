@@ -179,6 +179,17 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
 
     type_engine_import_add_ex(env, "filter/bpf.ck");
 
+    func = make_new_ctor( BPF_ctor_freq );
+    func->add_arg( "float", "freq" );
+    func->doc = "construct a BPF with specified frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( BPF_ctor_freq_Q );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "Q" );
+    func->doc = "construct a BPF with specified frequency and Q.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     // freq
     func = make_new_mfun( "float", "freq", BPF_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -217,6 +228,17 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
         return FALSE;
 
     type_engine_import_add_ex(env, "filter/brf.ck");
+
+    func = make_new_ctor( BRF_ctor_freq );
+    func->add_arg( "float", "freq" );
+    func->doc = "construct a BRF with specified frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( BRF_ctor_freq_Q );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "Q" );
+    func->doc = "construct a BRF with specified frequency and Q.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
 
     // freq
     func = make_new_mfun( "float", "freq", BRF_ctrl_freq );
@@ -260,6 +282,17 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     type_engine_import_add_ex(env, "filter/rlpf.ck");
     type_engine_import_add_ex(env, "deep/smb.ck");
 
+    func = make_new_ctor( RLPF_ctor_freq );
+    func->add_arg( "float", "freq" );
+    func->doc = "construct a LPF with specified frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( RLPF_ctor_freq_Q );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "Q" );
+    func->doc = "construct a LPF with specified frequency and Q.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     // freq
     func = make_new_mfun( "float", "freq", RLPF_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -301,6 +334,19 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     type_engine_import_add_ex(env, "filter/hpf.ck");
     type_engine_import_add_ex(env, "filter/rhpf.ck");
 
+    // overload ctor( float freq )
+    func = make_new_ctor( RHPF_ctor_freq );
+    func->add_arg( "float", "freq" );
+    func->doc = "construct a HPF with specified frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float freq, float Q )
+    func = make_new_ctor( RHPF_ctor_freq_Q );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "Q" );
+    func->doc = "construct a HPF with specified frequency and Q.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     // freq
     func = make_new_mfun( "float", "freq", RHPF_ctrl_freq );
     func->add_arg( "float", "val" );
@@ -337,6 +383,17 @@ DLL_QUERY filter_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_ugen_begin( env, "ResonZ", "FilterBasic", env->global(),
                                         ResonZ_ctor, NULL, ResonZ_tick, ResonZ_pmsg, doc.c_str() ) )
         return FALSE;
+
+    func = make_new_ctor( ResonZ_ctor_freq );
+    func->add_arg( "float", "freq" );
+    func->doc = "construct a ResonZ with specified frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    func = make_new_ctor( ResonZ_ctor_freq_Q );
+    func->add_arg( "float", "freq" );
+    func->add_arg( "float", "Q" );
+    func->doc = "construct a ResonZ with specified frequency and Q.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
 
     // freq
     func = make_new_mfun( "float", "freq", ResonZ_ctrl_freq );
@@ -1343,6 +1400,49 @@ CK_DLL_CTOR( BPF_ctor )
 }
 
 
+
+//-----------------------------------------------------------------------------
+// name: BPF_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( BPF_ctor_freq )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for BPF is negative");
+    }
+
+    d->set_bpf( freq, d->m_Q );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: BPF_ctor_freq_Q()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( BPF_ctor_freq_Q )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for BPF is negative");
+    }
+    if( Q < 0 ) {
+        ck_throw_exception(SHRED, "NegativeQ",
+                               "Q value for BPF is negative");
+    }
+    d->set_bpf( freq, Q );
+}
+
+
+
 //-----------------------------------------------------------------------------
 // name: BPF_tick()
 // desc: TICK function ...
@@ -1477,6 +1577,49 @@ CK_DLL_CTOR( BRF_ctor )
     memset( f, 0, sizeof(FilterBasic_data) );
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: BRF_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( BRF_ctor_freq )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for BRF is negative");
+    }
+
+    d->set_brf( freq, d->m_Q );
+}
+
+
+
+//-----------------------------------------------------------------------------
+// name: BRF_ctor_freq_Q()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( BRF_ctor_freq_Q )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for BRF is negative");
+    }
+    if( Q < 0 ) {
+        ck_throw_exception(SHRED, "NegativeQ",
+                               "Q value for BRF is negative");
+    }
+    d->set_brf( freq, Q );
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -1620,6 +1763,47 @@ CK_DLL_CTOR( RLPF_ctor )
 }
 
 
+
+//-----------------------------------------------------------------------------
+// name: RLPF_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( RLPF_ctor_freq )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for LPF is negative");
+    }
+
+    d->set_rlpf( freq, d->m_Q );
+}
+
+//-----------------------------------------------------------------------------
+// name: RLPF_ctor_freq_Q()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( RLPF_ctor_freq_Q )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for LPF is negative");
+    }
+    if( Q < 0 ) {
+        ck_throw_exception(SHRED, "NegativeQ",
+                               "Q value for LPF is negative");
+    }
+    d->set_rlpf( freq, Q );
+}
+
+
+
 //-----------------------------------------------------------------------------
 // name: RLPF_tick()
 // desc: TICK function ...
@@ -1756,6 +1940,46 @@ CK_DLL_CTOR( ResonZ_ctor )
     f->set_resonz( 220, 1 );
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: ResonZ_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( ResonZ_ctor_freq )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for ResonZ is negative");
+    }
+    d->set_resonz( freq, d->m_Q );
+}
+
+//-----------------------------------------------------------------------------
+// name: ResonZ_ctor_freq_Q()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( ResonZ_ctor_freq_Q )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for ResonZ is negative");
+    }
+    if( Q < 0 ) {
+        ck_throw_exception(SHRED, "NegativeQ",
+                               "Q value for ResonZ is negative");
+    }
+    d->set_resonz( freq, Q );
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -1903,6 +2127,51 @@ CK_DLL_CTOR( RHPF_ctor )
     // set in chuck object
     OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data) = (t_CKUINT)f;
 }
+
+
+
+//-----------------------------------------------------------------------------
+// name: RHPF_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( RHPF_ctor_freq )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for HPF is negative");
+    }
+
+    d->set_rhpf( freq, d->m_Q );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: RHPF_ctor_freq_Q()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( RHPF_ctor_freq_Q )
+{
+    FilterBasic_data * d = (FilterBasic_data *)OBJ_MEMBER_UINT(SELF, FilterBasic_offset_data);
+    t_CKFLOAT freq = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT Q = GET_NEXT_FLOAT(ARGS);
+
+    if( freq < 0 ) {
+        ck_throw_exception(SHRED, "NegativeFrequency",
+                               "freq value for HPF is negative");
+    }
+    if( Q < 0 ) {
+        ck_throw_exception(SHRED, "NegativeQ",
+                               "Q value for HPF is negative");
+    }
+    d->set_rhpf( freq, Q );
+}
+
+
 
 
 //-----------------------------------------------------------------------------
