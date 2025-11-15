@@ -3750,6 +3750,11 @@ t_CKBOOL emit_engine_emit_exp_primary( Chuck_Emitter * emit, a_Exp_Primary exp )
             // TODO: verify this is in the right scope
             emit->append( new Chuck_Instr_Reg_Push_This );
         }
+        else if( exp->var == insert_symbol( "super" ) )
+        {
+            // super is still the same pointer, just different semantics on virtual table lookup
+            emit->append( new Chuck_Instr_Reg_Push_This );
+        }
         else if( exp->var == insert_symbol( "me" ) )
         {
             emit->append( new Chuck_Instr_Reg_Push_Me );
@@ -4847,7 +4852,21 @@ t_CKBOOL emit_engine_emit_exp_dot_member( Chuck_Emitter * emit,
                 // find the offset for virtual table
                 offset = func->vt_index;
                 // emit the function
-                emit->append( instr = new Chuck_Instr_Dot_Member_Func( offset ) );
+                // check if the base was `super` | (niccolo, modified by nick and ge) 1.5.5.6
+                if( member->base->s_type == ae_exp_primary &&
+                    member->base->primary.s_type == ae_primary_var &&
+                    member->base->primary.var == insert_symbol( "super" ) )
+                {
+                    // FYI is the base is super, then the pointer on the stack is the SAME...
+                    // but the vtable lookup logic must be different, hence this instruction
+                    emit->append( instr = new Chuck_Instr_Dot_Member_Func_Super( offset, emit->env->class_def->parent_type ) );
+                }
+                else
+                {
+                    // function lookup with "this" semantics
+                    emit->append( instr = new Chuck_Instr_Dot_Member_Func( offset ) );
+                }
+                // set line position
                 instr->set_linepos( member->line );
             }
             else

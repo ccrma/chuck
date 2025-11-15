@@ -3632,6 +3632,37 @@ t_CKTYPE type_engine_check_exp_primary( Chuck_Env * env, a_Exp_Primary exp )
                 // whatever the class is
                 t = env->class_def;
             }
+            else if( str == "super" ) // 1.5.5.6 (niccolo) added
+            {
+                // in class def
+                if( !env->class_def )
+                {
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot used outside class definition" );
+                    return NULL;
+                }
+
+                // in member func
+                if( env->func && !env->func->is_member )
+                {
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot be used inside static functions" );
+                    return NULL;
+                }
+                
+                // class is the base Object class
+                if( env->class_def->base_name == "Object" )
+                {
+                    EM_error2( exp->where,
+                        "keyword 'super' cannot be used from within the Object class" );
+                    return NULL;
+                }
+
+                // not assignable
+                exp->self->s_meta = ae_meta_value;
+                // parent class type
+                t = env->class_def->parent_type;
+            }
             else if( str == "me" ) // me
             {
                 // not assignable
@@ -6285,7 +6316,7 @@ t_CKBOOL operator !=( const Chuck_Type & lhs, const Chuck_Type & rhs )
 // name: equals()
 // desc: type equivalence test
 //-----------------------------------------------------------------------------
-t_CKBOOL equals( Chuck_Type * lhs, Chuck_Type * rhs ) { return (*lhs) == (*rhs); }
+t_CKBOOL equals( const Chuck_Type * lhs, const Chuck_Type * rhs ) { return (*lhs) == (*rhs); }
 
 
 
