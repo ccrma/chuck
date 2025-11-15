@@ -4,6 +4,11 @@ ChucK VERSIONS log
 
 1.5.5.6 (November 2025)
 =======
+ChuGL v0.2.7
+============
+
+ChucK 1.5.5.6
+=============
 (added) LiSa now has a .read( string filename ) function as well as an overloaded constructor
     that can directly read into an audio file into LiSa (without needing a separate SndBuf);
     this now only shortens the code, but offers 100X performance increase during file loading
@@ -68,6 +73,18 @@ ChucK VERSIONS log
     shows the charAt2() and charAt2( int, string ) methods in action
 (added) Math.equals( float lhs, float rhs, float epsilon)
     an overloaded version of Math.equals( float, float) with custom epsilon
+(added) overloaded constructors for the following STK effects:
+    JCRev ( float mix )
+    NRev ( float mix )
+    PRCRev ( float mix )
+    Chorus ( float modFreq )
+    Chorus ( float modFreq, float modDepth)
+    Chorus ( float modFreq, float modDepth, float mix )
+    Modulate ( float vibratoRate )
+    Modulate ( float vibratoRate, float vibratoGain)
+    Modulate ( float vibratoRate, float vibratoGain, float randomGain )
+    PitShift ( float shift )
+    PitShift ( float shift, float mix )
 (added) examples/deep/cage.ck
     two implementation of 4'33", accompanied by philosophical pondering...
 (added) examples/deep/room.ck
