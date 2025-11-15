@@ -2565,22 +2565,6 @@ void Chuck_Instr_Reg_Push_This::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
-void Chuck_Instr_Reg_Push_Super::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
-{
-    t_CKUINT *& reg_sp = (t_CKUINT *&)shred->reg->sp;
-    t_CKUINT *& mem_sp = (t_CKUINT *&)shred->mem->sp;
-
-    // push val into reg stack
-    push_( reg_sp, *(mem_sp) );
-}
-
-
-
-
-//-----------------------------------------------------------------------------
-// name: execute()
-// desc: ...
-//-----------------------------------------------------------------------------
 void Chuck_Instr_Reg_Push_Start::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKTIME *& reg_sp = (t_CKTIME *&)shred->reg->sp;
@@ -7776,7 +7760,7 @@ error:
 
 //-----------------------------------------------------------------------------
 // name: execute()
-// desc: ...
+// desc: call super class member function | 1.5.5.6 (niccolo) added
 //-----------------------------------------------------------------------------
 void Chuck_Instr_Dot_Member_Func_Super::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
@@ -7812,8 +7796,11 @@ error:
     shred->is_done = TRUE;
 }
 
+
+
+
 //-----------------------------------------------------------------------------
-// name: get_func()
+// name: get_func() | 1.5.5.6 (niccolo) added
 // desc: recursively, move up until the function from the correct type is found
 //-----------------------------------------------------------------------------
 Chuck_Func * Chuck_Instr_Dot_Member_Func_Super::get_func( Chuck_Object * obj ) const
@@ -7821,8 +7808,9 @@ Chuck_Func * Chuck_Instr_Dot_Member_Func_Super::get_func( Chuck_Object * obj ) c
     // current func and type
     Chuck_Func * func = obj->vtable->funcs[m_offset];
     // move up until the type matches, or we it can no longer go up
-    while( func->value_ref->owner_class != m_type && func->up )
+    while( !equals( func->value_ref->owner_class, m_type) && func->up )
     {
+        // super class function
         func = func->up->owner->obj_v_table.funcs[m_offset];
     }
     return func;

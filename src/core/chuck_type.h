@@ -1363,7 +1363,7 @@ t_CKBOOL type_engine_add_class_from_dl( Chuck_Env * env, Chuck_DL_Class * c );
 t_CKBOOL operator ==( const Chuck_Type & lhs, const Chuck_Type & rhs );
 t_CKBOOL operator !=( const Chuck_Type & lhs, const Chuck_Type & rhs );
 t_CKBOOL operator <=( const Chuck_Type & lhs, const Chuck_Type & rhs );
-t_CKBOOL equals( Chuck_Type * lhs, Chuck_Type * rhs );
+t_CKBOOL equals( const Chuck_Type * lhs, const Chuck_Type * rhs );
 t_CKBOOL isa( const Chuck_Type * lhs, const Chuck_Type * rhs );
 t_CKBOOL isa_levels( const Chuck_Type & lhs, const Chuck_Type & rhs, t_CKUINT & levels ); // 1.5.2.0 (ge) return how many levels of inheritance from lhs to rhs
 t_CKBOOL isprim( Chuck_Env * env, Chuck_Type * type );

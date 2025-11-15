@@ -2337,27 +2337,6 @@ public:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Reg_Push_Super
-// desc: push value of super (this) to reg stack
-//-----------------------------------------------------------------------------
-struct Chuck_Instr_Reg_Push_Super : public Chuck_Instr
-{
-public:
-    Chuck_Instr_Reg_Push_Super( const Chuck_Type* type )
-    { m_type = type; }
-    
-public:
-    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
-    const Chuck_Type * type() const { return m_type; }
-    
-protected:
-    const Chuck_Type * m_type;
-};
-
-
-
-
-//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Reg_Push_Start
 // desc: push value of start to reg stack
 //-----------------------------------------------------------------------------
@@ -3823,25 +3802,26 @@ protected:
 
 
 //-----------------------------------------------------------------------------
-// name: struct Chuck_Instr_Dot_Member_Func_Super
+// name: struct Chuck_Instr_Dot_Member_Func_Super | 1.5.5.6 (niccolo) added
 // desc: access the super member function of object by offset and type
 //-----------------------------------------------------------------------------
 struct Chuck_Instr_Dot_Member_Func_Super : public Chuck_Instr
 {
 public:
-    Chuck_Instr_Dot_Member_Func_Super( t_CKUINT offset, const Chuck_Type* type )
+    Chuck_Instr_Dot_Member_Func_Super( t_CKUINT offset, const Chuck_Type * type )
     { m_offset = offset; m_type = type; }
 
 public:
     virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
     virtual const char * params() const
     { static char buffer[CK_PRINT_BUF_LENGTH];
-      snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%ld", (long)m_offset );
+      snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%ld super='%s'",
+                (long)m_offset, m_type ? m_type->base_name.c_str() : "[NULL]" );
       return buffer; }
 
 protected:
     t_CKUINT m_offset;
-    const Chuck_Type* m_type;
+    const Chuck_Type * m_type; // not const so we can get name
     Chuck_Func * get_func( Chuck_Object * obj ) const;
 };
 
