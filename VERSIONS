@@ -4,9 +4,42 @@ ChucK VERSIONS log
 
 1.5.5.6 (November 2025)
 =======
+=> This release offers new features in ChucK and ChuGL along with many quality-of-life
+   improvements; Happy ChucKing!
+============
 ChuGL v0.2.7
 ============
-
+(added) game-dev friendly gamepad support!
+  - (see https://chuck.stanford.edu/chugl/examples/basic/gamepad.ck)
+(added) Material blend modes! Additive, multiplicative, subtractive, custom, etc.
+  - (see https://chuck.stanford.edu/chugl/examples/basic/blend.ck)
+(added) GCamera `.aspect()` and `.autoUpdateAspect()`
+(added) `TextureLoadDesc.read` to read the texture data into a chuck array on load
+(added) `UI_DrawList` methods that ended in `...Ex` were renamed to take advantage
+    of method overloading, e.g. `.addLineEx(...)` renamed to `.addLine()`
+(added) general improvements to `UI_DrawList` and `UI_DrawFlags` docs
+(added) `GWindow.snooze()` which puts the graphics window in a low-power mode that
+only refreshes upon receiving user input. Useful for editing tools / static apps /
+art installations
+(added) new Examples
+  - basic/gamepad.ck
+    https://chuck.stanford.edu/chugl/examples/basic/gamepad.ck
+  - basic/blend.ck
+    https://chuck.stanford.edu/chugl/examples/basic/blend.ck
+  - deep/lines3d.ck
+    https://chuck.stanford.edu/chugl/examples/deep/links3d.ck
+  - deep/custom-material.ck
+    https://chuck.stanford.edu/chugl/examples/deep/custom-material.ck
+  - rendergraph/shadertoy.ck
+    https://chuck.stanford.edu/chugl/examples/rendergraph/shadertoy.ck
+bug fixes
+(fixed) camera raycast methods (e.g. `NDCToWorldPos`) fixed when using a
+    render-target that is *not* the same resolution as the GWindow
+    (basically we assumed camera aspect was always same as GWindow
+    aspect when in reality it is determined by color target its rendering too)
+(fixed) Texture.load() bug where some textures were incorrectly loaded with negative dimensions.
+(fixed) `GWindow.sizeLimits()` not correctly updating window size (thanks Ben)
+=============
 ChucK 1.5.5.6
 =============
 (added) LiSa now has a .read( string filename ) function as well as an overloaded constructor
