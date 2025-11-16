@@ -92,19 +92,23 @@ Here are the source repositories maintained by the ChucK Team. _Developers wante
 
 [**chuck**](https://github.com/ccrma/chuck) | core language, virtual machine, and synthesis engine
 
+[**chugl**](https://github.com/ccrma/chugl) | chuck graphics (now part of the core language)
+
 [**chugins**](https://github.com/ccrma/chugins) | extend chuck with plugins! a great place to start contributing
 
-[**miniAudicle**](https://github.com/ccrma/miniAudicle) | an IDE for chuck
+[**smuck**](https://github.com/ccrma/smuck) | symbolic music in in chuck
 
 [**webchuck**](https://github.com/ccrma/webchuck) | chuck running in web browsers (works on desktops and phones!)
 
 [**webchuck IDE**](https://github.com/ccrma/webchuck-ide) | a browser-based IDE for chuck
 
+[**miniAudicle**](https://github.com/ccrma/miniAudicle) | an IDE for chuck on desktop
+
+[**chump**](https://github.com/ccrma/chump) | chuck package manager
+
 [**chunity**](https://github.com/ccrma/chunity) | ChucK in Unity
 
-[**chunreal**](https://github.com/ccrma/chunreal) | ChucK in Unreal Engine (new!)
-
-[**chugl**](https://github.com/ccrma/chugl) | ChucK Graphics Library (new!)
+[**chunreal**](https://github.com/ccrma/chunreal) | ChucK in Unreal Engine
 
 
 ## Integrating ChucK as Component in Other C++ Hosts
