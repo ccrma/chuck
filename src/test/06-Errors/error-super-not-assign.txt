@@ -1,0 +1,7 @@
+error-super-not-assign.ck:21:25: error: cannot assign '@=>' on types 'Parent' @=> 'Parent'...
+[21]         (this $ Parent) @=> super;
+                             ^
+error-super-not-assign.ck:21:29: error: ...(reason: right-side operand is not mutable)
+[21]         (this $ Parent) @=> super;
+                                 ^
+error-super-not-assign.ck: ...in function 'void Child.test()'

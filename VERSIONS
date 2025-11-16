@@ -29,6 +29,14 @@ ChucK 1.5.5.6
     examples/special/LiSa-track5.ck
 (added) examples/special/LiSa-load-classic.ck (to commemorate the old ways that we have all
     been using since 2007)
+(added) `super` keyword for calling superclass functions (that have potentially been overridden)
+    thanks to @NiccoloAbate for the implmentation; additional code by @nshaheed and @gewang
+    e.g., super.foo();
+(added) `super` keyword usage examples
+    examples/class/super-1-simple.ck
+    examples/class/super-2-skiplevel.ck
+    examples/class/super-3-single.ck
+    examples/class/super-4-multi.ck
 (added) new Paulstretch extreme time-stretching
     see example/analysis/paulstretch.ck
 (added) `GainDB` unit generator (nshaheed)
