@@ -1,6 +1,7 @@
 //--------------------------------------------------------
 // name: paulstretch.ck
 // desc: Paul's Extreme Sound Stretch (Paulstretch) 
+//       (requires: chuck-1.5.5.6 or higher)
 //
 // author: Celeste Betancur Gutierrez
 //         adapted from Paul Nasca's Python implementation
