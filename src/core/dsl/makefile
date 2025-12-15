@@ -3,12 +3,12 @@ CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2
 PROTOBUF_CFLAGS := $(shell pkg-config --cflags protobuf)
 PROTOBUF_LIBS := $(shell pkg-config --libs protobuf)
 
-COMMON_CPP := dsl_toml.cpp dsl_codegen.cpp
+COMMON_CPP := dsl_toml.cpp dsl_codegen.cpp dsl_opt.cpp
 PROTO_SOURCES := piece.pb.cc
 COMMON_OBJS := $(COMMON_CPP:.cpp=.o)
 PROTO_OBJS := $(PROTO_SOURCES:.cc=.o)
 
-TARGETS := dsl_dump dsl_codegen
+TARGETS := dsl_dump dsl_codegen dsl_opt
 
 .PHONY: all clean
 
@@ -18,6 +18,9 @@ dsl_dump: $(COMMON_OBJS) $(PROTO_OBJS) dsl_dump_main.o
 	$(CXX) $(CXXFLAGS) $^ $(PROTOBUF_LIBS) -o $@
 
 dsl_codegen: $(COMMON_OBJS) $(PROTO_OBJS) dsl_codegen_main.o
+	$(CXX) $(CXXFLAGS) $^ $(PROTOBUF_LIBS) -o $@
+
+dsl_opt: $(COMMON_OBJS) $(PROTO_OBJS) dsl_opt_main.o
 	$(CXX) $(CXXFLAGS) $^ $(PROTOBUF_LIBS) -o $@
 
 %.o: %.cpp
