@@ -13,6 +13,10 @@
 /src/host-web/webchuck/js/webchuck.js
 /src/host-web/webchuck/js/webchuck.wasm
 
+dsl_codegen
+dsl_opt
+dsl_dump
+
 .DS_Store
 project.xcworkspace
 xcuserdata
