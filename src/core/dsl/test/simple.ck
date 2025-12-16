@@ -1,4 +1,4 @@
-// Generated from test/simple.toml
+// Generated from simple.toml
 60.0 / 120 => float spb;
 spb :: second => dur beat;
 0.6 => float g_complexity;

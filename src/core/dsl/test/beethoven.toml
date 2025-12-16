@@ -1,0 +1,377 @@
+tempo = 108
+complexity = 0.5
+
+# Beethoven — Symphony No. 5 in C minor, Op. 67 (opening gesture, simplified)
+# "short-short-short-long" fate motif, sequenced:
+#   G G G E♭ | G G G E♭ | F F F D | F F F D
+#
+# Note: our DSL currently has no explicit rests, so each gesture is modeled as
+# its own voice with an offset, leaving space between motifs.
+
+[[voices]]
+offset = 0.0
+pan = 0.15
+
+[voices.instrument]
+osc = "SAW"
+gain = 0.22
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 2200
+q = 0.8
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 63 # E♭4
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 0.0
+pan = -0.15
+
+[voices.instrument]
+osc = "TRIANGLE"
+gain = 0.18
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 900
+q = 0.7
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 51 # E♭3
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 3.5
+pan = 0.15
+
+[voices.instrument]
+osc = "SAW"
+gain = 0.22
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 2200
+q = 0.8
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 67 # G4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 63 # E♭4
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 3.5
+pan = -0.15
+
+[voices.instrument]
+osc = "TRIANGLE"
+gain = 0.18
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 900
+q = 0.7
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 55 # G3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 51 # E♭3
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 7.0
+pan = 0.15
+
+[voices.instrument]
+osc = "SAW"
+gain = 0.22
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 2200
+q = 0.8
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 62 # D4
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 7.0
+pan = -0.15
+
+[voices.instrument]
+osc = "TRIANGLE"
+gain = 0.18
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 900
+q = 0.7
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 50 # D3
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 10.5
+pan = 0.15
+
+[voices.instrument]
+osc = "SAW"
+gain = 0.22
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 2200
+q = 0.8
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 65 # F4
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 62 # D4
+dur = 1.5
+tie = false
+
+[[voices]]
+offset = 10.5
+pan = -0.15
+
+[voices.instrument]
+osc = "TRIANGLE"
+gain = 0.18
+reverb = true
+detune = 0.0
+
+[voices.instrument.env]
+attack = 0.005
+decay = 0.02
+sustain = 0.7
+release = 0.0
+
+[voices.instrument.filter]
+type = "LOWPASS"
+cutoff = 900
+q = 0.7
+
+[voices.pattern]
+density = 1.0
+repeat = 1
+scale = "NONE"
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 53 # F3
+dur = 0.5
+tie = false
+
+[[voices.pattern.notes]]
+pitch = 50 # D3
+dur = 1.5
+tie = false
