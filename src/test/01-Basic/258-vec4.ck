@@ -29,3 +29,7 @@ a.dot(b) => float dot;
 
 // print them
 <<< group[0], group[1], group[2] >>>;
+
+// negate
+@(1, -2, 3, -4) => vec4 n;
+<<< "negate:", -@(-1, 2, -3, 4), -n >>>;

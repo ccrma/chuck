@@ -3634,6 +3634,12 @@ t_CKBOOL emit_engine_emit_exp_unary( Chuck_Emitter * emit, a_Exp_Unary unary )
             emit->append( new Chuck_Instr_Negate_int );
         else if( equals( unary->exp->type, emit->env->ckt_float ) )
             emit->append( new Chuck_Instr_Negate_double );
+        else if( equals( unary->exp->type, emit->env->ckt_vec2 ) )
+            emit->append( new Chuck_Instr_Negate_vec2 );
+        else if( equals( unary->exp->type, emit->env->ckt_vec3 ) )
+            emit->append( new Chuck_Instr_Negate_vec3 );
+        else if( equals( unary->exp->type, emit->env->ckt_vec4 ) )
+            emit->append( new Chuck_Instr_Negate_vec4 );
         else
         {
             EM_error2( unary->where,

@@ -3236,6 +3236,51 @@ void Chuck_Instr_Negate_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 // name: execute()
 // desc: ...
 //-----------------------------------------------------------------------------
+void Chuck_Instr_Negate_vec2::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC2* sp = (t_CKVEC2 *)shred->reg->sp;
+    (sp-1)->x *= -1;
+    (sp-1)->y *= -1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Negate_vec3::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC3* sp = (t_CKVEC3 *)shred->reg->sp;
+    (sp-1)->x *= -1;
+    (sp-1)->y *= -1;
+    (sp-1)->z *= -1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Negate_vec4::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKVEC4* sp = (t_CKVEC4 *)shred->reg->sp;
+    (sp-1)->x *= -1;
+    (sp-1)->y *= -1;
+    (sp-1)->z *= -1;
+    (sp-1)->w *= -1;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
 void Chuck_Instr_Branch_Lt_double::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 {
     t_CKFLOAT *& sp = (t_CKFLOAT *&)shred->reg->sp;
