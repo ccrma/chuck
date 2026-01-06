@@ -83,39 +83,41 @@ extern "C" {
 
 
 // mtof
-double ck_mtof( double f );
+double ck_mtof(double f);
 // ftom
-double ck_ftom( double f );
+double ck_ftom(double f);
 // powtodb
-double ck_powtodb( double f );
+double ck_powtodb(double f);
 // rmstodb
-double ck_rmstodb( double f );
+double ck_rmstodb(double f);
 // dbtopow
-double ck_dbtopow( double f );
+double ck_dbtopow(double f);
 // dbtorms
-double ck_dbtorms( double f );
+double ck_dbtorms(double f);
 // nextpow2
-unsigned long ck_nextpow2( unsigned long i );
+unsigned long ck_nextpow2(unsigned long i);
 // ensurepow2
-unsigned long ck_ensurepow2( unsigned long i );
+unsigned long ck_ensurepow2(unsigned long i);
 
 // floating point equals
-t_CKBOOL ck_equals( t_CKFLOAT lhs, t_CKFLOAT rhs );
-t_CKBOOL ck_equals_ex( t_CKFLOAT lhs, t_CKFLOAT rhs, t_CKFLOAT epsilon );
+t_CKBOOL ck_equals(t_CKFLOAT lhs, t_CKFLOAT rhs);
+t_CKBOOL ck_equals_ex(t_CKFLOAT lhs, t_CKFLOAT rhs, t_CKFLOAT epsilon);
 // magnitude of complex number
-t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp );
+t_CKFLOAT ck_complex_magnitude(const t_CKCOMPLEX& cmp);
 // phase of complex number
-t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp );
+t_CKFLOAT ck_complex_phase(const t_CKCOMPLEX& cmp);
 // magnitude of vec2
-t_CKFLOAT ck_vec2_magnitude( const t_CKVEC2 & v );
+t_CKFLOAT ck_vec2_magnitude(const t_CKVEC2& v);
 // phase of vec2
-t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & v );
+t_CKFLOAT ck_vec2_phase(const t_CKVEC2& v);
 // magnitude of vec3
-t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
+t_CKFLOAT ck_vec3_magnitude(const t_CKVEC3& v);
 // magnitude of vec4
-t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
-
-
+t_CKFLOAT ck_vec4_magnitude(const t_CKVEC4& v);
+// associated legendre for spherical harmonics (emc 2026)
+float associated_legendre(int m, int l, float x);
+// spherical harmonics (emc 2026)
+float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d);
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }
