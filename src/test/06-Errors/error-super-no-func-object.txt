@@ -1,0 +1,4 @@
+error-super-no-func-object.ck:9:15: error: class 'Object' has no member 'test'
+[9]         super.test();
+                  ^
+error-super-no-func-object.ck: ...in function 'void Child.test()'

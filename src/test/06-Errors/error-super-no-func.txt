@@ -1,0 +1,4 @@
+error-super-no-func.ck:21:15: error: class 'Parent' has no member 'not_override'
+[21]         super.not_override();
+                   ^
+error-super-no-func.ck: ...in function 'void Child.test()'

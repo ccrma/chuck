@@ -1,0 +1,4 @@
+error-super-static.ck:11:9: error: keyword 'super' cannot be used inside static functions
+[11]         super.foo();
+             ^
+error-super-static.ck: ...in function 'void Y.noo()'
