@@ -39,72 +39,85 @@
 DLL_QUERY libmath_query(Chuck_DL_Query* QUERY);
 
 // impl
-CK_DLL_SFUN(sin_impl);
-CK_DLL_SFUN(cos_impl);
-CK_DLL_SFUN(tan_impl);
-CK_DLL_SFUN(cot_impl);
-CK_DLL_SFUN(asin_impl);
-CK_DLL_SFUN(acos_impl);
-CK_DLL_SFUN(atan_impl);
-CK_DLL_SFUN(atan2_impl);
-CK_DLL_SFUN(sinh_impl);
-CK_DLL_SFUN(cosh_impl);
-CK_DLL_SFUN(tanh_impl);
-CK_DLL_SFUN(hypot_impl);
+CK_DLL_SFUN( sin_impl );
+CK_DLL_SFUN( cos_impl );
+CK_DLL_SFUN( tan_impl );
+CK_DLL_SFUN( cot_impl );
+CK_DLL_SFUN( asin_impl );
+CK_DLL_SFUN( acos_impl );
+CK_DLL_SFUN( atan_impl );
+CK_DLL_SFUN( atan2_impl );
+CK_DLL_SFUN( sinh_impl );
+CK_DLL_SFUN( cosh_impl );
+CK_DLL_SFUN( tanh_impl );
+CK_DLL_SFUN( hypot_impl );
 
-CK_DLL_SFUN(pow_impl);
-CK_DLL_SFUN(sqrt_impl);
-CK_DLL_SFUN(exp_impl);
-CK_DLL_SFUN(exp2_impl);
-CK_DLL_SFUN(log_impl);
-CK_DLL_SFUN(log2_impl);
-CK_DLL_SFUN(log10_impl);
-CK_DLL_SFUN(floor_impl);
-CK_DLL_SFUN(ceil_impl);
-CK_DLL_SFUN(round_impl);
-CK_DLL_SFUN(trunc_impl);
-CK_DLL_SFUN(fmod_impl);
-CK_DLL_SFUN(remainder_impl);
-CK_DLL_SFUN(min_impl);
-CK_DLL_SFUN(max_impl);
-CK_DLL_SFUN(min_int_impl);
-CK_DLL_SFUN(max_int_impl);
-CK_DLL_SFUN(isinf_impl);
-CK_DLL_SFUN(isnan_impl);
-CK_DLL_SFUN(equal_impl);
-CK_DLL_SFUN(floatMax_impl);
-CK_DLL_SFUN(intMax_impl);
+// fast approximations of the above trig functions
+CK_DLL_SFUN( fast_sin_impl );
+CK_DLL_SFUN( fast_cos_impl );
+CK_DLL_SFUN( fast_tan_impl );
+CK_DLL_SFUN( fast_cot_impl );
+CK_DLL_SFUN( fast_sinh_impl );
+CK_DLL_SFUN( fast_cosh_impl );
+CK_DLL_SFUN( fast_tanh_impl );
+CK_DLL_SFUN( fast_exp_impl );
+CK_DLL_SFUN( fast_inv_sqrt );
 
-CK_DLL_SFUN(nextpow2_impl);
-CK_DLL_SFUN(ensurepow2_impl);
+// Normal not-fast not-approximations
+CK_DLL_SFUN( pow_impl );
+CK_DLL_SFUN( sqrt_impl );
+CK_DLL_SFUN( exp_impl );
+CK_DLL_SFUN( exp2_impl );
+CK_DLL_SFUN( log_impl );
+CK_DLL_SFUN( log2_impl );
+CK_DLL_SFUN( log10_impl );
+CK_DLL_SFUN( floor_impl );
+CK_DLL_SFUN( ceil_impl );
+CK_DLL_SFUN( round_impl );
+CK_DLL_SFUN( trunc_impl );
+CK_DLL_SFUN( fmod_impl );
+CK_DLL_SFUN( remainder_impl );
+CK_DLL_SFUN( min_impl );
+CK_DLL_SFUN( max_impl );
+CK_DLL_SFUN( min_int_impl );
+CK_DLL_SFUN( max_int_impl );
+CK_DLL_SFUN( isinf_impl );
+CK_DLL_SFUN( isnan_impl );
+CK_DLL_SFUN( equal_impl );
+CK_DLL_SFUN( equale_impl );
+CK_DLL_SFUN( floatMax_impl );
+CK_DLL_SFUN( intMax_impl );
 
-CK_DLL_SFUN(re_impl);
-CK_DLL_SFUN(im_impl);
-CK_DLL_SFUN(modulus_impl);
-CK_DLL_SFUN(phase_impl);
-CK_DLL_SFUN(rtop_impl);
-CK_DLL_SFUN(ptor_impl);
+CK_DLL_SFUN( nextpow2_impl );
+CK_DLL_SFUN( ensurepow2_impl );
 
-CK_DLL_SFUN(random_impl);
-CK_DLL_SFUN(randomf_impl);
-CK_DLL_SFUN(random2f_impl);
-CK_DLL_SFUN(random2_impl);
-CK_DLL_SFUN(srandom_impl);
-CK_DLL_SFUN(randomize_impl);
+CK_DLL_SFUN( re_impl );
+CK_DLL_SFUN( im_impl );
+CK_DLL_SFUN( modulus_impl );
+CK_DLL_SFUN( phase_impl );
+CK_DLL_SFUN( rtop_impl );
+CK_DLL_SFUN( ptor_impl );
 
-CK_DLL_SFUN(gauss_impl);
+CK_DLL_SFUN( random_impl );
+CK_DLL_SFUN( randomf_impl );
+CK_DLL_SFUN( random2f_impl );
+CK_DLL_SFUN( random2_impl );
+CK_DLL_SFUN( srandom_impl );
+CK_DLL_SFUN( randomize_impl );
 
-CK_DLL_SFUN(cossim_impl);
-CK_DLL_SFUN(cossim3d_impl);
-CK_DLL_SFUN(cossim4d_impl);
+CK_DLL_SFUN( gauss_impl );
 
-CK_DLL_SFUN(euclidean_impl);
-CK_DLL_SFUN(euclidean2d_impl);
-CK_DLL_SFUN(euclidean3d_impl);
-CK_DLL_SFUN(euclidean4d_impl);
+CK_DLL_SFUN( cossim_impl );
+CK_DLL_SFUN( cossim3d_impl );
+CK_DLL_SFUN( cossim4d_impl );
 
-CK_DLL_SFUN(map_impl);
-CK_DLL_SFUN(map2_impl);
+CK_DLL_SFUN( euclidean_impl );
+CK_DLL_SFUN( euclidean2d_impl );
+CK_DLL_SFUN( euclidean3d_impl );
+CK_DLL_SFUN( euclidean4d_impl );
+
+CK_DLL_SFUN( map_impl );
+CK_DLL_SFUN( map2_impl );
 
 // spherical harmonics (everett)
 CK_DLL_SFUN(ck_sh);

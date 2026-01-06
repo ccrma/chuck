@@ -2,22 +2,27 @@
 // name: LiSa-track4.ck
 // desc: live sampling utilities for ChucK
 //       demonstrate using track == 1 mode with LiSa
+// requires: chuck-1.5.5.6
 //
 // author: Dan Trueman, 2007
 //--------------------------------------------------------------------
 
 // patch
 LiSa loopme => dac;
-// use for loading audio file (also see example: LiSa-load.ck)
-SndBuf buf;
+// load audio file into LiSa
+loopme.read( "geetar.wav" );
 
+//---------------- old method; pre-1.5.5.6 ------------------------
+// use for loading audio file (also see example: LiSa-load.ck)
+// SndBuf buf;
 // change this to your own audio file
-me.dir() + "geetar.wav" => buf.read;
+// me.dir() + "geetar.wav" => buf.read;
 // set lisa buffer size to sample size
-buf.samples()::samp => loopme.duration;
+// buf.samples()::samp => loopme.duration;
 // transfer values from SndBuf to LiSa
-for( 0 => int i; i < buf.samples(); i++ )
-{ loopme.valueAt(buf.valueAt(i), i::samp); }
+// for( 0 => int i; i < buf.samples(); i++ )
+// { loopme.valueAt(buf.valueAt(i), i::samp); }
+//----------------------------------------------------
 
 // set sync/track mode to 1, where the input chooses playback position
 1 => loopme.sync;

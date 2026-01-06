@@ -390,6 +390,7 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     func = make_new_mfun( "float", "db", gain_get_db );
     func->doc = "get gain (in dB)";
+
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // end import
@@ -404,13 +405,14 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
 
     //! GainDB
     doc = "the same as the Gain UGen, but the constructor sets the gain in deciBels rather than linear scaling.";
+
     if( !type_engine_import_ugen_begin( env, "GainDB", "Gain", env->global(),
                                         NULL, NULL, NULL, NULL, doc.c_str() ) )
         return FALSE;
 
     // example
     if( !type_engine_import_add_ex( env, "basic/gain.ck" ) ) goto error;
-    
+
     func = make_new_ctor( gainDB_ctor );
     func->doc = "construct a GainDB with default value (in deciBels).";
     func->add_arg( "float", "db" );
@@ -917,6 +919,10 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
     func->doc = "get total number of sample frames in the file; same as .frames().";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
+    func = make_new_mfun( "int", "sampleRate", sndbuf_cget_samplerate );
+    func->doc = "get sample rate of the source audio.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
     // add cget: frames
     func = make_new_mfun( "int", "frames", sndbuf_cget_samples );
     func->doc = "get total number of sample frames in the file; same as .samples().";
@@ -951,6 +957,28 @@ DLL_QUERY xxx_query( Chuck_DL_Query * QUERY )
                                         NULL, NULL,
                                         NULL, sndbuf_tickf, NULL, 2, 2, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf2_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path, float rate )
+    func = make_new_ctor( sndbuf2_ctor_path_rate );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read, and a default playback 'rate' (1.0 is normal rate)";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // add ctor( string path )
+    func = make_new_ctor( sndbuf2_ctor_path_rate_pos );
+    func->add_arg( "string", "path" );
+    func->add_arg( "float", "rate" );
+    func->add_arg( "int", "pos" );
+    func->doc = "construct a SndBuf2 with the 'path' to a sound file to read, a default playback 'rate' (1.0 is normal rate), and starting at sample position 'pos'";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
 
     // end import
     if( !type_engine_import_class_end( env ) )
@@ -1188,6 +1216,12 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb.ck" ) ) goto error;
     if( !type_engine_import_add_ex( env, "special/twilight/twilight-granular-kb-interp.ck" ) ) goto error;
 
+    // add ctor( string path )
+    func = make_new_ctor( LiSaMulti_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // set/get buffer size
     func = make_new_mfun( "dur", "duration", LiSaMulti_size );
     func->doc = "Set buffer size; required to allocate memory, also resets all parameter values to default.";
@@ -1195,6 +1229,11 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
     if( !type_engine_import_mfun( env, func ) ) goto error;
 	func = make_new_mfun( "dur", "duration", LiSaMulti_cget_size );
     func->doc = "Get buffer size.";
+    if( !type_engine_import_mfun( env, func ) ) goto error;
+
+    func = make_new_mfun( "string", "read", LiSaMulti_ctrl_read );
+    func->add_arg( "string", "path" );
+    func->doc = "read audio file at 'path' into LiSa";
     if( !type_engine_import_mfun( env, func ) ) goto error;
 
     // start/stop recording
@@ -1509,6 +1548,12 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         LiSaMulti_pmsg, 1, 2, doc.c_str() ) )
         return FALSE;
 
+    // add ctor( string path )
+    func = make_new_ctor( LiSa2_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa2 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // add examples
     if( !type_engine_import_add_ex( env, "special/LiSa-stereo.ck" ) ) goto error;
 
@@ -1524,6 +1569,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 4, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa4_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa4 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1535,6 +1587,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 6, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa6_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa6 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1546,6 +1605,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 8, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa8_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa8 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1558,6 +1624,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, 10, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa10_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa10 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -1569,6 +1642,13 @@ DLL_QUERY lisa_query( Chuck_DL_Query * QUERY )
                                         NULL, LiSaMulti_tickf,
                                         LiSaMulti_pmsg, 1, LiSa_MAXCHANNELS, doc.c_str() ) )
         return FALSE;
+
+    // add ctor( string path )
+    func = make_new_ctor( LiSa16_ctor_path );
+    func->add_arg( "string", "path" );
+    func->doc = "construct a LiSa16 with the 'path' to an audio file to read.";
+    if( !type_engine_import_ctor( env, func ) ) goto error;
+
     // end the class import
     type_engine_import_class_end( env );
 
@@ -2165,16 +2245,17 @@ public:
 };
 
 
+// pre-constructor
 CK_DLL_CTOR( cnoise_ctor )
 {
+    // create cnoise internal object
     OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)new CNoise_Data;
 }
 
 CK_DLL_CTOR( cnoise_ctor_mode )
 {
-    // create cnoise internal object
-    CNoise_Data * n = new CNoise_Data;
-    OBJ_MEMBER_UINT(SELF, cnoise_offset_data) = (t_CKUINT)n;
+    // 1.5.5.6 | internal object should be already created in pre-ctor
+    CNoise_Data * n = (CNoise_Data *)OBJ_MEMBER_UINT(SELF, cnoise_offset_data);
     // get arg
     Chuck_String * ckstr = GET_NEXT_STRING(ARGS);
     // set
@@ -2445,7 +2526,7 @@ CK_DLL_CGET( impulse_cget_next )
 
 //-----------------------------------------------------------------------------
 // name: step_ctor()
-// desc: base constructor (always run)
+// desc: base/pre constructor (always run)
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( step_ctor )
 {
@@ -2472,6 +2553,9 @@ CK_DLL_DTOR( step_dtor )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( step_ctor_value )
 {
+    // NOTE internal state should be already allocated in pre-ctor
+
+    // call next() to set the value
     Chuck_DL_Return RETURN;
     step_ctrl_next( SELF, ARGS, &RETURN, VM, SHRED, API );
 }
@@ -3178,6 +3262,8 @@ CK_DLL_DTOR( sndbuf_dtor )
 
 CK_DLL_CTOR( sndbuf_ctor_path )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
@@ -3185,6 +3271,8 @@ CK_DLL_CTOR( sndbuf_ctor_path )
 
 CK_DLL_CTOR( sndbuf_ctor_path_rate )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
@@ -3197,6 +3285,8 @@ CK_DLL_CTOR( sndbuf_ctor_path_rate )
 
 CK_DLL_CTOR( sndbuf_ctor_path_rate_pos )
 {
+    // NOTE: internal state should be already allocated in pre-ctor
+
     Chuck_DL_Return RETURN;
     // read it
     sndbuf_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
@@ -4078,6 +4168,12 @@ CK_DLL_CGET( sndbuf_cget_samples )
     RETURN->v_int = d->num_frames;
 }
 
+CK_DLL_CGET( sndbuf_cget_samplerate )
+{
+    sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
+    RETURN->v_int = d->samplerate;
+}
+
 CK_DLL_CGET( sndbuf_cget_length )
 {
     sndbuf_data * d = (sndbuf_data *)OBJ_MEMBER_UINT(SELF, sndbuf_offset_data);
@@ -4101,6 +4197,24 @@ CK_DLL_CGET( sndbuf_cget_valueAt )
     if( d->fd ) sndbuf_load( d, sample );
     // 1.5.0.0 (ge) 'frame >' => 'frame >='
     RETURN->v_float = ( frame >= d->num_frames || frame < 0 ) ? 0 : sndbuf_sampleAt(d, frame, channel);
+}
+
+CK_DLL_CTOR( sndbuf2_ctor_path )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf2_ctor_path_rate )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path_rate( SELF, ARGS, VM, SHRED, API );
+}
+
+CK_DLL_CTOR( sndbuf2_ctor_path_rate_pos )
+{
+    // call up to corresponding SndBuf contructor
+    sndbuf_ctor_path_rate_pos( SELF, ARGS, VM, SHRED, API );
 }
 
 #endif // __DISABLE_SNDBUF__
@@ -4409,7 +4523,7 @@ LiSa updates/fixes:
 */
 
 #define LiSa_MAXVOICES 256 // 1.4.1.0 (ge) increased from 200
-#define LiSa_MAXBUFSIZE 44100000
+#define LiSa_MAXBUFSIZE 441000000 // 1.5.5.6 (nshaheed) increased by an order of magnitude from 44100000
 //-----------------------------------------------------------------------------
 // name: LiSaMulti_data
 // desc: ...
@@ -4892,6 +5006,73 @@ CK_DLL_CTOR( LiSaMulti_ctor )
     OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data) = (t_CKUINT)f;
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: LiSaMulti_ctor_path()
+// desc: 1.5.5.6 (nshaheed) constructor that takes a path and load the file into the buffer
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSaMulti_ctor_path )
+{
+    Chuck_DL_Return RETURN;
+    // read it
+    LiSaMulti_ctrl_read( SELF, ARGS, &RETURN, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa2_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa2_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa4_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa4_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa6_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa6_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa8_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa8_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa10_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa10_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
+//-----------------------------------------------------------------------------
+// name: LiSa16_ctor_path()
+// desc: 1.5.5.6 (nshaheed) variations on base base LiSa constructor
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( LiSa16_ctor_path )
+{
+    // call up to base LiSa corresponding constructor
+    LiSaMulti_ctor_path( SELF, ARGS, VM, SHRED, API );
+}
 
 
 
@@ -5933,6 +6114,255 @@ CK_DLL_CGET( LiSaMulti_cget_playing )
 
     // return
     RETURN->v_int = d->play[voice];
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: LiSaMulti_ctrl_read()
+// desc: 1.5.5.6 (nshaheed) Read audio file into lisa buffer ala SndBuf
+//-----------------------------------------------------------------------------
+CK_DLL_CTRL( LiSaMulti_ctrl_read )
+{
+    LiSaMulti_data * d = (LiSaMulti_data *)OBJ_MEMBER_UINT(SELF, LiSaMulti_offset_data);
+
+    Chuck_String * ckfilename = GET_CK_STRING(ARGS);
+    const char * filename = NULL;
+
+    // set return value
+    RETURN->v_string = ckfilename;
+
+    // check to avert crash on null argument
+    if( !ckfilename )
+    {
+        CK_FPRINTF_STDERR( "[chuck] LiSa.read() given null argument; nothing read...\n" );
+        return;
+    }
+    // get filename c string
+    filename = ckfilename->str().c_str();
+
+    // log
+    EM_log( CK_LOG_INFO, "(LiSa): reading '%s'...", filename );
+
+    // built in
+    if( strstr(filename, "special:") )
+    {
+        // TODO how to handle special?
+        SAMPLE * rawdata = NULL;
+        t_CKUINT rawsize = 0;
+        t_CKUINT srate = 22050;
+
+        // which
+        if( strstr(filename, "special:sinewave") ) {
+            rawsize = 1024; rawdata = NULL;
+        }
+        else if( strstr(filename, "special:aaa") ||
+                 strstr(filename, "special:aah") ||
+                 strstr(filename, "special:ahh") )
+        {
+            rawsize = ahh_size; rawdata = ahh_data;
+        }
+        else if( strstr(filename, "special:britestk") ) {
+            rawsize = britestk_size; rawdata = britestk_data;
+        }
+        else if( strstr(filename, "special:doh") || strstr(filename, "special:dope") ) {
+            rawsize = dope_size; rawdata = dope_data;
+        }
+        else if( strstr(filename, "special:eee") ) {
+            rawsize = eee_size; rawdata = eee_data;
+        }
+        else if( strstr(filename, "special:fwavblnk") ) {
+            rawsize = fwavblnk_size; rawdata = fwavblnk_data;
+        }
+        else if( strstr(filename, "special:halfwave") ) {
+            rawsize = halfwave_size; rawdata = halfwave_data;
+        }
+        else if( strstr(filename, "special:impuls10") ) {
+            rawsize = impuls10_size; rawdata = impuls10_data;
+        }
+        else if( strstr(filename, "special:impuls20") ) {
+            rawsize = impuls20_size; rawdata = impuls20_data;
+        }
+        else if( strstr(filename, "special:impuls40") ) {
+            rawsize = impuls40_size; rawdata = impuls40_data;
+        }
+        else if( strstr(filename, "special:mand1") ) {
+            rawsize = mand1_size; rawdata = mand1_data;
+        }
+        else if( strstr(filename, "special:mandpluk") ) {
+            rawsize = mandpluk_size; rawdata = mandpluk_data;
+        }
+        else if( strstr(filename, "special:marmstk1") ) {
+            rawsize = marmstk1_size; rawdata = marmstk1_data;
+        }
+        else if( strstr(filename, "special:ooo") ) {
+            rawsize = ooo_size; rawdata = ooo_data;
+        }
+        else if( strstr(filename, "special:peksblnk") ) {
+            rawsize = peksblnk_size; rawdata = peksblnk_data;
+        }
+        else if( strstr(filename, "special:ppksblnk") ) {
+            rawsize = ppksblnk_size; rawdata = ppksblnk_data;
+        }
+        else if( strstr(filename, "special:silence") ) {
+            rawsize = silence_size; rawdata = silence_data;
+        }
+        else if( strstr(filename, "special:sineblnk") ) {
+            rawsize = sineblnk_size; rawdata = sineblnk_data;
+        }
+        else if( strstr(filename, "special:sinewave") ) {
+            rawsize = sinewave_size; rawdata = sinewave_data;
+        }
+        else if( strstr(filename, "special:snglpeak") ) {
+            rawsize = snglpeak_size; rawdata = snglpeak_data;
+        }
+        else if( strstr(filename, "special:twopeaks") ) {
+            rawsize = twopeaks_size; rawdata = twopeaks_data;
+        }
+        else if( strstr(filename, "special:glot_ahh") ) {
+            rawsize = glot_ahh_size; rawdata = glot_ahh_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_eee") ) {
+            rawsize = glot_eee_size; rawdata = glot_eee_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_ooo") ) {
+            rawsize = glot_ooo_size; rawdata = glot_ooo_data; srate = 44100;
+        }
+        else if( strstr(filename, "special:glot_pop") ) {
+            rawsize = glot_pop_size; rawdata = glot_pop_data; srate = 44100;
+        }
+
+        if( rawdata ) {
+            float ratio = g_srateXxx / srate;
+	    int interp_size = (int) ratio * rawsize;
+
+            if( !d->buffer_alloc(interp_size) ) return;
+
+	    // linearly interpolate special audio into runtime srate
+            for( t_CKUINT j = 0; j < interp_size; j++ ) {
+	      int point_left;
+	      float weight;
+	      float pos = j / ratio;
+	      point_left = (int)pos;
+	      weight = pos - point_left;
+
+	      SAMPLE samp = (SAMPLE)rawdata[point_left] * (1 - weight) + (rawdata[point_left] + 1) * weight;
+
+	      d->mdata[j] = samp / (SAMPLE)SHRT_MAX;
+	    }
+        }
+        else if( strstr(filename, "special:sinewave") ) {
+	    if( !d->buffer_alloc(rawsize+1) ) return;
+            for( t_CKUINT j = 0; j < rawsize; j++ )
+                d->mdata[j] = sin(2*CK_ONE_PI*j/rawsize);
+        }
+        else {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): cannot load '%s'\n", filename );
+            return;
+        }
+    }
+    else // read file
+    {
+#ifdef __ANDROID__
+        bool is_jar_url = strstr(filename, "jar:") == filename;
+        int jar_fd = 0;
+        if( is_jar_url )
+        {
+            if( !ChuckAndroid::copyJARURLFileToTemporary(filename, &jar_fd) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via SndBuf): could not download file '%s' from JAR\n", filename );
+                return;
+            }
+        }
+        else
+#endif
+        {
+            // check if file exists
+            struct stat s;
+            if( stat( filename, &s ) )
+            {
+                CK_FPRINTF_STDERR( "[chuck](via LiSa): cannot open file '%s'...\n", filename );
+                return;
+            }
+        }
+
+        // open it
+        SF_INFO info;
+	SNDFILE * fd;
+        info.format = 0;
+        const char * format = (const char *)strrchr( filename, '.');
+        if( format && strcmp( format, ".raw" ) == 0 )
+        {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa) %s :: type is '.raw'...\n", filename );
+            CK_FPRINTF_STDERR( "[chuck](via LiSa)  |- assuming 16 bit signed mono (PCM)\n]" );
+            info.format = SF_FORMAT_RAW | SF_FORMAT_PCM_16 | SF_ENDIAN_CPU ;
+            info.channels = 1;
+            info.samplerate = 44100;
+        }
+
+        // open the handle
+#ifdef __ANDROID__
+        if( is_jar_url )
+        {
+            d->fd = sf_open_fd( jar_fd, SFM_READ, &info, 0 );
+        }
+        else
+#endif
+        {
+            fd = sf_open( filename, SFM_READ, &info );
+        }
+        t_CKINT er = sf_error( fd );
+        if( er )
+        {
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): sndfile error '%li' opening '%s'...\n", er, filename );
+            CK_FPRINTF_STDERR( "[chuck](via LiSa): ...(reason: %s)\n", sf_strerror( fd ) );
+            if( fd )
+            {
+                sf_close( fd );
+            }
+            // escape
+            return;
+        }
+
+
+	t_CKDUR buflen = info.frames;
+	if( buflen > LiSa_MAXBUFSIZE )
+	{
+	    CK_FPRINTF_STDERR( "LiSa: buffer size request too large, resizing to %i...\n", LiSa_MAXBUFSIZE );
+	    buflen = LiSa_MAXBUFSIZE;
+	}
+	if( !d->buffer_alloc(buflen) ) return;
+
+	// copy file to buffer, if file is multichannel, store a mono mixdown.
+	float multi_data[2048];
+	int frames_read;
+	sf_count_t dataout = 0;
+
+	while(dataout < info.frames)
+	{
+	  int this_read;
+	  if (2048 / info.channels < info.frames - dataout)
+	    this_read = 2048 / info.channels;
+	  else
+	    this_read = info.frames - dataout;
+
+	  frames_read = sf_readf_float(fd, multi_data, this_read);
+	  if (frames_read == 0)
+	    break;
+
+	  // mixdown each channel into mono
+	  for (int i = 0; i < frames_read; i++) {
+	    float mix = 0.0;
+
+	    for (int ch = 0 ; ch < info.channels ; ch++)
+	      mix += multi_data [i * info.channels + ch];
+	    d->mdata[dataout + i] = mix / info.channels;
+	  }
+
+	  dataout += frames_read ;
+	}
+    }
 }
 
 

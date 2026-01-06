@@ -200,6 +200,9 @@ CK_DLL_CTRL( BiQuad_cget_zrad );
 
 // Chorus
 CK_DLL_CTOR( Chorus_ctor );
+CK_DLL_CTOR( Chorus_ctor_freq );
+CK_DLL_CTOR( Chorus_ctor_freq_depth );
+CK_DLL_CTOR( Chorus_ctor_freq_depth_mix );
 CK_DLL_DTOR( Chorus_dtor );
 CK_DLL_TICK( Chorus_tick );
 CK_DLL_PMSG( Chorus_pmsg );
@@ -429,6 +432,7 @@ CK_DLL_PMSG( BlitSquare_pmsg );
 
 // JCRev
 CK_DLL_CTOR( JCRev_ctor );
+CK_DLL_CTOR( JCRev_ctor_mix );
 CK_DLL_DTOR( JCRev_dtor );
 CK_DLL_TICK( JCRev_tick );
 CK_DLL_PMSG( JCRev_pmsg );
@@ -437,6 +441,7 @@ CK_DLL_CGET( JCRev_cget_mix );
 
 // NRev
 CK_DLL_CTOR( NRev_ctor );
+CK_DLL_CTOR( NRev_ctor_mix );
 CK_DLL_DTOR( NRev_dtor );
 CK_DLL_TICK( NRev_tick );
 CK_DLL_PMSG( NRev_pmsg );
@@ -445,6 +450,7 @@ CK_DLL_CGET( NRev_cget_mix );
 
 // PRCRev
 CK_DLL_CTOR( PRCRev_ctor );
+CK_DLL_CTOR( PRCRev_ctor_mix );
 CK_DLL_DTOR( PRCRev_dtor );
 CK_DLL_TICK( PRCRev_tick );
 CK_DLL_PMSG( PRCRev_pmsg );
@@ -562,6 +568,9 @@ CK_DLL_CGET( FormSwep_cget_sweepTime );
 
 // Modulate
 CK_DLL_CTOR( Modulate_ctor );
+CK_DLL_CTOR( Modulate_ctor_rate );
+CK_DLL_CTOR( Modulate_ctor_rate_gain );
+CK_DLL_CTOR( Modulate_ctor_rate_gain_random );
 CK_DLL_DTOR( Modulate_dtor );
 CK_DLL_TICK( Modulate_tick );
 CK_DLL_PMSG( Modulate_pmsg );
@@ -574,6 +583,8 @@ CK_DLL_CGET( Modulate_cget_randomGain );
 
 // PitShift
 CK_DLL_CTOR( PitShift_ctor );
+CK_DLL_CTOR( PitShift_ctor_shift );
+CK_DLL_CTOR( PitShift_ctor_shift_mix );
 CK_DLL_DTOR( PitShift_dtor );
 CK_DLL_TICK( PitShift_tick );
 CK_DLL_PMSG( PitShift_pmsg );
@@ -4523,6 +4534,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     JCRev_offset_data = type_engine_import_mvar ( env, "int", "@JCRev_data", FALSE );
     if( JCRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( JCRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a JCRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", JCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4556,6 +4574,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     NRev_offset_data = type_engine_import_mvar ( env, "int", "@NRev_data", FALSE );
     if( NRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( NRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct an NRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", NRev_ctrl_mix ); // set effect mix
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4589,6 +4614,13 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     PRCRev_offset_data = type_engine_import_mvar ( env, "int", "@PRCRev_data", FALSE );
     if( PRCRev_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float mix )
+    func = make_new_ctor( PRCRev_ctor_mix );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a PRCRev with specified mix level.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "mix", PRCRev_ctrl_mix ); //! mix level
     func->add_arg( "float", "value" );
     func->doc = "set mix level.";
@@ -4621,6 +4653,28 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     Chorus_offset_data = type_engine_import_mvar ( env, "int", "@Chorus_data", FALSE );
     if( Chorus_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float modFreq )
+    func = make_new_ctor( Chorus_ctor_freq );
+    func->add_arg( "float", "modFreq" );
+    func->doc = "construct a Chorus with specified modulation frequency.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float modFreq, float modDepth )
+    func = make_new_ctor( Chorus_ctor_freq_depth );
+    func->add_arg( "float", "modFreq" );
+    func->add_arg( "float", "modDepth" );
+    func->doc = "construct a Chorus with specified modulation frequency and modulation depth.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float modFreq, float modDepth, float mix )
+    func = make_new_ctor( Chorus_ctor_freq_depth_mix );
+    func->add_arg( "float", "modFreq" );
+    func->add_arg( "float", "modDepth" );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a Chorus with specified modulation frequency, modulation depth, and effect mix.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "modFreq", Chorus_ctrl_modFreq ); //! modulation frequency
     func->add_arg( "float", "value" );
     func->doc = "set modulation frequency.";
@@ -4684,6 +4738,28 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     Modulate_offset_data = type_engine_import_mvar ( env, "int", "@Modulate_data", FALSE );
     if( Modulate_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float vibratoRate )
+    func = make_new_ctor( Modulate_ctor_rate );
+    func->add_arg( "float", "vibratoRate" );
+    func->doc = "construct a Modulate with specified vibrato rate.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float vibratoRate, float vibratoGain )
+    func = make_new_ctor( Modulate_ctor_rate_gain );
+    func->add_arg( "float", "vibratoRate" );
+    func->add_arg( "float", "vibratoGain" );
+    func->doc = "construct a Modulate with specified vibrato rate and vibrato gain.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float vibratoRate, float vibratoGain, float randomGain )
+    func = make_new_ctor( Modulate_ctor_rate_gain_random );
+    func->add_arg( "float", "vibratoRate" );
+    func->add_arg( "float", "vibratoGain" );
+    func->add_arg( "float", "randomGain" );
+    func->doc = "construct a Modulate with specified vibrato rate, vibrato gain, and random contribution gain.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "vibratoRate", Modulate_ctrl_vibratoRate );  //! set rate of vibrato
     func->add_arg( "float", "value" );
     func->doc = "set rate for vibrato.";
@@ -4733,6 +4809,20 @@ by Perry R. Cook and Gary P. Scavone, 1995 - 2002.";
     //member variable
     PitShift_offset_data = type_engine_import_mvar ( env, "int", "@PitShift_data", FALSE );
     if( PitShift_offset_data == CK_INVALID_OFFSET ) goto error;
+
+    // overload ctor( float shift )
+    func = make_new_ctor( PitShift_ctor_shift );
+    func->add_arg( "float", "shift" );
+    func->doc = "construct a PitShift with specified degree of pitch shifting.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
+    // overload ctor( float shift, float mix )
+    func = make_new_ctor( PitShift_ctor_shift_mix );
+    func->add_arg( "float", "shift" );
+    func->add_arg( "float", "mix" );
+    func->doc = "construct a PitShift with specified degree of pitch shifting and effect mix.";
+    if ( !type_engine_import_ctor( env, func ) ) goto error;
+
     func = make_new_mfun( "float", "shift", PitShift_ctrl_shift ); //! degree of pitch shifting
     func->add_arg( "float", "value" );
     func->doc = "set degree of pitch shifting";
@@ -21957,6 +22047,42 @@ CK_DLL_CTOR( Chorus_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq_depth()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq_depth )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+    c->setModDepth( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Chorus_ctor_freq_depth_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Chorus_ctor_freq_depth_mix )
+{
+    Chorus * c = (Chorus*)OBJ_MEMBER_UINT(SELF, Chorus_offset_data);
+    c->setModFrequency( GET_NEXT_FLOAT(ARGS) );
+    c->setModDepth( GET_NEXT_FLOAT(ARGS) );
+    c->setEffectMix( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: Chorus_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -23817,16 +23943,17 @@ CK_DLL_CTOR( Delay_ctor )
 
 //-----------------------------------------------------------------------------
 // name: Delay_ctor_delay()
-// desc: CTOR function ...
+// desc: CTOR function (because this is a pre-ctro, it is already run)
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Delay_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+
+    // internal object should already be instantiated in pre-ctor
+    DelayBase * d = (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    // set delay (again) and max, unit is in samples
+    d->set( (long)(delay+.5), (long)(delay+.5) );
 }
 
 
@@ -23840,10 +23967,10 @@ CK_DLL_CTOR( Delay_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayBase * d = new DelayBase( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Delay_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayBase * d = (DelayBase *)OBJ_MEMBER_UINT(SELF, Delay_offset_data);
+    // set delay (again) and max, unit is in samples
+    d->set( (long)(delay+.5), (long)(max+.5) );
 }
 
 
@@ -23957,32 +24084,34 @@ CK_DLL_CGET( Delay_clear )
 // DelayA
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor )
 {
+    // instantiate internal object; this is DelayA's pre-ctor, which means
+    // it will always be run before any overloaded contructors
     OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)new DelayA;
 }
 
 
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor_delay()
-// desc: CTOR function ...
+// desc: overloaded CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayA * d = new DelayA( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayA * d = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(delay+.5) );
 }
 
 
 //-----------------------------------------------------------------------------
 // name: DelayA_ctor_delay_max()
-// desc: CTOR function ...
+// desc: overloaded CTOR function ...
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( DelayA_ctor_delay_max )
 {
@@ -23990,10 +24119,10 @@ CK_DLL_CTOR( DelayA_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayA * d = new DelayA( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayA_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayA * d = (DelayA *)OBJ_MEMBER_UINT(SELF, DelayA_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -24123,10 +24252,10 @@ CK_DLL_CTOR( DelayL_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayL * d = new DelayL( (long)(delay+.5), (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayL * d = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(delay+.5) );
 }
 
 
@@ -24140,10 +24269,10 @@ CK_DLL_CTOR( DelayL_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    DelayL * d = new DelayL( (long)(delay+.5), (long)(max+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, DelayL_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    DelayL * d = (DelayL *)OBJ_MEMBER_UINT(SELF, DelayL_offset_data);
+    // set delay (double) and max (long), unit is samps
+    d->set( delay, (long)(max+.5) );
 }
 
 
@@ -24274,12 +24403,10 @@ CK_DLL_CTOR( Echo_ctor_delay )
 {
     // get delay
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
-    // instantiate
-    Echo * d = new Echo( (long)(delay+.5) );
-    // set delay
-    d->setDelay( (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+    // internal object should already be instantiated in pre-ctor
+    Echo * d = (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
+    // set echo delay max (double); unit is samps
+    d->set( delay );
 }
 
 
@@ -24293,12 +24420,13 @@ CK_DLL_CTOR( Echo_ctor_delay_max )
     t_CKDUR delay = GET_NEXT_DUR(ARGS);
     // get delay max
     t_CKDUR max = GET_NEXT_DUR(ARGS);
-    // instantiate
-    Echo * d = new Echo( (long)(max+.5) );
-    // set delay
-    d->setDelay( (long)(delay+.5) );
-    // set pointer as member
-    OBJ_MEMBER_UINT(SELF, Echo_offset_data) = (t_CKUINT)d;
+
+    // internal object should already be instantiated in pre-ctor
+    Echo * d = (Echo *)OBJ_MEMBER_UINT(SELF, Echo_offset_data);
+    // set echo delay max (double); unit is samps
+    d->set( max );
+    // set echo delay; unit is samps
+    d->setDelay( delay );
 }
 
 
@@ -24422,7 +24550,7 @@ CK_DLL_CGET( Echo_cget_mix )
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // name: Envelope_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor )
 {
@@ -24432,7 +24560,7 @@ CK_DLL_CTOR( Envelope_ctor )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_dtor()
-// desc: DTOR function ...
+// desc: destructor
 //-----------------------------------------------------------------------------
 CK_DLL_DTOR( Envelope_dtor )
 {
@@ -24443,7 +24571,7 @@ CK_DLL_DTOR( Envelope_dtor )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_tick()
-// desc: TICK function ...
+// desc: TICK function
 //-----------------------------------------------------------------------------
 CK_DLL_TICK( Envelope_tick )
 {
@@ -24455,7 +24583,7 @@ CK_DLL_TICK( Envelope_tick )
 
 //-----------------------------------------------------------------------------
 // name: Envelope_pmsg()
-// desc: PMSG function ...
+// desc: PMSG function
 //-----------------------------------------------------------------------------
 CK_DLL_PMSG( Envelope_pmsg )
 {
@@ -24469,6 +24597,7 @@ CK_DLL_PMSG( Envelope_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_duration )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     // prep (without triggering envelope)
     d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
@@ -24481,6 +24610,7 @@ CK_DLL_CTOR( Envelope_ctor_duration )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_float )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     // prep (without triggering envelope)
     d->prepTime( GET_NEXT_FLOAT(ARGS) );
@@ -24493,6 +24623,7 @@ CK_DLL_CTOR( Envelope_ctor_float )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_duration_target )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     d->prepTime( GET_NEXT_DUR(ARGS) / Stk::sampleRate() );
     d->prepTarget( GET_NEXT_FLOAT(ARGS) );
@@ -24505,6 +24636,7 @@ CK_DLL_CTOR( Envelope_ctor_duration_target )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( Envelope_ctor_float_target )
 {
+    // internal object should be already instantiated in pre-ctor
     Envelope * d = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     d->prepTime( GET_NEXT_FLOAT(ARGS) );
     d->prepTarget( GET_NEXT_FLOAT(ARGS) );
@@ -24724,15 +24856,19 @@ CK_DLL_CTRL( Envelope_ctrl_keyOff )
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // name: ADSR_ctor()
-// desc: CTOR function ...
+// desc: base/pre CTOR function
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor )
 {
     // TODO: fix this horrid thing
     Envelope * e = (Envelope *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
+    // ugh, delete the internal object for Envelope
     CK_SAFE_DELETE(e);
 
+    // allocate internal object for ADSR
     OBJ_MEMBER_UINT(SELF, Envelope_offset_data) = (t_CKUINT)new ADSR;
+
+    // this is highly non-aesthetic but seems to work robustly
 }
 
 
@@ -24775,6 +24911,7 @@ CK_DLL_PMSG( ADSR_pmsg )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor_floats )
 {
+    // internal object should be already instantiated in pre-ctor
     ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     t_CKFLOAT a = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT d = GET_NEXT_FLOAT(ARGS);
@@ -24792,6 +24929,7 @@ CK_DLL_CTOR( ADSR_ctor_floats )
 //-----------------------------------------------------------------------------
 CK_DLL_CTOR( ADSR_ctor_durs )
 {
+    // internal object should be already instantiated in pre-ctor
     ADSR * e = (ADSR *)OBJ_MEMBER_UINT(SELF, Envelope_offset_data);
     t_CKDUR a = GET_NEXT_DUR(ARGS);
     t_CKDUR d = GET_NEXT_DUR(ARGS);
@@ -26879,6 +27017,17 @@ CK_DLL_CTOR( JCRev_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: JCRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( JCRev_ctor_mix )
+{
+    JCRev * j = (JCRev*)OBJ_MEMBER_UINT(SELF, JCRev_offset_data);
+    j->setEffectMix( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: JCRev_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -27143,6 +27292,42 @@ CK_DLL_CTOR( Modulate_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, Modulate_offset_data) = (t_CKUINT) new Modulate( );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate_gain()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate_gain )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+    m->setVibratoGain( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: Modulate_ctor_rate_gain_random()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( Modulate_ctor_rate_gain_random )
+{
+    Modulate * m = (Modulate*)OBJ_MEMBER_UINT(SELF, Modulate_offset_data);
+    m->setVibratoRate( GET_NEXT_FLOAT(ARGS) );
+    m->setVibratoGain( GET_NEXT_FLOAT(ARGS) );
+    m->setRandomGain( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -27516,6 +27701,17 @@ CK_DLL_CTOR( NRev_ctor )
 
 
 //-----------------------------------------------------------------------------
+// name: NRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( NRev_ctor_mix )
+{
+    NRev * n = (NRev*)OBJ_MEMBER_UINT(SELF, NRev_offset_data);
+    n->setEffectMix( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
 // name: NRev_dtor()
 // desc: DTOR function ...
 //-----------------------------------------------------------------------------
@@ -27582,6 +27778,29 @@ CK_DLL_CTOR( PitShift_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, PitShift_offset_data) = (t_CKUINT)new PitShift( );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PitShift_ctor_shift()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PitShift_ctor_shift )
+{
+    PitShift * p = (PitShift*)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
+    p->setShift( GET_NEXT_FLOAT(ARGS) );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PitShift_ctor_shift_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PitShift_ctor_shift_mix )
+{
+    PitShift * p = (PitShift*)OBJ_MEMBER_UINT(SELF, PitShift_offset_data);
+    p->setShift( GET_NEXT_FLOAT(ARGS) );
+    p->setEffectMix( GET_NEXT_FLOAT(ARGS) );
 }
 
 
@@ -27676,6 +27895,17 @@ CK_DLL_CTOR( PRCRev_ctor )
 {
     // initialize member object
     OBJ_MEMBER_UINT(SELF, PRCRev_offset_data) = (t_CKUINT)new PRCRev( 4.0f );
+}
+
+
+//-----------------------------------------------------------------------------
+// name: PRCRev_ctor_mix()
+// desc: CTOR function ...
+//-----------------------------------------------------------------------------
+CK_DLL_CTOR( PRCRev_ctor_mix )
+{
+    PRCRev * p = (PRCRev*)OBJ_MEMBER_UINT(SELF, PRCRev_offset_data);
+    p->setEffectMix( GET_NEXT_FLOAT(ARGS) );
 }
 
 

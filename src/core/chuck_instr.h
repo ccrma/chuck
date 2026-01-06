@@ -3802,6 +3802,33 @@ protected:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Dot_Member_Func_Super | 1.5.5.6 (niccolo) added
+// desc: access the super member function of object by offset and type
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Dot_Member_Func_Super : public Chuck_Instr
+{
+public:
+    Chuck_Instr_Dot_Member_Func_Super( t_CKUINT offset, const Chuck_Type * type )
+    { m_offset = offset; m_type = type; }
+
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+    virtual const char * params() const
+    { static char buffer[CK_PRINT_BUF_LENGTH];
+      snprintf( buffer, CK_PRINT_BUF_LENGTH, "offset=%ld super='%s'",
+                (long)m_offset, m_type ? m_type->base_name.c_str() : "[NULL]" );
+      return buffer; }
+
+protected:
+    t_CKUINT m_offset;
+    const Chuck_Type * m_type; // not const so we can get name
+    Chuck_Func * get_func( Chuck_Object * obj ) const;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Dot_Primitive_Func
 // desc: access the member function of primitive type 1.3.5.3
 //-----------------------------------------------------------------------------

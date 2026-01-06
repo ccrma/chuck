@@ -2,8 +2,76 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.6
+1.5.5.6 (November 2025)
 =======
+=> This release offers new features in ChucK and ChuGL along with many quality-of-life
+   improvements; Happy ChucKing!
+============
+ChuGL v0.2.7
+============
+(added) game-dev friendly gamepad support!
+  - (see https://chuck.stanford.edu/chugl/examples/basic/gamepad.ck)
+(added) Material blend modes! Additive, multiplicative, subtractive, custom, etc.
+  - (see https://chuck.stanford.edu/chugl/examples/basic/blend.ck)
+(added) GCamera `.aspect()` and `.autoUpdateAspect()`
+(added) `TextureLoadDesc.read` to read the texture data into a chuck array on load
+(added) `UI_DrawList` methods that ended in `...Ex` were renamed to take advantage
+    of method overloading, e.g. `.addLineEx(...)` renamed to `.addLine()`
+(added) general improvements to `UI_DrawList` and `UI_DrawFlags` docs
+(added) `GWindow.snooze()` which puts the graphics window in a low-power mode that
+only refreshes upon receiving user input. Useful for editing tools / static apps /
+art installations
+(added) new Examples
+  - basic/gamepad.ck
+    https://chuck.stanford.edu/chugl/examples/basic/gamepad.ck
+  - basic/blend.ck
+    https://chuck.stanford.edu/chugl/examples/basic/blend.ck
+  - deep/lines3d.ck
+    https://chuck.stanford.edu/chugl/examples/deep/links3d.ck
+  - deep/custom-material.ck
+    https://chuck.stanford.edu/chugl/examples/deep/custom-material.ck
+  - rendergraph/shadertoy.ck
+    https://chuck.stanford.edu/chugl/examples/rendergraph/shadertoy.ck
+bug fixes
+(fixed) camera raycast methods (e.g. `NDCToWorldPos`) fixed when using a
+    render-target that is *not* the same resolution as the GWindow
+    (basically we assumed camera aspect was always same as GWindow
+    aspect when in reality it is determined by color target its rendering too)
+(fixed) Texture.load() bug where some textures were incorrectly loaded with negative dimensions.
+(fixed) `GWindow.sizeLimits()` not correctly updating window size (thanks Ben)
+=============
+ChucK 1.5.5.6
+=============
+(added) LiSa now has a .read( string filename ) function as well as an overloaded constructor
+    that can directly read into an audio file into LiSa (without needing a separate SndBuf);
+    this now only shortens the code, but offers 100X performance increase during file loading
+    LiSa( string path )
+        construct a LiSa with the 'path' to a sound file to read.
+    string .read( string path )
+        read audio file at 'path' into LiSa
+(added) similar overloaded contructors for multichannel LiSa
+    LiSa2( string path )
+    LiSa4( string path )
+    LiSa6( string path )
+    LiSa8( string path )
+    LiSa10( string path )
+    LiSa16( string path )
+(updated) examples using the new LiSa file loading
+    examples/special/LiSa-load.ck
+    examples/special/LiSa-track4.ck
+    examples/special/LiSa-track5.ck
+(added) examples/special/LiSa-load-classic.ck (to commemorate the old ways that we have all
+    been using since 2007)
+(added) `super` keyword for calling superclass functions (that have potentially been overridden)
+    thanks to @NiccoloAbate for the implmentation; additional code by @nshaheed and @gewang
+    e.g., super.foo();
+(added) `super` keyword usage examples
+    examples/class/super-1-simple.ck
+    examples/class/super-2-skiplevel.ck
+    examples/class/super-3-single.ck
+    examples/class/super-4-multi.ck
+(added) new Paulstretch extreme time-stretching
+    see example/analysis/paulstretch.ck
 (added) `GainDB` unit generator (nshaheed)
     the same as the Gain UGen, but the constructor sets the gain in deciBels rather
     than linear scaling.
@@ -15,6 +83,62 @@ ChucK VERSIONS log
         get gain (in dB)
 (added) `Gain` has gained the above .db methods as well
 (added) examples/basic/gain.ck
+(added) SndBuf2( string path ) overloaded constructor
+(added) StringTokenizer custom delimiters
+    StringTokenizer( string line )
+        construct a StringTokenizer with a string to tokenize;
+        this will use the default whitespace delimiters.
+    StringTokenizer( string line, string delimiters )
+        construct a StringTokenizer with a string to tokenize, as well as custom delimiters; if the latter is empty string, default
+        whitespace characters will be used.
+    string delims( string delimiters )
+        sets the delimination characters as a string. If the argument
+        is an empty string, default whitespace characters " \f\n\r\t\v"
+        will be used. Also, calling this method resets the state for
+        the token retrieval loop (e.g., .more() and .next())"
+    string delims()
+        returns the string delimination characters as a string.
+(updated) examples/string/token.ck
+    shows additional string tokenizer functionality
+(added) string methods to replace a character using a string; previously
+    characters can only be replaced using an integer with the corresponding
+    ASCII code.
+    string charAt2( int index, string theCar )
+        set the character (as a string) at the specified index;
+        if `theChar` is an empty string, the character in question is
+        erased from the string; if `theChar` is longer than 1 character,
+        only its first character will be used.
+    string charAt2()
+        get the character at the specified index, and return it as a string.
+(updated) examples/string/strops2.ck
+    shows the charAt2() and charAt2( int, string ) methods in action
+(added) Math.equals( float lhs, float rhs, float epsilon)
+    an overloaded version of Math.equals( float, float) with custom epsilon
+(added) overloaded consstructors ctor(freq) and ctor(freq, Q) for following filters:
+    LPF, HPF, BPF, BRF, RLPF, RHPF, ResonZ, in the form of
+    CTOR( float freq ) CTOR( float freq, float Q )
+(added) overloaded constructors for the following STK effects:
+    JCRev ( float mix )
+    NRev ( float mix )
+    PRCRev ( float mix )
+    Chorus ( float modFreq )
+    Chorus ( float modFreq, float modDepth)
+    Chorus ( float modFreq, float modDepth, float mix )
+    Modulate ( float vibratoRate )
+    Modulate ( float vibratoRate, float vibratoGain)
+    Modulate ( float vibratoRate, float vibratoGain, float randomGain )
+    PitShift ( float shift )
+    PitShift ( float shift, float mix )
+(added) examples/deep/cage.ck
+    two implementation of 4'33", accompanied by philosophical pondering...
+(added) examples/deep/room.ck
+    a ChucK implementation of Alvin Lucier's "I am sitting in a room"
+(added) examples/deep/young.ck
+    an interactive implementation of La Monte Young's Composition 1960 #7
+(fixed) overloaded contructors memory leaks for Delay, DelayA, DelayL,
+    Echo, ADSR
+(fixed) inaccuracies in setting delay values in certain Delay-based
+    contructors
 
 
 1.5.5.5 (September 2025)
