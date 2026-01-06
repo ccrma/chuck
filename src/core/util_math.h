@@ -35,90 +35,90 @@
 #define __UTIL_MATH_H__
 
 #include <math.h>
+#include <vector>
+#include <array>
 #include "chuck_def.h" // 1.4.1.0 (ge) for t_CKINT
 
 #if defined (__cplusplus) || defined(_cplusplus)
 extern "C" {
 #endif
 
-// 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
+    // 1.4.1.1 (ge) removed -- seems no longer needed on more modern windows
 #ifdef __PLATFORM_WINDOWS__
 #ifdef __CK_MATH_DEFINE_ROUND_TRUNC__
-    double round( double a );
-    double trunc( double a );
+    double round(double a);
+    double trunc(double a);
 #endif
 #endif
 
-// 1.4.1.0 (ge) need this since remainder still not found (VC++ 2010)
-double ck_remainder( double a, double b );
+    // 1.4.1.0 (ge) need this since remainder still not found (VC++ 2010)
+    double ck_remainder(double a, double b);
 
 
-// chuck random wrapper, return t_CKINT in [0,CK_RANDOM_MAX]
-t_CKINT ck_random();
-// chuck random float wrapper, return t_CKFLOAT in [0,1]
-t_CKFLOAT ck_random_f();
-// chuck srandom wrapper
-void ck_srandom( unsigned seed );
-// randomizer wrapper (use this instead of seeding for initial)
-void ck_randomize();
+    // chuck random wrapper, return t_CKINT in [0,CK_RANDOM_MAX]
+    t_CKINT ck_random();
+    // chuck random float wrapper, return t_CKFLOAT in [0,1]
+    t_CKFLOAT ck_random_f();
+    // chuck srandom wrapper
+    void ck_srandom(unsigned seed);
+    // randomizer wrapper (use this instead of seeding for initial)
+    void ck_randomize();
 
 
-//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
 #ifndef __OLDSCHOOL_RANDOM__
 //-----------------------------------------------------------------------------
 #define CK_RANDOM_MAX 0x7fffffff
 //-----------------------------------------------------------------------------
 #else // __OLDSCHOOL_RANDOM__ (enable only for compatibility pre-c++11)
 //-----------------------------------------------------------------------------
-  #ifndef __PLATFORM_WINDOWS__
-    #define CK_RANDOM_MAX 0x7fffffff
-  #else // __PLATFORM_WINDOWS__
-    #define CK_RANDOM_MAX RAND_MAX
-  #endif
+#ifndef __PLATFORM_WINDOWS__
+#define CK_RANDOM_MAX 0x7fffffff
+#else // __PLATFORM_WINDOWS__
+#define CK_RANDOM_MAX RAND_MAX
+#endif
 //-----------------------------------------------------------------------------
 #endif // __OLDSCHOOL_RANDOM__
 //-----------------------------------------------------------------------------
 
 
 // mtof
-double ck_mtof( double f );
-// ftom
-double ck_ftom( double f );
-// powtodb
-double ck_powtodb( double f );
-// rmstodb
-double ck_rmstodb( double f );
-// dbtopow
-double ck_dbtopow( double f );
-// dbtorms
-double ck_dbtorms( double f );
-// nextpow2
-unsigned long ck_nextpow2( unsigned long i );
-// ensurepow2
-unsigned long ck_ensurepow2( unsigned long i );
+    double ck_mtof(double f);
+    // ftom
+    double ck_ftom(double f);
+    // powtodb
+    double ck_powtodb(double f);
+    // rmstodb
+    double ck_rmstodb(double f);
+    // dbtopow
+    double ck_dbtopow(double f);
+    // dbtorms
+    double ck_dbtorms(double f);
+    // nextpow2
+    unsigned long ck_nextpow2(unsigned long i);
+    // ensurepow2
+    unsigned long ck_ensurepow2(unsigned long i);
 
-// floating point equals
-t_CKBOOL ck_equals( t_CKFLOAT lhs, t_CKFLOAT rhs );
-// magnitude of complex number
-t_CKFLOAT ck_complex_magnitude( const t_CKCOMPLEX & cmp );
-// phase of complex number
-t_CKFLOAT ck_complex_phase( const t_CKCOMPLEX & cmp );
-// magnitude of vec2
-t_CKFLOAT ck_vec2_magnitude( const t_CKVEC2 & v );
-// phase of vec2
-t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & v );
-// magnitude of vec3
-t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
-// magnitude of vec4
-t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
-
-
+    // floating point equals
+    t_CKBOOL ck_equals(t_CKFLOAT lhs, t_CKFLOAT rhs);
+    // magnitude of complex number
+    t_CKFLOAT ck_complex_magnitude(const t_CKCOMPLEX& cmp);
+    // phase of complex number
+    t_CKFLOAT ck_complex_phase(const t_CKCOMPLEX& cmp);
+    // magnitude of vec2
+    t_CKFLOAT ck_vec2_magnitude(const t_CKVEC2& v);
+    // phase of vec2
+    t_CKFLOAT ck_vec2_phase(const t_CKVEC2& v);
+    // magnitude of vec3
+    t_CKFLOAT ck_vec3_magnitude(const t_CKVEC3& v);
+    // magnitude of vec4
+    t_CKFLOAT ck_vec4_magnitude(const t_CKVEC4& v);
+    // calculate spherical harmonics and return vector (everett 2025)
+    float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d);
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }
 #endif
-
-
 
 
 #endif

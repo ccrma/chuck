@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core\chuck.h" />
-    <ClInclude Include="..\core\chuckSH.h" />
     <ClInclude Include="..\core\chuck_absyn.h" />
     <ClInclude Include="..\core\chuck_carrier.h" />
     <ClInclude Include="..\core\chuck_compile.h" />

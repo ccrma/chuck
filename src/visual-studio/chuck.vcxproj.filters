@@ -447,9 +447,6 @@
     <ClInclude Include="..\core\util_platforms.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\core\chuckSH.h">
-      <Filter>core</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="core">
