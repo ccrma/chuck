@@ -366,27 +366,27 @@ t_CKFLOAT ck_vec4_magnitude(const t_CKVEC4& v)
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
 static const double factori[] = {
-        1.0,                    // 0!
-        1.0,                    // 1!
-        2.0,                    // 2!
-        6.0,                    // 3!
-        24.0,                   // 4!
-        120.0,                  // 5!
-        720.0,                  // 6!
-        5040.0,                 // 7!
-        40320.0,                // 8!
-        362880.0,               // 9!
-        3628800.0,              // 10!
-        39916800.0,             // 11!
-        479001600.0,            // 12!
-        6227020800.0,           // 13!
-        87178291200.0,          // 14!
-        1307674368000.0,        // 15!
-        20922789888000.0,       // 16!
-        355687428096000.0,      // 17!
-        6402373705728000.0,     // 18!
-        121645100408832000.0,   // 19!
-        2432902008176640000.0   // 20!
+        1.0,                    
+        1.0,                    
+        2.0,                    
+        6.0,                    
+        24.0,                   
+        120.0,                  
+        720.0,                  
+        5040.0,                 
+        40320.0,                
+        362880.0,               
+        3628800.0,              
+        39916800.0,             
+        479001600.0,            
+        6227020800.0,           
+        87178291200.0,          
+        1307674368000.0,        
+        20922789888000.0,       
+        355687428096000.0,      
+        6402373705728000.0,     
+        121645100408832000.0,  
+        2432902008176640000.0 
 };
 
 //-----------------------------------------------------------------------------
@@ -466,8 +466,8 @@ float associated_legendre(int m, int l, float x)
 class NLOUP
 {
 protected:
-    const static unsigned MAX_ORDER = 12; // set
-    const static unsigned MAX_DEGREE = 12;
+    const static unsigned MAX_ORDER = 6; // set
+    const static unsigned MAX_DEGREE = 6;
     std::array<std::array<float, MAX_DEGREE>, MAX_ORDER> loup;
 
     float calcSN3D(unsigned order, int degree) // calculate SN3D value for loup
@@ -514,7 +514,7 @@ NLOUP norms; // create LOUP
 //-----------------------------------------------------------------------------
 float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d) // SH calc
 {
-    float azimuth_shift = (azimuth_) * 0.01745329252; // reduce to range of 0 < azi < 2pi & shift "perspective" so that azi = 0 and zeni = 0 is a unity vector facing outwards from the listener (vector pointing from roughly the nose forward)
+    float azimuth_shift = (azimuth_) * 0.01745329252; // degree 2 rad
     float zenith_shift = (90.f - zenith_) * 0.01745329252;
     float coszeni = cosf(zenith_shift);
     int size = (order_ + 1) * (order_ + 1);
@@ -525,7 +525,7 @@ float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d) 
             result[0] = norms.SN3D(order, 0);
         for (int degree = -order; degree <= order; degree++)
         {
-            float n = n3d ? norms.N3D(order, degree) : norms.SN3D(order, degree);                          // normalization term if n3d bool = TRUE, return N3D else SN3D
+            float n = n3d ? norms.N3D(order, degree) : norms.SN3D(order, degree); // normalization term if n3d bool = TRUE, return N3D else SN3D
             float p = (associated_legendre((int)abs(degree), (int)order, coszeni));
             float r = (degree < 0) ? sinf(abs(degree) * (azimuth_shift)) : cosf(degree * (azimuth_shift)); // degree positive? Re(exp(i*azimuth*degree)) degree negative? Im(exp(i*azimuth*degree))
             result[(order * order) + order + degree] = n * p * r;

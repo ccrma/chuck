@@ -107,7 +107,7 @@ CK_DLL_SFUN(map_impl);
 CK_DLL_SFUN(map2_impl);
 
 // spherical harmonics (everett)
-CK_DLL_SFUN(spherical_harmony);
+CK_DLL_SFUN(ck_sh);
 
 
 #endif

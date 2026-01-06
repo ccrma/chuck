@@ -464,7 +464,7 @@ DLL_QUERY libmath_query(Chuck_DL_Query* QUERY)
     QUERY->doc_func(QUERY, "Clamp a float to range [min,max].");
 
     // everett's spherical harmonics
-    QUERY->add_sfun(QUERY, spherical_harmony, "float[]", "sh");
+    QUERY->add_sfun(QUERY, ck_sh, "float[]", "sh");
     QUERY->add_arg(QUERY, "int", "order");
     QUERY->add_arg(QUERY, "float", "azimuth");
     QUERY->add_arg(QUERY, "float", "zenith");
@@ -1283,27 +1283,30 @@ CK_DLL_SFUN(map2_impl)
 }
 
 // everett's spherical harmonics
-CK_DLL_SFUN(spherical_harmony)
+CK_DLL_SFUN(ck_sh)
 {
     t_CKINT order = GET_NEXT_INT(ARGS);
     t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
-    if (order > 5)
+    if (order <= 5)
+    {
+        unsigned size = (order + 1) * (order + 1);
+        float* coord = SH(order, direction, elevation, 0);
+        // Create a float[] array
+        Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
+        Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
+        for (int i = 0; i < size; i++)
+        {
+            API->object->array_float_push_back(coordinatearray, coord[i]);
+        }
+        delete[] coord;
+        coord = nullptr;
+        // Need to cast back to object due to lost inheirtience structure
+        RETURN->v_object = (Chuck_Object*)coordinatearray;
+    }
+    else 
     {
         API->vm->throw_exception("Math.sh() : Invalid Order", "Up to 5th order supported", nullptr);
         RETURN->v_int = 0;
     }
-    unsigned size = (order + 1) * (order + 1);
-    float* coord = SH(order, direction, elevation, 0);
-    // Create a float[] array
-    Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
-    Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
-    for (int i = 0; i < size; i++)
-    {
-        API->object->array_float_push_back(coordinatearray, coord[i]);
-    }
-    delete[] coord;
-    coord = nullptr;
-    // Need to cast back to object due to lost inheirtience structure
-    RETURN->v_object = (Chuck_Object*)coordinatearray;
 }
