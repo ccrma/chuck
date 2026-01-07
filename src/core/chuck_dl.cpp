@@ -1180,7 +1180,7 @@ const Chuck_DL_Query * Chuck_DLL::query()
     if( m_query.op_overloads.size() )
     {
         // log
-        EM_log( CK_LOG_FINE, "processing operator overload in chugin '%s'", m_filename.c_str() );
+        EM_log( CK_LOG_FINER, "processing operator overload in chugin '%s'", m_filename.c_str() );
         // push log
         EM_pushlog();
         // iterate over overloads
@@ -1189,7 +1189,7 @@ const Chuck_DL_Query * Chuck_DLL::query()
             // get the dl func def
             Chuck_DL_Func * f = m_query.op_overloads[i];
             // log
-            EM_log( CK_LOG_FINE, "processing '%s'", f->name.c_str() );
+            EM_log( CK_LOG_FINER, "processing '%s'", f->name.c_str() );
             // try to import
             if( !type_engine_import_op_overload( m_query.env(), f ) )
             {

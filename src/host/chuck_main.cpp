@@ -666,6 +666,8 @@ t_CKBOOL go( int argc, const char ** argv )
     std::string import_path_system, import_path_packages, import_path_user;
     // list of search paths (added 1.3.0.0)
     std::list<std::string> dl_search_path_system, dl_search_path_packages, dl_search_path_user;
+    // list of potential replacement search paths (from command line) | 1.5.5.7 (ge) added
+    std::list<std::string> dl_search_path_system_replace, dl_search_path_packages_replace, dl_search_path_user_replace;
 
     // 1.3.0.0 | if set as environment variable, get it; otherwise use default
     // 1.5.4.0 | separate out into system, user, packages paths
@@ -917,6 +919,33 @@ t_CKBOOL go( int argc, const char ** argv )
                     errorMessage2 = " |- looking for ON, OFF, or AUTO";
                     break;
                 }
+            }
+            // set system search path | 1.5.5.7 (ge) added
+            // if set, this will replace chuck's system search paths
+            // NOTE: this is useful for deploying self-contained chuck programs
+            //       sandboxed from any installed chugins/chuck-based libraries on host computer
+            else if( !strncmp(argv[i], "--system-chugin-path:", sizeof("--system-chugin-path:")-1) )
+            {
+                // get the rest
+                dl_search_path_system_replace.push_back( argv[i]+sizeof("--system-chugin-path:")-1 );
+            }
+            // set packages search path | 1.5.5.7 (ge) added
+            // if set, this will replace chuck's packages search paths
+            // NOTE: this is useful for deploying self-contained chuck programs
+            //       sandboxed from any installed chugins/chuck-based libraries on host computer
+            else if( !strncmp(argv[i], "--packages-chugin-path:", sizeof("--packages-chugin-path:")-1) )
+            {
+                // get the rest
+                dl_search_path_packages_replace.push_back( argv[i]+sizeof("--packages-chugin-path:")-1 );
+            }
+            // set user search path | 1.5.5.7 (ge) added
+            // if set, this will replace chuck's user search paths
+            // NOTE: this is useful for deploying self-contained chuck programs
+            //       sandboxed from any installed chugins/chuck-based libraries on host computer
+            else if( !strncmp(argv[i], "--user-chugin-path:", sizeof("--user-chugin-path:")-1) )
+            {
+                // get the rest
+                dl_search_path_user_replace.push_back( argv[i]+sizeof("--user-chugin-path:")-1 );
             }
             // add to system path(s); chugins in system paths are auto-loaded...
             // .ck files can be @imported | 1.5.4.2 (ge) added
@@ -1267,6 +1296,27 @@ t_CKBOOL go( int argc, const char ** argv )
     // set chugins parameters
     the_chuck->setParam( CHUCK_PARAM_CHUGIN_ENABLE, chugin_load );
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
+
+    // if at least one specified, replace | 1.5.5.7 (ge)
+    if( dl_search_path_system_replace.size() ) // system
+    {
+        // if empty string then clear
+        if( dl_search_path_system_replace.front() == "" ) { dl_search_path_system.clear(); }
+        else { dl_search_path_system = dl_search_path_system_replace; }
+    }
+    if( dl_search_path_packages_replace.size() ) // packages
+    {
+        // if empty string then clear
+        if( dl_search_path_packages_replace.front() == "" ) { dl_search_path_packages.clear(); }
+        else { dl_search_path_packages = dl_search_path_packages_replace; }
+    }
+    if( dl_search_path_user_replace.size() ) // user
+    {
+        // if empty string then clear
+        if( dl_search_path_user_replace.front() == "" ) { dl_search_path_user.clear(); }
+        else { dl_search_path_user = dl_search_path_user_replace; }
+    }
+    // set chugin search paths
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_SYSTEM, dl_search_path_system );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_PACKAGES, dl_search_path_packages );
     the_chuck->setParam( CHUCK_PARAM_IMPORT_PATH_USER, dl_search_path_user );

@@ -721,23 +721,34 @@ t_CKBOOL ChucK::initChugins()
     EM_log( CK_LOG_SYSTEM, "chugin system auto-load: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
     EM_pushlog();
     // print host version
-    EM_log( CK_LOG_HERALD, (string("host API version: ")+TC::green("%d.%d", true)).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    EM_log( CK_LOG_HERALD, (std::string("host API version: ")+TC::green("%d.%d", true)).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
     EM_poplog();
 
-    // whether or not chug should be enabled (added 1.3.0.0)
-    if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
-    {
-        // list of search pathes (added 1.3.0.0)
-        std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
-        // list of individually named chug-ins (added 1.3.0.0)
-        std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
+    // whether to auto-load chugins
+    t_CKINT auto_load = getParamInt( CHUCK_PARAM_CHUGIN_ENABLE );
+    // list of search pathes (added 1.3.0.0)
+    std::list<std::string> dl_search_path = getParamStringList( CHUCK_PARAM_IMPORT_PATH_SYSTEM );
+    // list of individually named chug-ins (added 1.3.0.0)
+    std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
+    // whether or not chugins should be enabled (added 1.3.0.0)
+    // modified to load named chugins (--chugin) if present | 1.5.5.7 (ge) modified
+    if( auto_load || named_dls.size() )
+    {
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = ckte_origin_CHUGIN;
         //---------------------------------------------------------------------
+
         // log
-        EM_log( CK_LOG_SYSTEM, "loading system chugins..." );
+        EM_log( CK_LOG_SYSTEM, "loading%schugins...", (!auto_load && named_dls.size()) ? " (specific) " : " " );
+
+        // if not auto-load | 1.5.5.7 (ge) added
+        if( !auto_load )
+        {
+            // empty search paths to load in this function
+            dl_search_path.clear();
+        }
 
         // chugin extension
         std::string extension = ".chug";
@@ -806,11 +817,6 @@ t_CKBOOL ChucK::initChugins()
         // pop log
         EM_poplog();
         ---------------------------------------------------------------------*/
-    }
-    else
-    {
-        // log | 1.4.1.0 (ge) commented out; printing earlier
-        // EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
     }
 
     // unset origin hint | 1.5.0.0 (ge) added

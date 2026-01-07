@@ -623,8 +623,11 @@ std::string Chuck_Compiler::resolveFilename( const std::string & filename,
     vector<string> exts; exts.push_back(".ck"); exts.push_back(".chug"); exts.push_back(".chug.wasm");
 
     // log
-    EM_log( CK_LOG_FINE, "resolving filename: '%s' importer: '%s' expand-search: %s",
-            filename.c_str(), importerAbsolutePath.c_str(), expandSearchToGlobal ? "YES" : "NO" );
+    EM_log( CK_LOG_FINE, "resolving filename: '%s'", filename.c_str() );
+    EM_pushlog();
+    EM_log( CK_LOG_FINE, "importer: '%s'", importerAbsolutePath.c_str() );
+    EM_log( CK_LOG_FINE, "expand-search: %s", expandSearchToGlobal ? "YES" : "NO" );
+    EM_poplog();
 
     // check if already absolute path
     if( isAlreadyAbsolutePath )

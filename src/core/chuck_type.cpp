@@ -5981,7 +5981,7 @@ Chuck_Namespace::~Chuck_Namespace()
 void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * theType )
 {
     // log it
-    EM_log( CK_LOG_FINE, "namespace '%s' adding type '%s'->'%s'", this->name.c_str(), xid.c_str(), theType->name().c_str() );
+    EM_log( CK_LOG_FINER, "namespace '%s' adding type '%s'->'%s'", this->name.c_str(), xid.c_str(), theType->name().c_str() );
     // add it
     this->type.add( xid, theType );
 }
@@ -5996,7 +5996,7 @@ void Chuck_Namespace::add_type( const std::string & xid, Chuck_Type * theType )
 void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * theValue )
 {
     // log it
-    EM_log( CK_LOG_FINE, "namespace '%s' adding value '%s'->'%s'", this->name.c_str(), xid.c_str(), theValue->name.c_str() );
+    EM_log( CK_LOG_FINER, "namespace '%s' adding value '%s'->'%s'", this->name.c_str(), xid.c_str(), theValue->name.c_str() );
     // add it
     this->value.add( xid, theValue );
 }
@@ -6011,7 +6011,7 @@ void Chuck_Namespace::add_value( const std::string & xid, Chuck_Value * theValue
 void Chuck_Namespace::add_func( const std::string & xid, Chuck_Func * theFunc )
 {
     // log it
-    EM_log( CK_LOG_FINE, "namespace '%s' adding func '%s'->'%s'", this->name.c_str(), xid.c_str(), theFunc->base_name.c_str() );
+    EM_log( CK_LOG_FINER, "namespace '%s' adding func '%s'->'%s'", this->name.c_str(), xid.c_str(), theFunc->base_name.c_str() );
     // add it
     this->func.add( xid, theFunc );
 }
