@@ -1639,9 +1639,9 @@ t_CKBOOL Chuck_Compiler::import_chugin_opt( const string & path, const string & 
     // get env
     Chuck_Env * env = this->env();
 
-    // NOTE this (verbose >= 5) is more informative if the chugin crashes, we can see the name
+    // NOTE this (running with verbose >= 5) is more informative if the chugin crashes while loading, we can see the name
     EM_log( CK_LOG_INFO, "@import loading [chugin] %s...", name.c_str() );
-    EM_log( CK_LOG_FINE, " |- path: '%s'", path.c_str() );
+    EM_log( CK_LOG_INFO, " |- path: '%s'", path.c_str() );
 
     // create chuck DLL data structure
     Chuck_DLL * dll = new Chuck_DLL( this->carrier(), name != "" ? name.c_str() : (extract_filepath_file(path)).c_str() );

@@ -718,7 +718,11 @@ t_CKBOOL ChucK::initChugins()
     // Chuck_VM_Shred * shred = NULL;
 
     // print whether chugins enabled
-    EM_log( CK_LOG_SYSTEM, "chugin system: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+    EM_log( CK_LOG_SYSTEM, "chugin system auto-load: %s", getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) ? "ON" : "OFF" );
+    EM_pushlog();
+    // print host version
+    EM_log( CK_LOG_HERALD, (string("host API version: ")+TC::green("%d.%d", true)).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
+    EM_poplog();
 
     // whether or not chug should be enabled (added 1.3.0.0)
     if( getParamInt( CHUCK_PARAM_CHUGIN_ENABLE ) != 0 )
@@ -728,17 +732,12 @@ t_CKBOOL ChucK::initChugins()
         // list of individually named chug-ins (added 1.3.0.0)
         std::list<std::string> named_dls = getParamStringList( CHUCK_PARAM_USER_CHUGINS );
 
-        EM_pushlog();
-        // print host version
-        EM_log( CK_LOG_HERALD, TC::green("host API version: %d.%d", true).c_str(), CK_DLL_VERSION_MAJOR, CK_DLL_VERSION_MINOR );
-        EM_poplog();
-
         //---------------------------------------------------------------------
         // set origin hint | 1.5.0.0 (ge) added
         m_carrier->compiler->m_originHint = ckte_origin_CHUGIN;
         //---------------------------------------------------------------------
         // log
-        EM_log( CK_LOG_SYSTEM, "loading chugins..." );
+        EM_log( CK_LOG_SYSTEM, "loading system chugins..." );
 
         // chugin extension
         std::string extension = ".chug";
@@ -811,7 +810,7 @@ t_CKBOOL ChucK::initChugins()
     else
     {
         // log | 1.4.1.0 (ge) commented out; printing earlier
-        EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
+        // EM_log( CK_LOG_SYSTEM, "chugin system: OFF" );
     }
 
     // unset origin hint | 1.5.0.0 (ge) added
