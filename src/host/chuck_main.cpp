@@ -924,35 +924,35 @@ t_CKBOOL go( int argc, const char ** argv )
             // if set, this will replace chuck's system search paths
             // NOTE: this is useful for deploying self-contained chuck programs
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
-            else if( !strncmp(argv[i], "--system-chugin-path:", sizeof("--system-chugin-path:")-1) )
+            else if( !strncmp(argv[i], "--chugin-path-system:", sizeof("--chugin-path-system:")-1) )
             {
                 // get the rest
-                dl_search_path_system_replace.push_back( argv[i]+sizeof("--system-chugin-path:")-1 );
+                dl_search_path_system_replace.push_back( argv[i]+sizeof("--chugin-path-system:")-1 );
             }
             // set packages search path | 1.5.5.7 (ge) added
             // if set, this will replace chuck's packages search paths
             // NOTE: this is useful for deploying self-contained chuck programs
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
-            else if( !strncmp(argv[i], "--packages-chugin-path:", sizeof("--packages-chugin-path:")-1) )
+            else if( !strncmp(argv[i], "--chugin-path-packages:", sizeof("--chugin-path-packages:")-1) )
             {
                 // get the rest
-                dl_search_path_packages_replace.push_back( argv[i]+sizeof("--packages-chugin-path:")-1 );
+                dl_search_path_packages_replace.push_back( argv[i]+sizeof("--chugin-path-packages:")-1 );
             }
             // set user search path | 1.5.5.7 (ge) added
             // if set, this will replace chuck's user search paths
             // NOTE: this is useful for deploying self-contained chuck programs
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
-            else if( !strncmp(argv[i], "--user-chugin-path:", sizeof("--user-chugin-path:")-1) )
+            else if( !strncmp(argv[i], "--chugin-path-user:", sizeof("--chugin-path-user:")-1) )
             {
                 // get the rest
-                dl_search_path_user_replace.push_back( argv[i]+sizeof("--user-chugin-path:")-1 );
+                dl_search_path_user_replace.push_back( argv[i]+sizeof("--chugin-path-user:")-1 );
             }
             // add to system path(s); chugins in system paths are auto-loaded...
             // .ck files can be @imported | 1.5.4.2 (ge) added
-            else if( !strncmp(argv[i], "--auto-load-chugin-path:", sizeof("--auto-load-chugin-path:")-1) )
+            else if( !strncmp(argv[i], "--chugin-path-auto-load:", sizeof("--chugin-path-auto-load:")-1) )
             {
                 // get the rest
-                dl_search_path_system.push_back( argv[i]+sizeof("--auto-load-chugin-path:")-1 );
+                dl_search_path_system.push_back( argv[i]+sizeof("--chugin-path-auto-load:")-1 );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
