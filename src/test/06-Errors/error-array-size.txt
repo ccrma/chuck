@@ -1,0 +1,1 @@
+[chuck]:(EXCEPTION) ArrayOutofBounds: on line[7] in shred[id=1:06-Errors/error-array-size.ck] index[4]

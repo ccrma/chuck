@@ -470,7 +470,8 @@ Chuck_ArrayInt::Chuck_ArrayInt( t_CKBOOL is_obj, t_CKINT capacity )
     m_vector.resize( capacity );
     // clear (as non-object, so no releases)
     m_is_obj = FALSE;
-    this->zero( 0, m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    this->zero( 0, m_vector.size() );
     // is object (set after clear)
     m_is_obj = is_obj;
 }
@@ -498,7 +499,7 @@ Chuck_ArrayInt::~Chuck_ArrayInt()
 t_CKUINT Chuck_ArrayInt::addr( t_CKINT i )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the addr
@@ -530,7 +531,7 @@ t_CKINT Chuck_ArrayInt::get( t_CKINT i, t_CKUINT * val )
     // set to zero
     *val = 0;
     // bound check
-    if( i < 0 || i >= m_vector.capacity() ) return 0;
+    if( i < 0 || i >= m_vector.size() ) return 0;
     // get the value
     *val = m_vector[i];
     // return good
@@ -549,7 +550,7 @@ t_CKINT Chuck_ArrayInt::get( t_CKINT i, t_CKINT * val )
     // set to zero
     *val = 0;
     // bound check
-    if( i < 0 || i >= m_vector.capacity() ) return 0;
+    if( i < 0 || i >= m_vector.size() ) return 0;
     // get the value
     *val = (t_CKINT)m_vector[i];
     // return good
@@ -608,7 +609,7 @@ t_CKINT Chuck_ArrayInt::get( const string & key, t_CKINT * val )
 t_CKINT Chuck_ArrayInt::set( t_CKINT i, t_CKUINT val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() ) return 0;
+    if( i < 0 || i >= m_vector.size() ) return 0;
     // get current value
     t_CKUINT v = m_vector[i];
     // if Object, release
@@ -660,7 +661,7 @@ t_CKINT Chuck_ArrayInt::set( const string & key, t_CKUINT val )
 t_CKINT Chuck_ArrayInt::insert( t_CKINT i, t_CKUINT val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() ) return 0;
+    if( i < 0 || i >= m_vector.size() ) return 0;
 
     // insert the value
     m_vector.insert( m_vector.begin()+i, val );
@@ -1081,24 +1082,34 @@ t_CKINT Chuck_ArrayInt::set_capacity( t_CKINT capacity )
     // ensure size (removed 1.4.1.0 in favor of actually setting capacity)
     // set_size( capacity );
 
+    // commenting out | 1.5.5.7 (ge & nick & andrew)
+    // NOTE: update .capacity semantics: should never affect size or within-size elements
+    // -----
     // if clearing size
-    if( capacity < m_vector.size() )
-    {
-        // zero out section
-        zero( capacity, m_vector.size() );
-    }
+    // if( capacity < m_vector.size() )
+    // {
+    //     // zero out section
+    //     zero( capacity, m_vector.size() );
+    // }
 
     // what the size was
-    t_CKINT capacity_prev = m_vector.capacity();
+    // t_CKINT capacity_prev = m_vector.capacity();
+
     // reserve vector
     m_vector.reserve( capacity );
 
+    // commenting out | 1.5.5.7 (ge & nick & andrew)
+    // NOTE: update .capacity semantics: should never affect size or within-size elements
+    //       the newly reserved region will remain uninitialized in m_vector; in fact,
+    //       it seems that STL vectors are not meant to be accessed beyond size; e.g.,
+    //       doing so in the XCode debugger generates a runtime exception
+    // -----
     // if clearing size
-    if( m_vector.capacity() > capacity_prev )
-    {
-        // zero out section
-        zero( capacity_prev, m_vector.capacity() );
-    }
+    // if( m_vector.capacity() > capacity_prev )
+    // {
+    //     // zero out section
+    //     zero( capacity_prev, m_vector.capacity() );
+    // }
 
     return m_vector.capacity();
 }
@@ -1147,7 +1158,8 @@ t_CKINT Chuck_ArrayInt::set_size( t_CKINT size )
 void Chuck_ArrayInt::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
-    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    assert( start <= m_vector.size() && end <= m_vector.size() );
 
     // if contains objects
     if( m_is_obj )
@@ -1189,7 +1201,8 @@ Chuck_ArrayFloat::Chuck_ArrayFloat( t_CKINT capacity )
     // set size
     m_vector.resize( capacity );
     // clear
-    this->zero( 0, m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    this->zero( 0, m_vector.size() );
 }
 
 
@@ -1215,7 +1228,8 @@ Chuck_ArrayFloat::~Chuck_ArrayFloat()
 t_CKUINT Chuck_ArrayFloat::addr( t_CKINT i )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the addr
@@ -1245,7 +1259,8 @@ t_CKUINT Chuck_ArrayFloat::addr( const string & key )
 t_CKINT Chuck_ArrayFloat::get( t_CKINT i, t_CKFLOAT * val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the value
@@ -1291,7 +1306,8 @@ t_CKINT Chuck_ArrayFloat::get( const string & key, t_CKFLOAT * val )
 t_CKINT Chuck_ArrayFloat::set( t_CKINT i, t_CKFLOAT val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // set the value
@@ -1333,7 +1349,8 @@ t_CKINT Chuck_ArrayFloat::set( const string & key, t_CKFLOAT val )
 t_CKINT Chuck_ArrayFloat::insert( t_CKINT i, t_CKFLOAT val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // insert the value
@@ -1582,7 +1599,8 @@ t_CKINT Chuck_ArrayFloat::set_capacity( t_CKINT capacity )
     assert( capacity >= 0 );
 
     // ensure size
-    set_size( capacity );
+    // 1.5.5.7 (ge & nick & andrew) was set_size( capacity );
+    m_vector.reserve( capacity );
 
     return m_vector.capacity();
 }
@@ -1631,7 +1649,8 @@ t_CKINT Chuck_ArrayFloat::set_size( t_CKINT size )
 void Chuck_ArrayFloat::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
-    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    assert( start <= m_vector.size() && end <= m_vector.size() );
 
     for( t_CKUINT i = start; i < end; i++ )
     {
@@ -1654,7 +1673,8 @@ Chuck_ArrayVec2::Chuck_ArrayVec2( t_CKINT capacity )
     // set size
     m_vector.resize( capacity );
     // clear
-    this->zero( 0, m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    this->zero( 0, m_vector.size() );
     // clear
     m_isPolarType = FALSE;
 }
@@ -1681,7 +1701,8 @@ Chuck_ArrayVec2::~Chuck_ArrayVec2()
 t_CKUINT Chuck_ArrayVec2::addr( t_CKINT i )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the addr
@@ -1711,7 +1732,8 @@ t_CKUINT Chuck_ArrayVec2::addr( const string & key )
 t_CKINT Chuck_ArrayVec2::get( t_CKINT i, t_CKVEC2 * val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the value
@@ -1764,7 +1786,8 @@ t_CKINT Chuck_ArrayVec2::get( const string & key, t_CKCOMPLEX * val )
 t_CKINT Chuck_ArrayVec2::set( t_CKINT i, const t_CKVEC2 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // set the value
@@ -1810,7 +1833,8 @@ t_CKINT Chuck_ArrayVec2::set( const string & key, const t_CKCOMPLEX & val )
 t_CKINT Chuck_ArrayVec2::insert( t_CKINT i, const t_CKVEC2 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // insert the value
@@ -2140,7 +2164,8 @@ t_CKINT Chuck_ArrayVec2::set_capacity( t_CKINT capacity )
     assert( capacity >= 0 );
 
     // ensure size
-    set_size( capacity );
+    // 1.5.5.7 (ge & nick & andrew) was set_size( capacity );
+    m_vector.reserve( capacity );
 
     return m_vector.capacity();
 }
@@ -2189,7 +2214,8 @@ t_CKINT Chuck_ArrayVec2::set_size( t_CKINT size )
 void Chuck_ArrayVec2::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
-    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    assert( start <= m_vector.size() && end <= m_vector.size() );
 
     for( t_CKUINT i = start; i < end; i++ )
     {
@@ -2213,7 +2239,8 @@ Chuck_ArrayVec3::Chuck_ArrayVec3( t_CKINT capacity )
     // set size
     m_vector.resize( capacity );
     // clear
-    this->zero( 0, m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    this->zero( 0, m_vector.size() );
 }
 
 
@@ -2238,7 +2265,8 @@ Chuck_ArrayVec3::~Chuck_ArrayVec3()
 t_CKUINT Chuck_ArrayVec3::addr( t_CKINT i )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the addr
@@ -2268,7 +2296,8 @@ t_CKUINT Chuck_ArrayVec3::addr( const string & key )
 t_CKINT Chuck_ArrayVec3::get( t_CKINT i, t_CKVEC3 * val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the value
@@ -2314,7 +2343,8 @@ t_CKINT Chuck_ArrayVec3::get( const string & key, t_CKVEC3 * val )
 t_CKINT Chuck_ArrayVec3::set( t_CKINT i, const t_CKVEC3 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // set the value
@@ -2353,7 +2383,8 @@ t_CKINT Chuck_ArrayVec3::set( const string & key, const t_CKVEC3 & val )
 t_CKINT Chuck_ArrayVec3::insert( t_CKINT i, const t_CKVEC3 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // insert the value
@@ -2550,7 +2581,8 @@ t_CKINT Chuck_ArrayVec3::set_capacity( t_CKINT capacity )
     assert( capacity >= 0 );
 
     // ensure size
-    set_size( capacity );
+    // 1.5.5.7 (ge & nick & andrew) was set_size( capacity );
+    m_vector.reserve( capacity );
 
     return m_vector.capacity();
 }
@@ -2599,7 +2631,8 @@ t_CKINT Chuck_ArrayVec3::set_size( t_CKINT size )
 void Chuck_ArrayVec3::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
-    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    assert( start <= m_vector.size() && end <= m_vector.size() );
 
     for( t_CKUINT i = start; i < end; i++ )
     {
@@ -2703,7 +2736,8 @@ Chuck_ArrayVec4::Chuck_ArrayVec4( t_CKINT capacity )
     // set size
     m_vector.resize( capacity );
     // clear
-    this->zero( 0, m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    this->zero( 0, m_vector.size() );
 }
 
 
@@ -2728,7 +2762,8 @@ Chuck_ArrayVec4::~Chuck_ArrayVec4()
 t_CKUINT Chuck_ArrayVec4::addr( t_CKINT i )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the addr
@@ -2758,7 +2793,8 @@ t_CKUINT Chuck_ArrayVec4::addr( const string & key )
 t_CKINT Chuck_ArrayVec4::get( t_CKINT i, t_CKVEC4 * val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // get the value
@@ -2804,7 +2840,8 @@ t_CKINT Chuck_ArrayVec4::get( const string & key, t_CKVEC4 * val )
 t_CKINT Chuck_ArrayVec4::set( t_CKINT i, const t_CKVEC4 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // set the value
@@ -2846,7 +2883,8 @@ t_CKINT Chuck_ArrayVec4::set( const string & key, const t_CKVEC4 & val )
 t_CKINT Chuck_ArrayVec4::insert( t_CKINT i, const t_CKVEC4 & val )
 {
     // bound check
-    if( i < 0 || i >= m_vector.capacity() )
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    if( i < 0 || i >= m_vector.size() )
         return 0;
 
     // insert the value
@@ -3044,7 +3082,8 @@ t_CKINT Chuck_ArrayVec4::set_capacity( t_CKINT capacity )
     assert( capacity >= 0 );
 
     // ensure size
-    set_size( capacity );
+    // 1.5.5.7 (ge & nick & andrew) was set_size( capacity );
+    m_vector.reserve( capacity );
 
     return m_vector.capacity();
 }
@@ -3093,7 +3132,8 @@ t_CKINT Chuck_ArrayVec4::set_size( t_CKINT size )
 void Chuck_ArrayVec4::zero( t_CKUINT start, t_CKUINT end )
 {
     // sanity check
-    assert( start <= m_vector.capacity() && end <= m_vector.capacity() );
+    // updated from .capacity() to .size() | 1.5.5.7 (ge & nick & andrew)
+    assert( start <= m_vector.size() && end <= m_vector.size() );
 
     for( t_CKUINT i = start; i < end; i++ )
     {
