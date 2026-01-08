@@ -3449,8 +3449,13 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
         break;
 
         case ae_op_minus:
-            // float
-            if( isa( t, env->ckt_float ) ) return t;
+            // float, vec2
+            if( 
+                isa( t, env->ckt_float ) ||
+                isa( t, env->ckt_vec2 ) ||
+                isa( t, env->ckt_vec3 ) ||
+                isa( t, env->ckt_vec4 )
+            ) return t;
         case ae_op_tilda:
         case ae_op_exclamation:
             // int
@@ -8188,6 +8193,9 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( NULL, ae_op_minusminus, env->ckt_float );
     registry->reserve( NULL, ae_op_minus, env->ckt_int );
     registry->reserve( NULL, ae_op_minus, env->ckt_float );
+    registry->reserve( NULL, ae_op_minus, env->ckt_vec2 );
+    registry->reserve( NULL, ae_op_minus, env->ckt_vec3 );
+    registry->reserve( NULL, ae_op_minus, env->ckt_vec4 );
     registry->reserve( NULL, ae_op_tilda, env->ckt_int );
     registry->reserve( NULL, ae_op_exclamation, env->ckt_int );
     registry->reserve( NULL, ae_op_new, env->ckt_object );

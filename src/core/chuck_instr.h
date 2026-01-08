@@ -1666,6 +1666,45 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Negate_vec2
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Negate_vec2 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Negate_vec3
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Negate_vec3 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Negate_vec4
+// desc: ...
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Negate_vec4 : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Lt_double
 // desc: ...
 //-----------------------------------------------------------------------------

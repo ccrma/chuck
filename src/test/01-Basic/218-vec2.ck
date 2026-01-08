@@ -76,3 +76,7 @@ bar( [@(3,4),@(5,6)] );
 
 // print with IO
 cherr <= "cherr: " <= a <= " " <= b <= IO.nl();
+
+// negate
+@(1, -1) => vec2 n;
+<<< "negate:", -@(2, -2), -n >>>;

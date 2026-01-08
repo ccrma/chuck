@@ -48,4 +48,6 @@ v.normalize();
 // print result
 <<< "scalar multiply:", v2 >>>;
 
-
+// negate
+@(1, -2, 3) => vec3 n;
+<<< "negate:", -@(-1, 2, -3), -n >>>;
