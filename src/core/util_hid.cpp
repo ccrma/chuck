@@ -7983,21 +7983,23 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
     unsigned int qMask;
     // open connection to X server
     Display * display = XOpenDisplay( nullptr );
-    if( !display )
+    if( display )
+    {
+        // get root window
+        root = DefaultRootWindow( display );
+        // get the point
+        XQueryPointer( display, root, &qRoot, &qChild, &qRootX, &qRootY, &qChildX, &qChildY, &qMask );
+        // copy to return value
+        retval.x = qRootX;
+        retval.y = qRootY;
+        // close the connection
+        XCloseDisplay( display );
+    }
+    else
     {
         // print error
         std::cerr << "Mouse cannot open display (X server)..." << std::endl;
-        goto done;
     }
-    // get root window
-    root = DefaultRootWindow( display );
-    // get the point
-    XQueryPointer( display, root, &qRoot, &qChild, &qRootX, &qRootY, &qChildX, &qChildY, &qMask );
-    // copy to return value
-    retval.x = qRootX;
-    retval.y = qRootY;
-    // close the connection
-    XCloseDisplay(display);
   #else // no __USE_X11__
     cerr << "Mouse needs X11 on Linux; to use, re-compile chuck with USE_X11=1" << endl;
   #endif // if defined(__USE_X11__)
@@ -8006,7 +8008,6 @@ t_CKVEC2 ck_get_mouse_xy_absolute()
     // unsupported platform; nothing to do for now; return 0,0
 #endif // platform select
 
-done:
     return retval;
 }
 
