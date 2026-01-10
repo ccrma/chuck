@@ -4,6 +4,28 @@ ChucK VERSIONS log
 
 1.5.5.7 (January 2026)
 =======
+=> This release contains minor but important updates to arrays,
+   vec2/3/4, ChuGL, and options for replacing chugin/@import path
+   (in prepration for the soon-to-come ability to create standalone
+   executable application containers for chuck programs for
+   software distribution)
+============
+ChuGL v0.2.9
+============
+(fixed) transparency depth sorting when using an orthographic camera;
+    the original math was so scuffed (thanks Ben)
+(fixed) crash caused by changing material of GGee primitives, see 
+    https://github.com/ccrma/chugl/issues/8 (thanks Nathan)
+(fixed) calling Material.storageBuffer(...) with an empty chuck array no 
+    longer crashes
+(fixed) GWindow.sizeLimits(...) to allow non-integer aspect ratios
+    e.g. 1.6:1
+(added) example:
+    deep/meshlines.ck: 3D line rendering that supports per-vertex line
+    width, dashed lines, and more
+=============
+ChucK 1.5.5.7
+=============
 (updated) semantics and behavior for all array types: typical usage should
     proceed always with regard to the *size* of the array; regions outside of
     current size are consider out of bound, even if within array capacity
@@ -13,10 +35,10 @@ ChucK VERSIONS log
   - indexing an array beyond size (even if within capacity) will now result
     in an ArrayOutOfBounds exception
 (added) negation unary operator for vec2/3/4 type (literals and variables)
-  (thanks AndrewAday)
+    (thanks AndrewAday)
 (added) command-line options for specifying chugin search paths; these will
-  REPLACE the respective search paths; can specific empty <PATH> or multiple
-  paths using delimiters (':' on macOS and Linux and ';' on Windows):
+    REPLACE the respective search paths; can specific empty <PATH> or multiple
+    paths using delimiters (':' on macOS and Linux and ';' on Windows):
   --chugin-path-system:<PATH>
     (chugins in system path are auto-loaded when chuck starts; native chuck
     libraries are not auto-loaded, but will be in the @import search path)
@@ -39,7 +61,7 @@ ChucK VERSIONS log
 => This release offers new features in ChucK and ChuGL along with many
    quality-of-life improvements; Happy ChucKing!
 ============
-ChuGL v0.2.7
+ChuGL v0.2.8
 ============
 (added) game-dev friendly gamepad support!
   - (see https://chuck.stanford.edu/chugl/examples/basic/gamepad.ck)
