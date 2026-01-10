@@ -668,6 +668,8 @@ t_CKBOOL go( int argc, const char ** argv )
     std::list<std::string> dl_search_path_system, dl_search_path_packages, dl_search_path_user;
     // list of potential replacement search paths (from command line) | 1.5.5.7 (ge) added
     std::list<std::string> dl_search_path_system_replace, dl_search_path_packages_replace, dl_search_path_user_replace;
+    // remember whether replacements were specified
+    t_CKBOOL path_replace_system=FALSE, path_replace_packages=FALSE, path_replace_user=FALSE;
 
     // 1.3.0.0 | if set as environment variable, get it; otherwise use default
     // 1.5.4.0 | separate out into system, user, packages paths
@@ -926,8 +928,12 @@ t_CKBOOL go( int argc, const char ** argv )
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
             else if( !strncmp(argv[i], "--chugin-path-system:", sizeof("--chugin-path-system:")-1) )
             {
-                // get the rest
-                dl_search_path_system_replace.push_back( argv[i]+sizeof("--chugin-path-system:")-1 );
+                // flag it
+                path_replace_system = TRUE;
+                // get the argument payload
+                string s = argv[i]+sizeof("--chugin-path-system:")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_system_replace );
             }
             // set packages search path | 1.5.5.7 (ge) added
             // if set, this will replace chuck's packages search paths
@@ -935,8 +941,12 @@ t_CKBOOL go( int argc, const char ** argv )
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
             else if( !strncmp(argv[i], "--chugin-path-packages:", sizeof("--chugin-path-packages:")-1) )
             {
-                // get the rest
-                dl_search_path_packages_replace.push_back( argv[i]+sizeof("--chugin-path-packages:")-1 );
+                // flag it
+                path_replace_packages = TRUE;
+                // get the argument payload
+                string s = argv[i]+sizeof("--chugin-path-packages:")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_packages_replace );
             }
             // set user search path | 1.5.5.7 (ge) added
             // if set, this will replace chuck's user search paths
@@ -944,27 +954,37 @@ t_CKBOOL go( int argc, const char ** argv )
             //       sandboxed from any installed chugins/chuck-based libraries on host computer
             else if( !strncmp(argv[i], "--chugin-path-user:", sizeof("--chugin-path-user:")-1) )
             {
-                // get the rest
-                dl_search_path_user_replace.push_back( argv[i]+sizeof("--chugin-path-user:")-1 );
+                // flag it
+                path_replace_user = TRUE;
+                // get the argument payload
+                string s = argv[i]+sizeof("--chugin-path-user:")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_user_replace );
             }
             // add to system path(s); chugins in system paths are auto-loaded...
             // .ck files can be @imported | 1.5.4.2 (ge) added
             else if( !strncmp(argv[i], "--chugin-path-auto-load:", sizeof("--chugin-path-auto-load:")-1) )
             {
-                // get the rest
-                dl_search_path_system.push_back( argv[i]+sizeof("--chugin-path-auto-load:")-1 );
+                // get the argument payload
+                string s = argv[i]+sizeof("--chugin-path-auto-load:")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_system );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin-path:", sizeof("--chugin-path:")-1) )
             {
-                // get the rest
-                dl_search_path_user.push_back( argv[i]+sizeof("--chugin-path:")-1 );
+                // get the argument payload
+                string s = argv[i]+sizeof("--chugin-path:")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_user );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "-G", sizeof("-G")-1) )
             {
-                // get the rest
-                dl_search_path_user.push_back( argv[i]+sizeof("-G")-1 );
+                // get the argument payload
+                string s = argv[i]+sizeof("-G")-1;
+                // if not empty string, add to list
+                if( trim(s) != "" ) parse_path_list( s, dl_search_path_user );
             }
             // (added 1.3.0.0)
             else if( !strncmp(argv[i], "--chugin:", sizeof("--chugin:")-1) )
@@ -1298,22 +1318,22 @@ t_CKBOOL go( int argc, const char ** argv )
     the_chuck->setParam( CHUCK_PARAM_USER_CHUGINS, named_dls );
 
     // if at least one specified, replace | 1.5.5.7 (ge)
-    if( dl_search_path_system_replace.size() ) // system
+    if( path_replace_system ) // system
     {
-        // if empty string then clear
-        if( dl_search_path_system_replace.front() == "" ) { dl_search_path_system.clear(); }
+        // if empty list then clear
+        if( dl_search_path_system_replace.size() == 0 ) { dl_search_path_system.clear(); }
         else { dl_search_path_system = dl_search_path_system_replace; }
     }
-    if( dl_search_path_packages_replace.size() ) // packages
+    if( path_replace_packages ) // packages
     {
-        // if empty string then clear
-        if( dl_search_path_packages_replace.front() == "" ) { dl_search_path_packages.clear(); }
+        // if empty list then clear
+        if( dl_search_path_packages_replace.size() == 0 ) { dl_search_path_packages.clear(); }
         else { dl_search_path_packages = dl_search_path_packages_replace; }
     }
-    if( dl_search_path_user_replace.size() ) // user
+    if( path_replace_user ) // user
     {
-        // if empty string then clear
-        if( dl_search_path_user_replace.front() == "" ) { dl_search_path_user.clear(); }
+        // if empty list then clear
+        if( dl_search_path_user_replace.size() == 0 ) { dl_search_path_user.clear(); }
         else { dl_search_path_user = dl_search_path_user_replace; }
     }
     // set chugin search paths

@@ -4,18 +4,34 @@ ChucK VERSIONS log
 
 1.5.5.7 (January 2026)
 =======
-(added) negation unary operator for vec2/3/4 type (literals and variables)
-  (thanks AndrewAday)
-(added) command-line flags for specifying chugin search paths; these will
-  replace the respective search paths; can specific empty <PATH>
-  --chugin-path-system:<PATH>
-  --chugin-path-packages:<PATH>
-  --chugin-path-user:<PATH>
-(updated) semantics and behavior for all array types:
+(updated) semantics and behavior for all array types: typical usage should
+    proceed always with regard to the *size* of the array; regions outside of
+    current size are consider out of bound, even if within array capacity
   - .capacity() will no longer modify either the size or the within-size
-    contents of the array;
+    contents of the array, but rather serve to *reserve* a mininum number
+    of elements
   - indexing an array beyond size (even if within capacity) will now result
     in an ArrayOutOfBounds exception
+(added) negation unary operator for vec2/3/4 type (literals and variables)
+  (thanks AndrewAday)
+(added) command-line options for specifying chugin search paths; these will
+  REPLACE the respective search paths; can specific empty <PATH> or multiple
+  paths using delimiters (':' on macOS and Linux and ';' on Windows):
+  --chugin-path-system:<PATH>
+    (chugins in system path are auto-loaded when chuck starts; native chuck
+    libraries are not auto-loaded, but will be in the @import search path)
+  --chugin-path-packages:<PATH>
+    (chugins and native chuck libraries in packages path are not auto-loaded,
+    but will be in the @import search path, and have a special directory
+    search semantics)
+  --chugin-path-user:<PATH>
+    (chugins and native chuck libraries in users path are not auto-loaded,
+    but will be in the @import search path)
+(added) command-line option to add to the default system search path;
+  --chugin-path-auto-load:<PATH>
+    this can used to specify additional locations containing chugins to be 
+    auto-loaded; NOTE unlike the above options, this will NOT replace the
+    default system path; (use with care)
 
 
 1.5.5.6 (November 2025)
