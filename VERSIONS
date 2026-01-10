@@ -4,29 +4,24 @@ ChucK VERSIONS log
 
 1.5.5.7 (January 2026)
 =======
-=> this release updates array behavior, adds quality-of-life improvements for vec2/3/4,
-   add command-line flags for specifying chugin search paths for system, packages, user
-=============
-ChucK 1.5.5.7
-=============
 (added) negation unary operator for vec2/3/4 type (literals and variables)
   (thanks AndrewAday)
-(added) command-line flags for specifying chugin search paths; these will replace the
-  respective search paths; can specific empty <PATH>
+(added) command-line flags for specifying chugin search paths; these will
+  replace the respective search paths; can specific empty <PATH>
   --chugin-path-system:<PATH>
   --chugin-path-packages:<PATH>
   --chugin-path-user:<PATH>
 (updated) semantics and behavior for all array types:
-  - .capacity() will no longer modify either the size or the within-size contents of
-    the array;
-  - indexing an array beyond size (even if within capacity) will now result in an
-    ArrayOutOfBounds exception
+  - .capacity() will no longer modify either the size or the within-size
+    contents of the array;
+  - indexing an array beyond size (even if within capacity) will now result
+    in an ArrayOutOfBounds exception
 
 
 1.5.5.6 (November 2025)
 =======
-=> This release offers new features in ChucK and ChuGL along with many quality-of-life
-   improvements; Happy ChucKing!
+=> This release offers new features in ChucK and ChuGL along with many
+   quality-of-life improvements; Happy ChucKing!
 ============
 ChuGL v0.2.7
 ============
