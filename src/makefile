@@ -105,6 +105,11 @@ LD=$(CXX)
 # note: to compile with a specific c++ version, use the -std flag
 # (e.g., -std=c++14, -std=c++17, -std=c++20, -std=c++23)
 CFLAGS+=-I. -I$(CK_CORE_DIR) -I$(CK_CORE_DIR)/lo
+# protobuf (for DSL pipeline)
+PROTOBUF_CFLAGS:=$(shell pkg-config --cflags protobuf 2>/dev/null)
+PROTOBUF_LIBS:=$(shell pkg-config --libs protobuf 2>/dev/null)
+CFLAGS+=$(PROTOBUF_CFLAGS)
+LDFLAGS+=$(PROTOBUF_LIBS)
 
 # Code coverage
 
@@ -195,7 +200,8 @@ CXXOBJS_CORE+= chuck.o chuck_absyn.o chuck_parse.o chuck_errmsg.o \
 	ulib_doc.o ulib_machine.o ulib_math.o ulib_std.o ulib_opsc.o \
 	util_buffers.o util_console.o util_hid.o util_platforms.o \
 	util_opsc.o util_serial.o util_string.o util_thread.o \
-	uana_xform.o uana_extract.o
+	uana_xform.o uana_extract.o dsl/dsl_toml.o dsl/dsl_codegen.o \
+	dsl/piece.pb.o
 COBJS_CORE+= chuck.tab.o chuck.yy.o util_math.o util_network.o util_raw.o \
 	util_xforms.o
 LO_COBJS_CORE+= lo/address.o lo/blob.o lo/bundle.o lo/message.o lo/method.o \

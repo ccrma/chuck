@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package dsl;
+
+// ---------------------------
+// BASIC MUSICAL UNITS
+// ---------------------------
+
+message Note {
+  int32 pitch = 1;     // MIDI pitch (0–127)
+  double dur = 2;      // in beats
+  bool tie = 3;        // optional: sustain into next note
+}
+
+message Pattern {
+  repeated Note notes = 1;
+
+  // Optional pattern-level modifiers
+  int32 repeat = 2;               // how many times to repeat
+  double density = 3;             // range 0.0–1.0 (frontier knob hook)
+  Ornament ornament = 4;          // grace/trill/etc (optional)
+  Scale scale = 5;                // scale context (optional)
+}
+
+enum Ornament {
+  ORNAMENT_NONE = 0;
+  ORNAMENT_GRACE = 1;
+  ORNAMENT_TRILL = 2;
+}
+
+enum Scale {
+  SCALE_NONE = 0;
+  SCALE_MAJOR = 1;
+  SCALE_MINOR = 2;
+  SCALE_PENTATONIC = 3;
+  SCALE_CHROMATIC = 4;
+  SCALE_DORIAN = 5;
+  SCALE_LYDIAN = 6;
+}
+
+
+// ---------------------------
+// INSTRUMENT / TIMBRE MODEL
+// ---------------------------
+
+message Envelope {
+  // ADSR in seconds unless noted
+  double attack = 1;
+  double decay = 2;
+  double sustain = 3;  // 0.0–1.0
+  double release = 4;
+}
+
+message Filter {
+  enum Type {
+    FILTER_NONE = 0;
+    LOWPASS = 1;
+    HIGHPASS = 2;
+    BANDPASS = 3;
+  }
+
+  Type type = 1;
+  double cutoff = 2;   // Hz
+  double q = 3;        // resonance
+}
+
+message LFO {
+  string target = 1;    // e.g., "freq", "cutoff", "gain"
+  double rate = 2;      // Hz
+  double depth = 3;     // magnitude (unit depends on target)
+}
+
+message Instrument {
+  enum Osc {
+    SINE = 0;
+    SAW = 1;
+    SQUARE = 2;
+    TRIANGLE = 3;
+    NOISE = 4;
+    BLIT = 5;
+  }
+
+  Osc osc = 1;
+  double detune = 2;     // relative in Hz or cents
+  bool reverb = 3;
+  double gain = 4;       // 0.0–1.0
+
+  Envelope env = 5;
+  Filter filter = 6;
+  LFO lfo = 7;
+
+  // Optional timbre complexity hook for the frontier knob.
+  double complexity = 8; // 0.0–1.0
+}
+
+
+// ---------------------------
+// VOICES
+// ---------------------------
+
+message Voice {
+  Instrument instrument = 1;
+  Pattern pattern = 2;
+
+  double offset = 3;     // start time in beats
+  double pan = 4;        // -1.0 left to +1.0 right
+}
+
+
+// ---------------------------
+// OVERALL PIECE
+// ---------------------------
+
+message Piece {
+  double tempo = 1;       // beats per minute
+  repeated Voice voices = 2;
+
+  // Global frontier knob
+  double complexity = 3;  // 0.0–1.0 (mapped to transforms)
+}
+

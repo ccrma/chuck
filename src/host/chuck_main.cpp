@@ -36,8 +36,12 @@
 #include "chuck_audio.h"
 #include "chuck_console.h"
 #include "chuck_otf.h"
+#include <fstream>
+#include <cstdlib>
 #include "util_platforms.h"
 #include "util_string.h"
+#include "../core/dsl/dsl_codegen.h"
+#include "../core/dsl/dsl_toml.h"
 #include <signal.h>
 
 #if defined(__PLATFORM_WINDOWS__)
@@ -69,6 +73,8 @@ void uh();
 t_CKBOOL get_count( const char * arg, t_CKUINT * out );
 static void audio_cb( SAMPLE * in, SAMPLE * out, t_CKUINT numFrames,
                       t_CKUINT numInChans, t_CKUINT numOutChans, void * data );
+static t_CKBOOL compile_dsl_file( const std::string & path, t_CKUINT count,
+                                  t_CKBOOL set_complexity, double complexity );
 
 // C functions
 extern "C" void signal_int( int sig_num );
@@ -266,7 +272,7 @@ void usage()
     CK_FPRINTF_STDERR( "                callback|deprecate:{stop|warn|ignore}|chugin-probe\n" );
     CK_FPRINTF_STDERR( "                chugin-load:{on|off}|chugin-path:<path>|chugin:<name>\n" );
     CK_FPRINTF_STDERR( "                color:{on|off}|pid-file:<path>|cmd-listener:{on|off}\n" );
-    CK_FPRINTF_STDERR( "                query|query:<name>\n" );
+    CK_FPRINTF_STDERR( "                query|query:<name>|dsl:<file.toml>|complexity[:<0..1>]\n" );
     CK_FPRINTF_STDERR( "%s", TC::set_blue().c_str() );
     CK_FPRINTF_STDERR( "   [commands] = add|replace|remove|remove.all|status|time|\n" );
     CK_FPRINTF_STDERR( "                clear.vm|reset.id|abort.shred|exit\n" );
@@ -562,6 +568,60 @@ t_CKBOOL check_shell_shutdown()
     return FALSE;
 }
 
+//-----------------------------------------------------------------------------
+// name: compile_dsl_file()
+// desc: load a TOML DSL file, lower to ChucK, and compile
+//-----------------------------------------------------------------------------
+static t_CKBOOL compile_dsl_file( const std::string & path, t_CKUINT count,
+                                  t_CKBOOL set_complexity, double complexity )
+{
+    dsl::Piece piece;
+    dsl::TomlError err;
+    if( !dsl::PieceFromTomlFile( path, &piece, &err ) )
+    {
+        EM_error2( 0, "[dsl] parse failed for '%s': %s (line %d, col %d)",
+                   path.c_str(), err.message.c_str(), err.line, err.column );
+        return FALSE;
+    }
+
+    if( set_complexity )
+    {
+        double c = complexity;
+        if( c < 0.0 ) c = 0.0;
+        else if( c > 1.0 ) c = 1.0;
+        piece.set_complexity( c );
+    }
+
+    std::string code;
+    std::string cg_err;
+    if( !dsl::PieceToChuckSource( piece, path, &code, &cg_err ) )
+    {
+        EM_error2( 0, "[dsl] codegen failed for '%s': %s", path.c_str(), cg_err.c_str() );
+        return FALSE;
+    }
+
+    // dump generated ChucK source alongside current working directory
+    {
+        std::string filename = extract_filepath_file( path );
+        size_t dot = filename.find_last_of( '.' );
+        if( dot != std::string::npos ) filename = filename.substr( 0, dot );
+        std::string out_path = filename + ".ck";
+        std::ofstream ofs( out_path.c_str(), std::ios::out | std::ios::trunc );
+        if( !ofs.good() )
+        {
+            EM_error2( 0, "[dsl] warning: could not write generated ChucK to '%s'", out_path.c_str() );
+        }
+        else
+        {
+            ofs << code;
+            ofs.close();
+            EM_log( CK_LOG_SYSTEM, "[dsl] wrote generated ChucK to '%s'", out_path.c_str() );
+        }
+    }
+
+    return the_chuck->compileCode( code, "", count, FALSE, NULL, path );
+}
+
 
 
 
@@ -717,6 +777,20 @@ t_CKBOOL go( int argc, const char ** argv )
 
     //------------------------- COMMAND-LINE ARGUMENTS -----------------------------
     
+    // helper to parse a floating-point complexity value
+    auto parse_complexity_value = []( const char * arg, double & out ) -> bool {
+        char * endptr = NULL;
+        double value = strtod( arg, &endptr );
+        if( endptr == arg || *endptr != '\0' ) return false;
+        if( value < 0.0 ) value = 0.0;
+        else if( value > 1.0 ) value = 1.0;
+        out = value;
+        return true;
+    };
+    // frontier knob for DSL (default mid-point)
+    double dsl_complexity = 0.5;
+    t_CKBOOL dsl_complexity_set = FALSE;
+
     // parse command line args
     for( i = 1; i < argc; i++ )
     {
@@ -1022,6 +1096,67 @@ t_CKBOOL go( int argc, const char ** argv )
             }
             else if( tolower(argv[i]) == "--no-color" )
                 colorTerminal = FALSE;
+            else if( !strcmp( argv[i], "--dsl" ) )
+            {
+                if( i + 1 >= argc )
+                {
+                    errorMessage1 = "missing argument for '--dsl <file.toml>'";
+                    break;
+                }
+                files++;
+                i++; // consume path
+            }
+            else if( !strncmp( argv[i], "--dsl=", sizeof("--dsl=")-1 ) )
+            {
+                std::string path = argv[i] + sizeof("--dsl=") - 1;
+                if( path.empty() )
+                {
+                    errorMessage1 = "missing argument for '--dsl=<file.toml>'";
+                    break;
+                }
+                files++;
+            }
+            else if( !strncmp( argv[i], "--complexity=", sizeof("--complexity=")-1 ) )
+            {
+                if( !parse_complexity_value( argv[i]+sizeof("--complexity=")-1, dsl_complexity ) )
+                {
+                    errorMessage1 = "invalid arguments for '--complexity=<value>'";
+                    errorMessage2 = " |- expecting floating-point value between 0.0 and 1.0";
+                    break;
+                }
+                dsl_complexity_set = TRUE;
+            }
+            else if( !strncmp( argv[i], "--complexity:", sizeof("--complexity:")-1 ) )
+            {
+                if( !parse_complexity_value( argv[i]+sizeof("--complexity:")-1, dsl_complexity ) )
+                {
+                    errorMessage1 = "invalid arguments for '--complexity:<value>'";
+                    errorMessage2 = " |- expecting floating-point value between 0.0 and 1.0";
+                    break;
+                }
+                dsl_complexity_set = TRUE;
+            }
+            else if( !strcmp( argv[i], "--complexity" ) )
+            {
+                // optional value in following argument; otherwise use default
+                if( i + 1 < argc && argv[i+1][0] != '-' && argv[i+1][0] != '+'
+                    && argv[i+1][0] != '=' && argv[i+1][0] != '^' && argv[i+1][0] != '@' )
+                {
+                    if( !parse_complexity_value( argv[i+1], dsl_complexity ) )
+                    {
+                        errorMessage1 = "invalid arguments for '--complexity <value>'";
+                        errorMessage2 = " |- expecting floating-point value between 0.0 and 1.0";
+                        break;
+                    }
+                    dsl_complexity_set = TRUE;
+                    i++; // consume value
+                }
+                else
+                {
+                    dsl_complexity = 0.5;
+                    dsl_complexity_set = TRUE;
+                }
+            }
             else if( !strncmp(argv[i], "--pid-file:", sizeof("--pid-file:")-1) )
             {
                 // get argument for writing PID file | 1.5.1.0 (@ynohtna) added
@@ -1575,6 +1710,28 @@ t_CKBOOL go( int argc, const char ** argv )
                 the_chuck->compiler()->emitter->dump = TRUE;
             else if( !strcmp(argv[i], "--nodump") || !strcmp(argv[i], "-d" ) )
                 the_chuck->compiler()->emitter->dump = FALSE;
+            else if( !strcmp( argv[i], "--dsl" ) )
+            {
+                if( i + 1 >= argc )
+                {
+                    EM_error2( 0, "missing argument for '--dsl <file.toml>'" );
+                    break;
+                }
+                compile_dsl_file( argv[i+1], count, dsl_complexity_set, dsl_complexity );
+                count = 1;
+                i++; // consume the path
+            }
+            else if( !strncmp( argv[i], "--dsl=", sizeof("--dsl=")-1 ) )
+            {
+                std::string path = argv[i] + sizeof("--dsl=") - 1;
+                if( path.empty() )
+                {
+                    EM_error2( 0, "missing argument for '--dsl=<file.toml>'" );
+                    break;
+                }
+                compile_dsl_file( path, count, dsl_complexity_set, dsl_complexity );
+                count = 1;
+            }
             else
                 get_count( argv[i], &count );
             
