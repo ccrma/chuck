@@ -315,6 +315,29 @@ BOOL__ CBufferAdvance::empty( UINT__ read_offset_index )
 }
 
 
+BOOL__ CBufferAdvance::isValidIndex( UINT__ read_offset_index )
+{
+    if( read_offset_index >= m_read_offsets.size() )
+    {
+        return FALSE;
+    }
+
+    SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
+
+    if( m_read_offset < 0 )
+    {
+        return FALSE;
+    }
+
+    if( m_read_offset == m_write_offset )
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
 UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_index )
 {
     UINT__ i, j;
@@ -325,15 +348,7 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     m_mutex.acquire();
     #endif
 
-    // make sure index is valid
-    if( read_offset_index >= m_read_offsets.size() )
-    {
-        #ifndef __DISABLE_THREADS__
-        m_mutex.release();
-        #endif
-        return 0;
-    }
-    if( m_read_offsets[read_offset_index].read_offset < 0 )
+    if (!this->isValidIndex(read_offset_index))
     {
         #ifndef __DISABLE_THREADS__
         m_mutex.release();
@@ -342,15 +357,6 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
     }
 
     SINT__ m_read_offset = m_read_offsets[read_offset_index].read_offset;
-
-    // read catch up with write
-    if( m_read_offset == m_write_offset )
-    {
-        #ifndef __DISABLE_THREADS__
-        m_mutex.release();
-        #endif
-        return 0;
-    }
 
     // copy
     for( i = 0; i < num_elem; i++ )
@@ -387,6 +393,165 @@ UINT__ CBufferAdvance::get( void * data, UINT__ num_elem, UINT__ read_offset_ind
 }
 
 
+BOOL__ CBufferAdvanceVariable::initialize( UINT__ buffer_size, CBufferSimple * event_buffer )
+{
+    CBufferAdvance::initialize( buffer_size, 1, event_buffer );
+    m_buffer_size = buffer_size;
+    return true;
+}
+
+
+UINT__ CBufferAdvanceVariable::get( void * data, UINT__ read_offset_index )
+{
+    UINT__ i;
+    BYTE__ * d = (BYTE__ *)data;
+
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
+
+    if ( !this->isValidIndex(read_offset_index) )
+    {
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
+        return 0;
+    }
+
+    SINT__ read_offset = m_read_offsets[read_offset_index].read_offset;
+    UINT__ size = m_data[read_offset];
+
+    for( i = 0; i < size; i++ )
+    {
+        read_offset = advanceIndex( read_offset );
+        d[i] = m_data[read_offset];
+    }
+    read_offset = advanceIndex( read_offset );
+
+    m_read_offsets[read_offset_index].read_offset = read_offset;
+
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
+
+    return size;
+}
+
+
+void CBufferAdvanceVariable::put( void * data, UINT__ size )
+{
+    if( size == 0 ) return;
+
+    UINT__ i;
+    BYTE__ * d = (BYTE__ *)data;
+
+    #ifndef __DISABLE_THREADS__
+    m_mutex.acquire();
+    #endif
+
+    // not enough space, drop the message. this is an edge case, will probably never happen
+    if( !hasSpace(size) )
+    {
+        #ifndef __DISABLE_THREADS__
+        m_mutex.release();
+        #endif
+        return;
+    }
+
+    // store the size of the message
+    m_data[m_write_offset] = size;
+
+    for( i = 0; i < size; i++ )
+    {
+        m_write_offset = advanceIndex( m_write_offset );
+        m_data[m_write_offset] = d[i];
+    }
+    m_write_offset = advanceIndex( m_write_offset );
+
+    for( i = 0; i < m_read_offsets.size(); i++ )
+    {
+        if( m_read_offsets[i].event )
+        {
+            m_read_offsets[i].event->queue_broadcast( m_event_buffer );
+        }
+    }
+
+    #ifndef __DISABLE_THREADS__
+    m_mutex.release();
+    #endif
+}
+
+
+void CBufferAdvanceVariable::cleanup()
+{
+    CBufferAdvance::cleanup();
+    m_buffer_size = 0;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: getNextSize()
+// desc: get the size of the next message so we can allocate space for it
+//       before calling get()
+//-----------------------------------------------------------------------------
+UINT__ CBufferAdvanceVariable::getNextSize( UINT__ read_offset_index )
+{
+    SINT__ read_offset = m_read_offsets[read_offset_index].read_offset;
+
+    if( read_offset == m_write_offset )
+    {
+        return 0;
+    }
+
+    return m_data[read_offset];
+}
+
+
+//-----------------------------------------------------------------------------
+// name: advanceIndex()
+// desc: advance the index, wrapping around if necessary
+//-----------------------------------------------------------------------------
+UINT__ CBufferAdvanceVariable::advanceIndex( UINT__ offset_index )
+{
+    offset_index++;
+
+    if( offset_index >= m_buffer_size )
+    {
+        offset_index = 0;
+    }
+
+    return offset_index;
+}
+
+
+//-----------------------------------------------------------------------------
+// name: hasSpace()
+// desc: covers an edge case where too many messages have been put into the
+//       buffer without being read. We check all the write positions to see if
+//       they are already occupied by a read position.
+//-----------------------------------------------------------------------------
+BOOL__ CBufferAdvanceVariable::hasSpace(UINT__ size)
+{
+    UINT__ i, j;
+    // current position we can advance without checking,
+    // it's the size of the next message
+    UINT__ pos = advanceIndex( m_write_offset );
+
+    for( i = 0; i < size; i++ )
+    {
+        pos = advanceIndex( m_write_offset );
+
+        for( j = 0; j < m_read_offsets.size(); j++ )
+        {
+            if( pos == m_read_offsets[j].read_offset )
+            {
+                return FALSE;
+            }
+        }
+    }
+
+    return TRUE;
+}
 
 
 //-----------------------------------------------------------------------------
