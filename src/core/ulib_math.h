@@ -36,7 +36,7 @@
 #include "chuck_dl.h"
 
 // query
-DLL_QUERY libmath_query( Chuck_DL_Query * QUERY );
+DLL_QUERY libmath_query(Chuck_DL_Query* QUERY);
 
 // impl
 CK_DLL_SFUN( sin_impl );
@@ -119,7 +119,8 @@ CK_DLL_SFUN( euclidean4d_impl );
 CK_DLL_SFUN( map_impl );
 CK_DLL_SFUN( map2_impl );
 
-
+// spherical harmonics (everett)
+CK_DLL_SFUN(ck_sh);
 
 
 #endif
