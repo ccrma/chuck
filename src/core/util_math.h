@@ -112,8 +112,10 @@ t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & v );
 t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
 // magnitude of vec4
 t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
-
-
+// associated legendre for spherical harmonics (emc 2026)
+float associated_legendre(int m, int l, float x);
+// spherical harmonics (emc 2026)
+float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d);
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }

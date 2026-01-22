@@ -366,7 +366,131 @@ t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v )
 // name: ck_vec4_magnitude()
 // desc: magnitude of vec4
 //-----------------------------------------------------------------------------
-t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v )
+t_CKFLOAT ck_vec4_magnitude(const t_CKVEC4& v)
 {
-    return ::sqrt( v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w );
+    return ::sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
+}
+
+//-----------------------------------------------------------------------------
+// name: factorial
+// desc: factorial calculator function
+// author: everett m. carpenter
+//-----------------------------------------------------------------------------
+int factorial(int n)
+{
+    if (n > 10) return -1;
+    int result = 1;
+    for (int i = 1; i <= n; i++) 
+    {
+        result = i * result;
+    }
+    return result;
+}
+
+//-----------------------------------------------------------------------------
+// name: associated_legendre() 
+// desc: closed form associated legendre polynomials of some order l
+// author: everett m. carpenter
+//-----------------------------------------------------------------------------
+float associated_legendre(int m, int l, float x)
+{
+    // check bounds
+    if (l < 0 || l > 5) return 0.0;
+    if (abs(m) > l) return 0.0;
+
+    float x2 = x * x; // x^2
+    float x3 = x2 * x; // x^3
+    float x4 = x2 * x2;  // x^4
+    float cf = 1.0 - x2; // pops up in every associated legendre
+    float sqrtcf = sqrt(cf);; // also pops up everywhere
+    int absm = abs(m); // assume m is positive, then apply -m case at end
+    float result = 0.f;
+    float flip = 1.f;
+
+    if (m < 0) flip = pow(-1.0, absm) * (float)(factorial(l - absm) / factorial(l + absm));
+
+    switch (l) // order and absm
+    {
+    case(0): { result = 1.0; break; }
+    case(1):
+    {
+        if (absm == 0) { result = x; }
+        else if (absm == 1) { result = -sqrtcf; }
+        break;
+    }
+    case(2):
+    {
+        if (absm == 0) { result = 0.5 * (3.0 * x2 - 1); }
+        else if (absm == 1) { result = -3.0 * x * sqrtcf; }
+        else if (absm == 2) { result = 3.0 * cf; }
+        break;
+    }
+    case(3):
+    {
+        if (absm == 0) { result = 0.5 * (5.0 * x3 - 3.0 * x); }
+        else if (absm == 1) { result = 1.5 * (1.0 - 5.0 * x2) * sqrtcf; }
+        else if (absm == 2) { result = 15.0 * x * cf; }
+        else if (absm == 3) { result = -15.0 * sqrtcf * cf; }
+        break;
+    }
+    case(4):
+    {
+        if (absm == 0) { result = 0.125 * (35.0 * x4 - 30.0 * x2 + 3.0); }
+        else if (absm == 1) { result = -2.5 * (7.0 * x3 - 3.0 * x) * sqrtcf; }
+        else if (absm == 2) { result = 7.5 * (7.0 * x2 - 1) * cf; }
+        else if (absm == 3) { result = -105.0 * x * sqrtcf * cf; }
+        else if (absm == 4) { result = 105.0 * cf * cf; }
+        break;
+    }
+    case(5):
+    {
+        if (absm == 0) { result = 0.125 * (63.0 * x3 * x2 - 70 * x3 + 15 * x); }
+        else if (absm == 1) { result = -1.875 * sqrtcf * (21.0 * x4 - 14 * x2 + 1); }
+        else if (absm == 2) { result = 52.5 * x * cf * (3.0 * x2 - 1.0); }
+        else if (absm == 3) { result = -52.5 * cf * sqrtcf * (9.0 * x2 - 1.0); }
+        else if (absm == 4) { result = 945.0 * x * cf * cf; }
+        else if (absm == 5) { result = -945.0 * sqrtcf * cf * cf; }
+        break;
+    }
+    }
+    return pow(-1.0, m) * result * flip;
+}
+
+//-----------------------------------------------------------------------------
+// name: SN3D
+// desc: normalization calculator for spherical harmonics
+// author: everett m. carpenter
+//-----------------------------------------------------------------------------
+float SN3D(unsigned order, int degree) // calculate SN3D value
+{
+    int d = (degree == 0) ? 1 : 0; // kronecker delta
+    float ratio = static_cast<float>(factorial(order - abs(degree))) / static_cast<float>(factorial(order + abs(degree))); // ratio of factorials
+    return sqrtf((2.f - d) * ratio);
+}
+
+//-----------------------------------------------------------------------------
+// name: SH()
+// desc: calculation of spherical harmonics according to some order and normalization
+// author: everett m. carpenter
+//-----------------------------------------------------------------------------
+float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d) // SH calc
+{
+    float azimuth_shift = (azimuth_) * 0.01745329252; // degree 2 rad
+    float zenith_shift = (90.f - zenith_) * 0.01745329252;
+    float coszeni = cosf(zenith_shift);
+    int size = (order_ + 1) * (order_ + 1);
+    float* result = new float[size + 1]; // end result
+    for (int order = 0; order <= (int)order_; order++)
+    {
+        if (order == 0)
+            result[0] = SN3D(order, 0);
+        for (int degree = -order; degree <= order; degree++)
+        {
+            float n = n3d ? sqrtf(2 * order + 1) * SN3D(order, degree) : SN3D(order, degree); // normalization term if n3d bool = TRUE, return N3D else SN3D
+            float p = (associated_legendre((int)abs(degree), (int)order, coszeni));
+            float r = (degree < 0) ? sinf(abs(degree) * (azimuth_shift)) : cosf(degree * (azimuth_shift)); // degree positive? Re(exp(i*azimuth*degree)) degree negative? Im(exp(i*azimuth*degree))
+            result[(order * order) + order + degree] = n * p * r;
+        }
+    }
+    return result;
 }
