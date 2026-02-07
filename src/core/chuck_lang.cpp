@@ -3823,7 +3823,10 @@ static void typeGetTypes(
     for( t_CKINT i = 0; i < types.size(); i++ )
     {
         // check special
-        t_CKBOOL special = (types[i]->base_name.length()>0 && types[i]->base_name[0] == '@');
+        // 1.5.5.8 (ge) account for "auto"
+        t_CKBOOL special = (types[i]->base_name.length()>0 &&
+                           (types[i]->base_name[0] == '@' ||
+                            types[i]->xid == te_auto) );
         // if not requesting special types
         if( !isSpecial && (special == TRUE) ) continue;
         // check origin
