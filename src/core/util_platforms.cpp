@@ -461,7 +461,11 @@ int ck_gettimeofday( long * tv_sec, long * tv_usec, void * tzp )
     // timeval
     timeval tv;
     // call on through
-    int retval = gettimeofday( &tv, tzp );
+    #ifdef __ANDROID__ 
+        int retval = gettimeofday( &tv, (struct timezone *)tzp );
+    #else 
+        int retval = gettimeofday( &tv, tzp );
+    #endif    
     // check it
     if( retval ) return retval;
     // set return values

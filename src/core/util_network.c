@@ -173,7 +173,7 @@ t_CKBOOL ck_connect( ck_socket sock, const char * hostname, int port )
     t_CKINT ret;
     struct hostent * host;
 
-#ifdef __PLATFORM_WINDOWS__
+#if defined( __PLATFORM_WINDOWS__ ) || defined( __ANDROID__ )
     memset( &sock->sock_in, 0, sizeof(struct sockaddr_in) );
 #else
     bzero( &sock->sock_in, sizeof(struct sockaddr_in) );
@@ -218,7 +218,7 @@ t_CKBOOL ck_bind( ck_socket sock, int port )
 {
     int ret;
 
-#ifdef __PLATFORM_WINDOWS__
+#if defined( __PLATFORM_WINDOWS__ ) || defined( __ANDROID__ )
     memset( &sock->sock_in, 0,  sizeof(struct sockaddr_in) );
 #else
     bzero( &sock->sock_in, sizeof(struct sockaddr_in) );
