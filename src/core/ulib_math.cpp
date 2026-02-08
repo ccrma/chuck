@@ -1435,5 +1435,34 @@ CK_DLL_SFUN( map2_impl )
 
     // std::cerr << v << " " << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
     // remap
-    RETURN->v_float = x2 + (v-x1)/(y1-x1)*(y2-x2);
+    RETURN->v_float = x2 + (v - x1) / (y1 - x1) * (y2 - x2);
+}
+
+// everett's spherical harmonics
+CK_DLL_SFUN( ck_sh )
+{
+    t_CKINT order = GET_NEXT_INT(ARGS);
+    t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
+    if (order <= 5)
+    {
+        unsigned size = (order + 1) * (order + 1);
+        float* coord = SH(order, direction, elevation, 0);
+        // Create a float[] array
+        Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
+        Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
+        for (int i = 0; i < size; i++)
+        {
+            API->object->array_float_push_back(coordinatearray, coord[i]);
+        }
+        delete[] coord;
+        coord = nullptr;
+        // Need to cast back to object due to lost inheirtience structure
+        RETURN->v_object = (Chuck_Object*)coordinatearray;
+    }
+    else 
+    {
+        API->vm->throw_exception("Math.sh() : Invalid Order", "Up to 5th order supported", nullptr);
+        RETURN->v_int = 0;
+    }
 }
