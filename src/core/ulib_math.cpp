@@ -1454,7 +1454,7 @@ CK_DLL_SFUN( ck_sh )
     if (order <= 5)
     {
         unsigned size = (order + 1) * (order + 1);
-        float* coord = SH(order, direction, elevation, 0);
+        t_CKFLOAT* coord = SH(order, direction, elevation, 0);
         // Create a float[] array
         Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
         Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;

@@ -376,7 +376,7 @@ t_CKFLOAT ck_vec4_magnitude(const t_CKVEC4& v)
 // desc: factorial calculator function
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
-int factorial(int n)
+t_CKINT factorial(const t_CKINT n)
 {
     if (n > 10) return -1;
     int result = 1;
@@ -392,7 +392,7 @@ int factorial(int n)
 // desc: closed form associated legendre polynomials of some order l
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
-float associated_legendre(int m, int l, float x)
+t_CKFLOAT associated_legendre(const t_CKINT m, const t_CKINT l, const t_CKFLOAT x)
 {
     // check bounds
     if (l < 0 || l > 5) return 0.0;
@@ -461,7 +461,7 @@ float associated_legendre(int m, int l, float x)
 // desc: normalization calculator for spherical harmonics
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
-float SN3D(unsigned order, int degree) // calculate SN3D value
+t_CKFLOAT SN3D(const t_CKUINT order, const t_CKINT degree) // calculate SN3D value
 {
     int d = (degree == 0) ? 1 : 0; // kronecker delta
     float ratio = static_cast<float>(factorial(order - abs(degree))) / static_cast<float>(factorial(order + abs(degree))); // ratio of factorials
@@ -473,13 +473,13 @@ float SN3D(unsigned order, int degree) // calculate SN3D value
 // desc: calculation of spherical harmonics according to some order and normalization
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
-float* SH(unsigned order_, const float azimuth_, const float zenith_, bool n3d) // SH calc
+t_CKFLOAT* SH(const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d) // SH calc
 {
     float azimuth_shift = (azimuth_) * 0.01745329252; // degree 2 rad
     float zenith_shift = (90.f - zenith_) * 0.01745329252;
     float coszeni = cosf(zenith_shift);
     int size = (order_ + 1) * (order_ + 1);
-    float* result = new float[size + 1]; // end result
+    t_CKFLOAT* result = new t_CKFLOAT[size + 1]; // end result
     for (int order = 0; order <= (int)order_; order++)
     {
         if (order == 0)
