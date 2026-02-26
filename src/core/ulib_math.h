@@ -119,7 +119,7 @@ CK_DLL_SFUN( euclidean4d_impl );
 CK_DLL_SFUN( map_impl );
 CK_DLL_SFUN( map2_impl );
 
-// spherical harmonics (everett)
-CK_DLL_SFUN( ck_sh );
+// spherical harmonics | (added) 1.5.5.8 by everett 2026
+CK_DLL_SFUN( sh_impl );
 
 #endif

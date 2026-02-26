@@ -581,8 +581,8 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_svar( QUERY, "complex", "j", TRUE, &g_i );
     QUERY->doc_var( QUERY, "The complex number sqrt(-1)." );
 
-    // spherical harmonics emc:2026
-    QUERY->add_sfun( QUERY, ck_sh, "float[]", "sh" );
+    // spherical harmonics | (added) 1.5.5.8 by everett 2026
+    QUERY->add_sfun( QUERY, sh_impl, "float[]", "sh" );
     QUERY->add_arg( QUERY, "int", "order" );
     QUERY->add_arg( QUERY, "float", "azimuth" );
     QUERY->add_arg( QUERY, "float", "zenith" );
@@ -1445,32 +1445,35 @@ CK_DLL_SFUN( map2_impl )
     RETURN->v_float = x2 + (v - x1) / (y1 - x1) * (y2 - x2);
 }
 
-// everett's spherical harmonics
-CK_DLL_SFUN( ck_sh )
+// spherical harmonics implementation | (added) 1.5.5.8 by everett 2026
+CK_DLL_SFUN( sh_impl )
 {
     t_CKINT order = GET_NEXT_INT(ARGS);
     t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
-    t_CKFLOAT* coord = new t_CKFLOAT[(order + 1) * (order + 1) + 1];
-    if (order <= 5)
+    t_CKFLOAT * coord = new t_CKFLOAT[(order + 1) * (order + 1) + 1];
+    if( order <= 5 )
     {
-        unsigned size = (order + 1) * (order + 1);
-        SH(coord,order, direction, elevation, 0); // moved memory ownership to ck_sh emc 2/26 (memory was previously allocated by SH() and deleted by ck_sh)
+        t_CKUINT size = (order + 1) * (order + 1);
+        // moved memory ownership to ck_SH emc 2/26 (memory was previously allocated by ck_SH() and deleted by sh_impl)
+        ck_SH( coord,order, direction, elevation, 0 );
         // Create a float[] array
-        Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
-        Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
-        for (int i = 0; i < size; i++)
+        Chuck_DL_Api::Object returnarray = API->object->create( SHRED, API->type->lookup(VM, "float[]"), false );
+        Chuck_ArrayFloat * coordinatearray = (Chuck_ArrayFloat *)returnarray;
+        for( t_CKINT i = 0; i < size; i++ )
         {
             API->object->array_float_push_back(coordinatearray, coord[i]);
         }
-        delete[] coord;
-        coord = nullptr;
-        // Need to cast back to object due to lost inheirtience structure
-        RETURN->v_object = (Chuck_Object*)coordinatearray;
+        // set return value
+        RETURN->v_object = coordinatearray;
     }
     else 
     {
-        API->vm->throw_exception("Math.sh() : Invalid Order", "Up to 5th order supported", nullptr);
+        // throw exception
+        API->vm->throw_exception("Math.sh() : InvalidSHOrder", "only up to 5th order currently supported", nullptr);
         RETURN->v_int = 0;
     }
+
+    // clean up
+    CK_SAFE_DELETE_ARRAY( coord );
 }

@@ -112,10 +112,12 @@ t_CKFLOAT ck_vec2_phase( const t_CKVEC2 & v );
 t_CKFLOAT ck_vec3_magnitude( const t_CKVEC3 & v );
 // magnitude of vec4
 t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
-// associated legendre for spherical harmonics (emc 2026)
-t_CKFLOAT associated_legendre( const t_CKINT m, const t_CKINT l, const t_CKFLOAT x );
-// spherical harmonics (emc 2026)
-void SH( t_CKFLOAT* output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d );
+// integer factorial (for up to 12! which is the largest factorial that can fit inside a 32-bit integer)
+t_CKINT ck_factorial32( t_CKINT n );
+// associated legendre for spherical harmonics | (added) 1.5.5.8 by everett 2026
+t_CKFLOAT ck_associated_legendre( const t_CKINT m, const t_CKINT l, const t_CKFLOAT x );
+// spherical harmonics | (added) 1.5.5.8 by everett 2026
+void ck_SH( t_CKFLOAT* output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d );
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }
