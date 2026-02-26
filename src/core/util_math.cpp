@@ -473,24 +473,22 @@ t_CKFLOAT SN3D(const t_CKUINT order, const t_CKINT degree) // calculate SN3D val
 // desc: calculation of spherical harmonics according to some order and normalization
 // author: everett m. carpenter
 //-----------------------------------------------------------------------------
-t_CKFLOAT* SH(const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d) // SH calc
+void SH(t_CKFLOAT* output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d) // SH calc
 {
     float azimuth_shift = (azimuth_) * 0.01745329252; // degree 2 rad
     float zenith_shift = (90.f - zenith_) * 0.01745329252;
     float coszeni = cosf(zenith_shift);
     int size = (order_ + 1) * (order_ + 1);
-    t_CKFLOAT* result = new t_CKFLOAT[size + 1]; // end result
     for (int order = 0; order <= (int)order_; order++)
     {
         if (order == 0)
-            result[0] = SN3D(order, 0);
+            output[0] = SN3D(order, 0);
         for (int degree = -order; degree <= order; degree++)
         {
             float n = n3d ? sqrtf(2 * order + 1) * SN3D(order, degree) : SN3D(order, degree); // normalization term if n3d bool = TRUE, return N3D else SN3D
             float p = (associated_legendre((int)abs(degree), (int)order, coszeni));
             float r = (degree < 0) ? sinf(abs(degree) * (azimuth_shift)) : cosf(degree * (azimuth_shift)); // degree positive? Re(exp(i*azimuth*degree)) degree negative? Im(exp(i*azimuth*degree))
-            result[(order * order) + order + degree] = n * p * r;
+            output[(order * order) + order + degree] = n * p * r;
         }
     }
-    return result;
 }

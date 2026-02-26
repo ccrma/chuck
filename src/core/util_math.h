@@ -115,7 +115,7 @@ t_CKFLOAT ck_vec4_magnitude( const t_CKVEC4 & v );
 // associated legendre for spherical harmonics (emc 2026)
 t_CKFLOAT associated_legendre( const t_CKINT m, const t_CKINT l, const t_CKFLOAT x );
 // spherical harmonics (emc 2026)
-t_CKFLOAT* SH( const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d );
+void SH( t_CKFLOAT* output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d );
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }

@@ -1451,10 +1451,11 @@ CK_DLL_SFUN( ck_sh )
     t_CKINT order = GET_NEXT_INT(ARGS);
     t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
     t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
+    t_CKFLOAT* coord = new t_CKFLOAT[(order + 1) * (order + 1) + 1];
     if (order <= 5)
     {
         unsigned size = (order + 1) * (order + 1);
-        t_CKFLOAT* coord = SH(order, direction, elevation, 0);
+        SH(coord,order, direction, elevation, 0); // moved memory ownership to ck_sh emc 2/26 (memory was previously allocated by SH() and deleted by ck_sh)
         // Create a float[] array
         Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
         Chuck_ArrayFloat* coordinatearray = (Chuck_ArrayFloat*)returnarray;
