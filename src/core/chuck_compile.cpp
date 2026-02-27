@@ -1198,6 +1198,9 @@ t_CKBOOL Chuck_Compiler::bind( f_ck_query query_func, const string & name,
     // commit what is in the type checker at this point
     env->global()->commit();
 
+    // preserve all operator overloads currently in registry | added 1.5.5.8 (ben)
+    env->op_registry.preserve();
+
     // pop indent level
     EM_poplog();
 

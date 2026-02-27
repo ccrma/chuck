@@ -66,7 +66,8 @@ XThread::XThread( )
 //-----------------------------------------------------------------------------
 XThread::~XThread( )
 {
-#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__)
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     // can't self-terminate (much like the Terminator)
     bool is_self_thread = (thread == pthread_self());
 #elif defined(__PLATFORM_WINDOWS__)
@@ -78,7 +79,8 @@ XThread::~XThread( )
     if( thread != 0 && !is_self_thread )
     {
         // TODO: find an alternative for Android?
-#if defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__)
+        // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
         // log
         EM_log( CK_LOG_FINER, "cancelling thread [0x%x] from [0x%x]...", getID(thread), getID(pthread_self()) );
         pthread_cancel(thread);
@@ -104,7 +106,8 @@ bool XThread::start( THREAD_FUNCTION routine, void * ptr )
 {
     bool result = false;
 
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     if( pthread_create( &thread, NULL, *routine, ptr ) == 0 )
     {
         EM_log( CK_LOG_FINER, "starting thread [0x%x] from [0x%x]...", thread, getID(pthread_self()) );
@@ -134,7 +137,8 @@ bool XThread::wait( long milliseconds, bool cancel )
     bool result = false;
 
     // TODO: find an alternative for Android?
-#if( defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     // cancel the thread?
     if( cancel ) pthread_cancel( thread );
     // wait for the thread to terminate
@@ -164,7 +168,8 @@ bool XThread::wait( long milliseconds, bool cancel )
 void XThread :: test( )
 {
     // TODO: find an alternative for Android?
-#if ( defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || ( defined(__PLATFORM_LINUX__) && !defined(__ANDROID__) ) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     pthread_testcancel();
 #endif
 }
@@ -178,7 +183,8 @@ void XThread :: test( )
 //-----------------------------------------------------------------------------
 t_CKUINT XThread::getID( THREAD_HANDLE t )
 {
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     return (t_CKUINT)t;
 #elif defined(__PLATFORM_WINDOWS__)
     return (t_CKUINT)GetThreadId( (HANDLE)t );
@@ -194,7 +200,8 @@ t_CKUINT XThread::getID( THREAD_HANDLE t )
 //-----------------------------------------------------------------------------
 XMutex::XMutex( )
 {
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     pthread_mutex_init(&mutex, NULL);
 #elif defined(__PLATFORM_WINDOWS__)
     InitializeCriticalSection(&mutex);
@@ -210,7 +217,8 @@ XMutex::XMutex( )
 //-----------------------------------------------------------------------------
 XMutex::~XMutex( )
 {
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     pthread_mutex_destroy( &mutex );
 #elif defined(__PLATFORM_WINDOWS__)
     DeleteCriticalSection(&mutex);
@@ -226,7 +234,8 @@ XMutex::~XMutex( )
 //-----------------------------------------------------------------------------
 void XMutex::acquire( )
 {
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     pthread_mutex_lock(&mutex);
 #elif defined(__PLATFORM_WINDOWS__)
     EnterCriticalSection(&mutex);
@@ -242,7 +251,8 @@ void XMutex::acquire( )
 //-----------------------------------------------------------------------------
 void XMutex::release( )
 {
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+    // 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
     pthread_mutex_unlock(&mutex);
 #elif defined(__PLATFORM_WINDOWS__)
     LeaveCriticalSection(&mutex);
@@ -440,7 +450,8 @@ void XWriteThread::flush_data_buffer()
 // name: write_cb()
 // desc: thread function
 //-----------------------------------------------------------------------------
-#if ( defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) )
+// 1.5.5.8 (ben, ge) added emscripten since it uses POSIX
+#if defined(__PLATFORM_APPLE__) || defined(__PLATFORM_LINUX__) || defined(__WINDOWS_PTHREAD__) || defined(__PLATFORM_EMSCRIPTEN__)
 void * XWriteThread::write_cb(void * _thiss)
 #elif defined(__PLATFORM_WINDOWS__)
 unsigned XWriteThread::write_cb(void * _thiss)

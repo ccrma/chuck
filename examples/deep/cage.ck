@@ -22,19 +22,19 @@
 // generators implies a zero-amplitude audio output. The computer musician
 // writing/running this code draws parallels to the pianist sitting in
 // front of a piano, which is not only capable of making sound but also
-// carries strong culture expections to make sound, and yet the pianist
+// carries strong cultural expectations to make sound, and yet the pianist
 // chooses, in this case, to proactively NOT make sound. This implementation,
 // therefore, could be an embodiment of 4'33" from the point of view of the 
 // performer(s) onstage.
 //
 // On the other hand, the implementation below, which contains not only
 // the alternate version in its entirety, but also goes to lengths
-// in order to connect the live audio input (adc) to the audio output (dac),
+// to connect the live audio input (adc) to the audio output (dac),
 // foregrounding not the sound made by the software program, but rather
 // the incidental sounds of the room. This is fitting of 4'33" in a
-// different sense. In Cage's original work, the incidential sounds of
+// different sense. In Cage's original work, the incidental sounds of
 // the room that accompanies the absence of instrumental sounds onstage,
-// is intentionally a vital part of the piece itself, inviting audiences to
+// are an essential part of the piece itself, inviting audiences to
 // contemplate the nature of musical performances as well as what may
 // constitute a performance in the first place. Under this interpretation,
 // the implementation below nods to the acoustic, social, and cultural
