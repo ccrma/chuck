@@ -476,11 +476,63 @@ t_CKFLOAT ck_associated_legendre( const t_CKINT m, const t_CKINT l, const t_CKFL
 //-----------------------------------------------------------------------------
 t_CKFLOAT ck_SN3D( const t_CKUINT order, const t_CKINT degree ) // calculate SN3D value
 {
-    int d = (degree == 0) ? 1 : 0; // kronecker delta
+    int d = ( degree == 0 ) ? 1 : 0; // kronecker delta
     float ratio = static_cast<float>(ck_factorial32(order - abs(degree))) / static_cast<float>(ck_factorial32(order + abs(degree))); // ratio of factorials
-    return sqrtf((2.f - d) * ratio);
+    return sqrtf( (2.f - d) * ratio );
 }
 
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_N3D
+// desc: normalization calculator for spherical harmonics
+// author: everett m. carpenter | 1.5.5.8
+//-----------------------------------------------------------------------------
+t_CKFLOAT ck_N3D( const t_CKUINT order, const t_CKINT degree ) // calculate N3D value
+{
+    return sqrtf( 2.f * order + 1.f) * ck_SN3D( order, degree );
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_acn
+// desc: find acn from a given order and degree
+// author: everett m. carpenter | 1.5.5.8
+//-----------------------------------------------------------------------------
+t_CKUINT ck_acn( const t_CKUINT order, const t_CKINT degree )
+{
+    return (order * order) + order + degree;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_acn2degree
+// desc: find degree from a given acn
+// author: everett m. carpenter | 1.5.5.8
+//-----------------------------------------------------------------------------
+t_CKINT ck_acn2degree( const t_CKUINT acn )
+{
+    t_CKUINT order = floor( sqrt( acn ) );
+    return acn - (order * order) - order;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ck_acn2order
+// desc: find degree from a given acn
+// author: everett m. carpenter | 1.5.5.8
+//-----------------------------------------------------------------------------
+t_CKUINT ck_acn2order( const t_CKUINT acn )
+{
+    return floor( sqrt( acn ) );
+}
 
 
 
@@ -491,20 +543,20 @@ t_CKFLOAT ck_SN3D( const t_CKUINT order, const t_CKINT degree ) // calculate SN3
 //-----------------------------------------------------------------------------
 void ck_SH( t_CKFLOAT * output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d )
 {
-    float azimuth_shift = (azimuth_) * 0.01745329252; // degree 2 rad
+    float azimuth_shift = azimuth_ * 0.01745329252; // degree 2 rad
     float zenith_shift = (90.f - zenith_) * 0.01745329252;
-    float coszeni = cosf(zenith_shift);
+    float coszeni = cosf( zenith_shift );
     t_CKINT size = (order_ + 1) * (order_ + 1);
     for (int order = 0; order <= (int)order_; order++)
     {
         if (order == 0)
-            output[0] = ck_SN3D(order, 0);
+            output[0] = ck_SN3D( order, 0 );
         for (int degree = -order; degree <= order; degree++)
         {
-            float n = n3d ? sqrtf(2 * order + 1) * ck_SN3D(order, degree) : ck_SN3D(order, degree); // normalization term if n3d bool = TRUE, return N3D else SN3D
-            float p = (ck_associated_legendre((int)abs(degree), (int)order, coszeni));
-            float r = (degree < 0) ? sinf(abs(degree) * (azimuth_shift)) : cosf(degree * (azimuth_shift)); // degree positive? Re(exp(i*azimuth*degree)) degree negative? Im(exp(i*azimuth*degree))
-            output[(order * order) + order + degree] = n * p * r;
+            float n = n3d ? ck_N3D( order, degree ) : ck_SN3D( order, degree ); // normalization term if n3d bool = TRUE, return N3D else SN3D
+            float p = ( ck_associated_legendre( (int)abs( degree ), (int)order, coszeni ) );
+            float r = ( degree < 0 ) ? sinf( abs(degree) * azimuth_shift ) : cosf( degree * azimuth_shift ); // degree positive? Re(exp(i*azimuth*degree)) degree negative? Im(exp(i*azimuth*degree))
+            output[ (order * order) + order + degree ] = n * p * r;
         }
     }
 }

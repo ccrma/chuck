@@ -118,6 +118,16 @@ t_CKINT ck_factorial32( t_CKINT n );
 t_CKFLOAT ck_associated_legendre( const t_CKINT m, const t_CKINT l, const t_CKFLOAT x );
 // spherical harmonics | (added) 1.5.5.8 by everett 2026
 void ck_SH( t_CKFLOAT* output, const t_CKUINT order_, const t_CKFLOAT azimuth_, const t_CKFLOAT zenith_, const t_CKBOOL n3d );
+// N3D normalization terms
+t_CKFLOAT ck_N3D( const t_CKUINT order, const t_CKINT degree );
+// N3D normalization terms
+t_CKFLOAT ck_SN3D(const t_CKUINT order, const t_CKINT degree );
+// acn from order and degree
+t_CKUINT ck_acn( const t_CKUINT order, const t_CKINT degree );
+// degree from acn
+t_CKINT ck_acn2degree( const t_CKUINT acn );
+// order from acn
+t_CKUINT ck_acn2order( const t_CKUINT acn );
 
 #if defined (__cplusplus) || defined(_cplusplus)
 }

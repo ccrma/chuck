@@ -588,7 +588,17 @@ DLL_QUERY libmath_query( Chuck_DL_Query * QUERY )
     QUERY->add_arg( QUERY, "int", "order" );
     QUERY->add_arg( QUERY, "float", "azimuth" );
     QUERY->add_arg( QUERY, "float", "zenith" );
-    QUERY->doc_func(QUERY, "Returns an array of size (N+1)^2, containing ACN ordered spherical harmonics.");
+    QUERY->doc_func( QUERY, "Returns an array of size (N+1)^2, containing ACN ordered spherical harmonics." );
+
+    // sn3d normalization terms
+    QUERY->add_sfun( QUERY, sn3d, "float[]", "sn3d" );
+    QUERY->add_arg( QUERY, "int", "order" );
+    QUERY->doc_func( QUERY, "Returns an array of SN3D normalization terms for spherical harmonics in ACN order." );
+
+    // n3d normalization terms
+    QUERY->add_sfun( QUERY, n3d, "float[]", "n3d" );
+    QUERY->add_arg( QUERY, "int", "order" );
+    QUERY->doc_func( QUERY, "Returns an array of N3D normalization terms for spherical harmonics in ACN order." );
 
     // add examples
     // QUERY->add_ex( QUERY, "map.ck" );
@@ -1450,9 +1460,9 @@ CK_DLL_SFUN( map2_impl )
 // spherical harmonics implementation | (added) 1.5.5.8 by everett 2026
 CK_DLL_SFUN( sh_impl )
 {
-    t_CKINT order = GET_NEXT_INT(ARGS);
-    t_CKFLOAT direction = GET_NEXT_FLOAT(ARGS);
-    t_CKFLOAT elevation = GET_NEXT_FLOAT(ARGS);
+    t_CKINT order = GET_NEXT_INT( ARGS );
+    t_CKFLOAT direction = GET_NEXT_FLOAT( ARGS );
+    t_CKFLOAT elevation = GET_NEXT_FLOAT( ARGS );
     t_CKFLOAT * coord = new t_CKFLOAT[(order + 1) * (order + 1) + 1];
     if( order <= 5 )
     {
@@ -1464,7 +1474,7 @@ CK_DLL_SFUN( sh_impl )
         Chuck_ArrayFloat * coordinatearray = (Chuck_ArrayFloat *)returnarray;
         for( t_CKINT i = 0; i < size; i++ )
         {
-            API->object->array_float_push_back(coordinatearray, coord[i]);
+            API->object->array_float_push_back( coordinatearray, coord[i] );
         }
         // set return value
         RETURN->v_object = coordinatearray;
@@ -1472,10 +1482,56 @@ CK_DLL_SFUN( sh_impl )
     else 
     {
         // throw exception
-        API->vm->throw_exception("Math.sh() : InvalidSHOrder", "only up to 5th order currently supported", nullptr);
+        API->vm->throw_exception( "Math.sh() : InvalidSHOrder", "only up to 5th order currently supported", nullptr );
         RETURN->v_int = 0;
     }
 
     // clean up
     CK_SAFE_DELETE_ARRAY( coord );
+}
+
+CK_DLL_SFUN( sn3d )
+{
+    // get argument
+    t_CKUINT order = GET_NEXT_INT( ARGS );
+    
+    if ( order >= 0 )
+    {
+        // Create a float[] array
+        Chuck_DL_Api::Object returnarray = API->object->create( SHRED, API->type->lookup( VM, "float[]" ), false );
+        Chuck_ArrayFloat* normalizationArray = (Chuck_ArrayFloat*)returnarray;
+
+        t_CKINT n = (order + 1) * (order + 1);
+        
+        for( int i = 0; i < n; i++ )
+        {
+            API->object->array_float_push_back( normalizationArray, ck_SN3D( order, ck_acn2degree(n) ) );
+        }
+
+        // set return value
+        RETURN->v_object = normalizationArray;
+    }
+}
+
+CK_DLL_SFUN( n3d )
+{
+    // get argument
+    t_CKUINT order = GET_NEXT_INT( ARGS );
+
+    if( order >= 0 )
+    {
+        // Create a float[] array
+        Chuck_DL_Api::Object returnarray = API->object->create(SHRED, API->type->lookup(VM, "float[]"), false);
+        Chuck_ArrayFloat* normalizationArray = (Chuck_ArrayFloat*)returnarray;
+
+        t_CKINT n = (order + 1) * (order + 1);
+
+        for (int i = 0; i < n; i++)
+        {
+            API->object->array_float_push_back( normalizationArray, ck_N3D( order, ck_acn2degree(n) ) );
+        }
+
+        // set return value
+        RETURN->v_object = normalizationArray;
+    }
 }
