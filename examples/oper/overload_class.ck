@@ -22,7 +22,7 @@ fun Number @operator * ( Number lhs, Number rhs )
     return n;
 }
 
-// overload postfix operator ++
+// overload unary postfix operator ++
 fun Number @operator ( Number n ) ++
 {
     1 +=> n.num;

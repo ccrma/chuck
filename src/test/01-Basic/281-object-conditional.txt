@@ -1,0 +1,18 @@
+foo is NOT null 
+null_foo is null 
+osc is NOT null 
+null_osc is null 
+"getObj is not null" :(string)
+"getNullObj is null" :(string)
+"if (object)" :(string)
+"if (user)" :(string)
+"!User" :(string)
+"!Object" :(string)
+"User || User" :(string)
+"Object || Object" :(string)
+"Object || User" :(string)
+"User || Object" :(string)
+"User && User" :(string)
+"Object && Object" :(string)
+"User && Object" :(string)
+"User && Object" :(string)

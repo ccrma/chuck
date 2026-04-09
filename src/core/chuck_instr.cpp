@@ -3928,6 +3928,22 @@ void Chuck_Instr_Or::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
 
 
 
+
+//-----------------------------------------------------------------------------
+// name: execute()
+// desc: ...
+//-----------------------------------------------------------------------------
+void Chuck_Instr_Boolify::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
+{
+    t_CKUINT *& sp = (t_CKUINT *&)shred->reg->sp;
+    pop_( sp, 1 );
+    t_CKINT v = val_(sp);
+    push_( sp, v != 0 );
+}
+
+
+
+
 #pragma mark === Miscellany ===
 
 
@@ -9628,7 +9644,7 @@ void Chuck_Instr_Hack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                 }
             }
             else
-                CK_FPRINTF_STDERR( "%d :(%s)\n", *(sp-1), m_type_ref->c_name() );
+                CK_FPRINTF_STDERR( "%ld :(%s)\n", *(sp-1), m_type_ref->c_name() );
         }
         else
         {
@@ -9765,7 +9781,7 @@ void Chuck_Instr_Gack::execute( Chuck_VM * vm, Chuck_VM_Shred * shred )
                     if( *(sp) == 0 )
                         CK_FPRINTF_STDERR( "null " );
                     else
-                        CK_FPRINTF_STDERR( "0x%lx :(%s|refcount=%d)\n", *(sp), type->c_name(), obj->m_ref_count );
+                        CK_FPRINTF_STDERR( "0x%lx :(%s|refcount=%d) ", *(sp), type->c_name(), obj->m_ref_count );
                         // CK_FPRINTF_STDERR( "0x%lx (refcount=%d) ", *(sp), obj->m_ref_count );
                 }
                 else

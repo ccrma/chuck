@@ -9,10 +9,14 @@ public int @operator +(Foo lhs, Foo rhs)
     return lhs.n + rhs.n;
 }
 
+// PUBLIC unary operator overload
+fun int @operator ~( Foo foo )
+{ return !foo.num; }
+
 // PUBLIC unary pre overloading
-public int @operator !(Foo foo)
+public int @operator ++(Foo foo)
 {
-    return !foo.n;
+    return ++foo.n;
 }
 
 // PUBLIC unary post overloading
@@ -23,4 +27,4 @@ public int @operator (Foo foo) ++
 
 Foo a;
 Foo b;
-<<< a + b, !a, b++, b.n >>>;
+<<< a + b, ~a, ++a, b++, b.n >>>;

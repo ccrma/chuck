@@ -1,5 +1,7 @@
 // global operator overloading using the 'public' keyword
 // overloading an operator in one context, and using it in another
+//
+// requires chuck-1.5.5.8 or higher
 
 // a custom class
 public class Foo
@@ -12,13 +14,15 @@ public int @operator +(Foo lhs, Foo rhs)
     return lhs.n + rhs.n;
 }
 
-// binary unary prefix overloading
-public int @operator !(Foo foo)
+// unary prefix overloading
+// NOTE: '!' is no longer overloadable as of v1.5.5.8,
+// in order to support conditional checks, e.g., if(!obj)
+public int @operator ~(Foo foo)
 {
     return !foo.n;
 }
 
-// binary unary postfix overloading
+// unary postfix overloading
 public int @operator (Foo foo) ++
 {
     return foo.n++;
@@ -26,4 +30,4 @@ public int @operator (Foo foo) ++
 
 // use the overloading in a different code context
 // (could be another file; here we use Machine.eval())
-Machine.eval( "Foo a, b; <<<a++, !b, a+b>>>;" );
+Machine.eval( "Foo a, b; <<<a++, ~b, a+b>>>;" );

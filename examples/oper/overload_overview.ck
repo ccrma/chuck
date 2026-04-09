@@ -1,4 +1,5 @@
 //-----------------------------------------------------------
+// (requires: chuck-1.5.5.8 or higher)
 // the general format for overload an operator is as follows:
 //-----------------------------------------------------------
 // let's say we define a custom class...
@@ -21,8 +22,10 @@ fun Foo @operator +( Foo lhs, Foo rhs )
 fun Foo @operator *( Foo lhs, Foo rhs )
 { Foo retval; lhs.num * rhs.num => retval.num; return retval; }
 
-// define unary operator overload for '!'
-fun int @operator !( Foo foo )
+// define unary operator overload for '~'
+// NOTE: '!' is no longer overloadable as of v1.5.5.8,
+// in order to support conditional checks, e.g., if(!obj)
+fun int @operator ~( Foo foo )
 { return !foo.num; }
 
 // define postfix operator overload for '++'

@@ -1,1 +1,4 @@
-1 1 2 2 2 3 
+207-op-overload-pre-post.ck:17:15: error: class 'Foo' has no member 'num'
+[17] { return !foo.num; }
+                   ^
+207-op-overload-pre-post.ck: ...in function 'int @operator~( Foo foo )'

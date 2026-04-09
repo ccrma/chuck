@@ -2,6 +2,59 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.8 (April 2026)
+=======
+=> This release contains major update to ChuGL as well as a number
+   of minor language enhancements. There is one potentially "breaking"
+   change: `!` is no longer overloadable; to "make up" for this, `~` is
+   now overloadable as a unary prefix operator (see below); also
+   Nick and Ge unearthed and fixed a boolean logic issue (!!!) with
+   the logical AND and OR operators
+=============
+ChuGL v.0.3.0
+=============
+=============
+ChucK 1.5.5.8
+=============
+(modified) the `!` unary prefix operator is no longer overloadable by the
+   programmer; the reason is to support the ability to quickly test for null
+   references in if/while/until/for and other logic conditionals:
+   ----
+   e.g., `if( obj != null )` can now also be written as `if(obj)`
+   and `if( obj == null ) can now also be written as `if(!obj)`
+   ----
+(added) abiility to overload `~` as a unary operator:
+   ----
+   // define unary operator overload for '~'
+   fun int @operator ~( Foo foo ) { return !foo.num; }
+   ----
+   NOTE: it is recommended that if you are overloading `!` in your code, 
+   please consider using `~` instead.
+(note) the examples in examples/oper pertaining to operator overloading 
+   have been updated to use `~` instead of `!`
+(updated) can now directly test for null for Object references in 
+   if/while/for/until
+   ----
+   Foo foo;
+   if( foo ) { ... }
+   // same effect as
+   if( foo != null ) { ... }
+   ---
+   if( !foo ) { ... }
+   // same effect as
+   if( foo == null ) { ... }
+(fixed) logical AND and OR now always evaluates to 0 or 1 (previously,
+   astonishingly, depending on the lhs and rhs, it could evaluate to
+   the actual value of rhs (which in practice is "correct", but also
+   potentially violates the very definition of logical AND and OR in 
+   ChucK...) (nick,ge)
+(added) spherical harmonic calculator designed for ChucK's math library 
+   (@everettcarpenter)
+   `Math.sh( int order, float azimuth, float zenith )`
+   Returns an array of size (N+1)^2, containing ACN ordered spherical 
+   harmonics.
+
+
 1.5.5.7 (January 2026)
 =======
 => This release contains minor but important updates to arrays,

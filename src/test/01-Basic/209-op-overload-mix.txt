@@ -1,1 +1,4 @@
-10 0 5 6 
+209-op-overload-mix.ck:14:15: error: class 'Foo' has no member 'num'
+[14] { return !foo.num; }
+                   ^
+209-op-overload-mix.ck: ...in function 'int @operator~( Foo foo )'

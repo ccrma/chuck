@@ -1,3 +1,0 @@
-error-dowhile.ck:4:8: error: invalid type 'DAC' in while condition
-[4] }while(dac);
-           ^

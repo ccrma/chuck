@@ -1426,6 +1426,8 @@ t_CKBOOL type_engine_check_if( Chuck_Env * env, a_Stmt_If stmt )
     case te_float:
     case te_dur:
     case te_time:
+    case te_object:
+    case te_user:
         break;
 
     default:
@@ -1487,6 +1489,8 @@ t_CKBOOL type_engine_check_for( Chuck_Env * env, a_Stmt_For stmt )
     case te_float:
     case te_dur:
     case te_time:
+    case te_object:
+    case te_user:
         break;
 
     default:
@@ -1670,6 +1674,8 @@ t_CKBOOL type_engine_check_while( Chuck_Env * env, a_Stmt_While stmt )
     case te_float:
     case te_dur:
     case te_time:
+    case te_object:
+    case te_user:
         break;
 
     default:
@@ -1716,6 +1722,8 @@ t_CKBOOL type_engine_check_until( Chuck_Env * env, a_Stmt_Until stmt )
     case te_float:
     case te_dur:
     case te_time:
+    case te_object:
+    case te_user:
         break;
 
     default:
@@ -2770,13 +2778,22 @@ t_CKTYPE type_engine_check_op( Chuck_Env * env, ae_Operator op, a_Exp lhs, a_Exp
     case ae_op_shift_right_chuck:
     case ae_op_shift_left_chuck:
         // the above are non-commutative
-    case ae_op_and:
-    case ae_op_or:
     case ae_op_s_xor:
     case ae_op_s_and:
     case ae_op_s_or:
         // shift
         CK_LR( te_int, te_int ) return env->ckt_int;
+    break;
+
+    case ae_op_and:
+    case ae_op_or:
+        // allow Object in if() statements | 1.5.5.7 (azaday)
+        CK_LR( te_int, te_int ) return env->ckt_int;
+        CK_LR( te_object, te_object ) return env->ckt_int;
+        CK_LR( te_user, te_user ) return env->ckt_int;
+        CK_COMMUTE( te_object, te_user ) return env->ckt_int;
+        CK_COMMUTE( te_object, te_int ) return env->ckt_int;
+        CK_COMMUTE( te_user, te_int ) return env->ckt_int;
     break;
 
     case ae_op_percent:
@@ -3428,8 +3445,8 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
             if( unary->exp->s_meta != ae_meta_var )
             {
                 EM_error2( unary->where,
-                    "prefix unary operator '%s' cannot "
-                    "be used on non-mutable data-types", op2str( unary->op ) );
+                          "prefix unary operator '%s' cannot "
+                          "be used on non-mutable data-types", op2str( unary->op ) );
                 return NULL;
             }
 
@@ -3446,20 +3463,28 @@ t_CKTYPE type_engine_check_exp_unary( Chuck_Env * env, a_Exp_Unary unary )
                 return t;
 
             // TODO: check overloading
-        break;
+            break;
 
         case ae_op_minus:
             // float, vec2
-            if( 
-                isa( t, env->ckt_float ) ||
-                isa( t, env->ckt_vec2 ) ||
-                isa( t, env->ckt_vec3 ) ||
-                isa( t, env->ckt_vec4 )
-            ) return t;
+            if(
+               isa( t, env->ckt_float ) ||
+               isa( t, env->ckt_vec2 ) ||
+               isa( t, env->ckt_vec3 ) ||
+               isa( t, env->ckt_vec4 )
+               ) return t;
+
         case ae_op_tilda:
+            // int
+            if( isa( t, env->ckt_int ) ) return t;
+        break;
+
         case ae_op_exclamation:
             // int
             if( isa( t, env->ckt_int ) ) return t;
+            // basically isnull(object) | 1.5.5.8 (azaday)
+            if( isa( t, env->ckt_object) ) return env->ckt_int;
+            // if( isa( t, env->ckt_object) ) return t;
         break;
 
         case ae_op_spork:
@@ -8088,7 +8113,9 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     // && & || | ^ << >> %
     //-------------------------------------------------------------------------
     registry->reserve( env->ckt_int, ae_op_and, env->ckt_int );
+    registry->reserve( env->ckt_object, ae_op_and, env->ckt_int, TRUE ); // 1.5.5.8 (azaday) reserve
     registry->reserve( env->ckt_int, ae_op_or, env->ckt_int );
+    registry->reserve( env->ckt_object, ae_op_or, env->ckt_int, TRUE ); // 1.5.5.8 (azaday) reserve
     registry->reserve( env->ckt_int, ae_op_s_and, env->ckt_int );
     registry->reserve( env->ckt_int, ae_op_s_or, env->ckt_int );
     registry->reserve( env->ckt_int, ae_op_s_xor, env->ckt_int );
@@ -8197,7 +8224,8 @@ void type_engine_init_op_overload_builtin( Chuck_Env * env )
     registry->reserve( NULL, ae_op_minus, env->ckt_vec3 );
     registry->reserve( NULL, ae_op_minus, env->ckt_vec4 );
     registry->reserve( NULL, ae_op_tilda, env->ckt_int );
-    registry->reserve( NULL, ae_op_exclamation, env->ckt_int );
+    // registry->reserve( NULL, ae_op_exclamation, env->ckt_int ); // 1.5.5.8 (azaday, ge) commented out since ! is now disabled from all overloading
+    // registry->reserve( NULL, ae_op_exclamation, env->ckt_object ); // 1.5.5.8 (azaday, ge) commented out since ! is now disabled from all overloading
     registry->reserve( NULL, ae_op_new, env->ckt_object );
 
     //-------------------------------------------------------------------------
@@ -8244,7 +8272,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
     registry->add( ae_op_and )->configure( TRUE, false, false );
     registry->add( ae_op_or )->configure( TRUE, false, false );
     registry->add( ae_op_assign )->configure( false, false, false );
-    registry->add( ae_op_exclamation )->configure( false, TRUE, false );
+    registry->add( ae_op_exclamation )->configure( false, false, false ); // disabled for pre-unary | 1.5.5.8 (azaday,ge)
     registry->add( ae_op_s_or )->configure( TRUE, false, false );
     registry->add( ae_op_s_and )->configure( TRUE, false, false );
     registry->add( ae_op_s_xor )->configure( TRUE, false, false );
@@ -8264,7 +8292,7 @@ t_CKBOOL type_engine_init_op_overload( Chuck_Env * env )
     registry->add( ae_op_percent_chuck )->configure( TRUE, false, false );
     registry->add( ae_op_shift_right )->configure( TRUE, false, false );
     registry->add( ae_op_shift_left )->configure( TRUE, false, false );
-    registry->add( ae_op_tilda )->configure( false, false, false );
+    registry->add( ae_op_tilda )->configure( false, TRUE, false ); // enabled for pre-unary | 1.5.5.8 (ge,azaday)
     registry->add( ae_op_new )->configure( false, false, false );
     registry->add( ae_op_coloncolon )->configure( TRUE, false, false );
     registry->add( ae_op_at_chuck )->configure( false, false, false );

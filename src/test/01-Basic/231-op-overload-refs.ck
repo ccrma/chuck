@@ -21,9 +21,9 @@ fun Foo @operator +( Foo lhs, Foo rhs )
 fun Foo @operator *( Foo lhs, Foo rhs )
 { Foo retval; lhs.num * rhs.num => retval.num; return retval; }
 
-// define unary operator overload for '!'
-fun int @operator !( Foo foo )
-{ return !foo.num; }
+// define unary operator overload for '++'
+fun int @operator ++( Foo foo )
+{ return ++foo.num; }
 
 // define postfix operator overload for '++'
 fun Foo @operator ( Foo foo ) ++

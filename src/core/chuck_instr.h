@@ -2069,6 +2069,20 @@ public:
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_Instr_Boolify
+// desc: convert int value on reg stack to a boolean 0=>0; non-zero=>1
+//       added 1.5.5.8 (ge,nick) in April 2026 for AND and OR optimization
+//-----------------------------------------------------------------------------
+struct Chuck_Instr_Boolify : public Chuck_Instr
+{
+public:
+    virtual void execute( Chuck_VM * vm, Chuck_VM_Shred * shred );
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_Instr_Goto
 // desc: ...
 //-----------------------------------------------------------------------------

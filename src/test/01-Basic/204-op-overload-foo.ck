@@ -21,14 +21,16 @@ fun Foo @operator +( Foo lhs, Foo rhs )
 fun Foo @operator *( Foo lhs, Foo rhs )
 { Foo retval; lhs.num * rhs.num => retval.num; return retval; }
 
+// define unary operator overload for '~'
+// NOTE: '!' is no longer overloadable as of v1.5.5.8, to support builtin
+// conditional checks for object reference
+fun int @operator ~( Foo foo )
+{ return ~foo.num; }
+
 // NOTE % can be overloaded, but due to polar e.g., `%(1,pi)`
 // need to use the formal parenthesis notation to disambiguate
 fun int @operator(%)( Foo foo, int mod )
 { mod %=> foo.num; return foo.num; }
-
-// define unary operator overload for '!'
-fun int @operator !( Foo foo )
-{ return !foo.num; }
 
 // define postfix operator overload for '++'
 fun Foo @operator ( Foo foo ) ++

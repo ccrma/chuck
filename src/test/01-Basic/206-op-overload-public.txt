@@ -1,1 +1,4 @@
-5 0 11 
+206-op-overload-public.ck:17:15: error: class 'Foo' has no member 'num'
+[17] { return !foo.num; }
+                   ^
+206-op-overload-public.ck: ...in function 'int @operator~( Foo foo )'
