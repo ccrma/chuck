@@ -3425,8 +3425,8 @@ public:
         t_CKBOOL retval = init( units_per_layer_ );
         if( retval )
         {
-            for( t_CKINT i = 0; i < activation_per_layer_.size(); i++ )
-                activation_per_layer.push_back( activation_per_layer_[i] );
+            for( t_CKINT i = 0; i < activation_per_layer_.size() && i < activation_per_layer.size(); i++ )
+                activation_per_layer[i] = activation_per_layer_[i];
         }
         return retval;
     }
@@ -3437,8 +3437,8 @@ public:
         t_CKBOOL retval = init( units_per_layer_ );
         if( retval )
         {
-            for( t_CKINT i = 0; i < units_per_layer_.size(); i++ )
-                activation_per_layer.push_back( activation_function_ );
+            for( t_CKINT i = 0; i < activation_per_layer.size(); i++ )
+                activation_per_layer[i] = activation_function_;
         }
         return retval;
     }
@@ -3506,14 +3506,6 @@ public:
         t_CKFLOAT v;
         for( t_CKINT i = weights.size() - 1; i >= 0; i-- )
         {
-            // prev layer
-            for( t_CKINT j = 0; j < weights[i]->yDim(); j++ )
-            {
-                v = 0.0;
-                for( t_CKINT k = 0; k < weights[i]->xDim(); k++ )
-                    v += weights[i]->v( k, j ) * gradients[i + 1]->v( k );
-                gradients[i]->v( j ) = v;
-            }
             // gradient
             for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
             {
@@ -3528,7 +3520,20 @@ public:
                     v = v * ( 1.0 - v );
                 else if( activation_per_layer[i] == g_at_linear )
                     v = 1.0;
-                v = v * gradients[i + 1]->v( j ) * lr;
+                gradients[i + 1]->v( j ) *= v;
+            }
+            // prev layer
+            for( t_CKINT j = 0; j < weights[i]->yDim(); j++ )
+            {
+                v = 0.0;
+                for( t_CKINT k = 0; k < weights[i]->xDim(); k++ )
+                    v += weights[i]->v( k, j ) * gradients[i + 1]->v( k );
+                gradients[i]->v( j ) = v;
+            }
+            // update
+            for( t_CKINT j = 0; j < weights[i]->xDim(); j++ )
+            {
+                v = gradients[i + 1]->v( j ) * lr;
                 for( t_CKINT k = 0; k < weights[i]->yDim(); k++ )
                     weights[i]->v( j, k ) += v * activations[i]->v( k );
                 biases[i]->v( j ) += v;

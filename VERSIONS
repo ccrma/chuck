@@ -2,6 +2,11 @@
 ChucK VERSIONS log
 ------------------
 
+1.5.5.9
+=======
+- (fixed) ChAI MLP activation and backprop handling
+
+
 1.5.5.8 (April 2026)
 =======
 => This release contains major update to ChuGL as well as a number
