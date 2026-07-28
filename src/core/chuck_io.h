@@ -527,6 +527,7 @@ CK_DLL_MFUN( MidiIn_num );
 CK_DLL_MFUN( MidiIn_name );
 CK_DLL_MFUN( MidiIn_printerr );
 CK_DLL_MFUN( MidiIn_recv );
+CK_DLL_MFUN( MidiIn_recv_bytes );
 CK_DLL_MFUN( MidiIn_can_wait );
 
 
@@ -544,6 +545,7 @@ CK_DLL_MFUN( MidiOut_name );
 CK_DLL_MFUN( MidiOut_printerr );
 CK_DLL_MFUN( MidiOut_send );
 CK_DLL_MFUN( MidiOut_send_msg );
+CK_DLL_MFUN( MidiOut_send_bytes );
 CK_DLL_MFUN( MidiOut_noteOn );
 CK_DLL_MFUN( MidiOut_noteOff );
 CK_DLL_MFUN( MidiOut_controlChange );
