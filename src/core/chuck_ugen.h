@@ -94,6 +94,8 @@ public:
     f_tick tick;
     // multichannel/vectorized tick function (added 1.3.0.0)
     f_tickf tickf;
+    // vectorized mono tick function (added 1.5.5.6)
+    f_tickv tickv;
     // msg function
     f_pmsg pmsg;
     // channels (if more than one is required)
