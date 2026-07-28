@@ -1106,6 +1106,8 @@ public:
         Type (CK_DLL_CALL * const lookup)( Chuck_VM *, const char * name );
         // get vtable offset for named function (if overloaded, returns first one); returns < 0 if not found
         t_CKINT (CK_DLL_CALL * const get_vtable_offset)( Chuck_VM *, Type type, const char * funcName );
+        // get vtable offset for named function with specific input arguments (if overloaded, returns first one); returns < 0 if not found
+        t_CKINT (CK_DLL_CALL * const get_vtable_offset_args)( Chuck_VM *, Type type, const char * funcName, Type * args, int num_args);
         // test if two chuck types are equal
         t_CKBOOL (CK_DLL_CALL * const is_equal)(Type lhs, Type rhs);
         // test if lhs is a type of rhs (e.g., SinOsc is a type of UGen)
