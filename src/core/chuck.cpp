@@ -1047,6 +1047,11 @@ t_CKBOOL ChucK::shutdown()
         {
 #if !defined(__PLATFORM_WINDOWS__) || defined(__WINDOWS_PTHREAD__)
             pthread_cancel( m_carrier->otf_thread );
+            // wait for the thread to actually exit before freeing the socket
+            // it may be about to use; otherwise a short-lived VM can shut down
+            // before the otf thread reaches accept() and it then dereferences
+            // a freed or NULL socket, crashing on exit
+            pthread_join( m_carrier->otf_thread, NULL );
 #else
             CloseHandle( m_carrier->otf_thread ); // doesn't cancel thread
 #endif
