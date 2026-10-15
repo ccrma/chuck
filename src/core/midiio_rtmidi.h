@@ -101,9 +101,11 @@ public:
     { return m_suppress_output; }
 
 public:
+
     t_CKUINT send( t_CKBYTE status );
     t_CKUINT send( t_CKBYTE status, t_CKBYTE data1 );
     t_CKUINT send( t_CKBYTE status, t_CKBYTE data1, t_CKBYTE data2 );
+    t_CKUINT send( Chuck_ArrayInt * arr );
     t_CKUINT send( const MidiMsg * msg );
 
 public:
@@ -154,9 +156,10 @@ public:
 public:
     t_CKBOOL empty();
     t_CKUINT recv( MidiMsg * msg );
+    t_CKUINT recv( Chuck_ArrayInt * msg );
 
 public:
-    CBufferAdvance * m_buffer;
+    CBufferAdvanceVariable * m_buffer;
     t_CKUINT m_read_index;
     RtMidiIn * min;
     t_CKBOOL m_valid;
@@ -193,7 +196,7 @@ protected:
     static t_CKBOOL add_vm( Chuck_VM * vm, t_CKINT device_num, t_CKBOOL suppress_output );
 
     static std::vector<RtMidiIn *> the_mins;
-    static std::vector< std::map< Chuck_VM *, CBufferAdvance * > > the_bufs;
+    static std::vector< std::map< Chuck_VM *, CBufferAdvanceVariable * > > the_bufs;
 
 public:
     static std::map< Chuck_VM *, CBufferSimple * > m_event_buffers;
