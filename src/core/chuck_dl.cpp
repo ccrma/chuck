@@ -1686,38 +1686,51 @@ t_CKINT CK_DLL_CALL ck_get_vtable_offset_args( Chuck_VM * vm, Chuck_Type * t, co
     // value not found
     if( !value || !value->func_ref ) return -1;
 
+    // get the function reference (if there is one)
     Chuck_Func * func = value->func_ref;
 
     // iterate over overloads looking for matching number of args and types
-    while (func) {
-      a_Func_Def func_def = func->def();
-      a_Arg_List arg_list = func_def->arg_list;
+    while( func )
+    {
+        // get function definition
+        a_Func_Def func_def = func->def();
+        // get function argument llist
+        a_Arg_List arg_list = func_def->arg_list;
 
-      bool type_signature_match = true;
-      int i = 0;
+        // default flag to true
+        bool type_signature_match = true;
+        // arg counter
+        int i = 0;
 
-      // size of arg lists must match
-      while( arg_list && i < num_args ) {
-        // types do not match, exit loop
-        if (!isa(args[i], arg_list->type)) {
-          type_signature_match = false;
-          break;
+        // size of arg lists must match
+        while( arg_list && i < num_args )
+        {
+            // types do not match, exit loop
+            if (!isa(args[i], arg_list->type))
+            {
+                type_signature_match = false;
+                break;
+            }
+            // move to next argument
+            arg_list = arg_list->next;
+            // increment counter
+            i++;
         }
 
-        arg_list = arg_list->next;
-        i++;
-      }
+        // expected more args from func
+        if (i != num_args) type_signature_match = false;
+        // if any args remaining in arg_list, func_def had too many args
+        if (arg_list) type_signature_match = false;
 
-      // expected more args from func
-      if (i != num_args) type_signature_match = false;
-      // func had too many args
-      if (arg_list) type_signature_match = false;
+        // found a match! returning offset...
+        if( type_signature_match)
+        {
+            // vtable index
+            return func->vt_index;
+        }
 
-      // found a match! returning offset...
-      if (type_signature_match) {
-          return func->vt_index;
-      }
-      func = func->next;
+        // not yet found, go to next overloaded function
+        func = func->next;
     }
 
     // was not able to find a match, returning -1
