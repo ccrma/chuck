@@ -5,6 +5,8 @@ ChucK VERSIONS log
 1.5.5.9
 =======
 - (fixed) ChAI MLP activation and backprop handling
+- (fixed) segfault on exit, due to lack of thread join for
+  OTF server thread before freeing its socket (thanks @barak)
 
 
 1.5.5.8 (April 2026)
