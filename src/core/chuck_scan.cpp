@@ -3045,9 +3045,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // see if we are already in a function definition
     if( env->func != NULL )
     {
-        EM_error2( f->where,
-            "nested function definitions are not (yet) allowed" );
-        return FALSE;
+        // as of 1.5.5.9 we support nested function definitions
+        // EM_error2( f->where,
+        //     "nested function definitions are not (yet) allowed" );
+        // return FALSE;
     }
 
     // make sure a code segment is in stmt - else we should push scope
@@ -3453,7 +3454,9 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         env->curr->add_func( orig_name, func );
     }
 
-    // set the current function to this
+    // if we are already in a function definition, push that func onto stack | 1.5.5.9 (ge) added
+    if( env->func != NULL ) { env->func_stack.push_back( env->func ); }
+    // set this function def as the env's innermost function def | 1.5.5.9 (ge) updated
     env->func = func;
     // push the value stack
     env->curr->value.push();
@@ -3471,8 +3474,10 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
 
     // pop the value stack
     env->curr->value.pop();
-    // clear the env's function definition
-    env->func = NULL;
+    // set env's function definition to stack top (could be NULL) | 1.5.5.9 (ge) updated
+    env->func = env->func_stack_top();
+    // pop the func def stack | 1.5.5.9 (ge) added
+    if( env->func_stack.size() ) env->func_stack.pop_back();
 
     return TRUE;
 
@@ -3481,8 +3486,10 @@ error:
     // clean up
     if( func )
     {
-        // reset
-        env->func = NULL;
+        // reset env's function definition to stack top (could be NULL) | 1.5.5.9 (ge) updated
+        env->func = env->func_stack_top(); // was: env->func = NULL;
+        // pop the func def stack | 1.5.5.9 (ge) added
+        if( env->func_stack.size() ) env->func_stack.pop_back();
         // break func_ref <-> value_ref cycle, at least here
         CK_SAFE_RELEASE( func->value_ref );
         // value, type, func shouldn't be released here | 1.5.1.3

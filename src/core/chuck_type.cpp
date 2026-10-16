@@ -168,6 +168,7 @@ Chuck_Env::Chuck_Env()
     // in order to access compiler (e.g., for originHint)
     ckt_void = NULL;
     ckt_auto = NULL;
+    ckt_closure = NULL;
     ckt_int = NULL;
     ckt_float = NULL;
     ckt_time = NULL;
@@ -225,6 +226,7 @@ t_CKBOOL Chuck_Env::init()
     // initialize base types
     ckt_void = new Chuck_Type( this, te_void, "void", NULL, 0 );
     ckt_auto = new Chuck_Type( this, te_auto, "auto", NULL, 0 );
+    ckt_closure = new Chuck_Type( this, te_closure, "@closure", NULL, 0 );
     ckt_int = new Chuck_Type( this, te_int, "int", NULL, sizeof(t_CKINT) );
     ckt_float = new Chuck_Type( this, te_float, "float", NULL, sizeof(t_CKFLOAT) );
     ckt_time = new Chuck_Type( this, te_time, "time", NULL, sizeof(t_CKTIME) );
@@ -279,6 +281,7 @@ void Chuck_Env::cleanup()
     // deleting ugen
     CK_SAFE_UNLOCK_DELETE(ckt_void);
     CK_SAFE_UNLOCK_DELETE(ckt_auto);
+    CK_SAFE_UNLOCK_DELETE(ckt_closure);
     CK_SAFE_UNLOCK_DELETE(ckt_int);
     CK_SAFE_UNLOCK_DELETE(ckt_float);
     CK_SAFE_UNLOCK_DELETE(ckt_time);
@@ -337,8 +340,16 @@ void Chuck_Env::reset()
     nspc_stack.clear();
     // push global namespace
     nspc_stack.push_back( global_nspc );
+
     // TODO: release stack items?
-    class_stack.clear(); class_stack.push_back( NULL );
+    class_stack.clear();
+    // push NULL item
+    class_stack.push_back( NULL );
+
+    // clear function definition stack | 1.5.5.9 (ge) added
+    func_stack.clear();
+    // TODO: release stack items?
+
     // should be at top level
     assert( context == &global_context );
 
@@ -411,12 +422,26 @@ Chuck_Namespace * Chuck_Env::nspc_top()
 
 
 //-----------------------------------------------------------------------------
-// name: nspc_top()
+// name: class_top()
 // desc: get the class at the top of the stack
 //-----------------------------------------------------------------------------
-Chuck_Type * Chuck_Env::class_top()
+Chuck_Type * Chuck_Env::class_stack_top()
 {
-    assert( class_stack.size() > 0 ); return class_stack.back();
+    // NOTE: class_stack is initialized with a NULL dummy value
+    assert(class_stack.size() > 0); return class_stack.back();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: func_top()
+// desc: get the func at the top of the func def stack
+//-----------------------------------------------------------------------------
+Chuck_Func * Chuck_Env::func_stack_top()
+{
+    // unlike class_stack, func_stack is reset to empty each run
+    return func_stack.size() ? func_stack.back() : NULL;
 }
 
 
@@ -614,6 +639,7 @@ t_CKBOOL type_engine_init( Chuck_Carrier * carrier )
     // enter the default global type mapping : lock VM objects to catch deletion
     env->global()->type.add( env->ckt_void->base_name, env->ckt_void );          env->ckt_void->lock();
     env->global()->type.add( env->ckt_auto->base_name, env->ckt_auto );          env->ckt_auto->lock();
+    env->global()->type.add( env->ckt_closure->base_name, env->ckt_closure );       env->ckt_closure->lock();
     env->global()->type.add( env->ckt_int->base_name, env->ckt_int );            env->ckt_int->lock();
     env->global()->type.add( env->ckt_float->base_name, env->ckt_float );        env->ckt_float->lock();
     env->global()->type.add( env->ckt_time->base_name, env->ckt_time );          env->ckt_time->lock();
@@ -5958,7 +5984,9 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
         env->curr->obj_v_table.funcs.push_back( theFunc );
     }
 
-    // set the current function to this
+    // if we are already in a function definition, push that func onto stack | 1.5.5.9 (ge) added
+    if( env->func != NULL ) { env->func_stack.push_back( env->func ); }
+    // set this function def as the env's innermost function def | 1.5.5.9 (ge) updated
     env->func = theFunc;
     // push the value stack
     env->curr->value.push();
@@ -6027,15 +6055,20 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     // pop the value stack
     env->curr->value.pop();
 
-    // clear the env's function definition
-    env->func = NULL;
+    // set env's function definition to stack top (could be NULL) | 1.5.5.9 (ge) updated
+    env->func = env->func_stack_top();
+    // pop the func def stack | 1.5.5.9 (ge) added
+    if( env->func_stack.size() ) env->func_stack.pop_back();
 
     return TRUE;
 
 error:
 
-    // clean up
-    env->func = NULL;
+    // reset env's function definition to stack top (could be NULL) | 1.5.5.9 (ge) updated
+    env->func = env->func_stack_top(); // was: env->func = NULL;
+    // pop the func def stack | 1.5.5.9 (ge) added
+    if( env->func_stack.size() ) env->func_stack.pop_back();
+
     // theFunc->release();
 
     return FALSE;

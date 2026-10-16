@@ -117,6 +117,49 @@ public: // state
 
 
 //-----------------------------------------------------------------------------
+// name: struct Chuck_VM_Closure
+// desc: a VM closure closure, to be referenced from function values | 1.5.6.0 (ge,nick)
+//-----------------------------------------------------------------------------
+struct Chuck_VM_Closure
+{
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
+public:
+    // constructor
+    Chuck_VM_Closure();
+    // destructor
+    ~Chuck_VM_Closure();
+
+public:
+    // initialize stack of at least 'size' bytes
+    t_CKBOOL initialize( t_CKUINT size );
+    // shutdown and cleanup stack
+    t_CKBOOL shutdown();
+
+//-----------------------------------------------------------------------------
+// data
+//-----------------------------------------------------------------------------
+public: // storage
+    t_CKBYTE * data; // context data
+    t_CKBYTE * dp; // data pointer
+    t_CKBYTE * dp_max; // data pointer max
+
+    // if closure is associated with an object instance, e.g., declared as
+    // as a nested function within a class member function, the closure
+    // tracks the `this` pointer (with added reference count) to be used
+    // when the closure is used in a function call
+    Chuck_VM_Object * THIS;
+
+public: // state
+    t_CKBOOL m_is_init;
+    t_CKUINT m_size;
+};
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: struct Chuck_VM_Code
 // desc: ...
 //-----------------------------------------------------------------------------

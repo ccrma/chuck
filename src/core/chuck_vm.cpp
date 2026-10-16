@@ -1858,6 +1858,102 @@ t_CKBOOL Chuck_VM_Stack::shutdown()
 
 
 //-----------------------------------------------------------------------------
+// name: Chuck_VM_Closure()
+// desc: constructor
+//-----------------------------------------------------------------------------
+Chuck_VM_Closure::Chuck_VM_Closure()
+{
+    data = dp = dp_max = NULL;
+    m_is_init = FALSE;
+    m_size = 0;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: ~Chuck_VM_Closure()
+// desc: desctructor
+//-----------------------------------------------------------------------------
+Chuck_VM_Closure::~Chuck_VM_Closure()
+{
+    this->shutdown();
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: initialize()
+// desc: initialize VM stack, with at least 'size' bytes
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Closure::initialize( t_CKUINT size )
+{
+    // check if already initialized
+    if( m_is_init ) return FALSE;
+
+    // allocate stack
+    data = new t_CKBYTE[size];
+    if( !data ) goto out_of_memory;
+    // zero the memory
+    memset( data, 0, size );
+
+    // set the sp
+    dp = data;
+    // upper limit
+    dp_max = data + size;
+    // remember size
+    m_size = size;
+    // zero out THIS
+    THIS = NULL;
+
+    // log
+    EM_log( CK_LOG_FINER, "allocated VM closure (size:%lu bytes)", size );
+
+    // set flag and return
+    return m_is_init = TRUE;
+
+out_of_memory:
+
+    // we have a problem
+    EM_exception( "OutOfMemory: VM stack [size=%lu]", size );
+
+    // return FALSE
+    return FALSE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// name: shutdown()
+// desc: shutdown and cleanup VM stack
+//-----------------------------------------------------------------------------
+t_CKBOOL Chuck_VM_Closure::shutdown()
+{
+    if( !m_is_init )
+        return FALSE;
+
+    // free the stack
+    CK_SAFE_DELETE_ARRAY( data );
+    // zero out the stack pointer
+    dp = dp_max = NULL;
+
+    // set the flag to false
+    m_is_init = FALSE;
+    // set size to 0
+    m_size = 0;
+
+    // release THIS pointer
+    CK_SAFE_RELEASE( THIS );
+
+    return TRUE;
+}
+
+
+
+
+//-----------------------------------------------------------------------------
 // name: Chuck_VM_Shred()
 // desc: constructor
 //-----------------------------------------------------------------------------

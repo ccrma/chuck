@@ -5773,7 +5773,9 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
         emit->append( new Chuck_Instr_Mem_Set_Imm( value->offset, (t_CKUINT)func ) );
     }
 
-    // set the func
+    // if we are already in a function definition, push that func onto stack | 1.5.5.9 (ge) added
+    if( emit->env->func != NULL ) { emit->env->func_stack.push_back( emit->env->func ); }
+    // set this function def as the env's innermost function def | 1.5.5.9 (ge) updated
     emit->env->func = func;
     // push the current code
     emit->code_stack.push_back( emit->code );
@@ -5903,8 +5905,11 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     if( !emit_to_code( emit->code, func->code, emit->dump ) )
         return FALSE;
 
-    // unset the func
-    emit->env->func = NULL;
+    // set env's function definition to stack top (could be NULL) | 1.5.5.9 (ge) updated
+    emit->env->func = emit->env->func_stack_top(); // was: emit->env->func = NULL;
+    // pop the func def stack | 1.5.5.9 (ge) added
+    if( emit->env->func_stack.size() ) emit->env->func_stack.pop_back();
+
     // delete the code
     CK_SAFE_DELETE( emit->code );
     // pop the code

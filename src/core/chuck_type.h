@@ -41,6 +41,8 @@
 #include "chuck_errmsg.h"
 
 
+
+
 //-----------------------------------------------------------------------------
 // name: enum te_Type
 // desc: basic, default ChucK types
@@ -52,7 +54,7 @@ typedef enum {
     te_function, te_object, te_user, te_array, te_null, te_ugen, te_uana,
     te_event, te_void, te_stdout, te_stderr, te_adc, te_dac, te_bunghole,
     te_uanablob, te_io, te_fileio, te_chout, te_cherr, te_multi,
-    te_vec2, te_vec3, te_vec4, te_vector, te_auto
+    te_vec2, te_vec3, te_vec4, te_vector, te_auto, te_closure
 } te_Type;
 
 
@@ -774,7 +776,10 @@ public:
     // get namespace at top of stack
     Chuck_Namespace * nspc_top();
     // get type at top of type stack
-    Chuck_Type * class_top();
+    Chuck_Type * class_stack_top();
+    // get func at top of func def stack
+    Chuck_Func * func_stack_top();
+
     // commit namespaces
     void commit_namespaces();
     // rollback namespace
@@ -819,12 +824,19 @@ public:
     std::vector<Chuck_Namespace *> nspc_stack;
     // expression namespace
     Chuck_Namespace * curr;
+
     // class stack
     std::vector<Chuck_Type *> class_stack;
     // current class definition
     Chuck_Type * class_def;
-    // current function definition
+
+    // function stack (for nested function definitions) | 1.5.5.9 (ge) added
+    std::vector<Chuck_Func *> func_stack;
+    // current (innermost) function definition
     Chuck_Func * func;
+    // helper function to determine if we are in a nested function definition
+    t_CKBOOL func_nested() const { return func_stack.size() >= 2; }
+
     // how far nested in a class definition
     t_CKUINT class_scope;
     // are we in a spork operation
@@ -858,6 +870,7 @@ public:
     // REFACTOR-2017: public types
     Chuck_Type * ckt_void;
     Chuck_Type * ckt_auto; // 1.5.0.8
+    Chuck_Type * ckt_closure; // 1.5.5.9
     Chuck_Type * ckt_int;
     Chuck_Type * ckt_float;
     Chuck_Type * ckt_time;
