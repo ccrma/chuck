@@ -5780,9 +5780,10 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     // see if we are already in a function definition
     if( env->func != NULL )
     {
-        EM_error2( f->where,
-            "nested function definitions are not (yet) allowed" );
-        return FALSE;
+        // as of 1.5.5.9 we support nested function definitions
+        // EM_error2( f->where,
+        //    "nested function definitions are not (yet) allowed" );
+        // return FALSE;
     }
 
     // get the func

@@ -5756,9 +5756,10 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // make sure we are not in a function already
     if( emit->env->func != NULL )
     {
-        EM_error2( func_def->where,
-            "(emit): internal error: nested function definition..." );
-        return FALSE;
+        // as of 1.5.5.9 we support nested function definitions
+        // EM_error2( func_def->where,
+        //     "(emit): internal error: nested function definition..." );
+        // return FALSE;
     }
 
     // if not part of a class
