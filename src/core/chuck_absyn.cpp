@@ -107,6 +107,25 @@ a_Section new_section_class_def( a_Class_Def class_def, uint32_t lineNum, uint32
     return a;
 }
 
+a_Code_Body new_code_body( a_Section section, uint32_t line, uint32_t where )
+{
+    a_Code_Body a = (a_Code_Body)checked_malloc( sizeof( struct a_Code_Body_) );
+    a->section = section;
+    a->line = line; a->where = where;
+
+    return a;
+}
+
+a_Code_Body prepend_code_body( a_Section section, a_Code_Body body, uint32_t line, uint32_t where )
+{
+    a_Code_Body a = (a_Code_Body)checked_malloc( sizeof( struct a_Code_Body_) );
+    a->section = section;
+    a->next = body;
+    a->line = line; a->where = where;
+
+    return a;
+}
+
 a_Stmt_List new_stmt_list( a_Stmt stmt, uint32_t lineNum, uint32_t posNum )
 {
     a_Stmt_List a = (a_Stmt_List)checked_malloc( sizeof( struct a_Stmt_List_ ) );
@@ -150,11 +169,11 @@ a_Stmt new_stmt_from_expression( a_Exp exp, uint32_t lineNum, uint32_t posNum )
     return a;
 }
 
-a_Stmt new_stmt_from_code( a_Stmt_List stmt_list, uint32_t lineNum, uint32_t posNum )
+a_Stmt new_stmt_from_code( a_Code_Body code, uint32_t lineNum, uint32_t posNum )
 {
     a_Stmt a = (a_Stmt)checked_malloc( sizeof( struct a_Stmt_ ) );
     a->s_type = ae_stmt_code;
-    a->stmt_code.stmt_list = stmt_list;
+    a->stmt_code.body = code;
     a->line = lineNum; a->where = posNum;
     a->stmt_code.line = lineNum; a->stmt_code.where = posNum;
     a->stmt_code.self = a;
@@ -1379,6 +1398,13 @@ void delete_iface_def( a_Class_Def def )
     delete_class_def( def );
 }
 
+void delete_code_body( a_Code_Body code )
+{
+    if( code->next ) delete_code_body( code->next );
+    delete_section( code->section );
+    CK_SAFE_FREE( code );
+}
+
 // delete stmt
 void delete_stmt( a_Stmt stmt )
 {
@@ -1449,7 +1475,7 @@ void delete_stmt( a_Stmt stmt )
 void delete_stmt_from_code( a_Stmt stmt )
 {
     EM_log( CK_LOG_FINEST, "deleting stmt %p (code)...", (void *)stmt );
-    delete_stmt_list( stmt->stmt_code.stmt_list );
+    delete_code_body( stmt->stmt_code.body );
 }
 
 void delete_stmt_from_while( a_Stmt stmt )

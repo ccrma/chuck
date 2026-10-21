@@ -86,6 +86,7 @@ a_Program g_program = NULL;
     a_Class_Def class_def;
     a_Class_Ext class_ext;
     a_Class_Body class_body;
+    a_Code_Body code_body;
     a_Stmt stmt;
     a_Exp exp;
     a_Func_Def func_def;
@@ -113,7 +114,9 @@ a_Program g_program = NULL;
 // 1.5.4.0: changed to 84 for @import statements
 // 1.5.4.4: changed to 86 for @doc statements
 // 1.5.5.8: changed to 88 for @example statements
-%expect 88
+// 1.5.5.9: changed to 46 for nested function definitions
+//          (also refactored `class_section` and `code_body`, now unified into `program_section`)
+%expect 46
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> INT_VAL
@@ -146,19 +149,20 @@ a_Program g_program = NULL;
 
 %type <program> program
 %type <program_section> program_section
-%type <stmt> code_segment
+%type <code_body> code_body
+%type <code_body> code_body_list
 %type <func_def> function_definition
 %type <class_def> class_definition
 %type <class_body> class_body
 %type <class_body> class_body2
+%type <ival> class_decl
 %type <class_ext> class_ext
-%type <ival> class_decl 
 %type <class_ext> iface_ext
-%type <program_section> class_section
 %type <stmt_list> statement_list
 %type <stmt> statement
 //%type <stmt_label> label_statement
 %type <stmt> loop_statement
+%type <stmt> code_statement
 %type <stmt> selection_statement
 %type <stmt> jump_statement
 %type <stmt> expression_statement
@@ -252,15 +256,8 @@ class_body
         ;
 
 class_body2
-        : class_section                     { $$ = new_class_body( $1, @1.first_line, @1.first_column ); }
-        | class_section class_body2         { $$ = prepend_class_body( $1, $2, @1.first_line, @1.first_column ); }
-        ;
-
-
-class_section
-        : statement_list                    { $$ = new_section_stmt( $1, @1.first_line, @1.first_column ); }
-        | function_definition               { $$ = new_section_func_def( $1, @1.first_line, @1.first_column ); }
-        | class_definition                  { $$ = new_section_class_def( $1, @1.first_line, @1.first_column ); }
+        : program_section                   { $$ = new_class_body( $1, @1.first_line, @1.first_column ); }
+        | program_section class_body2       { $$ = prepend_class_body( $1, $2, @1.first_line, @1.first_column ); }
         ;
         
 iface_ext
@@ -278,34 +275,44 @@ id_dot
         ;
 
 function_definition
-        : function_decl static_decl type_decl2 ID LPAREN arg_list RPAREN code_segment
+        : function_decl static_decl type_decl2 ID LPAREN arg_list RPAREN code_statement
             { $$ = new_func_def( $1, $2, $3, $4, $6, $8, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl static_decl type_decl2 ID LPAREN RPAREN code_segment
+        | function_decl static_decl type_decl2 ID LPAREN RPAREN code_statement
             { $$ = new_func_def( $1, $2, $3, $4, NULL, $7, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl static_decl ID LPAREN arg_list RPAREN code_segment
+        | function_decl static_decl ID LPAREN arg_list RPAREN code_statement
             { $$ = new_func_def( $1, $2, NULL, $3, $5, $7, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl static_decl ID LPAREN RPAREN code_segment
+        | function_decl static_decl ID LPAREN RPAREN code_statement
             { $$ = new_func_def( $1, $2, NULL, $3, NULL, $6, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl AT_CTOR LPAREN arg_list RPAREN code_segment // 1.5.2.0 (ge) added for constructors
+        | function_decl AT_CTOR LPAREN arg_list RPAREN code_statement // 1.5.2.0 (ge) added for constructors
             { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", $4, $6, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl AT_CTOR LPAREN RPAREN code_segment // 1.5.2.0 (ge) added for constructors
+        | function_decl AT_CTOR LPAREN RPAREN code_statement // 1.5.2.0 (ge) added for constructors
             { $$ = new_func_def( $1, ae_key_instance, NULL, "@construct", NULL, $5, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl AT_DTOR LPAREN RPAREN code_segment // 1.5.2.0 (ge) added for destructor
+        | function_decl AT_DTOR LPAREN RPAREN code_statement // 1.5.2.0 (ge) added for destructor
             { $$ = new_func_def( $1, ae_key_instance, NULL, "@destruct", NULL, $5, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl AT_DTOR LPAREN arg_list RPAREN code_segment // 1.5.2.0 (ge) added for constructors
+        | function_decl AT_DTOR LPAREN arg_list RPAREN code_statement // 1.5.2.0 (ge) added for constructors
             { $$ = new_func_def( $1, ae_key_instance, NULL, "@destruct", $4, $6, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN arg_list RPAREN SEMICOLON
             { $$ = new_func_def( $1, $2, $3, $4, $6, NULL, TRUE, @1.first_line, @1.first_column ); }
         | function_decl static_decl type_decl2 ID LPAREN RPAREN SEMICOLON
             { $$ = new_func_def( $1, $2, $3, $4, NULL, NULL, TRUE, @1.first_line, @1.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP overloadable_operator LPAREN arg_list RPAREN code_segment
+        | function_decl static_decl type_decl2 AT_OP overloadable_operator LPAREN arg_list RPAREN code_statement
             { $$ = new_op_overload( $1, $2, $3, $5, $7, $9, TRUE, FALSE, @1.first_line, @1.first_column, @5.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN overloadable_operator code_segment
+        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN overloadable_operator code_statement
             { $$ = new_op_overload( $1, $2, $3, $8, $6, $9, TRUE, TRUE, @1.first_line, @1.first_column, @8.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP LPAREN overloadable_operator RPAREN LPAREN arg_list RPAREN code_segment
+        | function_decl static_decl type_decl2 AT_OP LPAREN overloadable_operator RPAREN LPAREN arg_list RPAREN code_statement
             { $$ = new_op_overload( $1, $2, $3, $6, $9, $11, TRUE, FALSE, @1.first_line, @1.first_column, @5.first_column ); }
-        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN LPAREN overloadable_operator RPAREN code_segment
+        | function_decl static_decl type_decl2 AT_OP LPAREN arg_list RPAREN LPAREN overloadable_operator RPAREN code_statement
             { $$ = new_op_overload( $1, $2, $3, $9, $6, $11, TRUE, TRUE, @1.first_line, @1.first_column, @8.first_column ); }
+        ;
+
+code_body
+        : LBRACE RBRACE                     { $$ = new_code_body( NULL, @1.first_line, @1.first_column ); }
+        | LBRACE code_body_list RBRACE      { $$ = $2; }
+        ;
+
+code_body_list
+        : program_section                   { $$ = new_code_body( $1, @1.first_line, @1.first_column ); }
+        | program_section code_body_list    { $$ = prepend_code_body( $1, $2, @1.first_line, @1.first_column ); }
         ;
 
 class_decl
@@ -339,7 +346,7 @@ type_decl_b
 
 //type_decl_c
 //        : LPAREN id_dot RPAREN              { $$ = new_type_decl( $3, 0, @1.first_line, @1.first_column ); }
-//        // | LPAREN id_dot RPAREN AT_SYM       { $$ = new_type_decl( $1, 1, @1.first_line, @1.first_column ); }
+//        | LPAREN id_dot RPAREN AT_SYM       { $$ = new_type_decl( $1, 1, @1.first_line, @1.first_column ); }
 //        ;
 
 type_decl
@@ -366,13 +373,16 @@ statement_list
 statement
         : expression_statement              { $$ = $1; }
         | loop_statement                    { $$ = $1; }
+        | code_statement                    { $$ = $1; }
         | selection_statement               { $$ = $1; }
-        | jump_statement                    { $$ = $1; }
-        // | label_statement                   { }
-        | code_segment                      { $$ = $1; }
+        | jump_statement                    { $$ = $1; } // | label_statement { }
         | import_statement                  { $$ = $1; }
         | doc_statement                     { $$ = $1; }
         | example_statement                 { $$ = $1; }
+        ;
+
+code_statement
+        : code_body { $$ = new_stmt_from_code( $1, @1.first_line, @1.first_column ); }
         ;
 
 jump_statement
@@ -406,11 +416,6 @@ loop_statement
             { $$ = new_stmt_from_do_until( $5, $2, @1.first_line, @1.first_column ); }
         | LOOP LPAREN expression RPAREN statement
             { $$ = new_stmt_from_loop( $3, $5, @1.first_line, @1.first_column ); }
-        ;
-
-code_segment
-        : LBRACE RBRACE                     { $$ = new_stmt_from_code( NULL, @1.first_line, @1.first_column ); }
-        | LBRACE statement_list RBRACE      { $$ = new_stmt_from_code( $2, @1.first_line, @1.first_column ); }
         ;
 
 import_statement
@@ -682,7 +687,7 @@ unary_expression
             { $$ = new_exp_from_unary2( ae_op_new, $2, TRUE, NULL, $5, @1.first_line, @1.first_column ); }
         | NEW type_decl LPAREN expression RPAREN array_exp // 1.5.2.0 (ge) added for constructors | e.g., new Foo(1,2,3)[10];
             { $$ = new_exp_from_unary2( ae_op_new, $2, TRUE, $4, $6, @1.first_line, @1.first_column ); }
-//		| SPORK TILDA code_segment
+//		| SPORK TILDA code_statement
 //		    { $$ = new_exp_from_unary3( ae_op_spork, $3, @1.first_line, @1.first_column ); }
         ;
 

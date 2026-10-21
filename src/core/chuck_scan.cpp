@@ -485,7 +485,7 @@ t_CKBOOL type_engine_scan1_stmt_list( Chuck_Env * env, a_Stmt_List list,
 {
     // last non-NULL statement
     a_Stmt lastStmt = NULL;
-    // set to NULL to begin with
+    // set to FALSE to begin with
     if( retrieveAllControlPathsReturn ) *retrieveAllControlPathsReturn = FALSE;
 
     // type check the stmt_list
@@ -884,21 +884,66 @@ t_CKBOOL type_engine_scan1_return( Chuck_Env * env, a_Stmt_Return stmt )
 // name: type_engine_scan1_code_segment()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
+t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code code,
                                          t_CKBOOL push )
 {
+    // get code body
+    a_Code_Body body = code->body;
+    // default flag to TRUE
+    code->allControlPathsReturn = TRUE;
+    // return value
+    t_CKBOOL ret = TRUE;
+
     // class
     env->class_scope++;
     // push
     if( push ) env->curr->value.push(); // env->context->nspc.value.push();
-    // do it
-    t_CKBOOL t = type_engine_scan1_stmt_list( env, stmt->stmt_list, &stmt->allControlPathsReturn );
+
+    // loop over code sections in the function body | 1.5.5.9 (ge) updated to support nested function defs
+    while( body != NULL )
+    {
+        if( body->section )
+        {
+            // check section type
+            switch( body->section->s_type )
+            {
+                case ae_section_stmt:
+                {
+                    // scan stmt list
+                    // TODO: account for possibility that there are more stmt_lists after this one in the same section
+                    ret = type_engine_scan1_stmt_list( env, body->section->stmt_list, &body->allControlPathsReturn );
+                    if( !ret ) goto cleanup;
+                    break;
+                }
+
+                case ae_section_func:
+                    // scan func def
+                    ret = type_engine_scan1_func_def( env, body->section->func_def );
+                    if( !ret ) goto cleanup;
+                    break;
+
+                case ae_section_class:
+                    // scan class def
+                    ret = type_engine_scan1_class_def( env, body->section->class_def );
+                    if( !ret ) goto cleanup;
+                    break;
+            }
+
+            // update
+            code->allControlPathsReturn &= body->allControlPathsReturn;
+        }
+
+        // next section
+        body = body->next;
+    }
+
+cleanup:
     // pop
     if( push ) env->curr->value.pop();  // env->context->nspc.value.pop();
     // class
     env->class_scope--;
 
-    return t;
+    return ret;
 }
 
 
@@ -1527,6 +1572,12 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
     t_CKUINT count = 0;
     t_CKBOOL is_static = (env->class_def != NULL) && (f->static_decl == ae_key_static);
 
+    // should contain either NULL or stmt_code
+    // make sure a code segment is in stmt - else we should push scope
+    assert( !f->code || f->code->s_type == ae_stmt_code );
+    // loop over sections | 1.5.5.9 (ge) updated to use more flexible code sections (also allows nested function defs)
+    a_Stmt_Code code = f->code ? &f->code->stmt_code : NULL;
+
     // substitute for @construct
     if( S_name(f->name) == string("@construct") )
     {
@@ -1673,16 +1724,19 @@ t_CKBOOL type_engine_scan1_func_def( Chuck_Env * env, a_Func_Def f )
         arg_list = arg_list->next;
     }
 
-    // scan the code for types that need resolution
-    assert( f->code == NULL || f->code->s_type == ae_stmt_code );
-    if( f->code && !type_engine_scan1_code_segment( env, &f->code->stmt_code, FALSE ) )
+    //-------------------
+    // scan function body
+    //-------------------
+
+    // if we have code segment, scan it
+    if( code && !type_engine_scan1_code_segment( env, code ) )
     {
         EM_error2( 0, "...in function '%s'", S_name(f->name) );
         goto error;
     }
 
-    // propagate from stmt_code to the outer stmt | 1.5.1.0
-    if( f->code ) f->code->allControlPathsReturn = f->code->stmt_code.allControlPathsReturn;
+    // propagate the flag
+    if( f->code ) f->code->allControlPathsReturn = code->allControlPathsReturn;
 
     return TRUE;
 
@@ -2128,21 +2182,59 @@ t_CKBOOL type_engine_scan2_return( Chuck_Env * env, a_Stmt_Return stmt )
 // name: type_engine_scan2_code_segment()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_scan2_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
+t_CKBOOL type_engine_scan2_code_segment( Chuck_Env * env, a_Stmt_Code code,
                                         t_CKBOOL push )
 {
+    // get code body
+    a_Code_Body body = code->body;
+    // return value
+    t_CKBOOL ret = TRUE;
+
     // class
     env->class_scope++;
     // push
     if( push ) env->curr->value.push(); // env->context->nspc.value.push();
-    // do it
-    t_CKBOOL t = type_engine_scan2_stmt_list( env, stmt->stmt_list );
+
+    // loop over code sections in the function body | 1.5.5.9 (ge) updated to support nested function defs
+    while( body != NULL )
+    {
+        // check for empty body section
+        if( body->section )
+        {
+            switch( body->section->s_type )
+            {
+                case ae_section_stmt:
+                {
+                    // scan stmt list
+                    ret = type_engine_scan2_stmt_list( env, body->section->stmt_list );
+                    if( !ret ) goto cleanup;
+                    break;
+                }
+                case ae_section_func:
+                    // scan func def
+                    ret = type_engine_scan2_func_def( env, body->section->func_def );
+                    if( !ret ) goto cleanup;
+                    break;
+
+                case ae_section_class:
+                    // scan func def
+                    ret = type_engine_scan2_class_def( env, body->section->class_def );
+                    if( !ret ) goto cleanup;
+                    break;
+            }
+        }
+
+        // next section
+        body = body->next;
+    }
+
+cleanup:
     // pop
     if( push ) env->curr->value.pop();  // env->context->nspc.value.pop();
     // class
     env->class_scope--;
 
-    return t;
+    return ret;
 }
 
 
@@ -3042,6 +3134,12 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // is in destructor? | 1.5.2.0
     t_CKBOOL isInDtor = isdtor(env,f);
 
+    // should contain either NULL or stmt_code
+    // make sure a code segment is in stmt - else we should push scope
+    assert( !f->code || f->code->s_type == ae_stmt_code );
+    // loop over sections | 1.5.5.9 (ge) updated to use more flexible code sections (also allows nested function defs)
+    a_Stmt_Code code = f->code ? &f->code->stmt_code : NULL;
+
     // see if we are already in a function definition
     if( env->func != NULL )
     {
@@ -3050,9 +3148,6 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         //     "nested function definitions are not (yet) allowed" );
         // return FALSE;
     }
-
-    // make sure a code segment is in stmt - else we should push scope
-    assert( !f->code || f->code->s_type == ae_stmt_code );
 
     // look up the value in the current class (can shadow?)
     overload = env->curr->lookup_value( f->name, FALSE );
@@ -3090,9 +3185,6 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
         // make name using 0
         func_name += "@0@" + env->curr->name;
     }
-
-    // make sure a code segment is in stmt - else we should push scope
-    assert( !f->code || f->code->s_type == ae_stmt_code );
 
     // make a new func object
     func = env->context->new_Chuck_Func();
@@ -3461,11 +3553,18 @@ t_CKBOOL type_engine_scan2_func_def( Chuck_Env * env, a_Func_Def f )
     // push the value stack
     env->curr->value.push();
 
+    // TODO: verify commenting this out 1.5.5.9
     // scan the code
-    assert( f->code == NULL || f->code->s_type == ae_stmt_code );
-    if( f->code && !type_engine_scan2_code_segment( env, &f->code->stmt_code, FALSE ) )
+    // assert( f->code == NULL || f->code->s_type == ae_stmt_code );
+
+    //-------------------
+    // scan function body
+    //-------------------
+
+    // if we have code segment, scan it
+    if( code && !type_engine_scan2_code_segment( env, code ) )
     {
-        EM_error2( 0, "...in function '%s'", func->signature(FALSE,FALSE).c_str() ); // S_name(f->name) );
+        EM_error2( 0, "...in function '%s'", func->signature(FALSE,FALSE).c_str() );
         goto error;
     }
 

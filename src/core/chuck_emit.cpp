@@ -5684,24 +5684,56 @@ t_CKBOOL emit_engine_emit_exp_decl( Chuck_Emitter * emit, a_Exp_Decl decl,
 // desc: ...
 //-----------------------------------------------------------------------------
 t_CKBOOL emit_engine_emit_code_segment( Chuck_Emitter * emit,
-                                        a_Stmt_Code stmt, t_CKBOOL push )
+                                        a_Stmt_Code code, t_CKBOOL push )
 {
-    a_Stmt_List list = stmt->stmt_list;
+    // body
+    a_Code_Body body = code->body;
+    // return value
+    t_CKBOOL ret = TRUE;
 
-    // loop through
-    while( list )
+    // iterate over body sections
+    // TODO: 1.5.5.9 make separate passes for code, nested funcs, nested classes?
+    while( body )
     {
-        // emit the statement
-        if( !emit_engine_emit_stmt( emit, list->stmt ) )
-            return FALSE;
+        // check for empty body section
+        if( body->section )
+        {
+            // check kind of section
+            switch( body->section->s_type )
+            {
+                case ae_section_stmt:
+                {
+                    a_Stmt_List list = body->section->stmt_list;
+                    // loop through
+                    while( list )
+                    {
+                        // emit the statement
+                        ret = emit_engine_emit_stmt( emit, list->stmt );
+                        // check return value
+                        if( !ret ) goto cleanup;
+                        // next
+                        list = list->next;
+                    }
+                    break;
+                }
+                case ae_section_func:
+                {
+                    // TODO:
+                }
+                case ae_section_class:
+                {
+                    // TODO:
+                }
+            }
+        }
 
-        // next
-        list = list->next;
+        // next section
+        body = body->next;
     }
 
-    // TODO: push
+cleanup:
 
-    return TRUE;
+    return ret;
 }
 
 
@@ -5721,6 +5753,11 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     Chuck_Type * type = value->type;
     // local
     Chuck_Local * local = NULL;
+
+    // should contain either NULL or stmt_code
+    assert( !func_def->code || func_def->code->s_type == ae_stmt_code );
+    // loop over sections | 1.5.5.9 (ge) updated to use more flexible code sections (also allows nested function defs)
+    a_Stmt_Code code = func_def->code ? &func_def->code->stmt_code : NULL;
 
     // make sure it's the same one
     //Chuck_Func * func2 = emit->env->context->nspc.lookup_func( func_def->name, FALSE );
@@ -5870,8 +5907,8 @@ t_CKBOOL emit_engine_emit_func_def( Chuck_Emitter * emit, a_Func_Def func_def )
     // asynchronous.  the code below is left in as reference for callee ref counting
     // emit->addref_on_scope();
 
-    // emit the code
-    if( !emit_engine_emit_stmt( emit, func_def->code, FALSE ) )
+    // emit function body
+    if( code && !emit_engine_emit_code_segment( emit, code ) )
         return FALSE;
 
     // added by spencer June 2014 (1.3.5.0) | ensure return

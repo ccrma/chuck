@@ -110,7 +110,7 @@ typedef struct a_Section_ * a_Section;
 typedef struct a_Stmt_List_ * a_Stmt_List;
 typedef struct a_Class_Def_ * a_Class_Def;
 typedef struct a_Func_Def_ * a_Func_Def;
-typedef struct a_Code_Segment_ * a_Code_Segment;
+typedef struct a_Code_Body_ * a_Code_Body;
 typedef struct a_Stmt_ * a_Stmt;
 typedef struct a_Exp_ * a_Exp;
 typedef struct a_Exp_Chuck_ * a_Exp_Chuck;
@@ -177,10 +177,12 @@ a_Program append_program( a_Program program, a_Section section, uint32_t line, u
 a_Section new_section_stmt( a_Stmt_List stmt_list, uint32_t line, uint32_t where );
 a_Section new_section_func_def( a_Func_Def func_def, uint32_t line, uint32_t where );
 a_Section new_section_class_def( a_Class_Def class_def, uint32_t line, uint32_t where );
+a_Code_Body new_code_body( a_Section section, uint32_t line, uint32_t where ); // 1.5.5.9
+a_Code_Body prepend_code_body( a_Section sections, a_Code_Body body, uint32_t line, uint32_t where ); // 1.5.5.9
 a_Stmt_List new_stmt_list( a_Stmt stmt, uint32_t line, uint32_t where );
 a_Stmt_List append_stmt_list( a_Stmt_List stmt_list, a_Stmt stmt, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_expression( a_Exp exp, uint32_t line, uint32_t where );
-a_Stmt new_stmt_from_code( a_Stmt_List code, uint32_t line, uint32_t where );
+a_Stmt new_stmt_from_code( a_Code_Body code, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_while( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_do_while( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
 a_Stmt new_stmt_from_until( a_Exp cond, a_Stmt body, uint32_t line, uint32_t where );
@@ -279,6 +281,8 @@ void delete_iface_def( a_Class_Def def );
 void delete_func_def( a_Func_Def def );
 // delete id list
 void delete_id_list( a_Id_List list );
+// delete code body
+void delete_code_body( a_Code_Body code );
 
 // delete stmt
 void delete_stmt( a_Stmt stmt );
@@ -463,12 +467,23 @@ struct a_Stmt_Doc_ { a_Doc list; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Example_ { a_Example list; uint32_t line; uint32_t where; a_Stmt self; };
 struct a_Stmt_Code_
 {
-    // statement list
-    a_Stmt_List stmt_list;
+    // code body | 1.5.5.9 (ge) updated
+    a_Code_Body body; // a_Stmt_List stmt_list;
     // used to track control paths in non-void functions
     t_CKBOOL allControlPathsReturn; // 1.5.1.0 (ge) added
     // code position
     uint32_t line; uint32_t where; a_Stmt self;
+};
+struct a_Code_Body_ // 1.5.5.9
+{
+    // current section (stmt_list, funcdef, classdef)
+    a_Section section;
+    // next body
+    a_Code_Body next;
+    // used to track control paths across body nodes
+    t_CKBOOL allControlPathsReturn;
+    // code position
+    uint32_t line; uint32_t where;
 };
 
 // enum values for stmt type
@@ -566,6 +581,7 @@ typedef enum { ae_section_stmt, ae_section_class, ae_section_func } ae_Section_T
 
 struct a_Section_
 {
+    // what kind of section is this
     ae_Section_Type s_type;
 
     union

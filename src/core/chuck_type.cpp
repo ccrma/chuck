@@ -2134,23 +2134,56 @@ t_CKBOOL type_engine_infer_auto( Chuck_Env * env, a_Exp_Decl decl, Chuck_Type * 
 // name: type_engine_check_code_segment()
 // desc: ...
 //-----------------------------------------------------------------------------
-t_CKBOOL type_engine_check_code_segment( Chuck_Env * env, a_Stmt_Code stmt,
+t_CKBOOL type_engine_check_code_segment( Chuck_Env * env, a_Stmt_Code code,
                                          t_CKBOOL push )
 {
     // TODO: make sure this is in a function or is outside class
+    // TODO: ??? regarding above TODO (ge, 10/2026)
+
+    // code body
+    a_Code_Body body = code->body;
+    // return value
+    t_CKBOOL ret = TRUE;
 
     // class
     env->class_scope++;
     // push
     if( push ) env->curr->value.push(); // env->context->nspc.value.push();
-    // do it
-    t_CKBOOL t = type_engine_check_stmt_list( env, stmt->stmt_list );
+
+    // iterate over body sections
+    while( body )
+    {
+        // check for empty body section
+        if( body->section )
+        {
+            switch( body->section->s_type )
+            {
+                case ae_section_stmt:
+                    ret = type_engine_check_stmt_list( env, body->section->stmt_list );
+                    if( !ret ) goto cleanup;
+                    break;
+                case ae_section_func:
+                    ret = type_engine_check_func_def( env, body->section->func_def );
+                    if( !ret ) goto cleanup;
+                    break;
+                case ae_section_class:
+                    ret = type_engine_check_class_def( env, body->section->class_def );
+                    if( !ret ) goto cleanup;
+                    break;
+            }
+        }
+
+        // next section
+        body = body->next;
+    }
+
+cleanup:
     // pop
     if( push ) env->curr->value.pop();  // env->context->nspc.value.pop();
     // class
     env->class_scope--;
 
-    return t;
+    return ret;
 }
 
 
@@ -5777,6 +5810,12 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     t_CKUINT count = 0;
     t_CKBOOL has_code = FALSE;  // use this for both user and imported
 
+    // should contain either NULL or stmt_code
+    // make sure a code segment is in stmt - else we should push scope
+    assert( !f->code || f->code->s_type == ae_stmt_code );
+    // loop over sections | 1.5.5.9 (ge) updated to use more flexible code sections (also allows nested function defs)
+    a_Stmt_Code code = f->code ? &f->code->stmt_code : NULL;
+
     // see if we are already in a function definition
     if( env->func != NULL )
     {
@@ -5811,9 +5850,6 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
             }
         }
     }
-
-    // make sure a code segment is in stmt - else we should push scope
-    assert( !f->code || f->code->s_type == ae_stmt_code );
 
     // if override
     if( theOverride )
@@ -6027,17 +6063,15 @@ t_CKBOOL type_engine_check_func_def( Chuck_Env * env, a_Func_Def f )
     // set ckdoc, if present | 1.5.4.5 (ge)
     if( !type_engine_set_doc( env, theFunc ) ) goto error;
 
-    // type check the code
-    assert( f->code == NULL || f->code->s_type == ae_stmt_code );
-    if( f->code && !type_engine_check_code_segment( env, &f->code->stmt_code, FALSE ) )
+    // type check code segment
+    if( code && !type_engine_check_code_segment( env, code ) )
     {
         EM_error2( 0, "...in function '%s'", theFunc->signature(FALSE).c_str() ); // S_name(f->name) );
         goto error;
     }
 
     // check whether all control paths return
-    if( f->ret_type && !isa(f->ret_type, env->ckt_void) &&
-        f->code && !f->code->stmt_code.allControlPathsReturn )
+    if( f->ret_type && !isa(f->ret_type, env->ckt_void) && f->code && !f->code->allControlPathsReturn )
     {
         EM_error2( f->type_decl->where, "not all control paths in '%s' return a value",
                    theFunc->signature(TRUE).c_str() ); // S_name(f->name) );
