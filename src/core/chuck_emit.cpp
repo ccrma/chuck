@@ -5972,7 +5972,7 @@ t_CKBOOL emit_engine_emit_class_def( Chuck_Emitter * emit, a_Class_Def class_def
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
-    a_Class_Body body = class_def->body;
+    a_Code_Body body = class_def->body;
 
     // make sure the code is empty
     if( type->nspc->pre_ctor != NULL && type->nspc->pre_ctor->instr != NULL )

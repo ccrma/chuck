@@ -85,7 +85,6 @@ a_Program g_program = NULL;
     a_Stmt_List stmt_list;
     a_Class_Def class_def;
     a_Class_Ext class_ext;
-    a_Class_Body class_body;
     a_Code_Body code_body;
     a_Stmt stmt;
     a_Exp exp;
@@ -153,14 +152,11 @@ a_Program g_program = NULL;
 %type <code_body> code_body_list
 %type <func_def> function_definition
 %type <class_def> class_definition
-%type <class_body> class_body
-%type <class_body> class_body2
 %type <ival> class_decl
 %type <class_ext> class_ext
 %type <class_ext> iface_ext
 %type <stmt_list> statement_list
 %type <stmt> statement
-//%type <stmt_label> label_statement
 %type <stmt> loop_statement
 %type <stmt> code_statement
 %type <stmt> selection_statement
@@ -233,14 +229,14 @@ program_section
         ;
 
 class_definition
-        : class_decl CLASS id_list LBRACE class_body RBRACE
-            { $$ = new_class_def( $1, $3, NULL, $5, @1.first_line, @1.first_column ); }
-        | class_decl CLASS id_list class_ext LBRACE class_body RBRACE 
-            { $$ = new_class_def( $1, $3, $4, $6, @1.first_line, @1.first_column ); }
-        | class_decl INTERFACE id_list LBRACE class_body RBRACE
-            { $$ = new_iface_def( $1, $3, NULL, $5, @1.first_line, @1.first_column ); }
-        | class_decl INTERFACE id_list iface_ext LBRACE class_body RBRACE
-            { $$ = new_iface_def( $1, $3, $4, $6, @1.first_line, @1.first_column ); }
+        : class_decl CLASS id_list code_body
+            { $$ = new_class_def( $1, $3, NULL, $4, @1.first_line, @1.first_column ); }
+        | class_decl CLASS id_list class_ext code_body
+            { $$ = new_class_def( $1, $3, $4, $5, @1.first_line, @1.first_column ); }
+        | class_decl INTERFACE id_list code_body
+            { $$ = new_iface_def( $1, $3, NULL, $4, @1.first_line, @1.first_column ); }
+        | class_decl INTERFACE id_list iface_ext code_body
+            { $$ = new_iface_def( $1, $3, $4, $5, @1.first_line, @1.first_column ); }
         ;
 
 class_ext
@@ -250,16 +246,6 @@ class_ext
         | EXTENDS id_dot IMPLEMENTS id_list { $$ = new_class_ext( $2, $4, @1.first_line, @1.first_column ); }
         ;
 
-class_body
-        : class_body2                       { $$ = $1; }
-		|                                   { $$ = NULL; }
-        ;
-
-class_body2
-        : program_section                   { $$ = new_class_body( $1, @1.first_line, @1.first_column ); }
-        | program_section class_body2       { $$ = prepend_class_body( $1, $2, @1.first_line, @1.first_column ); }
-        ;
-        
 iface_ext
         : EXTENDS id_list                   { $$ = new_class_ext( NULL, $2, @1.first_line, @1.first_column ); }
         ;
@@ -306,7 +292,7 @@ function_definition
         ;
 
 code_body
-        : LBRACE RBRACE                     { $$ = new_code_body( NULL, @1.first_line, @1.first_column ); }
+        : LBRACE RBRACE                     { $$ = NULL; }
         | LBRACE code_body_list RBRACE      { $$ = $2; }
         ;
 

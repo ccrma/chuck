@@ -237,7 +237,7 @@ t_CKBOOL type_engine_scan0_class_def( Chuck_Env * env, a_Class_Def class_def )
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
-    a_Class_Body body = class_def->body;
+    a_Code_Body body = class_def->body;
 
     // log
     EM_log( CK_LOG_FINER, "scanning class definition '%s'...",
@@ -1510,7 +1510,7 @@ t_CKBOOL type_engine_scan1_class_def( Chuck_Env * env, a_Class_Def class_def )
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
-    a_Class_Body body = class_def->body;
+    a_Code_Body body = class_def->body;
     // the class
     Chuck_Type * the_class = class_def->type;
 
@@ -3000,7 +3000,7 @@ t_CKBOOL type_engine_scan2_class_def( Chuck_Env * env, a_Class_Def class_def )
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
-    a_Class_Body body = class_def->body;
+    a_Code_Body body = class_def->body;
     // the class
     Chuck_Type * the_class = class_def->type;
     // make sure

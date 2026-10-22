@@ -978,7 +978,7 @@ a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
 }
 
 a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List name,
-                           a_Class_Ext ext, a_Class_Body body, uint32_t lineNum, uint32_t posNum )
+                           a_Class_Ext ext, a_Code_Body body, uint32_t lineNum, uint32_t posNum )
 {
     a_Class_Def a = (a_Class_Def)checked_malloc( sizeof( struct a_Class_Def_ ) );
     a->decl = class_decl;
@@ -991,28 +991,10 @@ a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List name,
 }
 
 a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List name,
-                           a_Class_Ext ext, a_Class_Body body, uint32_t lineNum, uint32_t posNum )
+                           a_Class_Ext ext, a_Code_Body body, uint32_t lineNum, uint32_t posNum )
 {
     a_Class_Def a = new_class_def( class_decl, name, ext, body, lineNum, posNum );
     a->iface = 1;
-
-    return a;
-}
-
-a_Class_Body new_class_body( a_Section section, uint32_t lineNum, uint32_t posNum )
-{
-    a_Class_Body a = (a_Class_Body)checked_malloc( sizeof( struct a_Class_Body_ ) );
-    a->section = section;
-    a->line = lineNum; a->where = posNum;
-
-    return a;
-}
-
-a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, uint32_t lineNum, uint32_t posNum )
-{
-    a_Class_Body a = new_class_body( section, lineNum, posNum );
-    a->next = body;
-    a->line = lineNum; a->where = posNum;
 
     return a;
 }
@@ -1345,18 +1327,8 @@ void delete_class_def( a_Class_Def def )
 
     delete_id_list( def->name );
     delete_class_ext( def->ext );
-    delete_class_body( def->body );
+    delete_code_body( def->body );
     CK_SAFE_FREE( def );
-}
-
-void delete_class_body( a_Class_Body body )
-{
-    if( !body ) return;
-    EM_log( CK_LOG_FINEST, "deleting class body [%p]...", (void *)body );
-
-    delete_class_body( body->next );
-    delete_section( body->section );
-    CK_SAFE_FREE( body );
 }
 
 void delete_class_ext( a_Class_Ext ext )
@@ -1400,6 +1372,9 @@ void delete_iface_def( a_Class_Def def )
 
 void delete_code_body( a_Code_Body code )
 {
+    if( !code ) return;
+    EM_log( CK_LOG_FINEST, "deleting body body [%p]...", (void *)code );
+
     if( code->next ) delete_code_body( code->next );
     delete_section( code->section );
     CK_SAFE_FREE( code );

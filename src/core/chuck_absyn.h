@@ -149,7 +149,6 @@ typedef struct a_Type_Decl_ * a_Type_Decl;
 typedef struct a_Arg_List_ * a_Arg_List;
 typedef struct a_Id_List_ * a_Id_List;
 typedef struct a_Class_Ext_ * a_Class_Ext;
-typedef struct a_Class_Body_ * a_Class_Body;
 typedef struct a_Array_Sub_ * a_Array_Sub;
 typedef struct a_Ctor_Call_ * a_Ctor_Call; // 1.5.2.0 (ge) added
 typedef struct a_Complex_ * a_Complex;
@@ -245,11 +244,9 @@ a_Doc prepend_doc( a_Doc target, a_Doc list, uint32_t line, uint32_t where ); //
 a_Example new_example( c_str str, uint32_t line, uint32_t where ); // 1.5.5.8 (ge,nick,alex) added
 a_Example prepend_example( a_Example target, a_Example list, uint32_t line, uint32_t where ); // 1.5.5.8 (ge,nick,alex) added
 
-a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
-a_Class_Body new_class_body( a_Section section, uint32_t line, uint32_t where );
-a_Class_Body prepend_class_body( a_Section section, a_Class_Body body, uint32_t line, uint32_t where );
+a_Class_Def new_class_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Code_Body body, uint32_t line, uint32_t where );
 a_Class_Ext new_class_ext( a_Id_List extend_id, a_Id_List impl_list, uint32_t line, uint32_t where );
-a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Class_Body body, uint32_t line, uint32_t where );
+a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext, a_Code_Body body, uint32_t line, uint32_t where );
 a_Id_List new_id_list( c_constr xid, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
@@ -274,7 +271,6 @@ void delete_section( a_Section section );
 void delete_stmt_list( a_Stmt_List list );
 // delete class_def
 void delete_class_def( a_Class_Def def );
-void delete_class_body( a_Class_Body body );
 void delete_class_ext( a_Class_Ext ext );
 void delete_iface_def( a_Class_Def def );
 // delete func def
@@ -545,10 +541,9 @@ struct a_Stmt_List_
 
 // class definition AST node
 struct a_Class_Def_ { ae_Keyword decl; a_Id_List name; a_Class_Ext ext;
-                      a_Class_Body body; t_CKTYPE type; int iface; t_CKNSPC home;
+                      a_Code_Body body; t_CKTYPE type; int iface; t_CKNSPC home;
                       uint32_t line; uint32_t where; };
 struct a_Class_Ext_ { a_Id_List extend_id; a_Id_List impl_list; uint32_t line; uint32_t where; };
-struct a_Class_Body_ { a_Section section; a_Class_Body next; uint32_t line; uint32_t where; };
 struct a_Id_List_ { S_Symbol xid; a_Id_List next; uint32_t line; uint32_t where; };
 
 typedef enum { ae_func_user, ae_func_builtin } ae_Func_Type;

@@ -5697,7 +5697,7 @@ t_CKBOOL type_engine_check_class_def( Chuck_Env * env, a_Class_Def class_def )
     // the return type
     t_CKBOOL ret = TRUE;
     // the class body
-    a_Class_Body body = class_def->body;
+    a_Code_Body body = class_def->body;
 
     // check if parent class definition is complete or not
     // NOTE this could potentially be remove if class defs can be processed
@@ -9313,7 +9313,7 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
     {
         a_Class_Def def = NULL;
         a_Class_Ext ext = NULL;
-        a_Class_Body body = NULL;
+        a_Code_Body body = NULL;
         // UNUSED: a_Section sec = NULL;
         a_Func_Def fun = NULL;
         a_Id_List name;
@@ -9399,13 +9399,13 @@ t_CKBOOL type_engine_add_dll( Chuck_Env * env, Chuck_DLL * dll, const string & d
 
         // if there are any declarations, prepend them to body
         if( svar_decls )
-            body = prepend_class_body( new_section_stmt( svar_decls, 0, 0 ), body, 0, 0 );
+            body = prepend_code_body( new_section_stmt( svar_decls, 0, 0 ), body, 0, 0 );
 
         // go through funs backwards, and prepend
         for( t_CKINT k = (t_CKINT)the_funs.size() - 1; k >= 0; k-- )
         {
             // add to body
-            body = prepend_class_body( new_section_func_def( the_funs[k], 0, 0 ), body, 0, 0 );
+            body = prepend_code_body( new_section_func_def( the_funs[k], 0, 0 ), body, 0, 0 );
         }
 
         // construct class
