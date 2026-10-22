@@ -1,0 +1,4 @@
+error-return-not-all-6.ck:7:9: error: not all control paths in 'fun float bar()' return a value
+[7]     fun float bar()
+            ^
+error-return-not-all-6.ck: ...in function 'float foo()'
