@@ -889,8 +889,10 @@ t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code code,
 {
     // get code body
     a_Code_Body body = code->body;
-    // default flag to TRUE
-    code->allControlPathsReturn = TRUE;
+    // last stmt_list in body
+    a_Code_Body last_stmt_list = NULL;
+    // default flag to FALSE
+    code->allControlPathsReturn = FALSE;
     // return value
     t_CKBOOL ret = TRUE;
 
@@ -910,9 +912,10 @@ t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code code,
                 case ae_section_stmt:
                 {
                     // scan stmt list
-                    // TODO: account for possibility that there are more stmt_lists after this one in the same section
                     ret = type_engine_scan1_stmt_list( env, body->section->stmt_list, &body->allControlPathsReturn );
                     if( !ret ) goto cleanup;
+                    // account for possibility that there are more ae_section_stmt after this one
+                    last_stmt_list = body;
                     break;
                 }
 
@@ -929,13 +932,14 @@ t_CKBOOL type_engine_scan1_code_segment( Chuck_Env * env, a_Stmt_Code code,
                     break;
             }
 
-            // update
-            code->allControlPathsReturn &= body->allControlPathsReturn;
         }
 
         // next section
         body = body->next;
     }
+
+    // update, but only for last stmt_list in body (if there is one) | 1.5.5.9 (ge)
+    if( last_stmt_list ) code->allControlPathsReturn = last_stmt_list->allControlPathsReturn;
 
 cleanup:
     // pop

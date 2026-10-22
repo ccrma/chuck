@@ -368,7 +368,7 @@ statement
         ;
 
 code_statement
-        : code_body { $$ = new_stmt_from_code( $1, @1.first_line, @1.first_column ); }
+        : code_body                         { $$ = new_stmt_from_code( $1, @1.first_line, @1.first_column ); }
         ;
 
 jump_statement
