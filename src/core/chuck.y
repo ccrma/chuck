@@ -114,7 +114,7 @@ a_Program g_program = NULL;
 // 1.5.4.4: changed to 86 for @doc statements
 // 1.5.5.8: changed to 88 for @example statements
 // 1.5.5.9: changed to 46 for nested function definitions
-//          (also refactored `class_section` and `code_body`, now unified into `program_section`)
+//          (also: func_def, class_def, code statement now all use code_body)
 %expect 46
 
 %token <sval> ID STRING_LIT CHAR_LIT
