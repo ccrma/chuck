@@ -900,6 +900,30 @@ a_Type_Decl new_type_decl( a_Id_List type, int ref, uint32_t lineNum, uint32_t p
     return a;
 }
 
+a_Type_Decl new_type_decl_func( a_Arg_List arg_types, a_Type_Decl ret_type, uint32_t line, uint32_t where )
+{
+    a_Type_Decl a = (a_Type_Decl)checked_malloc(
+        sizeof( struct a_Type_Decl_ ) );
+    a->xid = new_id_list( "[lambda]", line, where ); // use "[lambda]"; see a->func-> arg_list for func args types
+    a->ref = TRUE; // all function type are by default by reference
+
+    // create a new function def
+    a->func = new_func_def( ae_key_func,     // func_decl
+                            ae_key_instance, // static_decl
+                            ret_type,        // return type
+                            "^",             // name
+                            arg_types,       // arg list with types only and no var decls
+                            NULL,            // code
+                            TRUE,            // ast_owned
+                            line, where );   // parser locations
+
+    a->line = line; a->where = where;
+
+    return a;
+
+}
+
+
 a_Type_Decl add_type_decl_array( a_Type_Decl a, a_Array_Sub array, uint32_t lineNum, uint32_t posNum )
 {
     assert( a->array == NULL );
@@ -931,7 +955,7 @@ a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl,
 }
 
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
-                         a_Type_Decl type_decl, c_str name,
+                         a_Type_Decl type_decl, c_constr name,
                          a_Arg_List arg_list, a_Stmt code,
                          uint32_t is_from_ast, uint32_t lineNum, uint32_t posNum )
 {
@@ -1345,6 +1369,7 @@ void delete_class_ext( a_Class_Ext ext )
 void delete_func_def( a_Func_Def def )
 {
     if( !def ) return;
+    EM_log( CK_LOG_FINEST, "deleting func def [%p]...", (void *)def );
 
     // safety check
     if( def->ast_owned && def->vm_refs > 0 )
@@ -1352,8 +1377,6 @@ void delete_func_def( a_Func_Def def )
         EM_error2( 0, "(internal error): cannot delete Func_Def %s with %ld VM references...", S_name(def->name), def->vm_refs );
         return;
     }
-
-    EM_log( CK_LOG_FINEST, "deleting func def [%p]...", (void *)def );
 
     // TODO: release reference def->ret_type
     // TODO: do something with Symbol def->name?
@@ -1883,6 +1906,8 @@ void delete_type_decl( a_Type_Decl decl )
 
     delete_id_list( decl->xid );
     delete_array_sub( decl->array );
+    // delete lambda (if there is one) | 1.5.5.9 (ge) added
+    delete_func_def( decl->func );
     CK_SAFE_FREE( decl );
 }
 

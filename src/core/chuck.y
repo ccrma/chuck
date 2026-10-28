@@ -115,7 +115,8 @@ a_Program g_program = NULL;
 // 1.5.5.8: changed to 88 for @example statements
 // 1.5.5.9: changed to 46 for nested function definitions
 //          (also: func_def, class_def, code statement now all use code_body)
-%expect 46
+// 1.5.5.9: changed to 49 for lambda types
+%expect 49
 
 %token <sval> ID STRING_LIT CHAR_LIT
 %token <ival> INT_VAL
@@ -190,14 +191,16 @@ a_Program g_program = NULL;
 %type <ival> unary_operator
 %type <ival> chuck_operator
 %type <ival> arrow_operator
+%type <ival> function_decl
+%type <ival> static_decl
 %type <var_decl_list> var_decl_list
 %type <var_decl> var_decl
 %type <type_decl> type_decl_a
 %type <type_decl> type_decl_b
+%type <type_decl> type_decl_c
 %type <type_decl> type_decl
 %type <type_decl> type_decl2
-%type <ival> function_decl
-%type <ival> static_decl
+%type <arg_list> type_decl_list
 %type <arg_list> arg_list
 %type <id_list> id_list
 %type <id_list> id_dot
@@ -330,20 +333,26 @@ type_decl_b
         | LT id_dot GT AT_SYM               { $$ = new_type_decl( $2, 1, @1.first_line, @1.first_column ); }
         ;
 
-//type_decl_c
-//        : LPAREN id_dot RPAREN              { $$ = new_type_decl( $3, 0, @1.first_line, @1.first_column ); }
-//        | LPAREN id_dot RPAREN AT_SYM       { $$ = new_type_decl( $1, 1, @1.first_line, @1.first_column ); }
-//        ;
+// lambda
+type_decl_c
+        : S_XOR LPAREN RPAREN ARROW_RIGHT type_decl2                { $$ = new_type_decl_func( NULL, $5, @1.first_line, @1.first_column ); }
+        | S_XOR LPAREN type_decl_list RPAREN ARROW_RIGHT type_decl2 { $$ = new_type_decl_func( $3, $6, @1.first_line, @1.first_column ); }
+        ;
 
 type_decl
         : type_decl_a                       { $$ = $1; }
         | type_decl_b                       { $$ = $1; }
-        // | type_decl_c                       { $$ = $1; }
+        | type_decl_c                       { $$ = $1; }
         ;
 
 type_decl2
         : type_decl                         { $$ = $1; }
         | type_decl array_empty             { $$ = add_type_decl_array( $1, $2, @1.first_line, @1.first_column ); }
+        ;
+
+type_decl_list
+        : type_decl                         { $$ = new_arg_list( $1, NULL, @1.first_line, @1.first_column ); }
+        | type_decl COMMA type_decl_list    { $$ = prepend_arg_list( $1, NULL, $3, @1.first_line, @1.first_column ); }
         ;
 
 arg_list

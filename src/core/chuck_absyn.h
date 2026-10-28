@@ -229,6 +229,7 @@ a_Var_Decl_List new_var_decl_list( a_Var_Decl var_decl, uint32_t line, uint32_t 
 a_Var_Decl_List prepend_var_decl_list( a_Var_Decl var_decl, a_Var_Decl_List list, uint32_t line, uint32_t where );
 a_Var_Decl new_var_decl( c_constr xid, int ctor_invoked, a_Exp ctor_args, a_Array_Sub array, uint32_t line, uint32_t where );
 a_Type_Decl new_type_decl( a_Id_List xid, int ref, uint32_t line, uint32_t where );
+a_Type_Decl new_type_decl_func( a_Arg_List arg_types, a_Type_Decl ret_type, uint32_t line, uint32_t where );
 a_Type_Decl add_type_decl_array( a_Type_Decl type_decl, a_Array_Sub array, uint32_t line, uint32_t where );
 a_Arg_List new_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, uint32_t line, uint32_t where );
 a_Arg_List prepend_arg_list( a_Type_Decl type_decl, a_Var_Decl var_decl, a_Arg_List arg_list, uint32_t line, uint32_t where );
@@ -250,7 +251,7 @@ a_Class_Def new_iface_def( ae_Keyword class_decl, a_Id_List xid, a_Class_Ext ext
 a_Id_List new_id_list( c_constr xid, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Id_List prepend_id_list( c_constr xid, a_Id_List list, uint32_t line, uint32_t where /*, YYLTYPE * loc*/ );
 a_Func_Def new_func_def( ae_Keyword func_decl, ae_Keyword static_decl,
-                         a_Type_Decl type_decl, c_str name,
+                         a_Type_Decl type_decl, c_constr name,
                          a_Arg_List arg_list, a_Stmt code, uint32_t is_from_ast,
                          uint32_t line, uint32_t where );
 a_Func_Def new_op_overload( ae_Keyword func_decl, ae_Keyword static_decl,
@@ -359,7 +360,7 @@ struct a_Var_Decl_ { S_Symbol xid; struct a_Ctor_Call_ ctor;
                      a_Array_Sub array; t_CKVALUE value; void * addr; t_CKTYPE ck_type;
                      /* int is_auto; */ int ref; int force_ref;
                      uint32_t line; uint32_t where; a_Exp self; };
-struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; uint32_t line; uint32_t where; /*a_Exp self;*/ };
+struct a_Type_Decl_ { a_Id_List xid; a_Array_Sub array; int ref; a_Func_Def func; uint32_t line; uint32_t where; /*a_Exp self;*/ };
 struct a_Array_Sub_ { t_CKUINT depth; a_Exp exp_list; uint32_t line; uint32_t where; a_Exp self;
                       int err_num; int err_pos; };
 struct a_Arg_List_ { a_Type_Decl type_decl; a_Var_Decl var_decl; t_CKTYPE type;
