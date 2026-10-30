@@ -652,6 +652,7 @@ public: // shredsuck
 
 public: // audio
     t_CKUINT srate() const;
+    t_CKUINT bufsize() const;
 
 public: // running the machine
     // compute next N frames

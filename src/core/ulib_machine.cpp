@@ -77,6 +77,7 @@ CK_DLL_SFUN( machine_memstack_impl );
 CK_DLL_SFUN( machine_platform_name_impl );     // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_timeofday_impl );         // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_timeofday_precise_impl ); // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_buffersize ); // 1.5.5.9 (emc)
 CK_DLL_SFUN( machine_gc );
 CK_DLL_SFUN( machine_opOverloadReset_impl );
 // not used
@@ -310,6 +311,10 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
         "32-bit and one must send the x and y values separately -- "
         "otherwise a significant amount of timing resolution would be lost."
     );
+
+    // get the VM's buffersize 1.5.5.9 : emc
+    QUERY->add_sfun( QUERY, machine_buffersize, "int", "bufferSize" );
+    QUERY->doc_func( QUERY, "get virtual machine's buffer size.");
 
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
@@ -716,6 +721,16 @@ CK_DLL_SFUN( machine_timeofday_precise_impl )
     // return value
     RETURN->v_vec2.x = tv_sec;
     RETURN->v_vec2.y = tv_usec;
+}
+
+// 1.5.5.9 : emc
+CK_DLL_SFUN( machine_buffersize )
+{
+    // uses passed VM pointer (maybe we should use API?)
+    t_CKINT size = VM->bufsize();
+    
+    // return
+    RETURN->v_int = size; 
 }
 
 // gc() | 1.5.2.0 (ge)
