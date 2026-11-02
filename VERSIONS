@@ -2,8 +2,10 @@
 ChucK VERSIONS log
 ------------------
 
-1.5.5.9
+1.5.5.9 (November 2026)
 =======
+- (added) default '+' operator overloading for concatenating
+  strings with vec2/3/4, complex, polar types
 - (fixed) ChAI MLP activation and backprop handling
 - (fixed) segfault on exit, due to lack of thread join for
   OTF server thread before freeing its socket (thanks @barak)

@@ -1147,12 +1147,12 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func->add_arg( "int", "ival" );
     if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
 
-    // add operator overload: int+string | 1.5.4.2 (ge)
+    // add operator overload: float+string | 1.5.4.2 (ge)
     func = make_new_op_binary( "string", ae_op_plus, string_op_float_plus_string );
     func->add_arg( "float", "fval" );
     func->add_arg( "string", "str" );
     if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
-    // add operator overload: string+int | 1.5.4.2 (ge)
+    // add operator overload: string+float | 1.5.4.2 (ge)
     func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_float );
     func->add_arg( "string", "obj" );
     func->add_arg( "float", "fval" );
@@ -1192,6 +1192,61 @@ t_CKBOOL init_class_string( Chuck_Env * env, Chuck_Type * type )
     func = make_new_op_binary( "int", ae_op_ge, string_op_string_ge_string );
     func->add_arg( "string", "obj" );
     func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: vec2+string | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_vec2_plus_string );
+    func->add_arg( "vec2", "v" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+vec2 | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_vec2 );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "vec2", "v" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: vec3+string | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_vec3_plus_string );
+    func->add_arg( "vec3", "v" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+vec3 | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_vec3 );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "vec3", "v" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: vec4+string | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_vec4_plus_string );
+    func->add_arg( "vec4", "v" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+vec4 | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_vec4 );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "vec4", "v" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: complex+string | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_complex_plus_string );
+    func->add_arg( "complex", "v" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+complex | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_complex );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "complex", "v" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+
+    // add operator overload: polar+string | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_polar_plus_string );
+    func->add_arg( "polar", "v" );
+    func->add_arg( "string", "str" );
+    if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
+    // add operator overload: string+polar | 1.5.5.9 (ge)
+    func = make_new_op_binary( "string", ae_op_plus, string_op_string_plus_polar );
+    func->add_arg( "string", "obj" );
+    func->add_arg( "polar", "v" );
     if( !type_engine_import_op_overload( env, func ) ) goto error_post_class;
 
     return TRUE;
@@ -3409,7 +3464,7 @@ CK_DLL_GFUN( string_op_string_plus_string )
 
     if( left == NULL || right == NULL ) // 1.5.4.2 (ge) added
     {
-        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,string)" );
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,string)" );
         return;
     }
 
@@ -3428,7 +3483,7 @@ CK_DLL_GFUN( string_op_int_plus_string )
 
     if( right == NULL ) // 1.5.4.2 (ge) added
     {
-        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(int,string)" );
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(int,string)" );
         return;
     }
 
@@ -3446,7 +3501,7 @@ CK_DLL_GFUN( string_op_string_plus_int )
 
     if( left == NULL ) // 1.5.4.2 (ge) added
     {
-        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,int)" );
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,int)" );
         return;
     }
 
@@ -3464,7 +3519,7 @@ CK_DLL_GFUN( string_op_float_plus_string )
 
     if( right == NULL ) // 1.5.4.2 (ge) added
     {
-        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(float,string)" );
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(float,string)" );
         return;
     }
 
@@ -3482,7 +3537,7 @@ CK_DLL_GFUN( string_op_string_plus_float )
 
     if( left == NULL ) // 1.5.4.2 (ge) added
     {
-        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(string,float)" );
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,float)" );
         return;
     }
 
@@ -3491,6 +3546,256 @@ CK_DLL_GFUN( string_op_string_plus_float )
     // return value
     RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
     RETURN->v_string->set( lhs + std::to_string(right) );
+}
+
+CK_DLL_GFUN( string_op_vec2_plus_string )
+{
+    t_CKVEC2 left = GET_NEXT_VEC2(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // check string
+    if( right == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(vec2,string)" );
+        return;
+    }
+    // get c++ string
+    string rhs = right->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f)", left.x, left.y );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( buf + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_vec2 )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKVEC2 right = GET_NEXT_VEC2(ARGS);
+
+    // check string
+    if( left == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,vec2)" );
+        return;
+    }
+    // get c++ string
+    string lhs = left->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f)", right.x, right.y );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( lhs + buf );
+}
+
+CK_DLL_GFUN( string_op_vec3_plus_string )
+{
+    t_CKVEC3 left = GET_NEXT_VEC3(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // check string
+    if( right == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(vec3,string)" );
+        return;
+    }
+    // get c++ string
+    string rhs = right->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f,%.4f)", left.x, left.y, left.z );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( buf + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_vec3 )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKVEC3 right = GET_NEXT_VEC3(ARGS);
+
+    // check string
+    if( left == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,vec3)" );
+        return;
+    }
+    // get c++ string
+    string lhs = left->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f,%.4f)", right.x, right.y, right.z );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( lhs + buf );
+}
+
+CK_DLL_GFUN( string_op_vec4_plus_string )
+{
+    t_CKVEC4 left = GET_NEXT_VEC4(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // check string
+    if( right == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(vec4,string)" );
+        return;
+    }
+    // get c++ string
+    string rhs = right->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f,%.4f,%.4f)", left.x, left.y, left.z, left.w );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( buf + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_vec4 )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKVEC4 right = GET_NEXT_VEC4(ARGS);
+
+    // check string
+    if( left == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,vec4)" );
+        return;
+    }
+    // get c++ string
+    string lhs = left->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "@(%.4f,%.4f,%.4f,%.4f)", right.x, right.y, right.z, right.w );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( lhs + buf );
+}
+
+CK_DLL_GFUN( string_op_complex_plus_string )
+{
+    t_CKCOMPLEX left = GET_NEXT_COMPLEX(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // check string
+    if( right == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(complex,string)" );
+        return;
+    }
+    // get c++ string
+    string rhs = right->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "#(%.4f,%.4f)", left.re, left.im );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( buf + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_complex )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKCOMPLEX right = GET_NEXT_COMPLEX(ARGS);
+
+    // check string
+    if( left == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,complex)" );
+        return;
+    }
+    // get c++ string
+    string lhs = left->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "#(%.4f,%.4f)", right.re, right.im );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( lhs + buf );
+}
+
+CK_DLL_GFUN( string_op_polar_plus_string )
+{
+    t_CKPOLAR left = GET_NEXT_POLAR(ARGS);
+    Chuck_String * right = GET_NEXT_STRING(ARGS);
+
+    // check string
+    if( right == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "argument(s) to @operator+(polar,string)" );
+        return;
+    }
+    // get c++ string
+    string rhs = right->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "%%(%.4f,%.4f*pi)", left.modulus, left.phase / CK_ONE_PI );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( buf + rhs );
+}
+
+CK_DLL_GFUN( string_op_string_plus_polar )
+{
+    Chuck_String * left = GET_NEXT_STRING(ARGS);
+    t_CKPOLAR right = GET_NEXT_POLAR(ARGS);
+
+    // check string
+    if( left == NULL )
+    {
+        ck_throw_exception( SHRED, "NullPointer", "string argument to @operator+(string,polar)" );
+        return;
+    }
+    // get c++ string
+    string lhs = left->str();
+
+    // convert to c string
+    const long BUF_MAX = 64;
+    char buf[BUF_MAX];
+    snprintf( buf, BUF_MAX, "%%(%.4f,%.4f*pi)", right.modulus, right.phase / CK_ONE_PI );
+
+    // return value
+    RETURN->v_string = (Chuck_String *)instantiate_and_initialize_object(SHRED->vm_ref->env()->ckt_string, SHRED);
+    // set concatenated version
+    RETURN->v_string->set( lhs + buf );
 }
 
 CK_DLL_GFUN( string_op_string_eq_string )

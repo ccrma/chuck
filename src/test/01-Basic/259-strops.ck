@@ -50,6 +50,18 @@ assert( 10 + "bar" == "10bar", "19" );
 assert( ("bar" + 10.0).find("bar10.") == 0, "20" );
 assert( (10.0 + "bar").find("bar") > 2, "21" );
 assert( "foo" + "bar" + "cle" == "foobarcle", "22" );
+assert( ("foo" + @(3,4)).find("foo@(3.") == 0, "23" );
+assert( ("foo" + @(5,6,7)).find("foo@(5.") == 0, "24" );
+assert( ("foo" + @(8,9,10)).find("foo@(8.") == 0, "25" );
+assert( ("bar" + #(11,12)).find("bar#(11.") == 0, "26" );
+assert( ("bar" + @(13,2*pi)).find("bar@(13.") == 0, "27" );
+assert( (@(3,4)+"foo").find("foo") > 5, "28" );
+assert( (@(5,6,7)+"foo").find("foo") > 6, "29" );
+assert( (@(8,9,10)+"foo").find("foo") > 7, "30" );
+assert( (#(11,12)+"bar").find("bar") > 5, "31" );
+assert( (@(13,2*pi)+"bar").find("bar") > 5, "32" );
+
+// utilities
 assert( "FoO".lower() == "foo", "23" );
 assert( "foo".upper() == "FOO", "24" );
 assert( " foo  ".trim() == "foo", "25" );
