@@ -77,6 +77,7 @@ CK_DLL_SFUN( machine_memstack_impl );
 CK_DLL_SFUN( machine_platform_name_impl );     // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_timeofday_impl );         // 1.5.5.2 (azaday)
 CK_DLL_SFUN( machine_timeofday_precise_impl ); // 1.5.5.2 (azaday)
+CK_DLL_SFUN( machine_active_frame_size );      // 1.5.5.9 (emc)
 CK_DLL_SFUN( machine_gc );
 CK_DLL_SFUN( machine_opOverloadReset_impl );
 // not used
@@ -295,7 +296,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
     // get the system time of day
     QUERY->add_sfun( QUERY, machine_timeofday_impl, "float", "timeOfDay" );
     QUERY->doc_func( QUERY,
-        "returns the time in seconds since the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
+        "return the time in seconds since the Epoch 1970-01-01 00:00:00 +0000 (UTC). "
         "The returned time has microsecond resolution and could be used for e.g. synchronizing "
         "events across machines without the use of networking. "
     );
@@ -310,6 +311,10 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
         "32-bit and one must send the x and y values separately -- "
         "otherwise a significant amount of timing resolution would be lost."
     );
+
+    // get the VM's buffersize 1.5.5.9 (emc) added
+    QUERY->add_sfun( QUERY, machine_active_frame_size, "int", "activeFrameSize" );
+    QUERY->doc_func( QUERY, "return the virtual machine's audio frame size of the most recent chunk of audio computation. This value is influenced by the --bufsize command-line argument but, in practice, could be different and could even fluctuate from buffer to buffer, depending on factors including 1) whether ChucK is running in real-time vs. non-real-time and 2) the underlying operating system when running in real-time. (FYI frame size, sometimes also referred as buffer size, is the channel-independent length of each audio buffer.)");
 
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
@@ -716,6 +721,23 @@ CK_DLL_SFUN( machine_timeofday_precise_impl )
     // return value
     RETURN->v_vec2.x = tv_sec;
     RETURN->v_vec2.y = tv_usec;
+}
+
+// 1.5.5.9 (emc) added
+CK_DLL_SFUN( machine_active_frame_size )
+{
+    // return the virtual machine's audio frame size of the most recent
+    // chunk of audio computation. This value is influenced by the
+    // --bufsize command-line argument but, in practice, could be different
+    // and could even fluctuate from buffer to buffer, depending on factors
+    // including 1) whether ChucK is running in real-time vs. non-real-time
+    // and 2) the underlying operating system when running in real-time.
+    // (FYI frame size, sometimes also referred as buffer size, is the
+    // channel-independent length of each audio buffer.
+    t_CKINT size = VM->most_recent_buffer_length();
+
+    // return
+    RETURN->v_int = size; 
 }
 
 // gc() | 1.5.2.0 (ge)
