@@ -1673,6 +1673,72 @@ t_CKINT CK_DLL_CALL ck_get_vtable_offset( Chuck_VM * vm, Chuck_Type * t, const c
 }
 
 
+
+//-----------------------------------------------------------------------------
+// name: ck_get_vtable_offset_args()
+// desc: function pointer get_type(), searching for function defintion with
+//       specific args | 1.5.5.9 (nshaheed) added
+//-----------------------------------------------------------------------------
+t_CKINT CK_DLL_CALL ck_get_vtable_offset_args( Chuck_VM * vm, Chuck_Type * t, const char * valueName, Chuck_Type ** args, int num_args )
+{
+    // find the offset for value by name
+    Chuck_Value * value = type_engine_find_value( t, valueName );
+    // value not found
+    if( !value || !value->func_ref ) return -1;
+
+    // get the function reference (if there is one)
+    Chuck_Func * func = value->func_ref;
+
+    // iterate over overloads looking for matching number of args and types
+    while( func )
+    {
+        // get function definition
+        a_Func_Def func_def = func->def();
+        // get function argument llist
+        a_Arg_List arg_list = func_def->arg_list;
+
+        // default flag to true
+        bool type_signature_match = true;
+        // arg counter
+        int i = 0;
+
+        // size of arg lists must match
+        while( arg_list && i < num_args )
+        {
+            // types do not match, exit loop
+            if (!isa(args[i], arg_list->type))
+            {
+                type_signature_match = false;
+                break;
+            }
+            // move to next argument
+            arg_list = arg_list->next;
+            // increment counter
+            i++;
+        }
+
+        // expected more args from func
+        if (i != num_args) type_signature_match = false;
+        // if any args remaining in arg_list, func_def had too many args
+        if (arg_list) type_signature_match = false;
+
+        // found a match! returning offset...
+        if( type_signature_match)
+        {
+            // vtable index
+            return func->vt_index;
+        }
+
+        // not yet found, go to next overloaded function
+        func = func->next;
+    }
+
+    // was not able to find a match, returning -1
+    return -1;
+}
+
+
+
 //-----------------------------------------------------------------------------
 // add reference count
 //-----------------------------------------------------------------------------
@@ -2818,6 +2884,7 @@ array_vec4_clear( ck_array_vec4_clear )
 Chuck_DL_Api::TypeApi::TypeApi() :
 lookup(ck_type_lookup),
 get_vtable_offset(ck_get_vtable_offset),
+get_vtable_offset_args(ck_get_vtable_offset_args),
 is_equal(ck_type_isequal),
 isa(ck_type_isa),
 callback_on_instantiate(ck_callback_on_instantiate),
