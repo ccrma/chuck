@@ -6,10 +6,11 @@ ChucK VERSIONS log
 =======
 => This release contains significant stability and memory usage
    improvements to ChuGL, as well as quality of life additions to
-   both ChuGL and base language.
-=============
-ChuGL v.0.3.1
-=============
+   both ChuGL and base language. ChuMP v0.0.4 includes minor
+   improvements to security and CLI output formatting.
+============
+ChuGL v0.3.1
+============
 ## 0.3.1 (alpha)
 - major garbage collection improvements for many components
   including GMesh, Geometry, Material, Shaders, etc.
@@ -39,6 +40,20 @@ ChuGL v.0.3.1
   - potential segfault in `PolygonGeometry`
   - segfault in `GMesh(Geometry, Material)` constructor
 - new example: `deep/tetris.ck`
+============
+ChuMP v0.0.4
+codename: Infinite chump
+============
+(fixed) minor security issue when downloading files.
+  * when installing a package, chump would create a temporary
+    directory to download a file to, upon succesful download
+    it would then be copied to the `.packages` dir. previously,
+    this was using tmpnam(3) which has been deprecated because
+    of security concerns. now chump uses the recommended
+    "fs::create_directories"
+(improved) made chump cli output formatting more consistent
+(improved) added OS architecture and ChucK version to info messages
+    when a package isn't available on the specific system configuration
 =============
 ChucK 1.5.5.9
 =============
@@ -66,10 +81,11 @@ ChucK 1.5.5.9
    change: `!` is no longer overloadable; to "make up" for this, `~` is
    now overloadable as a unary prefix operator (see below); also
    Nick and Ge unearthed and fixed a boolean logic issue (!!!) with
-   the logical AND and OR operators
-=============
-ChuGL v.0.3.0
-=============
+   the logical AND and OR operators; ChuMP v0.0.3 introduces the `doc`
+   and `examples` subcommands.
+============
+ChuGL v0.3.0
+============
 - (added) `TextureLoadDesc.srgb` for loading image data into srgb textures
 - (added) YCrCb video decoding mode to `Video`
 - (updated) cmake to build on linux. (thanks Lejun)
@@ -110,6 +126,23 @@ ChuGL v.0.3.0
 - (updated) improved performance of default skybox material shader
 - (updated) Material uniform updates are now batch-written to the GPU, 
   improving renderer performance
+============
+ChuMP v0.0.3
+codename: 20,000 chumps under the sea
+============
+(added) chump doc command
+    * 'chump doc <package>' to open a documentation web page for
+    <package> (if it exists)
+(added) chump examples command
+    * 'chump examples <package>' to open the examples directory for
+    <package> (if it exists)
+(added) chump list -u/--updates
+    * lists only packages that have an update available on your system
+(fixed) shorter connection timeout when downloading manifest
+    * chump attempts to update the package manifest on startup.
+    previously this would use the default 300s connction timeout meaning
+    that if connection to the ccrma server was slow/flaky chump would stall.
+    This timeout has been lowered to three seconds.
 =============
 ChucK 1.5.5.8
 =============
