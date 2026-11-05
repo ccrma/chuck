@@ -79,7 +79,7 @@
 #define CHUCK_PARAM_SAMPLE_RATE_DEFAULT            "44100"
 #define CHUCK_PARAM_INPUT_CHANNELS_DEFAULT         "2"
 #define CHUCK_PARAM_OUTPUT_CHANNELS_DEFAULT        "2"
-#define CHUCK_PARAM_VM_ADAPTIVE_DEFAULT            "0"
+#define CHUCK_PARAM_VM_ADAPTIVE_DEFAULT            "1"
 #define CHUCK_PARAM_VM_HALT_DEFAULT                "0"
 #define CHUCK_PARAM_OTF_ENABLE_DEFAULT             "0"
 #define CHUCK_PARAM_OTF_PORT_DEFAULT               "8888"
