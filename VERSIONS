@@ -4,11 +4,59 @@ ChucK VERSIONS log
 
 1.5.5.9 (November 2026)
 =======
+=> This release contains significant stability and memory usage
+   improvements to ChuGL, as well as quality of life additions to
+   both ChuGL and base language.
+=============
+ChuGL v.0.3.1
+=============
+## 0.3.1 (alpha)
+- major garbage collection improvements for many components
+  including GMesh, Geometry, Material, Shaders, etc.
+  - thanks Alex Han for reporting the memory leak
+  - `GGen.detachSubgraph()` disconnects the entire subgraph
+    under the given GGen. Helpful for freeing / GCing an entire
+    subgraph of scene components.
+- add component finding methods to `GGen` (thanks Niccolo!)
+  - `GGen@ findParent(Type type);`
+  - `GGen[] findParents(Type type);`
+  - `GGen@ findChild(Type type, int recurse);`
+  - `GGen[] findChildren(Type type, int recurse);`
+  - `int isa(Type type);`
+- add builtin textures (useful for material defaults)
+  - `Texture.whitePixel()`
+  - `Texture.blackPixel()`
+  - `Texture.magentaPixel()`
+  - `Texture.normalPixel()`
+- Screen shaders are now now automatically given the correct
+  vertex layout when applied to a `ScreenPass`
+- add `UI.getStyle().scaleAllSizes(float scale)` to increase
+  imgui window scale
+- add `UI_IO` imgui class
+- add `Material.removeUniform(int location)`
+- add `ChuGL_Stats` and `GG.stats()`
+- bugfixes:
+  - potential segfault in `PolygonGeometry`
+  - segfault in `GMesh(Geometry, Material)` constructor
+- new example: `deep/tetris.ck`
+=============
+ChucK 1.5.5.9
+=============
 - (added) default '+' operator overloading for concatenating
   strings with vec2/3/4, complex, polar types
-- (fixed) ChAI MLP activation and backprop handling
+- (added) Machine.activeFrameSize()
+      return the virtual machine's audio frame size of the most recent
+      chunk of audio computation. This value is influenced by the
+      --bufsize command-line argument but, in practice, could be
+      different and could even fluctuate from buffer to buffer,
+      depending on factors including 1) whether ChucK is running in
+      real-time vs. non-real-time and 2) the underlying operating 
+      system when running in real-time. (FYI frame size, sometimes
+      also referred to as buffer size, is the channel-independent
+      length of each audio buffer.) (thanks emc)
 - (fixed) segfault on exit, due to lack of thread join for
   OTF server thread before freeing its socket (thanks @barak)
+- (fixed) ChAI MLP activation and backprop handling
 
 
 1.5.5.8 (April 2026)

@@ -314,7 +314,7 @@ DLL_QUERY machine_query( Chuck_DL_Query * QUERY )
 
     // get the VM's buffersize 1.5.5.9 (emc) added
     QUERY->add_sfun( QUERY, machine_active_frame_size, "int", "activeFrameSize" );
-    QUERY->doc_func( QUERY, "return the virtual machine's audio frame size of the most recent chunk of audio computation. This value is influenced by the --bufsize command-line argument but, in practice, could be different and could even fluctuate from buffer to buffer, depending on factors including 1) whether ChucK is running in real-time vs. non-real-time and 2) the underlying operating system when running in real-time. (FYI frame size, sometimes also referred as buffer size, is the channel-independent length of each audio buffer.)");
+    QUERY->doc_func( QUERY, "return the virtual machine's audio frame size of the most recent chunk of audio computation. This value is influenced by the --bufsize command-line argument but, in practice, could be different and could even fluctuate from buffer to buffer, depending on factors including 1) whether ChucK is running in real-time vs. non-real-time and 2) the underlying operating system when running in real-time. (FYI frame size, sometimes also referred to as buffer size, is the channel-independent length of the audio I/O buffer.)");
 
     // add examples
     QUERY->add_ex( QUERY, "machine/eval.ck" );
